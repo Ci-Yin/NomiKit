@@ -1,0 +1,206 @@
+[versions]
+kotlin = "2.2.20"
+android-gradle-plugin = "8.11.0"
+compose-hot-reload = "1.0.0-rc02"
+compose-multiplatform = "1.9.2"
+android-compileSdk = "35"
+android-targetSdk = "35"
+android-minSdk = "26"
+ksp = "2.2.20-2.0.2"
+
+androidx-activity-compose = "1.10.0"
+androidx-appcompat = "1.7.0"
+androidx-core-ktx = "1.13.1"
+androidx-espresso-core = "3.6.1"
+androidx-lifecycle = "2.8.0"
+androidx-material = "1.12.0"
+androidx-test-junit = "1.2.1"
+androidx-navigation = "2.9.0"
+kotlinxDatetime = "0.7.0"
+materialIcons = "1.7.0"
+coilVersion = "3.0.0"
+gson = "2.11.0"
+jna = "5.18.0"
+ivy = "2.5.2"
+jnaPlatform = "5.18.0"
+kotlinxSerializationJson = "1.7.3"
+ktor-client = "2.3.12"
+koin = "4.1.0" # https://github.com/InsertKoinIO/koin/releases
+junit = "4.13.2"
+kotlinx-coroutines = "1.10.2"
+ktorNetwork = "2.3.12"
+moshiKotlin = "1.15.2"
+mpfilepicker = "3.1.0"
+nettyAll = "4.1.101.Final"
+uiToolingPreviewDesktop = "1.7.0"
+material3-adaptive-navigation-suite = "1.4.0-beta01"
+kermit = "2.0.8"
+filekit = "0.12.0"
+
+rxjava = "3.1.9"
+rxkotlin = "3.0.1"
+runtime = "1.9.0"
+window = "1.5.0"
+
+flowredux2 = "2.0.0-alpha4"
+
+arrow = "2.1.2"
+
+shadow = "8.1.1"
+
+[libraries]
+
+# Gradle plugins
+android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "android-gradle-plugin" }
+android-library-gradle-plugin = { module = "com.android.library:com.android.library.gradle.plugin", version.ref = "android-gradle-plugin" }
+android-application-gradle-plugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "android-gradle-plugin" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
+kotlin-compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+kotlin-native-cocoapods-gradle-plugin = { module = "org.jetbrains.kotlin.native.cocoapods:org.jetbrains.kotlin.native.cocoapods.gradle.plugin", version.ref = "kotlin" }
+
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-lifecycle-android = { module = "androidx.compose.foundation:foundation-android" }
+androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+androidx-ui-tooling-preview-desktop = { group = "androidx.compose.ui", name = "ui-tooling-preview-desktop", version.ref = "uiToolingPreviewDesktop" }
+androidx-compose-material3-adaptive-navigation-suite-desktop = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
+androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
+androidx-compose-material3-window-size-class2 = { group = "androidx.compose.material3", name = "material3-window-size-class" }
+androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
+androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "androidx-navigation" }
+androidx-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
+androidx-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons" }
+
+ivy = { module = "org.apache.ivy:ivy", version.ref = "ivy" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jnaPlatform" }
+
+kotlin-scripting-common = { module = "org.jetbrains.kotlin:kotlin-scripting-common" }
+kotlin-scripting-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223" }
+kotlin-scripting-dependencies-maven = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies-maven" }
+kotlin-scripting-dependencies = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies" }
+kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
+kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
+# State Management
+freeletics-flowredux2 = { module = "com.freeletics.flowredux2:flowredux", version.ref = "flowredux2" }
+
+# Logging
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilVersion" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilVersion" }
+coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilVersion" }
+coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coilVersion" }
+
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin" }
+mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
+netty-all = { module = "io.netty:netty-all", version.ref = "nettyAll" }
+rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
+rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
+
+# ktor
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-client" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-client" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor-client" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor-client" }
+ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-client" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor-client" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor-client" }
+
+# Koin
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.inserrt-koin:koin-android", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+
+# FileKit
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
+filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekit" }
+
+# Arrow (函数式编程)
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrow-functions = { module = "io.arrow-kt:arrow-functions", version.ref = "arrow" }
+arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
+arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
+
+[bundles]
+arrow = [
+    "arrow-core",
+    "arrow-functions",
+    "arrow-optics",
+    #    "arrow-optics-ksp"
+]
+filekit = [
+    "filekit-core",
+    "filekit-dialogs",
+    "filekit-dialogs-compose",
+    #    "filekit-coil"
+]
+rxjava = [
+    "rxjava",
+    "rxkotlin"
+]
+androidx-compose-material3 = [
+    #    "androidx-compose-material3-adaptive-navigation-suite",
+    #"androidx-compose-material3-window-size-class2",
+    "androidx-compose-material-icons-core",
+    "androidx-compose-material-icons-extended"
+]
+
+coil = [
+    "coil-compose",
+    "coil-network-ktor",
+    #"coil-gif",
+    #"coil-video"
+]
+kotlin-scripting = [
+    "kotlin-scripting-common",
+    "kotlin-scripting-jsr223",
+    "kotlin-scripting-dependencies-maven",
+    "kotlin-scripting-dependencies",
+    "kotlin-scripting-jvm-host",
+    "kotlin-scripting-jvm"
+]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+compose-hot-reload = { id = "org.jetbrains.compose.hot-reload", version.ref = "compose-hot-reload" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

@@ -1,0 +1,3 @@
+[submodule "ciyin-base"]
+	path = ciyin-base
+	url = https://github.com/Ci-Yin/ciyin-base.git
