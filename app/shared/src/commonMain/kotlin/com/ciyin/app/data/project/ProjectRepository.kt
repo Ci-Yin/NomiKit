@@ -9,10 +9,8 @@ import kotlinx.coroutines.flow.map
  *
  * kotlin类作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/18 下午10:35
- * @version: 1.0
  */
 class ProjectRepository(
     private val dataStore: ProjectDataStorage

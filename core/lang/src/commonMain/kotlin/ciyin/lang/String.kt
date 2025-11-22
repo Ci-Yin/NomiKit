@@ -7,10 +7,8 @@ import org.intellij.lang.annotations.Language
  *
  * 字符串处理相关扩展函数
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/8/24 下午11:15
- * @version: 1.0
  */
 
 

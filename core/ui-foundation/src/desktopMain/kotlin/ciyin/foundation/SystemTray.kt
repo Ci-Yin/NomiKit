@@ -14,10 +14,8 @@ import java.awt.TrayIcon
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2025/10/26 16:09
- * @version: 1.0
  */
 
 

@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,10 +23,8 @@ import ciyin.foundation.thenIf
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/21 下午6:05
- * @version: 1.0
  */
 
 /**

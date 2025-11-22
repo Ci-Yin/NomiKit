@@ -19,7 +19,11 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -28,7 +32,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.debugInspectorInfo
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFold
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
@@ -41,10 +49,8 @@ import kotlinx.coroutines.launch
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/9/8 上午4:44
- * @version: 1.0
  */
 
 internal val HorizontalTextPadding = 16.dp

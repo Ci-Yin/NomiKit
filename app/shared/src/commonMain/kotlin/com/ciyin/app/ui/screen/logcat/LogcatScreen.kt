@@ -39,10 +39,8 @@ import rpa.app.shared.generated.resources.logcat_screen_title
  *
  * 日志查看界面
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/11 上午12:29
- * @version: 1.0
  */
 
 /**

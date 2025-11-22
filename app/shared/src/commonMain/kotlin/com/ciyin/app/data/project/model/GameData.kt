@@ -6,10 +6,8 @@ import kotlinx.serialization.Serializable
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/19 下午9:09
- * @version: 1.0
  */
 
 const val GAME_TYPE_GENSHIN = 0

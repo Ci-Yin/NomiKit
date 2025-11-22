@@ -3,17 +3,21 @@ package ciyin.io
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.yield
-import okio.*
+import okio.Buffer
+import okio.BufferedSink
+import okio.BufferedSource
+import okio.HashingSink
+import okio.Sink
+import okio.Source
+import okio.buffer
 
 
 /**
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2025/11/1 14:00
- * @version: 1.0
  */
 
 /**

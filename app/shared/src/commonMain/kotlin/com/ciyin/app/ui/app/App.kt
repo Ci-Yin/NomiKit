@@ -32,10 +32,8 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
  *
  * kotlin文件作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/23 下午5:52
- * @version: 1.0
  */
 
 @Composable

@@ -31,10 +31,8 @@ import rpa.app.shared.generated.resources.app_name
  *
  * kotlin类作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/19 上午4:02
- * @version: 1.0
  */
 class TimerViewModel : ViewModel() {
 

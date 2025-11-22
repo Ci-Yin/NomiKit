@@ -5,10 +5,8 @@ package com.ciyin.app.domain.script.usecase
  *
  * kotlin类作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2025/11/4 15:59
- * @version: 1.0
  */
 sealed class ScriptError(open val message: String) {
     data object JarNotExist : ScriptError("Jar文件不存在")

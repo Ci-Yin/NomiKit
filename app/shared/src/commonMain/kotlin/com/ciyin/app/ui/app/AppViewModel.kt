@@ -33,10 +33,8 @@ import rpa.app.shared.generated.resources.nav_timer
  *
  * kotlin类作用描述
  *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/2 下午12:31
- * @version: 1.0
  */
 class AppViewModel(savedStateHandle: SavedStateHandle) :
     AbsMviViewModel<AppUiState, AppAction, AppEffect>(savedStateHandle), KoinComponent {
