@@ -6,6 +6,7 @@ import ciyin.foundation.savedstate.createSavedMutableStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -118,6 +119,19 @@ class MviStore<S : Any, A : Any> internal constructor(
         scope.launch {
             actionChannel.send(action)
         }
+    }
+
+    /**
+     * Triggers every time the state machine enters this state. The passed [flow] will be collected
+     * and any emission will be passed to [handler].
+     *
+     * The collection as well as any ongoing [handler] is cancelled when leaving this state.
+     */
+    fun <T> collectWhileInState(
+        flow: Flow<T>,
+        handler: suspend (item: T) -> Unit,
+    ) {
+        flow.onEach { item -> handler(item) }.launchIn(scope)
     }
 
     fun onEnter(handler: suspend () -> Unit) {

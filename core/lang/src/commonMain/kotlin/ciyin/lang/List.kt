@@ -113,9 +113,9 @@ fun <V> MutableList<V>.filter2(predicate: (V) -> Boolean) {
  * @param block 比较函数，默认为相等比较
  * @return 是否查询到
  */
-fun <V> Collection<V>.contains(
-    elements: Collection<V>,
-    block: (V, V) -> Boolean = { v1, v2 ->
+fun <V1, V2> Collection<V1>.contains(
+    elements: Collection<V2>,
+    block: (V1, V2) -> Boolean = { v1, v2 ->
         v1 == v2
     }
 ): Boolean {
