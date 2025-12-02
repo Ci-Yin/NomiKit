@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import ciyin.foundation.savedstate.createSavedMutableStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -109,15 +107,27 @@ class MviStore<S : Any, A : Any> internal constructor(
     val state: MutableStateFlow<S>,
     private val scope: CoroutineScope
 ) {
-
-    private val actionChannel = Channel<A>(Channel.BUFFERED)
-    private val actions = actionChannel.receiveAsFlow()
+    /**
+     * 使用 SharedFlow 来分发 Action，保证所有订阅者都能“看到”同一条 Action。
+     *
+     * 之前使用 Channel + receiveAsFlow 的实现会导致：
+     * - 多个 collector 之间会竞争消费同一个 Channel 中的元素；
+     * - 从而导致某些 Action 只会被某一个订阅者处理，而不是所有符合条件的订阅者都处理。
+     *
+     * 对于 MVI 的 Action 分发，一般期望是「广播」（publish-subscribe）语义，
+     * 因此这里改为 SharedFlow 以保证每个 on(...) 订阅都能独立匹配并处理同一条 Action。
+     */
+    private val actions = MutableSharedFlow<A>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     val snapshot: S get() = state.value
 
     val dispatchAction: (A) -> Unit = { action ->
         scope.launch {
-            actionChannel.send(action)
+            actions.emit(action)
         }
     }
 
