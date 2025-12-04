@@ -1,10 +1,10 @@
 package com.ciyin.app.di
 
+import ciyin.koin.runKoinBoot
 import com.ciyin.app.di.modules.ProjectModules
 import com.ciyin.app.di.modules.ScriptModules
 import com.ciyin.app.di.modules.SettingsModules
 import com.ciyin.app.di.modules.TimedModules
-import com.yy.myuko.component.koin.ciyin.koin.runKoinBoot
 
 
 /**

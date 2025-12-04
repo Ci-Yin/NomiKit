@@ -1,11 +1,11 @@
 package com.ciyin.app.di.modules
 
+import ciyin.koin.KoinBootInitializer
 import com.ciyin.app.data.project.di.ProjectDataModule
 import com.ciyin.app.data.setting.di.SettingsDataModule
 import com.ciyin.app.domain.project.di.ProjectDomainModule
 import com.ciyin.app.domain.script.di.ScriptDomainModule
 import com.ciyin.app.domain.timed.di.TimedDomainModule
-import com.yy.myuko.component.koin.ciyin.koin.KoinBootInitializer
 
 
 /**
