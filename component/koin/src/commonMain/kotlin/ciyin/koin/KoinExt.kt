@@ -6,8 +6,11 @@ package ciyin.koin
 import org.koin.core.Koin
 import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.definition.Kind
+import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier.TypeQualifier
+import org.koin.mp.KoinPlatform.getKoin
+import org.koin.mp.KoinPlatformTools
 
 
 fun Koin.hasInstance(vararg qualifiers: Qualifier): Boolean =
@@ -28,3 +31,15 @@ fun Koin.hasProperties(vararg keys: String): Boolean = keys.all { getProperty<An
 
 fun Koin.eqProperty(key: String, value: Any): Boolean =
     getProperty<Any>(key)?.toString() == value.toString()
+
+/**
+ * Koin 的 Lazy inject 实例
+ * @param qualifier
+ * @param mode LazyThreadSafetyMode
+ * @param parameters
+ */
+inline fun <reified T : Any> inject(
+    qualifier: Qualifier? = null,
+    mode: LazyThreadSafetyMode = KoinPlatformTools.defaultLazyMode(),
+    noinline parameters: ParametersDefinition? = null,
+): Lazy<T> = lazy(mode) { getKoin().get<T>(qualifier, parameters) }
