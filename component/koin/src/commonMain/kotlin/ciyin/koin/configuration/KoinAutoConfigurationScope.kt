@@ -1,6 +1,6 @@
-package com.yy.myuko.component.koin.ciyin.koin.configuration
+package ciyin.koin.configuration
 
-import com.yy.myuko.component.koin.ciyin.koin.getPropInstance
+import ciyin.koin.getPropInstance
 import org.koin.core.Koin
 import org.koin.core.module.Module
 import org.koin.dsl.ModuleDeclaration

@@ -1,12 +1,12 @@
 package com.yy.myuko.component.koin.test
 
-import com.yy.myuko.component.koin.ciyin.koin.configuration.koinAutoConfiguration
-import com.yy.myuko.component.koin.ciyin.koin.configuration.onEqProperty
-import com.yy.myuko.component.koin.ciyin.koin.configuration.onExistInstance
-import com.yy.myuko.component.koin.ciyin.koin.configuration.onExistProperties
-import com.yy.myuko.component.koin.ciyin.koin.configuration.onMissInstances
-import com.yy.myuko.component.koin.ciyin.koin.configuration.onMissProperties
-import com.yy.myuko.component.koin.ciyin.koin.runKoinBoot
+import ciyin.koin.configuration.koinAutoConfiguration
+import ciyin.koin.configuration.onEqProperty
+import ciyin.koin.configuration.onExistInstance
+import ciyin.koin.configuration.onExistProperties
+import ciyin.koin.configuration.onMissInstances
+import ciyin.koin.configuration.onMissProperties
+import ciyin.koin.runKoinBoot
 import kotlinx.serialization.Serializable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test

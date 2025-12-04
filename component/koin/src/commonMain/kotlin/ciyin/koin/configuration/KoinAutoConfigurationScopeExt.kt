@@ -1,8 +1,8 @@
-package com.yy.myuko.component.koin.ciyin.koin.configuration
+package ciyin.koin.configuration
 
-import com.yy.myuko.component.koin.ciyin.koin.eqProperty
-import com.yy.myuko.component.koin.ciyin.koin.hasInstance
-import com.yy.myuko.component.koin.ciyin.koin.hasProperties
+import ciyin.koin.eqProperty
+import ciyin.koin.hasInstance
+import ciyin.koin.hasProperties
 import org.koin.core.qualifier.Qualifier
 import org.koin.core.qualifier._q
 

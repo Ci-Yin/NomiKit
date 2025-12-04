@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.ciyin.koin.configuration
+package ciyin.koin.configuration
 
 
 object KoinBootQualifiers

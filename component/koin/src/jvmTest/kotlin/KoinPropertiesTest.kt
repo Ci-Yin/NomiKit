@@ -1,10 +1,10 @@
 package com.yy.myuko.component.koin.test
 
-import com.yy.myuko.component.koin.ciyin.koin.KoinPropInstance
-import com.yy.myuko.component.koin.ciyin.koin.KoinProperties
-import com.yy.myuko.component.koin.ciyin.koin.asPropInstance
-import com.yy.myuko.component.koin.ciyin.koin.property
-import com.yy.myuko.component.koin.ciyin.koin.runKoinBoot
+import ciyin.koin.KoinPropInstance
+import ciyin.koin.KoinProperties
+import ciyin.koin.asPropInstance
+import ciyin.koin.property
+import ciyin.koin.runKoinBoot
 import org.koin.core.component.KoinComponent
 import kotlin.test.Test
 import kotlin.test.assertEquals

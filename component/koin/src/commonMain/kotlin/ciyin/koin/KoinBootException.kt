@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
 class KoinBootException(
     message: String? = null,

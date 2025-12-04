@@ -1,8 +1,8 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
+import ciyin.koin.configuration.KoinAutoConfiguration
+import ciyin.koin.configuration.KoinAutoConfigurationScope
 import ciyin.platform.thisLogger
-import com.yy.myuko.component.koin.ciyin.koin.configuration.KoinAutoConfiguration
-import com.yy.myuko.component.koin.ciyin.koin.configuration.KoinAutoConfigurationScope
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module

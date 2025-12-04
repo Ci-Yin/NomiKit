@@ -1,6 +1,6 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
-import com.yy.myuko.component.koin.ciyin.koin.configuration.KoinAutoConfiguration
+import ciyin.koin.configuration.KoinAutoConfiguration
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin

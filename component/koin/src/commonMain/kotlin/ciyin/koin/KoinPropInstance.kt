@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
 import kotlinx.serialization.MetaSerializable
 

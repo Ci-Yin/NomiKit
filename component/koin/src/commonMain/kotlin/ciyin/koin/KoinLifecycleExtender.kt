@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
 // 生命周期阶段枚举
 enum class KoinPhase {

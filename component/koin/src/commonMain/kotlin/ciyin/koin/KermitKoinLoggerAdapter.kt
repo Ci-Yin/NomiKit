@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.ciyin.koin
+package ciyin.koin
 
 import org.koin.core.logger.Level
 import org.koin.core.logger.Logger
