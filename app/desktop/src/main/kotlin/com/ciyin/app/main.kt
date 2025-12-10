@@ -14,26 +14,16 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import ciyin.foundation.SystemTray
 import ciyin.foundation.currentWindowDpSize
-import ciyin.jar.getScriptProjectClass
-import ciyin.platform.AppArguments
-import ciyin.platform.parseAppArguments
-import com.ciyin.app.api.Platform
-import com.ciyin.app.api.model.ScriptArgs
-import com.ciyin.app.api.model.toKeyValueArgs
 import com.ciyin.app.application.CommonApplication
 import com.ciyin.app.application.DesktopApplication
-import com.ciyin.app.data.project.datasource.DataStoreManager.settingLocalData2
-import com.ciyin.app.domain.script.JarScriptManager
-import com.ciyin.app.domain.timed.runTimerTask
 import com.ciyin.app.ui.app.App
-import kotlinx.coroutines.runBlocking
+import nomikit.app.desktop.generated.resources.Res
+import nomikit.app.desktop.generated.resources.app_name
+import nomikit.app.desktop.generated.resources.ic_launcher
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import rpa.app.desktop.generated.resources.Res
-import rpa.app.desktop.generated.resources.app_name
-import rpa.app.desktop.generated.resources.ic_launcher
 
 
 @Preview
@@ -50,17 +40,6 @@ fun main(args: Array<String>) {
     desktopApplication.onCreate()
     commonApplication.onCreate()
 
-    // 如果参数不为空，仅仅执行cil
-    if (args.isNotEmpty()) {
-        val arguments = parseAppArguments(args)
-        if (arguments.timing) {
-            runTimerTask()
-        } else {
-            runJarScriptWithArguments(arguments)
-        }
-        return
-    }
-
     application {
 
         // 主窗口的状态
@@ -69,7 +48,7 @@ fun main(args: Array<String>) {
             size = DpSize(1000.dp, 800.dp),
 //            size = DpSize(450.dp, 1000.dp),
         )
-        var isVisible by remember { mutableStateOf(settingLocalData2.data.startInTray.not()) }
+        var isVisible by remember { mutableStateOf(true) }
 
         currentWindowDpSize = state.size
 
@@ -104,22 +83,6 @@ fun main(args: Array<String>) {
 
     }
 
-}
-
-
-private fun runJarScriptWithArguments(arguments: AppArguments) = runBlocking {
-    JarScriptManager.run(
-        jarPath = arguments.jarPath,
-        args = ScriptArgs(
-            driverPath = arguments.windowsDriverPath.ifBlank { settingLocalData2.data.windowsDriverPath },
-            scriptProjectClass = arguments.scriptProjectClass.ifBlank {
-                getScriptProjectClass(arguments.jarPath)
-            },
-            platform = Platform.Windows.ordinal,
-        ).toKeyValueArgs()
-    )
-
-    JarScriptManager.wait(arguments.jarPath)
 }
 
 

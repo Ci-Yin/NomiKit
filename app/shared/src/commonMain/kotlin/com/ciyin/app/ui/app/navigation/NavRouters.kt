@@ -9,10 +9,4 @@ sealed interface NavRouter
 object MainRouter : NavRouter
 
 @Serializable
-object TimerRouter : NavRouter
-
-@Serializable
-object LogcatRouter : NavRouter
-
-@Serializable
 object SettingsRouter : NavRouter

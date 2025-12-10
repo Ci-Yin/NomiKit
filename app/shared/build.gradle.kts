@@ -38,7 +38,6 @@ commonMainDependencies {
 }
 
 androidMainDependencies {
-    implementation("androidx.compose.ui:ui-util-android:1.8.2")
     implementation(compose.preview)
     implementation(libs.androidx.activity.compose)
 }
@@ -50,7 +49,4 @@ desktopMainDependencies {
     implementation(libs.kotlinx.coroutines.swing)
     implementation(kotlin("script-runtime"))
     implementation(libs.bundles.kotlin.scripting)
-    configurations.all {
-        exclude(group = "androidx.compose.ui", module = "ui-util")
-    }
 }

@@ -8,22 +8,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ciyin.foundation.viewmodel.viewModel
-import com.ciyin.app.ui.app.navigation.LogcatRouter
 import com.ciyin.app.ui.app.navigation.MainRouter
-import com.ciyin.app.ui.app.navigation.NavId.Logcat
 import com.ciyin.app.ui.app.navigation.NavId.Main
 import com.ciyin.app.ui.app.navigation.NavId.Null
 import com.ciyin.app.ui.app.navigation.NavId.Settings
 import com.ciyin.app.ui.app.navigation.NavId.Theme
-import com.ciyin.app.ui.app.navigation.NavId.Timer
 import com.ciyin.app.ui.app.navigation.NavigationBar
 import com.ciyin.app.ui.app.navigation.SettingsRouter
-import com.ciyin.app.ui.app.navigation.TimerRouter
 import com.ciyin.app.ui.app.navigation.navigateTo
-import com.ciyin.app.ui.screen.logcat.LogcatScreen
 import com.ciyin.app.ui.screen.main.MainScreen
-import com.ciyin.app.ui.screen.settings.SettingsScreen
-import com.ciyin.app.ui.screen.timer.TimerScreen
 import com.ciyin.app.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
@@ -57,8 +50,6 @@ fun App() {
                 viewModel(AppAction.NavigateItemClick(nav))
                 when (nav.id) {
                     Main -> appNavController.navigateTo(MainRouter)
-                    Timer -> appNavController.navigateTo(TimerRouter)
-                    Logcat -> appNavController.navigateTo(LogcatRouter)
                     Theme -> {}
                     Settings -> appNavController.navigateTo(SettingsRouter)
                     Null -> {}
@@ -67,12 +58,8 @@ fun App() {
         ) {
             NavHost(appNavController, state.startRoute) {
                 composable<MainRouter> { MainScreen() }
-                composable<TimerRouter> { TimerScreen() }
-                composable<LogcatRouter> { LogcatScreen() }
-                composable<SettingsRouter> { SettingsScreen() }
             }
         }
-        AppDialog()
     }
 
 }

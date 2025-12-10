@@ -5,11 +5,8 @@
 
 package ciyin.script
 
-import ciyin.platform.Log
 import ciyin.script.impl.IvyResolver
 import ciyin.script.impl.resolveFromAnnotations
-import com.ciyin.aibote.sdk.Aibote2
-import com.ciyin.aibote.sdk.WinBot
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.net.JarURLConnection
@@ -105,8 +102,6 @@ class SimpleMainKtsScriptDefinition : ScriptCompilationConfiguration(
             }
 
 
-            dependenciesFromClassContext(Log::class, wholeClasspath = true)
-            dependenciesFromClassContext(Aibote2::class, wholeClasspath = true)
 //            dependenciesFromClassContext(ScriptManager::class, wholeClasspath = true)
 
 
@@ -129,7 +124,7 @@ class SimpleMainKtsScriptDefinition : ScriptCompilationConfiguration(
             beforeCompiling { context ->
                 ResultWithDiagnostics.Success(
                     ScriptCompilationConfiguration(context.compilationConfiguration) {
-                        providedProperties("WinBot" to WinBot::class)
+//                        providedProperties("WinBot" to WinBot::class)
                     }
                 )
             }

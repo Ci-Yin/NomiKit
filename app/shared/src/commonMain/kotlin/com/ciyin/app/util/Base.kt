@@ -2,10 +2,6 @@ package com.ciyin.app.util
 
 import ciyin.lang.containsOrDefault
 import ciyin.lang.match
-import ciyin.platform.Log
-import ciyin.serialization.json.fromJson
-import ciyin.serialization.json.toJsonStr
-import com.ciyin.app.data.project.model.Game
 import org.intellij.lang.annotations.Language
 
 
@@ -16,48 +12,6 @@ import org.intellij.lang.annotations.Language
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/1 下午3:22
  */
-
-val ImageExtensions =
-    listOf(
-        "png",
-        "jpg",
-        "jpeg",
-        "gif",
-        "bmp",
-        "ico",
-        "svg",
-        "webp",
-        "psd",
-        "ai",
-        "eps",
-        "tiff",
-        "raw",
-        "svgz"
-    )
-
-fun log(vararg logs: Any?) = Log.debug("日志打印", *logs)
-
-inline fun <reified T> Any.depthCopy(): T = toJsonStr().fromJson<T>()
-
-fun withIncrementName2(games: List<Game>, game: Game): String {
-    if (!games.any { it.preset == game.preset }) {
-        return game.preset
-    }
-    val pattern = "\\((\\d*)\\)$"
-    val basePreset = game.preset.replace(Regex(pattern), "")
-    val preset = games.filter { it.preset.contains(basePreset) }
-        .map { it.preset }
-        .maxBy { it.match("\\d+").toIntOrNull() ?: 0 }
-        .replace(Regex(pattern)) {
-            "(${(it.groupValues.getOrElse(1) { "0" }.toInt() + 1)})"
-        }
-        .containsOrDefault(pattern) { "${game.preset} (1)" }
-    return preset
-}
-
-fun withIncrementName(games: List<Game>, game: Game): String {
-    return game.preset.withIncrementName(games) { it.preset }
-}
 
 /**
  * 该函数用于在给定列表中找到或生成一个不重复的名称

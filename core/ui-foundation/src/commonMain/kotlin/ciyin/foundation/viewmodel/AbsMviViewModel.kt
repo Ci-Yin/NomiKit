@@ -3,19 +3,12 @@ package ciyin.foundation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import ciyin.foundation.savedstate.createSavedMutableStateFlow
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
 
 /**
  * 表示一个抽象的 Model-View-Intent (MVI) 架构的 ViewModel 基类。
@@ -33,25 +26,25 @@ abstract class AbsMviViewModel<S : Any, A : Any, E : Any>(
 
     protected abstract val initState: S
 
-    private val stateHandler by lazy {
+    private val stateMachine by lazy {
         val initialValue = initState
         val stateFlow = savedStateHandle?.createSavedMutableStateFlow(
             scope = viewModelScope,
             key = "${this::class.qualifiedName}.state",
             initialValue = initialValue
         ) ?: MutableStateFlow(initialValue)
-        MviStore<S, A>(
+        SingleStateMachine<S, A>(
             state = stateFlow,
             scope = viewModelScope
         ).apply { spec() }
     }
 
     // 对外只读状态
-    override val state: StateFlow<S> by lazy { stateHandler.state.asStateFlow() }
+    override val state: StateFlow<S> by lazy { stateMachine.state.asStateFlow() }
 
     protected val stateValue: S get() = state.value
 
-    override val dispatchAction: (A) -> Unit get() = stateHandler.dispatchAction
+    override val dispatchAction: (A) -> Unit get() = stateMachine::action
 
     /**
      * 表示一个可变的副作用流 (MutableSharedFlow)，此变量用于在 ViewModel 内部存储和管理副作用事件。
@@ -95,85 +88,15 @@ abstract class AbsMviViewModel<S : Any, A : Any, E : Any>(
      */
     override fun tryPoseEffect(effect: E): Boolean = _sideEffects.tryEmit(effect)
 
+    @SsmDsl
+    suspend fun SingleStateMachine<S, A>.effect(effect: E) {
+        poseEffect(effect)
+    }
+
     /**
      * 配置状态机的规范内容。用于定义状态机的状态转换逻辑。
      */
-    abstract fun MviStore<S, A>.spec()
+    abstract fun SingleStateMachine<S, A>.spec()
 
 }
 
-@MviDsl
-class MviStore<S : Any, A : Any> internal constructor(
-    val state: MutableStateFlow<S>,
-    private val scope: CoroutineScope
-) {
-    /**
-     * 使用 SharedFlow 来分发 Action，保证所有订阅者都能“看到”同一条 Action。
-     *
-     * 之前使用 Channel + receiveAsFlow 的实现会导致：
-     * - 多个 collector 之间会竞争消费同一个 Channel 中的元素；
-     * - 从而导致某些 Action 只会被某一个订阅者处理，而不是所有符合条件的订阅者都处理。
-     *
-     * 对于 MVI 的 Action 分发，一般期望是「广播」（publish-subscribe）语义，
-     * 因此这里改为 SharedFlow 以保证每个 on(...) 订阅都能独立匹配并处理同一条 Action。
-     */
-    private val actions = MutableSharedFlow<A>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    val snapshot: S get() = state.value
-
-    val dispatchAction: (A) -> Unit = { action ->
-        scope.launch {
-            actions.emit(action)
-        }
-    }
-
-    /**
-     * Triggers every time the state machine enters this state. The passed [flow] will be collected
-     * and any emission will be passed to [handler].
-     *
-     * The collection as well as any ongoing [handler] is cancelled when leaving this state.
-     */
-    fun <T> collectWhileInState(
-        flow: Flow<T>,
-        handler: suspend (item: T) -> Unit,
-    ) {
-        flow.onEach { item -> handler(item) }.launchIn(scope)
-    }
-
-    fun onEnter(handler: suspend () -> Unit) {
-        scope.launch { handler() }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <SubAction : A> on(
-        actionClass: KClass<SubAction>,
-        handler: suspend (action: SubAction) -> Unit,
-    ) {
-        actions.filter { action ->
-            actionClass.isInstance(action)
-        }.onEach { action ->
-            handler(action as SubAction)
-        }.launchIn(scope)
-    }
-
-    inline fun <reified SubAction : A> on(
-        noinline handler: suspend (action: SubAction) -> Unit,
-    ) = on(SubAction::class, handler)
-
-    /**
-     * 基于当前状态做不可变更新。
-     * 注意：transform 应该是快速且纯函数，避免重活。
-     */
-    fun update(transform: S.() -> S) {
-        state.value = transform(state.value)
-    }
-
-}
-
-@DslMarker
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
-internal annotation class MviDsl

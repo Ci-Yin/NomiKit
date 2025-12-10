@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import com.ciyin.app.ui.theme.border
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
@@ -52,7 +51,7 @@ fun MenuChip(
     onSelectedChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = MaterialTheme.shapes.border,
+    shape: Shape = MaterialTheme.shapes.small,
     border: BorderStroke? = FilterChipDefaults.filterChipBorder(enabled, false),
 ) {
     var expanded by remember { mutableStateOf(false) }

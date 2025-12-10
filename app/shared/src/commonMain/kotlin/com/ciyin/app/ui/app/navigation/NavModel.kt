@@ -5,10 +5,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.ciyin.app.ui.theme.iconpack.Home
 import com.ciyin.app.ui.theme.iconpack.IconPack
 import com.ciyin.app.ui.theme.iconpack.LightMode
-import com.ciyin.app.ui.theme.iconpack.Logcat
 import com.ciyin.app.ui.theme.iconpack.Null
 import com.ciyin.app.ui.theme.iconpack.Settings
-import com.ciyin.app.ui.theme.iconpack.Timing
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -36,8 +34,6 @@ data class NavUiItem(
 
 enum class NavId {
     Main,
-    Timer,
-    Logcat,
     Null,
     Theme,
     Settings,
@@ -60,8 +56,6 @@ private object ImageVectorAsNameSerializer : KSerializer<ImageVector> {
     override fun deserialize(decoder: Decoder): ImageVector {
         return when (decoder.decodeString()) {
             "Home" -> IconPack.Home
-            "Timing" -> IconPack.Timing
-            "Logcat" -> IconPack.Logcat
             "LightMode" -> IconPack.LightMode
             "Settings" -> IconPack.Settings
             else -> IconPack.Null
