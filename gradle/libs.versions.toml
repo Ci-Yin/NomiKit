@@ -25,7 +25,8 @@ ivy = "2.5.2"
 jnaPlatform = "5.18.0"
 kotlinxSerializationJson = "1.7.3"
 ktor-client = "2.3.12"
-koin = "4.1.0" # https://github.com/InsertKoinIO/koin/releases
+koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
+koin-annotations = "2.3.1"  # Stable version
 junit = "4.13.2"
 kotlinx-coroutines = "1.10.2"
 ktorNetwork = "2.3.12"
@@ -136,10 +137,10 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 
 # Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-android = { module = "io.inserrt-koin:koin-android", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
-koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin" }
-koin-ksp-compiler = { module = "io.insert-koin:ksp-compiler", version.ref = "koin" }
+koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
+koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-annotations" }
 
 # FileKit
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }

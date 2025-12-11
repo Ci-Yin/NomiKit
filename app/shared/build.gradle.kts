@@ -14,6 +14,9 @@ android {
     namespace = "com.ciyin.app"
 }
 
+kspCommonMain(libs.koin.ksp.compiler)
+kspPlatformMain(libs.koin.ksp.compiler)
+
 commonMainDependencies {
 
     implementation(compose.components.resources)

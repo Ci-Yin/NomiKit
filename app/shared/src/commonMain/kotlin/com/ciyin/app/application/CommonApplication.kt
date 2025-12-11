@@ -3,7 +3,7 @@ package com.ciyin.app.application
 
 import ciyin.platform.Context
 import ciyin.platform.EmptyContext
-import com.ciyin.app.di.KoinManager
+import com.ciyin.app.di.initKoin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,7 +21,7 @@ class CommonApplication(
 
     /** 应用初始化入口（类似 Android 的 onCreate） */
     override fun onCreate() {
-        KoinManager.init()
+        initKoin()
     }
 
     /** 应用关闭时调用 */
