@@ -88,7 +88,7 @@ abstract class AbsMviViewModel<S : Any, A : Any, E : Any>(
      */
     override fun tryPoseEffect(effect: E): Boolean = _sideEffects.tryEmit(effect)
 
-    @SsmDsl
+    @SingleStateMachineDsl
     suspend fun SingleStateMachine<S, A>.effect(effect: E) {
         poseEffect(effect)
     }

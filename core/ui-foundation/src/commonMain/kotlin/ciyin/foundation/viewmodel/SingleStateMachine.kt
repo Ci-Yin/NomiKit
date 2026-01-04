@@ -9,10 +9,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
-@SsmDsl
+@SingleStateMachineDsl
 class SingleStateMachine<S : Any, A : Any>(
     val state: MutableStateFlow<S>,
     private val scope: CoroutineScope
@@ -39,7 +40,7 @@ class SingleStateMachine<S : Any, A : Any>(
 
     fun action(action: A) {
         scope.launch {
-            logger.i { "dispatchAction $action" }
+            logger.i { "dispatchAction ${action::class.qualifiedName} -> $action" }
             actions.emit(action)
         }
     }
@@ -81,11 +82,11 @@ class SingleStateMachine<S : Any, A : Any>(
      * 注意：transform 应该是快速且纯函数，避免重活。
      */
     fun update(transform: S.() -> S) {
-        state.value = transform(state.value)
+        state.update(transform)
     }
 
 }
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
-internal annotation class SsmDsl
+internal annotation class SingleStateMachineDsl
