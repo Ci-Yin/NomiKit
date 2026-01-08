@@ -1,8 +1,8 @@
 package com.ciyin.app.di
 
-import com.ciyin.app.di.modules.AppModule
-import org.koin.core.context.startKoin
-import org.koin.ksp.generated.module
+import ciyin.koin.runKoinBoot
+import com.ciyin.app.di.modules.MainModules
+import com.ciyin.app.di.modules.SettingsModules
 
 
 /**
@@ -14,7 +14,8 @@ import org.koin.ksp.generated.module
  */
 
 fun initKoin() {
-    startKoin {
-        modules(AppModule().module)
+    runKoinBoot {
+        MainModules()
+        SettingsModules()
     }
 }

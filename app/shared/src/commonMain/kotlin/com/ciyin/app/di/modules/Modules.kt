@@ -1,7 +1,6 @@
 package com.ciyin.app.di.modules
 
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Module
+import ciyin.koin.KoinBootInitializer
 
 
 /**
@@ -13,6 +12,10 @@ import org.koin.core.annotation.Module
  */
 
 
-@Module
-@ComponentScan
-class AppModule
+val MainModules: KoinBootInitializer = {
+//    modules(MainDomainModule)
+}
+
+val SettingsModules: KoinBootInitializer = {
+//    modules(SettingsDataModule)
+}

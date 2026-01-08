@@ -6,7 +6,6 @@ plugins {
 
 commonMainDependencies {
     api(libs.koin.core)
-    api(libs.koin.annotations)
     api(projects.core.serialization)
 }
 

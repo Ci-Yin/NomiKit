@@ -11,11 +11,8 @@ plugins {
 }
 
 android {
-    namespace = "com.ciyin.app"
+    namespace = "com.ciyin.app.shared"
 }
-
-kspCommonMain(libs.koin.ksp.compiler)
-kspPlatformMain(libs.koin.ksp.compiler)
 
 commonMainDependencies {
 
