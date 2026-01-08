@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Rpa</string>
+    <string name="app_name">NomiKit</string>
 
     <!-- Navigation -->
     <string name="nav_home">主页</string>
