@@ -12,8 +12,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import ciyin.foundation.SystemTray
-import ciyin.foundation.currentWindowDpSize
+import ciyin.ui.foundation.currentWindowDpSize
+import ciyin.ui.foundation.widget.SystemTray
 import com.ciyin.app.application.CommonApplication
 import com.ciyin.app.application.DesktopApplication
 import com.ciyin.app.ui.app.App

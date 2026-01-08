@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import ciyin.foundation.thenIf
+import ciyin.ui.foundation.extension.thenIf
 import com.ciyin.app.ui.theme.AppTheme
 
 

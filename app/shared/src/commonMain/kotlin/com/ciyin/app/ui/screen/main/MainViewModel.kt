@@ -1,7 +1,7 @@
 package com.ciyin.app.ui.screen.main
 
-import ciyin.foundation.viewmodel.AbsMviViewModel
-import ciyin.foundation.viewmodel.SingleStateMachine
+import ciyin.ui.foundation.viewmodel.AbsMviViewModel
+import ciyin.ui.foundation.viewmodel.SingleStateMachine
 import com.ciyin.app.ui.screen.main.MainAction.ItemAction
 import org.koin.core.component.KoinComponent
 

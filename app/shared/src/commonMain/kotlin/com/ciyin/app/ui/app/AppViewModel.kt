@@ -1,8 +1,8 @@
 package com.ciyin.app.ui.app
 
 import androidx.lifecycle.SavedStateHandle
-import ciyin.foundation.viewmodel.AbsMviViewModel
-import ciyin.foundation.viewmodel.SingleStateMachine
+import ciyin.ui.foundation.viewmodel.AbsMviViewModel
+import ciyin.ui.foundation.viewmodel.SingleStateMachine
 import com.ciyin.app.ui.app.AppAction.NavigateItemClick
 import com.ciyin.app.ui.app.navigation.MainRouter
 import com.ciyin.app.ui.app.navigation.NavId.Main

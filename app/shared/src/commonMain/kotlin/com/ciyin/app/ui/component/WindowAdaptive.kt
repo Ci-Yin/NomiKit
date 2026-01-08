@@ -1,8 +1,8 @@
 package com.ciyin.app.ui.component
 
 import androidx.compose.runtime.Composable
-import ciyin.foundation.WindowSize
-import ciyin.foundation.currentWindowWidth
+import ciyin.ui.foundation.WindowSize
+import ciyin.ui.foundation.currentWindowWidth
 
 
 val windowAdaptive: WindowType

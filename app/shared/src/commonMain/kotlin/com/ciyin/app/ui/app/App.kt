@@ -7,7 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import ciyin.foundation.viewmodel.viewModel
+import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.ui.app.navigation.MainRouter
 import com.ciyin.app.ui.app.navigation.NavId.Main
 import com.ciyin.app.ui.app.navigation.NavId.Null

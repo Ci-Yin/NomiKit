@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ciyin.foundation.viewmodel.viewModel
+import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.ui.component.AppPreview
 import com.ciyin.app.ui.component.Screen
 import org.jetbrains.compose.ui.tooling.preview.AppPreview

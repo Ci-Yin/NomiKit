@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ciyin.foundation.thenIf
+import ciyin.ui.foundation.extension.thenIf
 import com.ciyin.app.ui.theme.Content
 import com.ciyin.app.ui.theme.iconpack.ArrowRight
 import com.ciyin.app.ui.theme.iconpack.IconPack
