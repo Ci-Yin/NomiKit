@@ -77,7 +77,7 @@ fun <S : ScrollableState> Modifier.onScrollStateChanged(
                     PointerEventType.Press -> {
                         logger.d { "手势按下" }
                         currentState = ScrollStatus.Dragging
-                        onStateChanged(currentState, Direction.Init, scrollState)
+                        onStateChanged(currentState, Direction.Top, scrollState)
                     }
 
                     PointerEventType.Move -> {

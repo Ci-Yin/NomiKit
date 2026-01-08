@@ -24,11 +24,11 @@ commonMainDependencies {
     api(libs.androidx.lifecycle.viewmodel)
     api(libs.androidx.lifecycle.viewmodel.compose)
     api(libs.androidx.lifecycle.runtime.compose)
-    api(libs.androidx.navigation.compose)
-    api(libs.androidx.navigation.runtime)
-    api(libs.freeletics.flowredux2)
-    api(libs.bundles.androidx.compose.material3)
+    api(libs.bundles.compose)
+    api(libs.bundles.navigation)
+    api(libs.bundles.material3)
     api(libs.bundles.coil)
+    api(libs.freeletics.flowredux2)
 
     api(projects.core.uiPreview)
 }

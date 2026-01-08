@@ -77,6 +77,7 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-ui-tooling-preview-desktop = { group = "androidx.compose.ui", name = "ui-tooling-preview-desktop", version.ref = "uiToolingPreviewDesktop" }
 androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
 androidx-compose-material3-window-size-class2 = { group = "androidx.compose.material3", name = "material3-window-size-class" }
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
 androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "androidx-navigation" }
@@ -155,28 +156,42 @@ arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
 arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
 
 [bundles]
+
 arrow = [
     "arrow-core",
     "arrow-functions",
     "arrow-optics",
     #    "arrow-optics-ksp"
 ]
+
 filekit = [
     "filekit-core",
     "filekit-dialogs",
     "filekit-dialogs-compose",
     #    "filekit-coil"
 ]
+
 rxjava = [
     "rxjava",
     "rxkotlin"
 ]
-androidx-compose-material3 = [
-    #    "androidx-compose-material3-adaptive-navigation-suite",
+
+compose = [
+    "compose-ui-backhandler",
+]
+
+navigation = [
+    "androidx-navigation-compose",
+    "androidx-navigation-runtime",
+]
+
+material3 = [
+    #"androidx-compose-material3-adaptive-navigation-suite",
     #"androidx-compose-material3-window-size-class2",
     "androidx-compose-material-icons-core",
     "androidx-compose-material-icons-extended"
 ]
+
 
 coil = [
     "coil-compose",
@@ -184,6 +199,7 @@ coil = [
     #"coil-gif",
     #"coil-video"
 ]
+
 kotlin-scripting = [
     "kotlin-scripting-common",
     "kotlin-scripting-jsr223",
