@@ -29,9 +29,9 @@ fun SurfaceBox(
     tonalElevation: Dp = 0.dp,
     shadowElevation: Dp = 0.dp,
     border: BorderStroke? = null,
-    contentAlignment: Alignment = Alignment.Companion.TopStart,
+    contentAlignment: Alignment = Alignment.TopStart,
     propagateMinConstraints: Boolean = false,
-    content: @Composable() (BoxScope.() -> Unit),
+    content: @Composable (BoxScope.() -> Unit),
 ) = Surface(
     modifier = modifier,
     shape = shape,
@@ -60,7 +60,7 @@ fun SurfaceColumn(
     border: BorderStroke? = null,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable() (ColumnScope.() -> Unit),
+    content: @Composable (ColumnScope.() -> Unit),
 ) = Surface(
     modifier = modifier,
     shape = shape,
@@ -89,7 +89,7 @@ fun SurfaceRow(
     border: BorderStroke? = null,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     verticalAlignment: Alignment.Vertical = Alignment.Top,
-    content: @Composable() (RowScope.() -> Unit),
+    content: @Composable (RowScope.() -> Unit),
 ) = Surface(
     modifier = modifier,
     shape = shape,

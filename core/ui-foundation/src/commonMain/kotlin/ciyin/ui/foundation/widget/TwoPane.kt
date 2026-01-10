@@ -38,40 +38,7 @@ import androidx.compose.ui.unit.dp
 import ciyin.ui.foundation.extension.thenIf
 import ciyin.ui.foundation.unit.toDp
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.ranges.coerceIn
 
-
-/**
- *
- * kotlin文件作用描述
- *
- * @author 次音(CiYin) QQ:2964221430
- * @github <a href="https://github.com/Ci-Yin">CiYin</a>
- * @since 2024/9/4 上午2:27
- * @version: 1.0
- */
-
-@Preview
-@Composable
-private fun TwoPanePreview() {
-    TwoPane(
-        gapWidth = 15.dp,
-        first = {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Yellow)
-            )
-        },
-        second = {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Blue)
-            )
-        }
-    )
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -216,6 +183,38 @@ private fun Comp(
             }
         }
     }
+}
+
+/**
+ *
+ * kotlin文件作用描述
+ *
+ * @author 次音(CiYin) QQ:2964221430
+ * @github <a href="https://github.com/Ci-Yin">CiYin</a>
+ * @since 2024/9/4 上午2:27
+ * @version: 1.0
+ */
+
+@Preview
+@Composable
+private fun TwoPanePreview() = MaterialPreview {
+    TwoPane(
+        gapWidth = 15.dp,
+        first = {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Yellow)
+            )
+        },
+        second = {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Blue)
+            )
+        }
+    )
 }
 
 enum class TwoPaneMode {

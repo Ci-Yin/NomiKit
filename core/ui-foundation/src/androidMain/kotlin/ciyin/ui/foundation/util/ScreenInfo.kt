@@ -169,6 +169,4 @@ data class ScreenInfo(
  */
 val ScreenProperties: ScreenInfo
     @Composable
-    get() {
-        return LocalContext.current.getScreenInfo()
-    }
+    get() = LocalContext.current.getScreenInfo()

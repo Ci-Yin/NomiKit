@@ -12,19 +12,6 @@ import androidx.compose.ui.Modifier
 @Immutable
 @LayoutScopeMarker
 interface GridScope {
-    /**
-     * Sets the span of the cell. The default span size is 1.
-     *
-     * If the given span is bigger than current line's remaining span, this cell will be placed
-     * at the next line.
-     */
-    @Stable
-    @Deprecated(
-        "Span modifier with an integer parameter is deprecated. " +
-                "Please use another span modifier with lambda parameter.",
-        ReplaceWith("this.span { span }")
-    )
-    fun Modifier.span(span: Int): Modifier
 
     /**
      * Sets the span of the cell. The default span size is 1.
@@ -43,9 +30,6 @@ interface GridScope {
 }
 
 internal object GridScopeInstance : GridScope {
-    override fun Modifier.span(span: Int): Modifier {
-        return this.then(GridSpanElement { span })
-    }
 
     override fun Modifier.span(span: (GridItemSpanScope.() -> Int)?): Modifier {
         return this.then(

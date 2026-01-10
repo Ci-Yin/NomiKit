@@ -10,13 +10,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.Surface
@@ -60,7 +60,7 @@ fun MenuChip(
         modifier = modifier
     ) {
         FilterChip(
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
             elevation = null,
             selected = false,
             enabled = enabled,
@@ -76,7 +76,7 @@ fun MenuChip(
         )
         ExposedDropdownMenu(
             expanded = expanded, onDismissRequest = { expanded = false },
-            matchTextFieldWidth = false
+            matchAnchorWidth = false
         ) {
             menuItems.forEachIndexed { index, item ->
                 DropdownMenuItem(
@@ -100,7 +100,7 @@ fun MenuChip(
  * @param onDismissRequest 当用户请求关闭菜单时（例如，点按超出菜单范围
  * @param modifier 修改要应用于此菜单的 [Modifier]
  * @param scrollState：菜单内容用于项目垂直滚动的 [ScrollState]
- * @param matchTextFieldWidth 是否应强制约束菜单的宽度以匹配它所附加到的文本字段的宽度。
+ * @param matchAnchorWidth 是否应强制约束菜单的宽度以匹配它所附加到的文本字段的宽度。
  * @param shape 菜单的形状
  * @param containerColor 菜单的容器颜色
  * @param tonalElevation 当 [containerColor] 为 [ColorScheme.surface] 时，@param tonalElevation，半透明主色
@@ -119,7 +119,7 @@ fun ExposedMenu(
     modifier: Modifier = Modifier,
     modifier2: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
-    matchTextFieldWidth: Boolean = false,
+    matchAnchorWidth: Boolean = false,
     shape: Shape = MaterialTheme.shapes.medium,
     containerColor: Color = MaterialTheme.colorScheme.background,
     tonalElevation: Dp = MenuDefaults.TonalElevation,
@@ -139,7 +139,7 @@ fun ExposedMenu(
                 modifier = Modifier.padding(vertical = 6.dp, horizontal = 12.dp),
                 expanded = expanded,
                 onDismissRequest = onDismissRequest,
-                matchTextFieldWidth = matchTextFieldWidth,
+                matchAnchorWidth = matchAnchorWidth,
                 scrollState = scrollState,
                 shape = shape,
                 containerColor = containerColor,
@@ -164,7 +164,7 @@ fun <V : Any> MenuText(
     modifier: Modifier = Modifier,
     label: @Composable ExposedDropdownMenuBoxScope.() -> Unit = {
         Text(
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
             text = labelText,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

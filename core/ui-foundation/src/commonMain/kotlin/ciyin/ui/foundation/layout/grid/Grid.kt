@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.Density
  * @param content The children of this layout.
  */
 @Composable
-inline fun HorizontalGrid(
+fun HorizontalGrid(
     rows: SimpleGridCells,
     modifier: Modifier = Modifier,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
@@ -60,7 +60,7 @@ inline fun HorizontalGrid(
  * @param content The children of this layout.
  */
 @Composable
-inline fun VerticalGrid(
+fun VerticalGrid(
     columns: SimpleGridCells,
     modifier: Modifier = Modifier,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,

@@ -87,7 +87,6 @@ internal class AndroidSystemUiController(
     ) {
         navigationBarDarkContentEnabled = darkIcons
         isNavigationBarContrastEnforced = navigationBarContrastEnforced
-
         window?.navigationBarColor = when {
             darkIcons && windowInsetsController?.isAppearanceLightNavigationBars != true -> {
                 // If we're set to use dark icons, but our windowInsetsController call didn't
@@ -95,7 +94,6 @@ internal class AndroidSystemUiController(
                 // contrast
                 transformColorForLightContent(color)
             }
-
             else -> color
         }.toArgb()
     }
