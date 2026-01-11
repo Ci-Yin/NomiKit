@@ -2,6 +2,7 @@ package com.ciyin.app.ui.theme
 
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
@@ -87,6 +88,21 @@ data class AppShapes internal constructor(
     val massive: RoundedCornerShape = Shape32,
     val colossal: RoundedCornerShape = Shape48,
 )
+
+/**
+ * 将 [AppShapes] 转换为 Material3 的 [Shapes]。
+ *
+ * 将应用自定义形状方案映射到 Material3 的标准形状方案，用于 MaterialTheme。
+ */
+internal fun AppShapes.toMaterialShapes(): Shapes {
+    return Shapes(
+        extraSmall = extraSmall,
+        small = small,
+        medium = medium,
+        large = large,
+        extraLarge = huge,
+    )
+}
 
 /**
  * 启用指定角的圆角效果，其他角将被设置为直角(0dp)。

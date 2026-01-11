@@ -1,8 +1,14 @@
 package com.ciyin.app.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.ciyin.app.ui.theme.DarkMode.Dark
+import com.ciyin.app.ui.theme.DarkMode.Light
+import com.ciyin.app.ui.theme.DarkMode.System
 
 
 /**
@@ -166,6 +172,35 @@ fun darkColorScheme(): AppColorScheme = AppColorScheme(
     outline = DarkOutline,
     divider = DarkDivider,
 )
+
+/**
+ * 将 [AppColorScheme] 转换为 Material3 的 [ColorScheme]。
+ *
+ * 将应用自定义颜色方案映射到 Material3 的标准颜色方案，用于 MaterialTheme。
+ */
+@Composable
+internal fun AppColorScheme.toMaterialColorScheme(darkMode: DarkMode): ColorScheme {
+    val lightColorScheme = androidx.compose.material3.lightColorScheme()
+    val darkColorScheme = androidx.compose.material3.darkColorScheme()
+    val colorScheme = when (darkMode) {
+        Light -> lightColorScheme
+        Dark -> darkColorScheme
+        System -> if (isSystemInDarkTheme()) darkColorScheme else lightColorScheme
+    }
+    return colorScheme.copy(
+        primary = primary,
+        onPrimary = onPrimary,
+        secondary = secondary,
+        onSecondary = onSecondary,
+        error = error,
+        onError = onError,
+        background = background,
+        onBackground = onBackground,
+        surface = surface,
+        onSurface = onSurface,
+        outline = outline,
+    )
+}
 
 /**
  * CompositionLocal 用于在组件树中传递 [AppColorScheme] 配色方案。

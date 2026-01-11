@@ -72,6 +72,8 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
+        colorScheme = colorScheme.toMaterialColorScheme(darkMode),
+        shapes = shapes.toMaterialShapes(),
         typography = typography,
     ) {
         CompositionLocalProvider(
@@ -86,3 +88,4 @@ fun AppTheme(
         }
     }
 }
+
