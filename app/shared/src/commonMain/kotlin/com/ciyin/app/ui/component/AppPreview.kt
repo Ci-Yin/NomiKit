@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import ciyin.ui.foundation.extension.thenIf
 import com.ciyin.app.ui.theme.AppTheme
+import com.ciyin.app.ui.theme.DarkMode
 
 
 /**
@@ -23,10 +24,10 @@ import com.ciyin.app.ui.theme.AppTheme
 @Composable
 fun AppPreview(
     maxSize: Boolean = true,
-    darkTheme: Boolean = false,
+    darkMode: DarkMode = DarkMode.System,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     content: @Composable ColumnScope.() -> Unit
-) = AppTheme(darkTheme = darkTheme) {
+) = AppTheme(darkMode = darkMode) {
     Column(
         modifier = Modifier
             .thenIf(maxSize) { fillMaxSize() }

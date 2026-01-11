@@ -17,6 +17,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.ui.component.AppPreview
 import com.ciyin.app.ui.component.Screen
+import com.ciyin.app.ui.theme.AppTheme
+import nomikit.app.shared.generated.resources.Res
+import nomikit.app.shared.generated.resources.nav_home
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 
@@ -34,12 +38,12 @@ private fun MainContent(
     state: MainUiState,
     onAction: (MainAction) -> Unit,
 ) = Screen(
-    title = "主页",
+    title = stringResource(Res.string.nav_home),
     toolbar = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium)
     ) {
         items(state.items, { it.id }) { item ->
             Box(
