@@ -15,7 +15,14 @@ import org.koin.core.component.KoinComponent
  */
 class MainViewModel() : AbsMviViewModel<MainUiState, MainAction, MainEffect>(null), KoinComponent {
 
-    override val initState: MainUiState = MainUiState()
+    override val initState: MainUiState = MainUiState(
+        items = List(100) {
+            MainUiModel(
+                id = it,
+                name = "Item $it"
+            )
+        }
+    )
 
     override fun SingleStateMachine<MainUiState, MainAction>.spec() {
 

@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.ui.component.AppPreview
@@ -49,10 +48,10 @@ private fun MainContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
                     .clickable {
                         onAction(MainAction.ItemAction(item))
                     }
+                    .padding(AppTheme.spacings.small)
             ) {
                 Text(item.name)
             }

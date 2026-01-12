@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
@@ -32,14 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
-import androidx.navigation.NavOptionsBuilder
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationBar
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationDrawer
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationRail
 import com.ciyin.app.ui.component.WindowType
 import com.ciyin.app.ui.component.windowAdaptive
+import com.ciyin.app.ui.theme.AppTheme
 
 
 /**
@@ -65,42 +61,6 @@ val NavigationRailWidth = 60.dp
  */
 val BottomNavigationHeight = 50.dp
 
-fun NavHostController.navigateTo(route: String) {
-    if (currentDestination?.route == route) return
-    navigate(route) {
-        launchSingleTop = true
-        if (route == graph.findStartDestination().route) {
-            popUpTo(route)
-        }
-    }
-}
-
-/**
- * 类型安全的导航扩展函数
- */
-inline fun <reified T : NavRouter> NavHostController.navigateTo(
-    route: T,
-    crossinline builder: NavOptionsBuilder.() -> Unit = {}
-) {
-    // 检查当前目的地是否已经是目标路由
-    if (currentDestination?.route == route::class.qualifiedName) return
-
-    navigate(route) {
-        launchSingleTop = true
-
-        // 如果是起始目的地，清空回退栈
-        val startDestRoute = graph.findStartDestination().route
-        if (route::class.qualifiedName == startDestRoute && startDestRoute != null) {
-            popUpTo(startDestRoute) {
-                inclusive = false
-            }
-        }
-
-        // 应用额外的导航配置
-        builder()
-    }
-}
-
 @Composable
 fun NavigationBar(
     selection: Int,
@@ -108,13 +68,12 @@ fun NavigationBar(
     onNavigateItemClick: (NavUiItem) -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
-) = Row(modifier) {
+) = Box(modifier) {
 
     val navLayoutType = when (windowAdaptive) {
         WindowType.PHONE -> NavigationBar
         WindowType.TABLET, WindowType.PHONE_HORIZONTAL -> NavigationRail
         else -> NavigationRail
-        //else -> NavigationDrawer
     }
 
     NavigationSuiteScaffoldLayout(
@@ -135,12 +94,9 @@ fun NavigationBar(
                     onNavigateItemClick = onNavigateItemClick,
                 )
 
-                /*NavigationSuiteType.NavigationDrawer -> WaliNavigationDrawer(
-                    selection = selection,
-                    navList = navList,
-                    onNavigateItemClick = onNavigateItemClick
-                )*/
-                NavigationDrawer -> {}
+                NavigationDrawer -> {
+                    // TODO: 实现 NavigationDrawer
+                }
             }
         },
         content = content
@@ -190,25 +146,18 @@ private fun NavigationRail(
             .fillMaxHeight(),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-
-
-        // 用户头像
-        /*NavigationUserAvatar(70.dp, Modifier.thenIf(isTabletopWindow) {
-        padding(vertical = 12.dp)
-    })*/
-
         // 导航菜单
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(3.dp)
+            verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny)
         ) {
-            for (nav in navList) {
+            navList.forEachIndexed { index, nav ->
                 if (nav.id == NavId.Null) {
                     Spacer(Modifier.weight(1f))
                 } else {
-                    WaliNavigationRailItem(
-                        selected = navList.indexOf(nav) == selection,
+                    NavigationRailItem(
+                        selected = index == selection,
                         onClick = { onNavigateItemClick(nav) },
                         icon = rememberVectorPainter(nav.icon),
                     )
@@ -229,27 +178,28 @@ private fun BottomNavigationBar(
     if (!visible) {
         return
     }
-    NavigationBar(
+    androidx.compose.material3.NavigationBar(
         modifier = modifier
             .navigationBarsPadding()
             .height(BottomNavigationHeight)
             .fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        for (nav in navList) {
-            if (nav.id == NavId.Null) break
-            WaliNavigationBarItem(
-                label = nav.title,
+        navList.forEachIndexed { index, nav ->
+            if (nav.id == NavId.Null) return@forEachIndexed
+            NavigationBarItem(
                 icon = rememberVectorPainter(nav.icon),
-                selected = navList.indexOf(nav) == selection,
+                label = nav.title,
+                selected = index == selection,
                 onClick = { onNavigateItemClick(nav) },
+                modifier = Modifier.weight(1f),
             )
         }
     }
 }
 
 @Composable
-private fun RowScope.WaliNavigationBarItem(
+private fun NavigationBarItem(
     icon: Painter,
     label: String,
     selected: Boolean,
@@ -257,13 +207,13 @@ private fun RowScope.WaliNavigationBarItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: NavigationBarItemColors = NavigationBarItemDefaults.colors(
-        selectedIconColor = MaterialTheme.colorScheme.primary,
-        selectedTextColor = MaterialTheme.colorScheme.primary,
-        unselectedIconColor = MaterialTheme.colorScheme.onBackground,
-        unselectedTextColor = MaterialTheme.colorScheme.onBackground,
+        selectedIconColor = AppTheme.colorScheme.primary,
+        selectedTextColor = AppTheme.colorScheme.primary,
+        unselectedIconColor = AppTheme.colorScheme.onBackground,
+        unselectedTextColor = AppTheme.colorScheme.onBackground,
     ),
 ) = Box(
-    modifier = modifier.weight(1f),
+    modifier = modifier,
     contentAlignment = Alignment.Center,
 ) {
     Surface(
@@ -279,15 +229,15 @@ private fun RowScope.WaliNavigationBarItem(
         ) {
             Icon(
                 modifier = Modifier
-                    .padding(top = 2.dp)
-                    .size(24.dp),
+                    .padding(top = AppTheme.spacings.tiny)
+                    .size(AppTheme.sizes.icon.large),
                 painter = icon,
                 contentDescription = null,
             )
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.9f
+                style = AppTheme.typography.labelSmall.copy(
+                    fontSize = AppTheme.typography.labelSmall.fontSize * 0.9f
                 ),
             )
         }
@@ -295,14 +245,14 @@ private fun RowScope.WaliNavigationBarItem(
 }
 
 @Composable
-private fun WaliNavigationRailItem(
+private fun NavigationRailItem(
     selected: Boolean,
     icon: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: NavigationRailItemColors = NavigationRailItemDefaults.colors(
-        selectedIconColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        selectedIconColor = AppTheme.colorScheme.primary.copy(alpha = 0.1f),
         unselectedIconColor = Color.Transparent,
     ),
 ) = Surface(
@@ -310,7 +260,7 @@ private fun WaliNavigationRailItem(
     selected = selected,
     color = if (selected) colors.selectedIconColor else colors.unselectedIconColor,
     shape = RoundedCornerShape(20),
-    contentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+    contentColor = AppTheme.colorScheme.onBackground.copy(alpha = 0.8f),
     enabled = enabled,
     onClick = onClick
 ) {
@@ -319,8 +269,8 @@ private fun WaliNavigationRailItem(
     ) {
         Icon(
             modifier = Modifier
-                .padding(10.dp)
-                .size(20.dp),
+                .padding(AppTheme.spacings.medium)
+                .size(AppTheme.sizes.icon.medium),
             painter = icon,
             contentDescription = null,
         )
