@@ -20,6 +20,7 @@ import org.apache.ivy.plugins.resolver.URLResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import java.io.File
+import kotlin.io.path.createTempFile
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.api.asDiagnostics
@@ -135,7 +136,7 @@ class IvyResolver : ExternalDependenciesResolver {
         // val report = ivy.resolve(moduleDescriptor, resolveOptions)
 
         //creates an ivy configuration file
-        val ivyFile = createTempFile("ivy", ".xml").apply { deleteOnExit() }
+        val ivyFile = createTempFile("ivy", ".xml").toFile().apply { deleteOnExit() }
         XmlModuleDescriptorWriter.write(moduleDescriptor, ivyFile)
         val report = ivy.resolve(ivyFile.toURI().toURL(), resolveOptions)
 
