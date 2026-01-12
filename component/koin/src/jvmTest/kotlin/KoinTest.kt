@@ -1,4 +1,4 @@
-package com.yy.myuko.component.koin.test
+package ciyin.component.koin.test
 
 import ciyin.koin.configuration.koinAutoConfiguration
 import ciyin.koin.configuration.onEqProperty

@@ -1,7 +1,7 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 //
-//import com.yy.myuko.core.coroutines.OwnedCancellationException
-//import com.yy.myuko.core.coroutines.checkOwner
+//import ciyin.coroutines.OwnedCancellationException
+//import ciyin.coroutines.checkOwner
 //import kotlinx.coroutines.*
 //
 //

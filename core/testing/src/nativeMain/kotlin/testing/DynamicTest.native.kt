@@ -1,4 +1,4 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 actual open class DynamicTest(
     val displayName: String,

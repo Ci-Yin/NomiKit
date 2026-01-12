@@ -1,4 +1,4 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 /**
  * 标记一个函数, 表示它是一个 sample. (KDoc 里的 `@sample` 标签)

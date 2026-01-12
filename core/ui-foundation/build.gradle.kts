@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "ciyin.core.foundation"
+    namespace = "ciyin.core.ui.foundation"
 }
 
 androidMainDependencies {
@@ -31,6 +31,7 @@ commonMainDependencies {
     api(libs.freeletics.flowredux2)
 
     api(projects.core.uiPreview)
+    api(projects.core.coroutines)
 }
 
 desktopMainDependencies {

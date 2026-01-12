@@ -1,4 +1,4 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 expect fun Any.readTestResourceAsString(path: String): String
 

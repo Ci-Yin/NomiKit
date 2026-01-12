@@ -3,7 +3,7 @@ package ciyin.ui.foundation.effects
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import com.yy.myuko.core.system.LocalContext
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 actual fun KeepScreenOnEffect() {

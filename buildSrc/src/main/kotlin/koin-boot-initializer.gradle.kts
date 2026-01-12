@@ -6,7 +6,7 @@ abstract class KoinBootInitializerExtension {
     /**
      * 生成的包名
      */
-    var generatedPackage: String = "com.yy.myuko.generated"
+    var generatedPackage: String = "ciyin.generated"
 
     /**
      * 生成的类名
@@ -74,7 +74,7 @@ abstract class GenerateKoinBootInitializerTask : DefaultTask() {
         val content = """
 package $generatedPackage
 
-import com.yy.myuko.component.koin.KoinBootInitializer
+import ciyin.component.koin.KoinBootInitializer
 
 /**
  * Auto-generated KoinBootInitializer

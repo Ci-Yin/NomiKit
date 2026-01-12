@@ -4,7 +4,7 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.view.WindowCompat
-import com.yy.myuko.core.system.LocalContext
+import ciyin.system.LocalContext
 
 @Composable
 actual fun DarkStatusBarAppearance() {

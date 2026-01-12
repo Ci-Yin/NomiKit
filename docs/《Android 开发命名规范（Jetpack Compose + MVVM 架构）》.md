@@ -69,7 +69,7 @@ app/
 
 ```
 org.ciyin.app           // 应用入口
-org.ciyin.core.ui       // 通用 Compose 组件
+org.ciyin.ui       // 通用 Compose 组件
 org.ciyin.feature.home  // 首页模块
 org.ciyin.feature.player // 播放模块
 ```
@@ -409,7 +409,7 @@ fun HomeScreen(
 | ❌ 不推荐                    | ✅ 推荐                      | 说明                                 |
 |--------------------------|---------------------------|------------------------------------|
 | `org.ciyin.FeatureLogin` | `org.ciyin.feature.login` | ❌ 大写 + 驼峰，不符合包名规范；✅ 小写 + 点分隔，按模块划分 |
-| `org.ciyin.UiComponent`  | `org.ciyin.core.ui`       | ❌ 模糊，跨模块使用不明；✅ core.ui 表示通用组件      |
+| `org.ciyin.UiComponent`  | `org.ciyin.ui`            | ❌ 模糊，跨模块使用不明；✅ core.ui 表示通用组件      |
 
 ---
 

@@ -1,6 +1,6 @@
 @file:JvmName("DynamicTestKt_common")
 
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 import kotlin.jvm.JvmName
 

@@ -1,4 +1,4 @@
-package ciyin.platform
+package ciyin.platform.time
 
 import ciyin.io.File
 import kotlinx.datetime.LocalDateTime
@@ -32,6 +32,7 @@ const val DateAndTimePatternWithWeek = "yyyy-MM-dd HH:mm:ss EEEE"
 /** 简短日期格式（同标准格式，保留字段以兼容旧代码） */
 const val FormatPatternShort = "yyyy-MM-dd"
 
+fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
 
 /**
  * 自定义格式化

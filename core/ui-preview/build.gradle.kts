@@ -12,7 +12,7 @@ kotlin {
 }
 
 android {
-    namespace = "ciyin.core.preview"
+    namespace = "ciyin.core.ui.preview"
 }
 
 commonMainDependencies {

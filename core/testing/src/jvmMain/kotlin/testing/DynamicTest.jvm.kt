@@ -1,4 +1,4 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 actual typealias DynamicTest = org.junit.jupiter.api.DynamicTest
 

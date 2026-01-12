@@ -1,4 +1,4 @@
-package com.yy.myuko.core.testing
+package ciyin.testing
 
 @OptIn(ExperimentalMultiplatform::class)
 @OptionalExpectation
