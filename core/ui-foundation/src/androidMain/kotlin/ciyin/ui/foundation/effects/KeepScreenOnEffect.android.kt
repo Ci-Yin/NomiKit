@@ -1,0 +1,21 @@
+package ciyin.ui.foundation.effects
+
+import android.app.Activity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import com.yy.myuko.core.system.LocalContext
+
+@Composable
+actual fun KeepScreenOnEffect() {
+    val activity =
+        LocalContext.current as? Activity
+            ?: androidx.lifecycle.compose.LocalLifecycleOwner.current as? Activity
+    DisposableEffect(activity?.window) {
+        val window = activity?.window
+        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        onDispose {
+            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+}
