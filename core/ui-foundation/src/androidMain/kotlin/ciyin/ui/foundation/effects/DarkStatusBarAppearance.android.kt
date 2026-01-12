@@ -3,8 +3,8 @@ package ciyin.ui.foundation.effects
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import ciyin.system.LocalContext
 
 @Composable
 actual fun DarkStatusBarAppearance() {

@@ -1,5 +1,3 @@
-import org.gradle.api.JavaVersion.VERSION_17
-
 plugins {
     id(libs.plugins.android.application)
     id(libs.plugins.jetbrains.compose)
@@ -47,8 +45,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = VERSION_17
-        targetCompatibility = VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true

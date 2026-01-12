@@ -8,4 +8,4 @@ expect abstract class Context()
 /**
  * 空的 Context
  */
-expect object EmptyContext
+expect object EmptyContext : Context

@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -16,6 +17,7 @@ import platform.UIKit.UIDevice
 import platform.UIKit.UIDeviceOrientationDidChangeNotification
 import platform.UIKit.UIScreen
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun ScreenRotationEffect(onChange: (isLandscape: Boolean) -> Unit) {
     val currentOnChange = rememberUpdatedState(onChange)
