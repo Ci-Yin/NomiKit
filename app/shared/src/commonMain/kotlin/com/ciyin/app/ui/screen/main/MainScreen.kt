@@ -14,11 +14,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.shared.Res
+import com.ciyin.app.shared.nav_home
 import com.ciyin.app.ui.component.AppPreview
 import com.ciyin.app.ui.component.Screen
 import com.ciyin.app.ui.theme.AppTheme
-import nomikit.app.shared.generated.resources.Res
-import nomikit.app.shared.generated.resources.nav_home
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 

@@ -1,8 +1,16 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id(libs.plugins.android.application)
     id(libs.plugins.jetbrains.compose)
     id(libs.plugins.compose.compiler)
     id(libs.plugins.kotlin.android)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
 }
 
 android {

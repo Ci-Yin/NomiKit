@@ -1,6 +1,7 @@
 package com.ciyin.app.di.modules
 
 import ciyin.koin.KoinBootInitializer
+import com.ciyin.app.data.core.di.AppDataModule
 
 
 /**
@@ -11,6 +12,10 @@ import ciyin.koin.KoinBootInitializer
  * @since 2025/11/6 18:37
  */
 
+
+val AppModules: KoinBootInitializer = {
+    modules(AppDataModule)
+}
 
 val MainModules: KoinBootInitializer = {
 //    modules(MainDomainModule)

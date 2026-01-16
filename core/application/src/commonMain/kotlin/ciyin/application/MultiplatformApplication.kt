@@ -1,5 +1,6 @@
-package com.ciyin.app.application
+package ciyin.application
 
+import androidx.annotation.CallSuper
 import ciyin.platform.Context
 
 /**
@@ -14,9 +15,11 @@ interface MultiplatformApplication {
     val context: Context
 
     /** 应用初始化入口（类似 Android 的 onCreate） */
+    @CallSuper
     fun onCreate()
 
     /** 应用关闭或销毁时调用 */
+    @CallSuper
     fun onDestroy()
 
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -77,8 +76,7 @@ fun NavigationBar(
     }
 
     NavigationSuiteScaffoldLayout(
-        layoutType = navLayoutType,
-        navigationSuite = {
+        layoutType = navLayoutType, navigationSuite = {
             when (navLayoutType) {
                 NavigationBar -> {
                     BottomNavigationBar(
@@ -88,11 +86,13 @@ fun NavigationBar(
                     )
                 }
 
-                NavigationRail -> NavigationRail(
-                    selection = selection,
-                    navList = navList,
-                    onNavigateItemClick = onNavigateItemClick,
-                )
+                NavigationRail -> {
+                    NavigationRail(
+                        selection = selection,
+                        navList = navList,
+                        onNavigateItemClick = onNavigateItemClick,
+                    )
+                }
 
                 NavigationDrawer -> {
                     // TODO: 实现 NavigationDrawer
@@ -113,7 +113,9 @@ private fun NavigationSuiteScaffoldLayout(
     when (layoutType) {
         NavigationBar -> {
             Column {
-                content()
+                Box(Modifier.weight(1f, false)) {
+                    content()
+                }
                 navigationSuite()
             }
         }
@@ -180,13 +182,12 @@ private fun BottomNavigationBar(
     }
     androidx.compose.material3.NavigationBar(
         modifier = modifier
-            .navigationBarsPadding()
             .height(BottomNavigationHeight)
             .fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        navList.forEachIndexed { index, nav ->
-            if (nav.id == NavId.Null) return@forEachIndexed
+        for ((index, nav) in navList.withIndex()) {
+            if (nav.id == NavId.Null) break
             NavigationBarItem(
                 icon = rememberVectorPainter(nav.icon),
                 label = nav.title,

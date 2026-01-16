@@ -1,56 +1,136 @@
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
+
 package ciyin.platform
 
-import ciyin.io.File
-import ciyin.platform.model.TaskSchedule
+sealed class Platform {
+    abstract val name: String // don't change, it's actually an ID
+    abstract val arch: Arch
 
-interface Platform {
+    val nameAndArch get() = "$name ${arch.displayName}"
+    final override fun toString(): String = nameAndArch
 
-    val name: String
+    ///////////////////////////////////////////////////////////////////////////
+    // mobile
+    ///////////////////////////////////////////////////////////////////////////
 
-    val systemName: String
+    sealed class Mobile : Platform()
 
-    val platformType: PlatformType
+    data class Android(
+        override val arch: Arch,
+    ) : Mobile() {
+        override val name: String get() = "Android"
+    }
 
-    val packageName: String get() = "Rpa"
+    data object Ios : Mobile() {
+        override val name: String get() = "iOS"
+        override val arch: Arch get() = Arch.AARCH64
+    }
 
-    fun getJavaHome(): String
 
-    fun getAppDataDir(): File
+    ///////////////////////////////////////////////////////////////////////////
+    // desktop
+    ///////////////////////////////////////////////////////////////////////////
 
-    fun createScheduledTasksInFolder(
-        taskFolder: String,
-        taskNamePrefix: String,
-        timings: List<TaskSchedule>
-    )
+    sealed class Desktop(
+        override val name: String
+    ) : Platform()
 
-    fun deleteScheduledTask(
-        taskFolder: String,
-        taskNamePrefix: String,
-    )
+    data class Windows(
+        override val arch: Arch
+    ) : Desktop("Windows")
 
-    fun extractExeIcon(exePath: String, outputIcoPath: File, size: Int = 32)
+    data class MacOS(
+        override val arch: Arch
+    ) : Desktop("macOS")
 
-    fun setAutoStartup(enable: Boolean)
-
+    data class Linux(
+        override val arch: Arch
+    ) : Desktop("Linux")
 }
 
-enum class PlatformType {
-    Android,
-    Windows,
-    Ios,
-    Web,
-    Unknown
+
+@Suppress("ObjectPropertyName")
+private val _currentPlatform = runCatching { currentPlatformImpl() } // throw only on get
+
+/**
+ * 获取当前的平台. 在 Linux 上使用时会抛出 [UnsupportedOperationException].
+ *
+ * CI 会跑 Ubuntu test (比较快), 所以在 test 环境需要谨慎使用此 API.
+ */
+
+fun currentPlatform(): Platform = _currentPlatform.getOrThrow()
+
+
+fun currentPlatformDesktop(): Platform.Desktop {
+    val platform = currentPlatform()
+    check(platform is Platform.Desktop)
+    return platform
 }
 
-val platform by lazy { getPlatform() }
+enum class ArchFamily {
+    X86,
+    AARCH,
+}
 
-fun Platform.isAndroid() = platform.platformType == PlatformType.Android
+// It's actually ABI
+enum class Arch(
+    val displayName: String, // Don't change, used by the server
+    val family: ArchFamily,
+    val addressSizeBits: Int,
+) {
+    /**
+     * macOS, Windows, Android
+     */
+    X86_64("x86_64", ArchFamily.X86, 64),
 
-fun Platform.isWindows() = platform.platformType == PlatformType.Windows
+    /**
+     * macOS
+     */
+    AARCH64("aarch64", ArchFamily.AARCH, 64),
 
-fun Platform.isIos() = platform.platformType == PlatformType.Ios
+    /**
+     * AArch32 的一个细分 ABI. 只有很久的手机或电视才会用.
+     */
+    ARMV7A("armeabi-v7a", ArchFamily.AARCH, 32),
 
-fun Platform.isWeb() = platform.platformType == PlatformType.Web
+    /**
+     * AArch64 的一个细分 ABI. 目前绝大多数手机都是这个.
+     */
+    ARMV8A("arm64-v8a", ArchFamily.AARCH, 64),
+}
 
+internal expect fun currentPlatformImpl(): Platform
 
-expect fun getPlatform(): Platform
+inline fun Platform.isAArch(): Boolean = this.arch.family == ArchFamily.AARCH
+
+inline fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
+
+inline fun Platform.isDesktop(): Boolean {
+    return this is Platform.Desktop
+}
+
+inline fun Platform.isMacOS(): Boolean {
+    return this is Platform.MacOS
+}
+
+inline fun Platform.isWindows(): Boolean {
+    return this is Platform.Windows
+}
+
+inline fun Platform.isIos(): Boolean {
+    return this is Platform.Ios
+}
+
+inline fun Platform.isMobile(): Boolean {
+    return this is Platform.Mobile
+}
+
+inline fun Platform.isAndroid(): Boolean {
+    return this is Platform.Android
+}
+
+inline fun Platform.isLinux(): Boolean {
+    return this is Platform.Linux
+}
+
+inline fun Platform.hasScrollingBug() = isDesktop()

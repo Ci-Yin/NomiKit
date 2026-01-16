@@ -1,5 +1,7 @@
 plugins {
     `multiplatform-lib-targets`
+    id(libs.plugins.jetbrains.compose)
+    id(libs.plugins.compose.compiler)
 }
 
 android {
@@ -11,6 +13,8 @@ androidMainDependencies {
 }
 
 commonMainDependencies {
+    api(compose.runtime)
+    api(compose.ui)
     api(libs.kermit)
     api(libs.kotlinx.datetime)
     api(libs.kotlinx.coroutines.core)

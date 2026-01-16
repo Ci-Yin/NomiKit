@@ -1,14 +1,22 @@
 package com.ciyin.app.application
 
+import ciyin.application.BaseAndroidApplication
+import ciyin.application.MultiplatformApplication
 import ciyin.platform.Context
-import ciyin.platform.initApplicationContext
 
-class AndroidApplication(override val context: Context) : MultiplatformApplication {
+class AndroidApplication() : BaseAndroidApplication() {
+
+    override val application: MultiplatformApplication = InternalApplication(this)
+
     override fun onCreate() {
-        initApplicationContext(context)
+        super.onCreate()
     }
 
-    override fun onDestroy() {
-
+    override fun onTerminate() {
+        super.onTerminate()
     }
+
+    private class InternalApplication(override val context: Context) : CommonApplication()
+
 }
+

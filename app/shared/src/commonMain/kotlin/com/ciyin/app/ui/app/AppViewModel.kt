@@ -3,6 +3,10 @@ package com.ciyin.app.ui.app
 import androidx.lifecycle.SavedStateHandle
 import ciyin.ui.foundation.viewmodel.AbsMviViewModel
 import ciyin.ui.foundation.viewmodel.SingleStateMachine
+import com.ciyin.app.shared.Res
+import com.ciyin.app.shared.nav_home
+import com.ciyin.app.shared.nav_settings
+import com.ciyin.app.shared.nav_theme
 import com.ciyin.app.ui.app.AppAction.NavigateItemClick
 import com.ciyin.app.ui.app.navigation.MainRouter
 import com.ciyin.app.ui.app.navigation.NavId.Main
@@ -16,10 +20,6 @@ import com.ciyin.app.ui.theme.iconpack.LightMode
 import com.ciyin.app.ui.theme.iconpack.Null
 import com.ciyin.app.ui.theme.iconpack.Settings
 import com.ciyin.app.util.value
-import nomikit.app.shared.generated.resources.Res
-import nomikit.app.shared.generated.resources.nav_home
-import nomikit.app.shared.generated.resources.nav_settings
-import nomikit.app.shared.generated.resources.nav_theme
 import org.koin.core.component.KoinComponent
 
 

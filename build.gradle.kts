@@ -10,4 +10,5 @@ plugins {
     id(libs.plugins.kotlin.android) apply false
     id(libs.plugins.kotlin.serialization) version libs.versions.kotlin apply false
     id(libs.plugins.ksp) version libs.versions.ksp apply false
+    id(libs.plugins.room) version libs.versions.room apply false
 }

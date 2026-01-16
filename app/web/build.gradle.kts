@@ -44,9 +44,11 @@ kotlin {
 //            implementation(libs.androidx.lifecycle.viewmodel)
 //            implementation(libs.androidx.lifecycle.viewmodel.compose)
 //            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(projects.core.uiFoundation)
-            implementation(projects.core.platform)
-            implementation(projects.app.shared)
+            // 这些依赖不支持 JS/WASM 平台，已移除
+            // 如果需要在 web 中使用，需要确保这些项目支持 JS/WASM 或创建替代实现
+            // implementation(projects.core.uiFoundation)
+            // implementation(projects.core.platform)
+            // implementation(projects.app.shared)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

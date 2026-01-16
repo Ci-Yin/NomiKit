@@ -1,56 +1,18 @@
 package ciyin.platform
 
-import android.content.Context
 import android.os.Build
-import ciyin.io.File
-import ciyin.platform.model.TaskSchedule
 
-actual fun getPlatform(): Platform = AndroidPlatform()
-
-class AndroidPlatform : Platform {
-
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
-
-    override val systemName: String = "Android"
-
-    override val platformType: PlatformType = PlatformType.Android
-
-    private val context: Context get() = ApplicationContext
-
-    override fun getJavaHome(): String {
-        return ""
+internal actual fun currentPlatformImpl(): Platform {
+    if (Build.SUPPORTED_ABIS == null) {
+        // unit testing
+        return Platform.Android(Arch.ARMV8A)
     }
-
-    override fun getAppDataDir(): File {
-        return File(context.filesDir.absolutePath ?: "")
-    }
-
-    override fun createScheduledTasksInFolder(
-        taskFolder: String,
-        taskNamePrefix: String,
-        timings: List<TaskSchedule>
-    ) {
-
-    }
-
-    override fun deleteScheduledTask(
-        taskFolder: String,
-        taskNamePrefix: String,
-    ) {
-
-    }
-
-    override fun extractExeIcon(exePath: String, outputIcoPath: File, size: Int) {
-
-    }
-
-    override fun setAutoStartup(enable: Boolean) {
-
-    }
-
+    return Build.SUPPORTED_ABIS.getOrNull(0)?.let { abi ->
+        when (abi.lowercase()) {
+            "armeabi-v7a" -> Platform.Android(Arch.ARMV7A)
+            "arm64-v8a" -> Platform.Android(Arch.ARMV8A)
+            "x86_64" -> Platform.Android(Arch.X86_64)
+            else -> Platform.Android(Arch.ARMV8A)
+        }
+    } ?: Platform.Android(Arch.ARMV8A)
 }
-
-
-
-
-

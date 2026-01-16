@@ -12,6 +12,7 @@ androidMainDependencies {
 
 commonMainDependencies {
     api(libs.kotlinx.datetime)
+    api(libs.directories)
     api(projects.core.platform)
     api(projects.core.io)
 }
