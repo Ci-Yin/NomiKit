@@ -69,12 +69,18 @@ abstract class GenerateKoinBootInitializerTask : DefaultTask() {
         val outputDir = outputDirectory.get().asFile
         outputDir.mkdirs()
         val outputFile = File(outputDir, "${generatedInitializerName}.kt")
-        val dependencyList = initializers.joinToString("\n") { " * - [$it]" }
-        val initializerCalls = initializers.joinToString("\n") { "\t$it()" }
+        val classNames = initializers.map { it.substringAfterLast(".") }
+        val dependencyList = classNames.joinToString("\n") { " * - [$it]" }
+
+        // 分离包名和类名，生成 import 语句和短名称调用
+        val initializerCalls = classNames.joinToString("\n") { "\t$it()" }
+        val imports = classNames.joinToString("\n") { "import ciyin.$it" }
+
         val content = """
 package $generatedPackage
 
-import ciyin.component.koin.KoinBootInitializer
+import ciyin.koin.KoinBootInitializer
+$imports
 
 /**
  * Auto-generated KoinBootInitializer
@@ -87,7 +93,7 @@ $dependencyList
 val ${generatedInitializerName}: KoinBootInitializer = {
 $initializerCalls
 }
-        """.trimIndent()
+    """.trimIndent()
 
         outputFile.writeText(content)
     }

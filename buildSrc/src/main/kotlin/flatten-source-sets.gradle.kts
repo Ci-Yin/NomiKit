@@ -14,7 +14,7 @@ import com.android.build.api.dsl.CommonExtension
  *
  * `${targetName}` 可以是 `common`, `android` `desktop` 等.
  */
-fun configureFlattenSourceSets() {
+fun Project.configureFlattenSourceSets() {
     val flatten =
         extra.runCatching { get("flatten.sourceset") }.getOrNull()?.toString()?.toBoolean() ?: true
     if (!flatten) return
