@@ -61,7 +61,7 @@ private val SystemSupportDir by lazy {
         NSApplicationSupportDirectory.convert(),
         NSUserDomainMask.convert(),
         true
-    ).firstOrNull()?.toString()?.toFile() ?: error("Cannot get SystemSupportDir"),
+    ).firstOrNull()?.toString()?.toFile() ?: error("Cannot get SystemSupportDir")
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -70,5 +70,5 @@ private val SystemCacheDir by lazy {
         NSCachesDirectory.convert(),
         NSUserDomainMask.convert(),
         true
-    ).firstOrNull()?.toString()?.toFile() ?: error("Cannot get SystemCacheDir"),
+    ).firstOrNull()?.toString()?.toFile() ?: error("Cannot get SystemCacheDir")
 }

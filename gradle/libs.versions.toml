@@ -47,7 +47,7 @@ rxkotlin = "3.0.1"
 runtime = "1.9.0"
 window = "1.5.0"
 
-flowredux2 = "2.0.0-alpha4"
+flowredux2 = "2.0.1"
 
 arrow = "2.1.2"
 
