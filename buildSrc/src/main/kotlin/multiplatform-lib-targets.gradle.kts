@@ -36,9 +36,15 @@ configure<KotlinMultiplatformExtension> {
      * `native - apple - ios` 的架构是为了契合 Kotlin 官方推荐的默认架构. 以后如果万一要添加其他平台, 可方便添加.
      */
     if (project.enableIos) {
-        iosArm64()
-        iosSimulatorArm64() // to run tests
-        // no x86
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64()
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "ComposeApp"
+                isStatic = true
+            }
+        }
     }
 
     if (project.enableJs || project.enableWeb) {

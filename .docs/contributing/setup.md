@@ -54,10 +54,10 @@ Runtime (JCEF)，版本 17 或 21，下文简称 JBR。
 > [!TIP]
 > **如果你不希望安装这些依赖，可以禁用 ios 构建**
 >
-> 在项目根目录的 `local.properties`（如果没有就创建一个）中增加以下内容:
+> 在项目根目录的 `gradle.properties` 中增加以下内容:
 >
 > ```properties
-> myuko.enable.ios=false
+> multiplatform.enable.ios=false
 > ```
 > 请注意，如果你禁用 ios 构建，则 ios APP 将无法运行。如果开发的APP需要支持
 > ios,请注意会出现commonMain中可以直接使用JVM相关依赖和expect函数不需要实现ios平台的现象。
@@ -83,10 +83,10 @@ Clone 后第一次导入项目可能需要 1 小时。导入项目后别着急�
 > [!TIP]
 > **只启用 Android arm64-v8a 架构**
 >
-> 在项目根目录的 `local.properties`（如果没有就创建一个）中增加以下内容:
+> 在项目根目录的 `gradle.properties`（如果没有就创建一个）中增加以下内容:
 >
 > ```properties
-> myuko.android.abis=arm64-v8a
+> multiplatform.android.abis=arm64-v8a
 > ```
 
 ### macOS 优化
@@ -97,10 +97,10 @@ Framework 构建。这可以帮你节约 20 分钟以上的编译时间。
 > [!TIP]
 > **禁用 ios Framework**
 >
-> 在项目根目录的 `local.properties`（如果没有就创建一个）中增加以下内容:
+> 在项目根目录的 `gradle.properties`（如果没有就创建一个）中增加以下内容:
 >
 > ```properties
-> myuko.build.framework=false
+> multiplatform.build.framework=false
 > ```
 
 TODO

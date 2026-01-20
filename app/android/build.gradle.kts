@@ -35,23 +35,30 @@ android {
             pickFirsts += "META-INF/some/other-duplicate.properties"
         }
     }
-    signingConfigs {
-        release {
-            storeFile = file(getLocalProperty("android.store.file") ?: "")
-            storePassword = getLocalProperty("android.store.password")
-            keyAlias = getLocalProperty("android.key.alias")
-            keyPassword = getLocalProperty("android.key.password")
+
+    val storeFilePath = getLocalProperty("android.store.file")
+    if (storeFilePath != null) {
+        signingConfigs {
+            release {
+                storeFile = file(storeFilePath)
+                storePassword = getLocalProperty("android.store.password")
+                keyAlias = getLocalProperty("android.key.alias")
+                keyPassword = getLocalProperty("android.key.password")
+            }
         }
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.release
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            )
+
+        buildTypes {
+            release {
+                isMinifyEnabled = false
+                signingConfig = signingConfigs.release
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                )
+            }
         }
+
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
