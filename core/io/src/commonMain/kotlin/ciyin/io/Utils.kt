@@ -10,83 +10,15 @@ import okio.use
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-
 /**
- * 在指定的 [directory] 中创建一个空目录，使用给定的 [prefix] 和 [suffix] 生成其名称。
- *
- * 如果未指定 [prefix]，将使用某个未指定的字符串。
- * 如果未指定 [suffix]，将使用 ".tmp"。
- * 如果未指定 [directory]，将使用默认的临时文件目录。
- *
- * [prefix] 参数（如果指定）必须至少有三个字符长。
- * 建议前缀是一个简短、有意义的字符串，例如 "job" 或 "mail"。
- *
- * 为了创建新文件，[prefix] 和 [suffix] 可能首先会根据底层平台的限制进行调整。
- *
- * **注意：** 如果新目录创建在与所有用户共享的目录中，
- * 它可能会获得允许所有人读取其内容或内容的权限，从而存在泄漏
- * 存储在此目录中的敏感信息的风险。
- * 为避免这种情况，建议要么指定一个不被广泛共享的显式父 [directory]，
- * 要么使用创建临时文件的替代方法，
- * 例如 [java.nio.file.Files.createTempDirectory](https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html#createTempDirectory-java.lang.String-java.nio.file.attribute.FileAttribute...-)
- * 或 `kotlin.io.path` 包中的实验性 `createTempDirectory` 函数。
- *
- * @return 一个对应于新创建目录的文件对象。
- *
- * @throws IOException 如果发生输入/输出错误。
- * @throws IllegalArgumentException 如果 [prefix] 短于三个字符。
+ * 返回此文件的扩展名（不包括点），如果没有，则返回空字符串。
  */
-@Deprecated(
-    "由于在新创建的目录上权限过宽，请避免使用此函数在默认临时位置创建临时目录。" +
-            "请改用 kotlin.io.path.createTempDirectory。"
-)
-fun createTempDir(prefix: String = "tmp", suffix: String? = null, directory: File? = null): File {
-    val dir = File.createTempFile(prefix, suffix, directory)
-    dir.delete()
-    if (dir.mkdir()) {
-        return dir
-    } else {
-        throw IOException("无法创建临时目录 $dir。")
-    }
-}
-
-/**
- * 在指定的 [directory] 中创建一个新的空文件，使用给定的 [prefix] 和 [suffix] 生成其名称。
- *
- * 如果未指定 [prefix]，将使用某个未指定的字符串。
- * 如果未指定 [suffix]，将使用 ".tmp"。
- * 如果未指定 [directory]，将使用默认的临时文件目录。
- *
- * [prefix] 参数（如果指定）必须至少有三个字符长。
- * 建议前缀是一个简短、有意义的字符串，例如 "job" 或 "mail"。
- *
- * 为了创建新文件，[prefix] 和 [suffix] 可能首先会根据底层平台的限制进行调整。
- *
- * **注意：** 如果新文件创建在与所有用户共享的目录中，
- * 它可能会获得允许所有人读取它的权限，从而存在泄漏
- * 存储在此文件中的敏感信息的风险。
- * 为避免这种情况，建议要么指定一个不被广泛共享的显式父 [directory]，
- * 要么使用创建临时文件的替代方法，
- * 例如 [java.nio.file.Files.createTempFile](https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html#createTempFile-java.lang.String-java.lang.String-java.nio.file.attribute.FileAttribute...-)
- * 或 `kotlin.io.path` 包中的实验性 `createTempFile` 函数。
- *
- * @return 一个对应于新创建文件的文件对象。
- *
- * @throws IOException 如果发生输入/输出错误。
- * @throws IllegalArgumentException 如果 [prefix] 短于三个字符。
- */
-@Deprecated(
-    "由于在新创建的文件上权限过宽，请避免使用此函数在默认临时位置创建临时文件。" +
-            "请改用 kotlin.io.path.createTempFile 或 java.io.File.createTempFile。"
-)
-fun createTempFile(prefix: String = "tmp", suffix: String? = null, directory: File? = null): File {
-    return File.createTempFile(prefix, suffix, directory)
-}
+val String.extension: String get() = substringAfterLast('.', "")
 
 /**
  * 返回此文件的扩展名（不包括点），如果没有，则返回空字符串。
  */
-val File.extension: String get() = name.substringAfterLast('.', "")
+val File.extension: String get() = name.extension
 
 /**
  * 使用不变分隔符 '/' 返回此文件的 [path][File.path]
