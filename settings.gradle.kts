@@ -38,6 +38,7 @@ include(":app:shared")
 include(":component")
 include(":component:koin")
 include(":component:room")
+include(":component:data-store")
 
 include(":core")
 include(":core:io")
