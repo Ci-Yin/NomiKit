@@ -1,9 +1,16 @@
 [versions]
 kotlin = "2.3.0"
+ksp = "2.3.3"
 android-gradle-plugin = "8.11.0"
 compose-hot-reload = "1.0.0"
 compose-multiplatform = "1.10.0"
-ksp = "2.3.3"
+
+multiplatform-material3 = "1.9.0"
+multiplatform-adaptive = "1.3.0-alpha02"
+multiplatform-lifecycle = "2.10.0-alpha05"
+multiplatform-nav3-ui = "1.0.0-alpha05"
+multiplatform-savedstate = "1.4.0"
+multiplatform-window = "1.5.1"
 
 androidx-activity-compose = "1.10.0"
 androidx-appcompat = "1.7.0"
@@ -13,12 +20,13 @@ androidx-lifecycle = "2.8.0"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 androidx-navigation = "2.9.0"
+
+
 room = "2.8.4" # https://developer.android.com/jetpack/androidx/releases/room#declaring_dependencies
 paging = "3.3.6" # https://developer.android.com/jetpack/androidx/releases/paging
 sqlite = "2.6.2"
-multiplatform-nav3-ui = "1.0.0-alpha05"
-compose-multiplatform-adaptive = "1.3.0-alpha02"
-compose-multiplatform-lifecycle = "2.10.0-alpha05"
+datastore = "1.2.0" # https://developer.android.com/jetpack/androidx/releases/datastore
+okio = "3.16.4" # https://github.com/square/okio/
 jetbrains-annotations = "26.0.2-1"
 kotlinxDatetime = "0.7.0"
 materialIcons = "1.7.0"
@@ -66,6 +74,24 @@ compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetb
 kotlin-compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-native-cocoapods-gradle-plugin = { module = "org.jetbrains.kotlin.native.cocoapods:org.jetbrains.kotlin.native.cocoapods.gradle.plugin", version.ref = "kotlin" }
 
+# Compose
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "multiplatform-material3" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-util = { module = "org.jetbrains.compose.ui:ui-util", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
+compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "multiplatform-adaptive" }
+compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive-layout:adaptive", version.ref = "multiplatform-adaptive" }
+compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "multiplatform-adaptive" }
+
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "multiplatform-nav3-ui" }
+jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "multiplatform-lifecycle" }
+jetbrains-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "multiplatform-savedstate" }
+jetbrains-window = { module = "org.jetbrains.androidx.window:window-core", version.ref = "multiplatform-window" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
@@ -83,14 +109,12 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-ui-tooling-preview-desktop = { group = "androidx.compose.ui", name = "ui-tooling-preview-desktop", version.ref = "uiToolingPreviewDesktop" }
 androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
 androidx-compose-material3-window-size-class2 = { group = "androidx.compose.material3", name = "material3-window-size-class" }
-compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
 androidx-window = { group = "androidx.window", name = "window", version.ref = "window" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "androidx-navigation" }
 androidx-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
 androidx-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons" }
 
-# Room
 # Room, SQLite, and Paging
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -101,10 +125,14 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
-jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "multiplatform-nav3-ui" }
-jetbrains-material3-adaptiveNavigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "compose-multiplatform-adaptive" }
-jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "compose-multiplatform-lifecycle" }
-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+# DataStore
+datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastore" }
+datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "datastore" }
+
+# Okio
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
+
 
 ivy = { module = "org.apache.ivy:ivy", version.ref = "ivy" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
@@ -213,7 +241,7 @@ compose = [
 
 navigation = [
     "jetbrains-navigation3-ui",
-    "jetbrains-material3-adaptiveNavigation3",
+    "compose-material3-adaptive-navigation3",
     "jetbrains-lifecycle-viewmodelNavigation3"
 ]
 

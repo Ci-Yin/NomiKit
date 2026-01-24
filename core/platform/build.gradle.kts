@@ -1,28 +1,30 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
     id(libs.plugins.jetbrains.compose)
     id(libs.plugins.compose.compiler)
 }
 
-android {
-    namespace = "ciyin.core.platform"
-}
+kotlin {
 
-androidMainDependencies {
+    androidLibrary {
+        namespace = "ciyin.core.platform"
+    }
 
-}
+    sourceSets.commonMain.dependencies {
+        api(compose.runtime)
+        api(compose.ui)
+        api(libs.kermit)
+        api(libs.kotlinx.datetime)
+        api(libs.kotlinx.coroutines.core)
+        api(projects.core.lang)
+        api(projects.core.io)
+    }
 
-commonMainDependencies {
-    api(compose.runtime)
-    api(compose.ui)
-    api(libs.kermit)
-    api(libs.kotlinx.datetime)
-    api(libs.kotlinx.coroutines.core)
-    api(projects.core.lang)
-    api(projects.core.io)
-}
+    sourceSets.desktopMain.dependencies {
+        api(libs.jna)
+        api(libs.jna.platform)
+    }
 
-desktopMainDependencies {
-    api(libs.jna)
-    api(libs.jna.platform)
 }

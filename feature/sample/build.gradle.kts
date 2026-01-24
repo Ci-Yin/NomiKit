@@ -1,23 +1,33 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
 }
 
-android {
-    namespace = "ciyin.feature.sample"
-}
+kotlin {
 
-commonMainDependencies {
+    androidLibrary {
+        namespace = "ciyin.feature.sample"
+    }
 
-}
+    sourceSets.commonMain.dependencies {
 
-androidMainDependencies {
+    }
 
-}
+    sourceSets.androidMain.dependencies {
 
-desktopMainDependencies {
+    }
 
-}
+    sourceSets.desktopMain.dependencies {
 
-iosMainDependencies {
+    }
+
+    sourceSets.iosMain.dependencies {
+
+    }
+
+    sourceSets.webMain.dependencies {
+
+    }
 
 }

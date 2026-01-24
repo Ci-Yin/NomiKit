@@ -1,18 +1,24 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
 }
 
-android {
+kotlin {
+
+    androidLibrary {
+        namespace = "ciyin.core.io"
+    }
+
+    sourceSets.commonMain.dependencies {
+        api(projects.core.lang)
+        api(libs.kotlinx.coroutines.core)
+        api(libs.okio)
+    }
+
+}
+
+kotlin.androidLibrary {
     namespace = "ciyin.core.io"
-}
-
-commonMainDependencies {
-    api(projects.core.lang)
-    api(libs.kotlinx.coroutines.core)
-    api("com.squareup.okio:okio:3.11.0")
-}
-
-webMainDependencies {
-
 }
 

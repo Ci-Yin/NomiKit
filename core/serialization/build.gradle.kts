@@ -1,22 +1,23 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
     alias(libs.plugins.kotlin.serialization)
 }
+kotlin {
 
-android {
-    namespace = "ciyin.core.serialization"
-}
+    androidLibrary {
+        namespace = "ciyin.core.serialization"
+    }
 
-androidMainDependencies {
+    sourceSets.commonMain.dependencies {
+        api(libs.kotlinx.serialization.json)
+        api(projects.core.io)
+    }
 
-}
+    sourceSets.jvmMain.dependencies {
+        api(libs.gson)
+        api(libs.moshi.kotlin)
+    }
 
-commonMainDependencies {
-    api(libs.kotlinx.serialization.json)
-    api(projects.core.io)
-}
-
-jvmMainDependencies {
-    api(libs.gson)
-    api(libs.moshi.kotlin)
 }

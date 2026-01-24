@@ -1,11 +1,17 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
 }
 
-android {
-    namespace = "ciyin.core.lang"
-}
+kotlin {
 
-commonMainDependencies {
-    api(libs.jetbrains.annotations)
+    androidLibrary {
+        namespace = "ciyin.core.lang"
+    }
+
+    sourceSets.commonMain.dependencies {
+        api(libs.jetbrains.annotations)
+    }
+
 }

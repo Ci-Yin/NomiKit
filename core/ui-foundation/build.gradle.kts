@@ -1,39 +1,41 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
     id(libs.plugins.jetbrains.compose)
     id(libs.plugins.compose.compiler)
 }
 
-android {
-    namespace = "ciyin.core.ui.foundation"
-}
+kotlin {
 
-androidMainDependencies {
-    api(libs.androidx.window)
-}
+    androidLibrary {
+        namespace = "ciyin.core.ui.foundation"
+    }
 
-commonMainDependencies {
-    api(compose.runtime)
-    api(compose.foundation)
-    api(compose.material3)
-    api(compose.ui)
-    api(compose.uiUtil)
-    api(compose.components.resources)
-    api(compose.components.uiToolingPreview)
+    sourceSets.commonMain.dependencies {
+        api(libs.compose.runtime)
+        api(libs.compose.foundation)
+        api(libs.compose.material3)
+        api(libs.compose.ui)
+        api(libs.compose.ui.util)
+        api(libs.compose.components.resources)
+        api(libs.compose.ui.tooling.preview)
 
-    api(libs.androidx.lifecycle.viewmodel)
-    api(libs.androidx.lifecycle.viewmodel.compose)
-    api(libs.androidx.lifecycle.runtime.compose)
-    api(libs.bundles.compose)
-    api(libs.bundles.navigation)
-    api(libs.bundles.material3)
-    api(libs.bundles.coil)
-    api(libs.freeletics.flowredux2)
+        api(libs.androidx.lifecycle.viewmodel)
+        api(libs.androidx.lifecycle.viewmodel.compose)
+        api(libs.androidx.lifecycle.runtime.compose)
+        api(libs.bundles.compose)
+        api(libs.bundles.navigation)
+        api(libs.bundles.material3)
+        api(libs.bundles.coil)
+        api(libs.freeletics.flowredux2)
 
-    api(projects.core.uiPreview)
-    api(projects.core.coroutines)
-}
+        api(projects.core.uiPreview)
+        api(projects.core.coroutines)
+    }
 
-desktopMainDependencies {
+    sourceSets.androidMain.dependencies {
+        api(libs.androidx.window)
+    }
 
 }

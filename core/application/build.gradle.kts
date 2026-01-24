@@ -1,25 +1,19 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
     id(libs.plugins.jetbrains.compose)
     id(libs.plugins.compose.compiler)
 }
 
-android {
-    namespace = "ciyin.core.application"
-}
+kotlin {
 
-commonMainDependencies {
-    implementation(projects.component.koin)
-}
+    androidLibrary {
+        namespace = "ciyin.core.application"
+    }
 
-androidMainDependencies {
-
-}
-
-desktopMainDependencies {
-
-}
-
-iosMainDependencies {
+    sourceSets.commonMain.dependencies {
+        implementation(projects.component.koin)
+    }
 
 }

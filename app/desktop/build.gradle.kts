@@ -12,7 +12,7 @@ plugins {
 //}
 
 dependencies {
-    implementation(compose.components.resources)
+    implementation(libs.compose.components.resources)
     implementation(projects.core.platform)
     implementation(projects.app.shared)
 }

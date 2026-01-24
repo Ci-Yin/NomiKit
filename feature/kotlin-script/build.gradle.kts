@@ -1,22 +1,24 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     `multiplatform-lib-targets`
 }
 
-android {
-    namespace = "ciyin.feature.kotlinscript"
-}
+kotlin {
 
-androidMainDependencies {
+    androidLibrary {
+        namespace = "ciyin.feature.kotlinscript"
+    }
 
-}
+    sourceSets.commonMain.dependencies {
+        implementation(libs.kotlinx.coroutines.core)
+        implementation(projects.core.platform)
+    }
 
-commonMainDependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(projects.core.platform)
-}
+    sourceSets.desktopMain.dependencies {
+        implementation(libs.ivy)
+        implementation(kotlin("script-runtime"))
+        implementation(libs.bundles.kotlin.scripting)
+    }
 
-desktopMainDependencies {
-    implementation(libs.ivy)
-    implementation(kotlin("script-runtime"))
-    implementation(libs.bundles.kotlin.scripting)
 }
