@@ -12,10 +12,11 @@ plugins {
 
 val componentDependencies = listOf<Dependency>(
     projects.component.room,
-//    projects.component.dataStore,
+    projects.component.dataStore,
 )
 
 kotlin {
+
     androidLibrary {
         namespace = "com.ciyin.app.shared"
     }
@@ -24,7 +25,7 @@ kotlin {
         // component.room 依赖了 Room 库，Room 可能不支持所有平台
         // 因此将 room 依赖移到特定平台源集，而不是 commonMain
         componentDependencies.forEach(::api)
-        implementation(compose.components.resources)
+        implementation(libs.compose.components.resources)
 
         implementation(libs.bundles.arrow)
         implementation(libs.bundles.filekit)
@@ -42,8 +43,6 @@ kotlin {
 
         api(projects.component.koin)
 
-        api(projects.feature.kotlinScript)
-
     }
 
 
@@ -57,12 +56,9 @@ kotlin {
             exclude(compose.material) // We use material3
         }
         implementation(libs.kotlinx.coroutines.swing)
-        implementation(kotlin("script-runtime"))
-        implementation(libs.bundles.kotlin.scripting)
     }
 
 }
-
 
 compose.resources {
     publicResClass = true
@@ -72,7 +68,7 @@ compose.resources {
 room {
     schemaDirectory("${projectDir}/schemas")
 }
-//
+
 kspPlatformMain(libs.androidx.room.compiler)
 
 koinBootInitializer {

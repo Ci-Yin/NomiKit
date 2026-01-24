@@ -1,3 +1,5 @@
+package ciyin
+
 import ciyin.datastore.DataStoreAutoConfiguration
 import ciyin.koin.KoinBootInitializer
 
