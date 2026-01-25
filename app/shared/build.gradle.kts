@@ -29,6 +29,7 @@ kotlin {
 
         implementation(libs.bundles.arrow)
         implementation(libs.bundles.filekit)
+        implementation(libs.bundles.navigation)
 
         api(projects.core.io)
         api(projects.core.lang)

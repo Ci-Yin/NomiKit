@@ -25,7 +25,6 @@ kotlin {
         api(libs.androidx.lifecycle.viewmodel.compose)
         api(libs.androidx.lifecycle.runtime.compose)
         api(libs.bundles.compose)
-        api(libs.bundles.navigation)
         api(libs.bundles.material3)
         api(libs.bundles.coil)
         api(libs.freeletics.flowredux2)
