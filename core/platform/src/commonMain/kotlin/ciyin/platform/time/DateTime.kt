@@ -7,6 +7,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
 /**
@@ -33,6 +34,31 @@ const val DateAndTimePatternWithWeek = "yyyy-MM-dd HH:mm:ss EEEE"
 const val FormatPatternShort = "yyyy-MM-dd"
 
 fun currentTimeMillis(): Long = Clock.System.now().toEpochMilliseconds()
+
+/**
+ * 将 ISO 8601 格式的时间字符串解析为 [Instant]。
+ *
+ * 支持格式示例：
+ * - 2023-01-18T10:17:51Z
+ * - 2023-01-18T10:17:51.861Z
+ * - 2023-01-18T10:17:51.861-05:00
+ * - 2023-01-18T10:17:51+08:00
+ *
+ * 要求：
+ * - 必须是标准 ISO 8601 格式
+ * - 时区必须是 `Z` 或 `±HH:mm`
+ *
+ * 说明：
+ * - 解析后得到的是 UTC 时间点（Instant 本质就是 UTC 时间）
+ * - 如果字符串格式非法会抛出 DateTimeParseException
+ *
+ * @receiver ISO 8601 时间字符串
+ * @return 解析后的 Instant（UTC 时间）
+ * @throws IllegalArgumentException 如果字符串格式不合法
+ */
+fun String.toInstant(): Instant {
+    return Instant.parse(this)
+}
 
 /**
  * 自定义格式化
