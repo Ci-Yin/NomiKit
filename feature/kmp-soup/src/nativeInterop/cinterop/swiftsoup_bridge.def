@@ -1,0 +1,3 @@
+﻿language = Objective-C
+package = ciyin.feature.kmpsoup.bridge
+headers = SwiftSoupBridge.h

@@ -36,7 +36,7 @@ jna = "5.18.0"
 ivy = "2.5.2"
 jnaPlatform = "5.18.0"
 kotlinxSerializationJson = "1.7.3"
-ktor-client = "2.3.12"
+ktor-client = "3.4.0"
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
 koin-annotations = "2.3.1"  # Stable version
 junit = "4.13.2"
@@ -49,7 +49,7 @@ uiToolingPreviewDesktop = "1.7.0"
 material3-adaptive-navigation-suite = "1.4.0-beta01"
 kermit = "2.0.8"
 filekit = "0.12.0"
-compottie = "2.0.2" #https://github.com/alexzhirkevich/compottie
+compottie = "2.0.2" # https://github.com/alexzhirkevich/compottie
 
 rxjava = "3.1.9"
 rxkotlin = "3.0.1"
@@ -62,6 +62,8 @@ arrow = "2.1.2"
 
 shadow = "8.1.1"
 directories = "26"
+jsoup = "1.22.1" # https://jsoup.org/
+ktsoup = "1.0.0-SNAPSHOT" # https://github.com/DrewCarlson/KtSoup
 
 [libraries]
 
@@ -183,6 +185,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-cl
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor-client" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor-client" }
 ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-client" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor-client" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor-client" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor-client" }
 
@@ -213,6 +216,14 @@ compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources",
 
 # Directories
 directories = { module = "dev.dirs:directories", version.ref = "directories" }
+
+# Jsoup
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+# KtSoup
+ktsoup-core = { module = "org.drewcarlson:ktsoup-core", version.ref = "ktsoup" }
+ktsoup-fs = { module = "org.drewcarlson:ktsoup-fs", version.ref = "ktsoup" }
+ktsoup-ktor = { module = "org.drewcarlson:ktsoup-ktor", version.ref = "ktsoup" }
 
 [bundles]
 

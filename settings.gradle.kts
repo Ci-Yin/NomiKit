@@ -55,4 +55,5 @@ include(":core:ui-foundation")
 
 include(":feature")
 include(":feature:kotlin-script")
+include(":feature:kmp-soup")
 include(":feature:sample")
