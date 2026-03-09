@@ -41,12 +41,23 @@ configure<KotlinMultiplatformExtension> {
         androidResources {
             enable = true
         }
+        // 选择加入以启用和配置主机端（单元）测试
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
 
+        // 选择加入以启用和配置设备端（带仪器）测试
+        withDeviceTest {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            execution = "HOST"
+        }
         packaging {
             resources {
                 excludes += "/META-INF/{AL2.0,LGPL2.1}"
                 excludes += "META-INF/DEPENDENCIES"
                 excludes += "META-INF/INDEX.LIST"
+                excludes += "META-INF/LICENSE.md"
+                excludes += "META-INF/LICENSE-notice.md"
                 pickFirsts += "META-INF/io.netty.versions.properties"
                 pickFirsts += "META-INF/some/other-duplicate.properties"
             }
@@ -136,36 +147,10 @@ configure<KotlinMultiplatformExtension> {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    if (composeExtension != null && enableDesktop) {
-        sourceSets.getByName("desktopTest").dependencies {
-            val compose = ComposePlugin.Dependencies(project)
-            implementation(compose.desktop.uiTestJUnit4)
-        }
-    }
-
     sourceSets.commonMain.dependencies {
-        // 添加常用依赖
-//        if (composeExtension != null) {
-//            val compose = ComposePlugin.Dependencies(project)
-//            // Compose
-//            api(compose.foundation)
-//            api(compose.runtime)
-//            api(compose.ui)
-//            api(compose.animation)
-//            api(compose.material3)
-//            api(compose.materialIconsExtended)
-//            // workaround in CMP 1.8.0-alpha04. Remove in the future.
-//            api("org.jetbrains.androidx.window:window-core") {
-//                version {
-//                    strictly("1.4.0-alpha03")
-//                }
-//            }
-//        }
-
         if (project.path != ":core:lang" && project.path != ":core:platform" && project.path != ":core:system" && project.path != ":core:io") {
             implementation(project(":core:system"))
         }
-
     }
 
     sourceSets.commonTest.dependencies {
@@ -180,6 +165,33 @@ configure<KotlinMultiplatformExtension> {
         }
     }
 
+    sourceSets.getByName("androidDeviceTest").dependencies {
+        if (project.path != ":core:testing") {
+            implementation(project(":core:testing")) {
+                exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit5")
+            }
+        }
+    }
+
+    if (composeExtension != null && enableDesktop) {
+        sourceSets.getByName("desktopTest").dependencies {
+            val compose = ComposePlugin.Dependencies(project)
+            implementation(compose.desktop.uiTestJUnit4)
+        }
+    }
+
+}
+
+if (enableIos) {
+    // ios testing workaround
+    // https://developer.squareup.com/blog/kotlin-multiplatform-shared-test-resources/
+    tasks.register<Copy>("copyiOSTestResources") {
+        from("src/commonTest/resources")
+        into("build/bin/iosSimulatorArm64/debugTest/resources")
+    }
+    tasks.named("iosSimulatorArm64Test") {
+        dependsOn("copyiOSTestResources")
+    }
 }
 
 tasks.withType<Test>().configureEach {

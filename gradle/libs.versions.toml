@@ -35,7 +35,7 @@ gson = "2.11.0"
 jna = "5.18.0"
 ivy = "2.5.2"
 jnaPlatform = "5.18.0"
-kotlinxSerializationJson = "1.7.3"
+serialization = "1.10.0"
 ktor-client = "3.4.0"
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
 koin-annotations = "2.3.1"  # Stable version
@@ -63,7 +63,8 @@ arrow = "2.1.2"
 shadow = "8.1.1"
 directories = "26"
 jsoup = "1.22.1" # https://jsoup.org/
-ktsoup = "1.0.0-SNAPSHOT" # https://github.com/DrewCarlson/KtSoup
+ktsoup = "0.2.6" # https://github.com/fleeksoft/ksoup
+xmlutil = "1.0.0-rc2" # https://github.com/pdvrieze/xmlutil
 
 [libraries]
 
@@ -157,7 +158,8 @@ kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 # State Management
 freeletics-flowredux2 = { module = "com.freeletics.flowredux2:flowredux", version.ref = "flowredux2" }
@@ -208,11 +210,15 @@ arrow-functions = { module = "io.arrow-kt:arrow-functions", version.ref = "arrow
 arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
 arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
 
+# Compottie
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 compottie-lite = { module = "io.github.alexzhirkevich:compottie-lite", version.ref = "compottie" }
 compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
 compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
 compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
+
+# XmlUtil
+xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
 
 # Directories
 directories = { module = "dev.dirs:directories", version.ref = "directories" }
@@ -220,10 +226,8 @@ directories = { module = "dev.dirs:directories", version.ref = "directories" }
 # Jsoup
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
-# KtSoup
-ktsoup-core = { module = "org.drewcarlson:ktsoup-core", version.ref = "ktsoup" }
-ktsoup-fs = { module = "org.drewcarlson:ktsoup-fs", version.ref = "ktsoup" }
-ktsoup-ktor = { module = "org.drewcarlson:ktsoup-ktor", version.ref = "ktsoup" }
+# Ksoup
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ktsoup" }
 
 [bundles]
 
