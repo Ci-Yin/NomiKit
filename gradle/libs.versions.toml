@@ -61,7 +61,7 @@ arrow = "2.1.2"
 shadow = "8.1.1"
 directories = "26"
 jsoup = "1.22.1" # https://jsoup.org/
-ktsoup = "0.2.6" # https://github.com/fleeksoft/ksoup
+ksoup = "0.2.6" # https://github.com/fleeksoft/ksoup
 xmlutil = "1.0.0-rc2" # https://github.com/pdvrieze/xmlutil
 
 [libraries]
@@ -226,7 +226,7 @@ directories = { module = "dev.dirs:directories", version.ref = "directories" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Ksoup
-ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ktsoup" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 
 [bundles]
 
