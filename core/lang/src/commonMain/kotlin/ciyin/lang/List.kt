@@ -8,6 +8,18 @@ package ciyin.lang
  * @since 2024/8/29 下午4:48
  */
 
+
+/**
+ * 切换元素存在状态：
+ * - 存在则移除
+ * - 不存在则添加
+ */
+fun <T> MutableCollection<T>.toggle(element: T) {
+    if (!add(element)) {
+        remove(element)
+    }
+}
+
 // 但是没有 peek()、pop()、push() 方法，需要自己实现扩展函数
 fun <T> ArrayDeque<T>.peek(): T? = lastOrNull()
 fun <T> ArrayDeque<T>.pop(): T = removeLast()
