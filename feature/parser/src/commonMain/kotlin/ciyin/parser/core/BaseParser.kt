@@ -22,7 +22,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlin.reflect.KClass
 
 /**
  * 通用解析器基类，提供「站点配置 + 类型注册 + 请求执行 + 响应解析」的完整骨架。
@@ -33,8 +32,8 @@ import kotlin.reflect.KClass
  * [TypeScope]，构建 [HttpRequest]、并发请求、按 DSL 解析为 [TResult]，并通过 [Flow] 发送 [ParserEvent]。
  *
  * 典型用法：
- * 1. 继承本类并实现 [setup]、[defTResult]、[resolveType]。
- * 2. 在 [setup] 中设置 `id`、`baseUrl`，并用 `on<SomeType> { request { ... }; response { ... } }` 注册各类型。
+ * 1. 继承本类并实现 [setup]、[defTResult]。
+ * 2. 在 [setup] 中设置 `id`、`baseUrl`，并用 `on(SomeType) { request { ... }; response { ... } }` 注册各类型（[SomeType] 为 [TType] 的单例）。
  * 3. 调用 [request] 传入 [TRequest]，收集 [ParserEvent.Success] 或 [ParserEvent.Failure] 得到结果。
  *
  * @param TType 解析类型，需实现 [ParserType]，用于区分漫画/图片/电影等不同解析流程。
@@ -134,16 +133,6 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
     internal fun register(type: TType, typeScope: TypeScope<TRequest, TResult>) {
         mutableRegistry[type] = typeScope
     }
-
-    /**
-     * 根据类型的 [KClass] 解析出对应的 [TType] 实例。
-     * 用于 [ParserScope.on] 的 reified 类型参数到具体 [TType] 的映射，子类必须实现。
-     *
-     * @param typeClass 类型的运行时 [KClass]。
-     * @return 与该类型对应的 [TType] 实例。
-     */
-    @PublishedApi
-    internal abstract fun resolveType(typeClass: KClass<out TType>): TType
 
     /**
      * 执行指定类型的完整解析流程。

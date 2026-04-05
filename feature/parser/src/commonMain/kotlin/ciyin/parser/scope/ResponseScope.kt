@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
  * 按类型取 [HttpResponse]，再通过 [bodyForHtml]、[bodyForJson]、[bodyForXml] 取响应体或反序列化对象，
  * 结合 [document]（HTML 解析为 Ksoup [Document]）完成从响应到结果模型的填充。
  *
- * 典型用法（在 `on<SomeType> { response { result -> ... } }` 内）：
+ * 典型用法（在 `on(SomeType) { response { result -> ... } }` 内）：
  * ```
  * response { result ->
  *     result.copy(

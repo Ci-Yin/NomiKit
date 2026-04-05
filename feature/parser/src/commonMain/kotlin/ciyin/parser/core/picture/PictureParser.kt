@@ -9,9 +9,8 @@ import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.model.FileNameInfo
 import ciyin.parser.scope.ParserDsl
-import ciyin.parser.scope.ParserScope
+import ciyin.parser.util.PictureParserScope
 import ciyin.parser.util.buildFileName
-import kotlin.reflect.KClass
 
 /**
  * 图站解析父类骨架。
@@ -21,22 +20,6 @@ abstract class PictureParser : BaseParser<PictureParserType, PictureRequest, Pic
     override val defTResult: PictureResult get() = PictureResult()
 
     /**
-     * 将 DSL 泛型类型映射为图站解析类型对象。
-     *
-     * @param typeClass 类型运行时信息。
-     * @return 图站解析类型。
-     */
-    final override fun resolveType(typeClass: KClass<out PictureParserType>) = when (typeClass) {
-        PictureParserType.Home::class -> PictureParserType.Home
-        PictureParserType.Posts::class -> PictureParserType.Posts
-        PictureParserType.Post::class -> PictureParserType.Post
-        PictureParserType.Pools::class -> PictureParserType.Pools
-        PictureParserType.Pool::class -> PictureParserType.Pool
-        PictureParserType.Popular::class -> PictureParserType.Popular
-        else -> error("未支持的 PictureParserType: $typeClass")
-    }
-
-    /**
      * 添加图片信息修改。
      *
      * 多次添加图片信息修改，会按添加顺序执行。
@@ -44,7 +27,7 @@ abstract class PictureParser : BaseParser<PictureParserType, PictureRequest, Pic
      * @param block 图片信息修改。
      */
     @ParserDsl
-    fun ParserScope<PictureParserType, PictureRequest, PictureResult>.onItemRevise(block: Picture.() -> Picture?) {
+    fun PictureParserScope.onItemRevise(block: Picture.() -> Picture?) {
 
         val revise: Picture.() -> Picture? = {
 

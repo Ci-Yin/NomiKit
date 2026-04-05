@@ -11,7 +11,7 @@ import ciyin.parser.core.ResultType
  * [ResultType] 的 key，后续在 [ResponseScope] 中通过 [ResponseScope.responseForHtml]、
  * [ResponseScope.responseForJson]、[ResponseScope.responseForXml] 按 key 取回对应响应进行解析。
  *
- * 典型用法（在 `on<SomeType> { request { ... } }` 内）：
+ * 典型用法（在 `on(SomeType) { request { ... } }` 内）：
  * ```
  * request { req ->
  *     html { url(path = "/page", parameters = mapOf("id" to req.id)) }

@@ -23,7 +23,7 @@ import io.ktor.client.engine.HttpClientEngineFactory
  *     id = SomeSiteId
  *     baseUrl = "https://example.com"
  *     onResultRevise { ... }
- *     on<ComicType> {
+ *     on(ComicParserType.Home) {
  *         request { ... }
  *         response { ... }
  *     }
@@ -91,16 +91,15 @@ class ParserScope<TType : ParserType, TRequest : ParserRequest, TResult : Parser
     }
 
     /**
-     * 按解析类型注册 DSL 配置。
+     * 按解析类型实例注册 DSL 配置。
      *
      * 在 [TypeScope] 中通过 [TypeScope.request] 与 [TypeScope.response] 分别注册该类型下的
      * 请求构建逻辑与响应解析逻辑。同一类型多次调用 [on] 会覆盖之前的注册（每种类型仅保留最后一次）。
      *
-     * @param T 具体的解析类型，必须是 [TType] 的子类型（如漫画、图片、电影等）。
+     * @param type 解析类型单例（如 `ComicParserType.Home`、`PictureParserType.Posts`）。
      * @param block 类型作用域块，在 [TypeScope] 中配置 request/response。
      */
-    inline fun <reified T : TType> on(noinline block: TypeScope<TRequest, TResult>.() -> Unit) {
-        val type = parser.resolveType(T::class)
+    fun on(type: TType, block: TypeScope<TRequest, TResult>.() -> Unit) {
         val typeScope = TypeScope<TRequest, TResult>().apply(block)
         parser.register(type, typeScope)
     }

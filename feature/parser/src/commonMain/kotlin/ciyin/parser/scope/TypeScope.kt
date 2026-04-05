@@ -9,9 +9,9 @@ import ciyin.parser.model.ParserRequest
  * 「请求如何构建」与「响应如何解析为结果」：通过 [request] 注册 [RequestScope] 下的多路请求
  *（html/json/xml），通过 [response] 注册 [ResponseScope] 下从响应构造 [TResult] 的逻辑。
  *
- * 典型用法（在 `parserScope { on<ComicType> { ... } }` 内）：
+ * 典型用法（在 `parserScope { on(ComicParserType.Comic) { ... } }` 内）：
  * ```
- * on<ComicType> {
+ * on(ComicParserType.Comic) {
  *     request { req -> html { url(path = "/comic/${req.id}") } }
  *     response { result -> document.select("...").let { ... result } }
  * }

@@ -31,7 +31,6 @@ class WebViewContentLoader(private val context: Context, val waitTime: Long = 20
         baseUrl = "",
         url = Url(""),
         headers = mapOf(),
-        isMockWeb = false
     )
 
     /**
