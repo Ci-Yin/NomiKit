@@ -49,7 +49,7 @@ fun Source.readAll(hashingSink: HashingSink) {
  */
 fun Source.copyTo(
     sink: Sink,
-    bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
+    bufferSize: Long = DEFAULT_BUFFER_SIZE,
     progressInterval: Long = 0,
     onProgress: (Long) -> Boolean = { true }
 ): Long {
@@ -95,7 +95,7 @@ fun Source.copyTo(
  */
 fun BufferedSource.copyTo(
     sink: BufferedSink,
-    bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
+    bufferSize: Long = DEFAULT_BUFFER_SIZE,
     progressInterval: Long = 0,
     onProgress: (Long) -> Boolean = { true }
 ): Long {
@@ -141,7 +141,7 @@ fun BufferedSource.copyTo(
  */
 suspend fun Source.copyToSuspend(
     sink: Sink,
-    bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
+    bufferSize: Long = DEFAULT_BUFFER_SIZE,
     progressInterval: Long = 1024 * 1024,
     onProgress: suspend (Long) -> Unit = {}
 ): Long {
