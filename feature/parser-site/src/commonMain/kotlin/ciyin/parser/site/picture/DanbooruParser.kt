@@ -7,22 +7,20 @@ import ciyin.io.toFile
 import ciyin.lang.match
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.PictureParserType.Pool
 import ciyin.parser.core.picture.PictureParserType.Pools
 import ciyin.parser.core.picture.PictureParserType.Popular
 import ciyin.parser.core.picture.PictureParserType.Post
 import ciyin.parser.core.picture.PictureParserType.Posts
 import ciyin.parser.core.picture.model.Picture
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
 import ciyin.parser.model.Rating
 import ciyin.parser.model.Tag
 import ciyin.parser.model.TagCategory
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.PictureSiteId
+import ciyin.parser.util.PictureParserScope
 import ciyin.platform.time.toInstant
 import com.fleeksoft.ksoup.nodes.Element
 import io.ktor.http.URLBuilder
@@ -39,7 +37,7 @@ class DanbooruParser : PictureParser() {
     /**
      * Danbooru 站点的 DSL 配置入口。
      */
-    override fun ParserScope<PictureParserType, PictureRequest, PictureResult>.setup() {
+    override fun PictureParserScope.setup() {
 
         id = PictureSiteId.Danbooru
         baseUrl = "https://danbooru.donmai.us"
@@ -67,7 +65,7 @@ class DanbooruParser : PictureParser() {
 
         }
 
-        on<Posts> {
+        on(Posts) {
 
             request { req ->
                 val parameters = parametersOf(
@@ -84,7 +82,7 @@ class DanbooruParser : PictureParser() {
 
         }
 
-        on<Post> {
+        on(Post) {
 
             request { req ->
                 html { url("/posts/${req.id}") }
@@ -101,7 +99,7 @@ class DanbooruParser : PictureParser() {
 
         }
 
-        on<Pools> {
+        on(Pools) {
 
             request { req ->
                 val parameters = parametersOf(
@@ -118,7 +116,7 @@ class DanbooruParser : PictureParser() {
 
         }
 
-        on<Pool> {
+        on(Pool) {
 
             request { req ->
                 html { url("/pools/${req.id}") }
@@ -131,7 +129,7 @@ class DanbooruParser : PictureParser() {
 
         }
 
-        on<Popular> {
+        on(Popular) {
 
             request { req ->
                 val parameters = parametersOf(

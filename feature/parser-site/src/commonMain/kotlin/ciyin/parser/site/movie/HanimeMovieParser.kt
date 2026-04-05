@@ -1,10 +1,7 @@
 package ciyin.parser.site.movie
 
-import ciyin.parser.core.movie.MovieParserType
-import ciyin.parser.core.movie.model.MovieRequest
-import ciyin.parser.core.movie.model.MovieResult
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.site.MovieSiteId
+import ciyin.parser.util.MovieParserScope
 
 
 /**
@@ -15,7 +12,7 @@ import ciyin.parser.site.MovieSiteId
  * @since 2026/3/8 15:30
  */
 class HanimeMovieParser : HanimeMovieBaseParser() {
-    override fun ParserScope<MovieParserType, MovieRequest, MovieResult>.setup() = setup {
+    override fun MovieParserScope.setup() = setup {
         id = MovieSiteId.Hanime
         baseUrl = "https://hanimeone.me"
     }

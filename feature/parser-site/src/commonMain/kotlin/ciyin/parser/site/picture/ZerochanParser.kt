@@ -3,19 +3,17 @@ package ciyin.parser.site.picture
 import ciyin.io.extension
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.PictureParserType.Home
 import ciyin.parser.core.picture.PictureParserType.Post
 import ciyin.parser.core.picture.PictureParserType.Posts
 import ciyin.parser.core.picture.model.Picture
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
 import ciyin.parser.model.Rating
 import ciyin.parser.model.Tag
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.PictureSiteId
+import ciyin.parser.util.PictureParserScope
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
 import kotlinx.serialization.SerialName
@@ -31,7 +29,7 @@ class ZerochanParser : PictureParser() {
     /**
      * Zerochan 站点 DSL 配置入口。
      */
-    override fun ParserScope<PictureParserType, PictureRequest, PictureResult>.setup() {
+    override fun PictureParserScope.setup() {
         id = PictureSiteId.Zerochan
         baseUrl = "https://www.zerochan.net"
 
@@ -54,7 +52,7 @@ class ZerochanParser : PictureParser() {
             )
         }
 
-        on<Home> {
+        on(Home) {
             request {
                 html { url(parameters = parametersOf("json" to "")) }
             }
@@ -64,7 +62,7 @@ class ZerochanParser : PictureParser() {
             }
         }
 
-        on<Posts> {
+        on(Posts) {
             request { req ->
                 html { url(buildTagPath(req.tags), parametersOf("p" to req.page)) }
                 json { url(buildTagPath(req.tags), parametersOf("p" to req.page, "json" to "")) }
@@ -75,7 +73,7 @@ class ZerochanParser : PictureParser() {
             }
         }
 
-        on<Post> {
+        on(Post) {
             request { req ->
                 html { url(req.id) }
                 json { url(req.id, parametersOf("json" to "")) }

@@ -5,19 +5,17 @@ import ciyin.io.replaceExtension
 import ciyin.lang.match
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.PictureParserType.Post
 import ciyin.parser.core.picture.PictureParserType.Posts
 import ciyin.parser.core.picture.model.Picture
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
 import ciyin.parser.model.Rating
 import ciyin.parser.model.Tag
 import ciyin.parser.model.TagCategory
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.util.NumberAsStringSerializer
+import ciyin.parser.util.PictureParserScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -39,7 +37,7 @@ abstract class BaseBooruParser : PictureParser() {
     }
 
     /** 配置 Booru 站点的 DSL 请求与响应逻辑。*/
-    protected fun ParserScope<PictureParserType, PictureRequest, PictureResult>.superSetup() {
+    protected fun PictureParserScope.superSetup() {
 
         onItemRevise {
             copy(
@@ -49,7 +47,7 @@ abstract class BaseBooruParser : PictureParser() {
             )
         }
 
-        on<Posts> {
+        on(Posts) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
@@ -74,7 +72,7 @@ abstract class BaseBooruParser : PictureParser() {
             }
         }
 
-        on<Post> {
+        on(Post) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(

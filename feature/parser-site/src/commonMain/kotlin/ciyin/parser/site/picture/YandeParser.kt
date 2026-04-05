@@ -6,23 +6,21 @@ import ciyin.io.toFile
 import ciyin.lang.match
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.PictureParserType.Pool
 import ciyin.parser.core.picture.PictureParserType.Pools
 import ciyin.parser.core.picture.PictureParserType.Popular
 import ciyin.parser.core.picture.PictureParserType.Post
 import ciyin.parser.core.picture.PictureParserType.Posts
 import ciyin.parser.core.picture.model.Picture
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
 import ciyin.parser.model.Rating
 import ciyin.parser.model.Tag
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.PictureSiteId
 import ciyin.parser.site.util.NumberAsStringSerializer
 import ciyin.parser.site.util.toTimestamp
+import ciyin.parser.util.PictureParserScope
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
 import kotlinx.datetime.TimeZone
@@ -56,7 +54,7 @@ class YandeParser : PictureParser() {
     /**
      * Yande 站点 DSL 配置入口。
      */
-    override fun ParserScope<PictureParserType, PictureRequest, PictureResult>.setup() {
+    override fun PictureParserScope.setup() {
         id = PictureSiteId.Yande
         baseUrl = "https://yande.re"
 
@@ -88,7 +86,7 @@ class YandeParser : PictureParser() {
             )
         }
 
-        on<Posts> {
+        on(Posts) {
             request { req ->
                 val parameters = parametersOf(
                     "page" to req.page,
@@ -102,7 +100,7 @@ class YandeParser : PictureParser() {
             }
         }
 
-        on<Post> {
+        on(Post) {
             request { req ->
                 html { url("/post/show/${req.id}") }
             }
@@ -112,7 +110,7 @@ class YandeParser : PictureParser() {
             }
         }
 
-        on<Pools> {
+        on(Pools) {
             request { req ->
                 val parameters = parametersOf(
                     "page" to req.page,
@@ -127,7 +125,7 @@ class YandeParser : PictureParser() {
             }
         }
 
-        on<Pool> {
+        on(Pool) {
             request { req ->
                 json { url("/pool/show/${req.id}.json") }
             }
@@ -137,7 +135,7 @@ class YandeParser : PictureParser() {
             }
         }
 
-        on<Popular> {
+        on(Popular) {
             request { req ->
                 val targetDateTime = Instant.fromEpochMilliseconds(
                     Clock.System.now().toEpochMilliseconds() - req.page.toLong() * MillisPerDay

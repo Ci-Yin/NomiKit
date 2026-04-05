@@ -5,19 +5,17 @@ import ciyin.io.nameWithoutExtension
 import ciyin.io.toFile
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.PictureParserType.Post
 import ciyin.parser.core.picture.PictureParserType.Posts
 import ciyin.parser.core.picture.model.Picture
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
 import ciyin.parser.model.Rating
 import ciyin.parser.model.Tag
 import ciyin.parser.model.TagCategory
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.PictureSiteId
+import ciyin.parser.util.PictureParserScope
 import ciyin.platform.time.toInstant
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
@@ -71,7 +69,7 @@ class GelbooruParser : PictureParser() {
     /**
      * 配置 Gelbooru 站点的 DSL 请求与响应逻辑。
      */
-    override fun ParserScope<PictureParserType, PictureRequest, PictureResult>.setup() {
+    override fun PictureParserScope.setup() {
         id = PictureSiteId.Gelbooru
         baseUrl = "https://gelbooru.com"
 
@@ -100,7 +98,7 @@ class GelbooruParser : PictureParser() {
             )
         }
 
-        on<Posts> {
+        on(Posts) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
@@ -125,7 +123,7 @@ class GelbooruParser : PictureParser() {
             }
         }
 
-        on<Post> {
+        on(Post) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(

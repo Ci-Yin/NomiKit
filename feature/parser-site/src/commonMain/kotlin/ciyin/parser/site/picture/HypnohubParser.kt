@@ -1,10 +1,7 @@
 package ciyin.parser.site.picture
 
-import ciyin.parser.core.picture.PictureParserType
-import ciyin.parser.core.picture.model.PictureRequest
-import ciyin.parser.core.picture.model.PictureResult
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.site.PictureSiteId
+import ciyin.parser.util.PictureParserScope
 
 
 /**
@@ -16,7 +13,7 @@ import ciyin.parser.site.PictureSiteId
  */
 class HypnohubParser : BaseBooruParser() {
 
-    override fun ParserScope<PictureParserType, PictureRequest, PictureResult>.setup() {
+    override fun PictureParserScope.setup() {
         id = PictureSiteId.Hypnohub
         baseUrl = "https://hypnohub.net"
         superSetup()

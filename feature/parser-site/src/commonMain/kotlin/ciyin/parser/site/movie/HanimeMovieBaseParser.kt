@@ -5,17 +5,16 @@ import ciyin.parser.core.movie.MovieParser
 import ciyin.parser.core.movie.MovieParserType
 import ciyin.parser.core.movie.MovieParserType.Movies
 import ciyin.parser.core.movie.model.Movie
-import ciyin.parser.core.movie.model.MovieRequest
 import ciyin.parser.core.movie.model.MovieResult
 import ciyin.parser.core.movie.model.Video
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.url
 import ciyin.parser.model.Tag
 import ciyin.parser.model.TagCategory
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.HanimeBaseElement
 import ciyin.parser.site.util.toTimestamp
+import ciyin.parser.util.MovieParserScope
 import com.fleeksoft.ksoup.nodes.Element
 
 
@@ -26,15 +25,15 @@ import com.fleeksoft.ksoup.nodes.Element
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2026/3/8 15:30
  */
-internal abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement {
+abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement {
 
-    protected fun ParserScope<MovieParserType, MovieRequest, MovieResult>.setup(
-        block: ParserScope<MovieParserType, MovieRequest, MovieResult>.() -> Unit,
+    protected fun MovieParserScope.setup(
+        block: MovieParserScope.() -> Unit,
     ) {
 
 //        httpClient(MockWeb) {}
 
-        on<Movies> {
+        on(Movies) {
             request { req ->
                 val parameters = parametersOf(
                     "page" to req.page,
@@ -53,7 +52,7 @@ internal abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement
             }
         }
 
-        on<MovieParserType.Movie> {
+        on(MovieParserType.Movie) {
 
             request { req ->
                 html { url("watch", parametersOf("v" to req.id)) }

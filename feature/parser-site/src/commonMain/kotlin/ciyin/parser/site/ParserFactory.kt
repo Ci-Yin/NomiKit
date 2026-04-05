@@ -1,5 +1,6 @@
 package ciyin.parser.site
 
+import ciyin.parser.core.ParserId
 import ciyin.parser.core.comic.ComicMultiParser
 import ciyin.parser.core.comic.ComicParser
 import ciyin.parser.core.movie.MovieMultiParser
@@ -15,6 +16,8 @@ import ciyin.parser.site.picture.SafebooruParser
 import ciyin.parser.site.picture.XbooruParser
 import ciyin.parser.site.picture.YandeParser
 import ciyin.parser.site.picture.ZerochanParser
+import kotlin.collections.mapNotNull
+import kotlin.jvm.JvmName
 
 
 /**
@@ -40,35 +43,75 @@ private fun preview() {}
  * 构建图片领域的多站点聚合解析器。
  *
  * @param siteIds          所有可供选择的图片站点 ID 列表。
- * @param enabledParserIds 本次实际启用的图片站点 ID 列表。
+ * @param enabledSiteIds 本次实际启用的图片站点 ID 列表。
  */
 fun PictureMultiParser(
     siteIds: List<PictureSiteId>,
-    enabledParserIds: List<PictureSiteId>,
-) = PictureMultiParser(siteIds.map { it.factory() }, enabledParserIds)
+    enabledSiteIds: List<PictureSiteId>,
+) = PictureMultiParser(siteIds.map { it.factory() }, enabledSiteIds)
+
+/**
+ * 构建图片领域的多站点聚合解析器。
+ *
+ * @param siteIds          所有可供选择的图片站点 ID 列表。
+ * @param enabledSiteIds 本次实际启用的图片站点 ID 列表。
+ */
+@JvmName("PictureMultiParserEx")
+fun PictureMultiParser(
+    siteIds: List<ParserId>,
+    enabledSiteIds: List<ParserId>,
+) = PictureMultiParser(
+    siteIds = siteIds.asSites(PictureSiteId.entries),
+    enabledSiteIds = enabledSiteIds.asSites(PictureSiteId.entries),
+)
 
 /**
  * 构建漫画领域的多站点聚合解析器。
  *
  * @param siteIds          所有可供选择的漫画站点 ID 列表。
- * @param enabledParserIds 本次实际启用的漫画站点 ID 列表。
+ * @param enabledSiteIds 本次实际启用的漫画站点 ID 列表。
  */
 fun ComicMultiParser(
     siteIds: List<ComicSiteId>,
-    enabledParserIds: List<ComicSiteId>,
-) = ComicMultiParser(siteIds.map { it.factory() }, enabledParserIds)
+    enabledSiteIds: List<ComicSiteId>,
+) = ComicMultiParser(siteIds.map { it.factory() }, enabledSiteIds)
 
+
+@JvmName("ComicMultiParserEx")
+fun ComicMultiParser(
+    siteIds: List<ParserId>,
+    enabledSiteIds: List<ParserId>,
+) = ComicMultiParser(
+    siteIds = siteIds.asSites(ComicSiteId.entries),
+    enabledSiteIds = enabledSiteIds.asSites(ComicSiteId.entries),
+)
 /**
  * 构建番剧 / 影视领域的多站点聚合解析器。
  *
  * @param siteIds          所有可供选择的番剧 / 影视站点 ID 列表。
- * @param enabledParserIds 本次实际启用的番剧 / 影视站点 ID 列表。
+ * @param enabledSiteIds 本次实际启用的番剧 / 影视站点 ID 列表。
  */
 fun MovieMultiParser(
     siteIds: List<MovieSiteId>,
-    enabledParserIds: List<MovieSiteId>,
-) = MovieMultiParser(siteIds.map { it.factory() }, enabledParserIds)
+    enabledSiteIds: List<MovieSiteId>,
+) = MovieMultiParser(siteIds.map { it.factory() }, enabledSiteIds)
 
+@JvmName("MovieMultiParserEx")
+fun MovieMultiParser(
+    siteIds: List<ParserId>,
+    enabledSiteIds: List<ParserId>,
+) = MovieMultiParser(
+    siteIds = siteIds.asSites(MovieSiteId.entries),
+    enabledSiteIds = enabledSiteIds.asSites(MovieSiteId.entries),
+)
+
+private inline fun <reified T : ParserId> List<ParserId>.asSites(entries: List<T>): List<T> {
+    val pictureSiteIds = filterIsInstance<T>()
+    return when (pictureSiteIds.size) {
+        size -> pictureSiteIds
+        else -> mapNotNull { site -> entries.find { it.site == site.site } }
+    }
+}
 
 /**
  * 将图片站点 ID 映射为具体的 [PictureParser] 实例。

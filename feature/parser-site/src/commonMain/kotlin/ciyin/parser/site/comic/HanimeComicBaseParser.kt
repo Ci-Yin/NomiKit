@@ -12,10 +12,10 @@ import ciyin.parser.core.url
 import ciyin.parser.model.Media
 import ciyin.parser.model.Tag
 import ciyin.parser.model.TagCategory
-import ciyin.parser.scope.ParserScope
 import ciyin.parser.scope.ResponseScope
 import ciyin.parser.site.HanimeBaseElement
 import ciyin.parser.site.util.toTimestamp
+import ciyin.parser.util.ComicParserScope
 import com.fleeksoft.ksoup.nodes.Element
 
 
@@ -26,15 +26,15 @@ import com.fleeksoft.ksoup.nodes.Element
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2026/3/8 15:30
  */
-internal abstract class HanimeComicBaseParser : ComicParser(), HanimeBaseElement {
+abstract class HanimeComicBaseParser : ComicParser(), HanimeBaseElement {
 
-    protected fun ParserScope<ComicParserType, ComicRequest, ComicResult>.setup(
-        block: ParserScope<ComicParserType, ComicRequest, ComicResult>.() -> Unit,
+    protected fun ComicParserScope.setup(
+        block: ComicParserScope.() -> Unit,
     ) {
 
 //        httpClient(MockWeb) {}
 
-        on<Comics> {
+        on(Comics) {
             request { req ->
                 html { url("/comics/search", req.parameters()) }
             }
@@ -43,7 +43,7 @@ internal abstract class HanimeComicBaseParser : ComicParser(), HanimeBaseElement
             }
         }
 
-        on<ComicParserType.Comic> {
+        on(ComicParserType.Comic) {
 
             request { req ->
                 html { url("/comic/${req.id}") }
