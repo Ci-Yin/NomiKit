@@ -1,6 +1,7 @@
 package ciyin.ui.foundation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import ciyin.ui.foundation.uitl.installKermitLogger
 import com.freeletics.flowredux2.FlowReduxBuilder
 import com.freeletics.flowredux2.FlowReduxStateMachine
 import com.freeletics.flowredux2.FlowReduxStateMachineFactory
@@ -25,9 +26,8 @@ import kotlinx.coroutines.withContext
  * 用于面向用户界面的状态管理及意图处理。
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class StateMachineMviViewModel<S : Any, A : Any, E : Any>() :
-    AbstractViewModel(),
-    MviViewModel<S, A, E> {
+abstract class StateMachineMviViewModel<S : Any, A : Any, E : Any> :
+    AbstractViewModel(), MviViewModel<S, A, E> {
 
     /**
      * `stateMachine` 是一个延迟初始化的状态机实例，用于管理状态流和动作分发机制。
@@ -45,6 +45,7 @@ abstract class StateMachineMviViewModel<S : Any, A : Any, E : Any>() :
     private val stateMachine: FlowReduxStateMachine<StateFlow<S>, A> by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         object : FlowReduxStateMachineFactory<S, A>() {
             init {
+                installKermitLogger(logger, this@StateMachineMviViewModel::class.simpleName!!)
                 initialize()
                 spec { spec() }
             }
