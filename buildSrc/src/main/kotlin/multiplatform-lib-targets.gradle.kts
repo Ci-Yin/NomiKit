@@ -6,6 +6,7 @@ import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 plugins {
@@ -81,6 +82,7 @@ configure<KotlinMultiplatformExtension> {
         androidResources {
             enable = true
         }
+
         // 选择加入以启用和配置主机端（单元）测试
         withHostTest {
             isIncludeAndroidResources = true
@@ -91,6 +93,7 @@ configure<KotlinMultiplatformExtension> {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             execution = "HOST"
         }
+
         packaging {
             resources {
                 excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -101,6 +104,10 @@ configure<KotlinMultiplatformExtension> {
                 pickFirsts += "META-INF/io.netty.versions.properties"
                 pickFirsts += "META-INF/some/other-duplicate.properties"
             }
+        }
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
         }
 
     }
