@@ -21,7 +21,6 @@ import com.ciyin.app.ui.app.navigation.navigateWithSingleTop
 import com.ciyin.app.ui.screen.main.MainScreen
 import com.ciyin.app.ui.screen.setting.SettingScreen
 import com.ciyin.app.ui.theme.AppTheme
-import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 
 /**
@@ -34,52 +33,50 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 @Composable
 fun App() {
-
     val viewModel = viewModel(::AppViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val navBackStack = rememberNavBackStack(NavSavedStateConfig, MainRouter)
+    AppContent(state, viewModel.dispatchAction)
+}
 
-    AppTheme {
-        NavigationBar(
-            navList = state.navList,
-            selection = remember(state.curNav) {
-                if (state.curNav.nav) {
-                    state.navList.indexOf(state.curNav)
-                } else {
-                    -1
-                }
+@Composable
+private fun AppContent(
+    state: AppUiState,
+    onAction: (AppAction) -> Unit
+) = AppTheme {
+    val navBackStack = rememberNavBackStack(NavSavedStateConfig, MainRouter)
+    NavigationBar(
+        navList = state.navList,
+        selection = remember(state.curNav) {
+            if (state.curNav.nav) {
+                state.navList.indexOf(state.curNav)
+            } else {
+                -1
+            }
+        },
+        onNavigateItemClick = { nav ->
+            onAction(AppAction.NavigateItemClick(nav))
+            when (nav.id) {
+                Main -> navBackStack.navigateWithSingleTop(MainRouter)
+                Theme -> {}
+                Settings -> navBackStack.navigateWithSingleTop(SettingRouter)
+                Null -> {}
+            }
+        }
+    ) {
+        NavDisplay(
+            backStack = navBackStack,
+            onBack = {
+                navBackStack.back()
             },
-            onNavigateItemClick = { nav ->
-                viewModel(AppAction.NavigateItemClick(nav))
-                when (nav.id) {
-                    Main -> navBackStack.navigateWithSingleTop(MainRouter)
-                    Theme -> {}
-                    Settings -> navBackStack.navigateWithSingleTop(SettingRouter)
-                    Null -> {}
+            entryProvider = entryProvider {
+                entry<MainRouter> {
+                    MainScreen()
+                }
+                entry<SettingRouter> {
+                    SettingScreen()
                 }
             }
-        ) {
-            NavDisplay(
-                backStack = navBackStack,
-                onBack = {
-                    navBackStack.back()
-                },
-                entryProvider = entryProvider {
-                    entry<MainRouter> {
-                        MainScreen()
-                    }
-                    entry<SettingRouter> {
-                        SettingScreen()
-                    }
-                }
-            )
-        }
+        )
     }
-
 }
 
-@AppPreview
-@Composable
-fun AppPreview() {
-    App()
-}

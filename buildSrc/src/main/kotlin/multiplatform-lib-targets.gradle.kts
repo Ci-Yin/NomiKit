@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import com.android.build.api.dsl.androidLibrary
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.ComposePlugin
 import org.jetbrains.compose.ExperimentalComposeLibrary
@@ -16,24 +16,64 @@ plugins {
 val composeExtension = extensions.findByType(ComposeExtension::class)
 
 /**
- * 平台架构:
+ * 将 [KotlinMultiplatformExtension] 上的 `android { }` 桥接到 AGP 的
+ * [KotlinMultiplatformAndroidLibraryTarget] 扩展（插件 id：`com.android.kotlin.multiplatform.library`），
+ * 以便在 `kotlin { }` 内用与官方文档一致的 DSL 名配置 Android KMP 库目标。
+ */
+fun KotlinMultiplatformExtension.android(configure: Action<KotlinMultiplatformAndroidLibraryTarget>): Unit =
+    (this as ExtensionAware).extensions.configure("android", configure)
+
+/**
+ * `multiplatform-lib-targets` 预编译约定脚本：为业务库模块统一注册 KMP 目标、Android KMP Library、
+ * 默认 hierarchy、Compose/JUnit 相关测试依赖等。
+ *
+ * ### 与本脚本相关的 Gradle 插件
+ * - `org.jetbrains.kotlin.multiplatform`
+ * - `com.android.kotlin.multiplatform.library`（AGP 9+ 推荐的 KMP Android 库插件，与旧版 `com.android.library` + `androidTarget` 组合不同）
+ *
+ * ### 源码集与目标关系（示意）
+ *
+ * **始终存在**：`commonMain` / `commonTest`；在 `android { }` 中注册 Android 目标后，会出现 `androidMain` 等 Android 相关源集。
+ *
  * ```
  * common
- *   - jvm (可访问 JDK, 但不能使用 Android SDK 没有的 API)
- *     - android (可访问 Android SDK)
- *     - desktop (可访问 JDK)
- *   - native
- *     - apple
- *       - ios
- *         - iosArm64
- *         - iosSimulatorArm64 TODO
+ * ├── jvm
+ * │   ├── android
+ * │   └── desktop
+ * ├── native
+ * │   └── apple
+ * │       └── ios
+ * │           ├── iosArm64
+ * │           └── iosSimulatorArm64
+ * ├── web
+ * │   ├── js
+ * │   └── wasmJs
  * ```
  *
- * `native - apple - ios` 的架构是为了契合 Kotlin 官方推荐的默认架构. 以后如果万一要添加其他平台, 可方便添加.
+ * `withJvm()` / `withNative()` 等分组与 Kotlin 默认 hierarchy 模板一致，便于日后在 `apple`、`ios` 等维度上扩展更多 Native 目标，
+ * 而无需重写整套 `dependsOn` 关系。
+ *
+ * ### 功能开关（`local.properties` 或 `gradle.properties`，布尔，缺省为 false）
+ *
+ * | 属性 | 作用 |
+ * |------|------|
+ * | `multiplatform.enable.desktop` | 注册 `jvm("desktop")` 并应用默认 hierarchy（含 jvm 组：JVM + Android；skiko 组：JVM + Native，供 Compose 等） |
+ * | `multiplatform.enable.ios` | 注册 `iosArm64`、`iosSimulatorArm64` 及测试资源拷贝任务 |
+ * | `multiplatform.enable.js` | 注册 `js { browser(); binaries.executable() }`（可与 web 联用） |
+ * | `multiplatform.enable.wasmJs` | 注册 `wasmJs { browser(); binaries.executable() }`（实验性 DSL 需 OptIn） |
+ * | `multiplatform.enable.web` | 为同时启用 JS 与 Wasm 的 Web 场景提供统一开关（与 js / wasmJs 开关组合使用） |
+ *
+ * ### 其它约定
+ * - Android KMP 目标的 `namespace` 默认由 [resolveAndroidKmpLibraryNamespace] 根据模块 `path` 推导；可通过 Project 属性 `android.kmp.namespace` 或在模块 `kotlin { android { namespace = ... } }` 中覆盖。
+ * - 若工程已应用 Jetpack Compose（存在 [ComposeExtension]），会为 `commonTest` / `desktopTest` 等补充 UI 测试依赖。
+ * - `compilerOptions` 中统一加入 `-Xexpect-actual-classes`，与项目 expect/actual 类风格一致。
  */
+fun preview() {}
 configure<KotlinMultiplatformExtension> {
 
-    androidLibrary {
+    android {
+
+        namespace = project.resolveAndroidKmpLibraryNamespace()
 
         minSdk = getIntProperty("android.min.sdk")
         compileSdk = getIntProperty("android.compile.sdk")

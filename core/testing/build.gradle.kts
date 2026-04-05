@@ -1,14 +1,8 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.core.testing"
-    }
 
     sourceSets.commonMain.dependencies {
         api(kotlin("test-annotations-common"))

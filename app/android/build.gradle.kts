@@ -4,7 +4,6 @@ plugins {
     id(libs.plugins.android.application)
     id(libs.plugins.jetbrains.compose)
     id(libs.plugins.compose.compiler)
-    id(libs.plugins.kotlin.android)
 }
 
 kotlin {

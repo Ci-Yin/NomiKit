@@ -19,10 +19,10 @@ fun Project.allKotlinTargets(): NamedDomainObjectCollection<KotlinTarget> {
     return extensions.findByName("kotlin")?.safeAs<KotlinSingleTargetExtension<*>>()
         ?.target?.let { namedDomainObjectListOf(it) }
         ?: extensions.findByName("kotlin")?.safeAs<KotlinMultiplatformExtension>()?.targets
-        ?: namedDomainObjectListOf()
+        ?: namedDomainObjectListOf<KotlinTarget>()
 }
 
-private inline fun <reified T> Project.namedDomainObjectListOf(vararg values: T): NamedDomainObjectList<T> {
+private inline fun <reified T : Any> Project.namedDomainObjectListOf(vararg values: T): NamedDomainObjectList<T> {
     return objects.namedDomainObjectList(T::class.java).apply { addAll(values) }
 }
 

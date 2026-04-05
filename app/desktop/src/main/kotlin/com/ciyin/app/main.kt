@@ -1,6 +1,5 @@
 package com.ciyin.app
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +21,6 @@ import nomikit.app.desktop.generated.resources.ic_launcher
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
 fun main(args: Array<String>) = runApplication(::DesktopApplication) {
@@ -64,13 +62,6 @@ fun main(args: Array<String>) = runApplication(::DesktopApplication) {
         }
     )
 
-}
-
-
-@Preview
-@Composable
-fun AppDesktopPreview() {
-    App()
 }
 
 

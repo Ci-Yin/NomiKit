@@ -1,15 +1,9 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.feature.parser"
-    }
 
     sourceSets.commonMain.dependencies {
         api(projects.core.serialization)

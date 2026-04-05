@@ -99,7 +99,13 @@ $initializerCalls
     }
 }
 
-class KoinBootInitializerPlugin : Plugin<Project> {
+/**
+ * 在预编译脚本中注册 Koin Boot Initializer 生成逻辑。
+ *
+ * 说明：Gradle 会为 `koin-boot-initializer.gradle.kts` 生成名为 `KoinBootInitializerPlugin` 的适配类，
+ * 本类必须避免与该生成类同名，否则在 Gradle 9+ 下会发生重复声明编译错误。
+ */
+class KoinBootInitializerConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create(
             "koinBootInitializer",
@@ -135,4 +141,4 @@ class KoinBootInitializerPlugin : Plugin<Project> {
     }
 }
 
-apply<KoinBootInitializerPlugin>()
+apply<KoinBootInitializerConventionPlugin>()

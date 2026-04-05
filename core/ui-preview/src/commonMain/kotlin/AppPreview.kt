@@ -12,9 +12,9 @@ package org.jetbrains.compose.ui.tooling.preview
 
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
-@Preview(name = " 正常模式", showBackground = true)
+@Preview(name = "1正常模式", showBackground = true)
 @Preview(
-    name = " 深色模式",
+    name = "2深色模式",
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
 )

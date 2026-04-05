@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     id(libs.plugins.jetbrains.compose)
@@ -7,10 +5,6 @@ plugins {
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.core.ui.foundation"
-    }
 
     sourceSets.commonMain.dependencies {
         api(libs.compose.runtime)

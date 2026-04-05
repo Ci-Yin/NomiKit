@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     alias(libs.plugins.ksp)
@@ -8,10 +6,6 @@ plugins {
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.component.room"
-    }
 
     sourceSets.commonMain.dependencies {
         implementation(projects.component.koin)

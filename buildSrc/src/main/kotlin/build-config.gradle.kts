@@ -121,9 +121,12 @@ object ${classNameValue}${platformNameValue.replaceFirstChar { it.uppercase() }}
 }
 
 /**
- * Plugin for BuildConfig generation
+ * 在预编译脚本中注册 BuildConfig 相关任务与扩展。
+ *
+ * 说明：Gradle 会为 `build-config.gradle.kts` 生成名为 `BuildConfigPlugin` 的适配类，
+ * 本类必须避免与该生成类同名，否则在 Gradle 9+ 下会发生重复声明编译错误。
  */
-class BuildConfigPlugin : Plugin<Project> {
+class BuildConfigConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create("buildConfig", BuildConfigExtension::class.java)
 
@@ -195,4 +198,4 @@ class BuildConfigPlugin : Plugin<Project> {
     }
 }
 
-apply<BuildConfigPlugin>()
+apply<BuildConfigConventionPlugin>()

@@ -1,14 +1,8 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.feature.kotlinscript"
-    }
 
     sourceSets.commonMain.dependencies {
         implementation(libs.kotlinx.coroutines.core)

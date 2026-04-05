@@ -1,4 +1,3 @@
-﻿import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -6,10 +5,6 @@ plugins {
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.feature.kmpsoup"
-    }
 
     sourceSets {
         commonMain.dependencies {

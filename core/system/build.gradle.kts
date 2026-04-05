@@ -1,14 +1,8 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.core.system"
-    }
 
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.datetime)

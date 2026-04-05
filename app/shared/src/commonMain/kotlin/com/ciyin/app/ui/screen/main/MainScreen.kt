@@ -17,7 +17,7 @@ import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.shared.Res
 import com.ciyin.app.shared.nav_home
 import com.ciyin.app.ui.component.AppPreview
-import com.ciyin.app.ui.component.Screen
+import com.ciyin.app.ui.component.ScreenScaffold
 import com.ciyin.app.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
@@ -36,9 +36,9 @@ fun MainScreen(vm: MainViewModel = viewModel(::MainViewModel)) {
 private fun MainContent(
     state: MainUiState,
     onAction: (MainAction) -> Unit,
-) = Screen(
+) = ScreenScaffold(
     title = stringResource(Res.string.nav_home),
-    toolbar = {}
+    topBar = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

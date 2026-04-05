@@ -16,6 +16,8 @@ dependencies {
     api(libs.android.gradle.plugin)
     api(libs.android.application.gradle.plugin)
     api(libs.android.library.gradle.plugin)
+    api(libs.android.kotlin.multiplatform.library.gradle.plugin)
+    api(libs.kotlin.gradle.plugin)
     api(libs.compose.multiplatfrom.gradle.plugin)
     api(libs.kotlin.compose.compiler.gradle.plugin)
     api(libs.kotlin.native.cocoapods.gradle.plugin)

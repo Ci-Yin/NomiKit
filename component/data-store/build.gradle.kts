@@ -1,15 +1,9 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.component.datastore"
-    }
 
     sourceSets.commonMain.dependencies {
         implementation(projects.component.koin)

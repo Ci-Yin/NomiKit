@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     id(libs.plugins.jetbrains.compose)
@@ -7,10 +5,6 @@ plugins {
 }
 
 kotlin {
-
-    androidLibrary {
-        namespace = "ciyin.core.ui.preview"
-    }
 
     // 添加或修改这个 compilerOptions 块
     compilerOptions {

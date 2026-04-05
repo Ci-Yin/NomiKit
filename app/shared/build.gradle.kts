@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
-
 plugins {
     `multiplatform-lib-targets`
     `koin-boot-initializer`
@@ -16,10 +14,6 @@ val componentDependencies = listOf<Dependency>(
 )
 
 kotlin {
-
-    androidLibrary {
-        namespace = "com.ciyin.app.shared"
-    }
 
     sourceSets.commonMain.dependencies {
         // component.room 依赖了 Room 库，Room 可能不支持所有平台

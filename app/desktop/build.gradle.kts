@@ -67,10 +67,8 @@ tasks.register("buildInstaller") {
 
         println("执行命令: ${command.joinToString(" ")}")
 
-        // 执行命令
-        exec {
-            commandLine = command
-            isIgnoreExitValue = false
-        }
+        // Gradle 9 起已移除 Project#exec；在 doLast 执行阶段使用进程 API。
+        val exitCode = ProcessBuilder(command).inheritIO().start().waitFor()
+        require(exitCode == 0) { "Advanced Installer 退出码: $exitCode" }
     }
 }
