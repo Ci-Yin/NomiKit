@@ -1,0 +1,21 @@
+package {{PACKAGE}}
+
+/**
+ * {{中文名}} 页面的 UI 状态。
+ *
+ * 不可变 data class；所有 UI 渲染所需字段都在此声明，每次变更通过 `copy(...)` 产生新实例。
+ *
+ * 注意：
+ * - 不要把 `LazyListState` / `PagerState` / `TextFieldState` 这类 Compose runtime 状态放进来；
+ *   需要"滚动到顶部 / 聚焦"等行为时走 [{{NAME}}Effect]，由 Compose 层执行。
+ * - 派生字段写成计算属性（`get()`），不要单独存。
+ */
+data class {{NAME}}UiState(
+    /** 是否处于加载中。 */
+    val isLoading: Boolean = false,
+
+    /** 错误提示文案；`null` 表示无错误。 */
+    val errorMessage: String? = null,
+
+    // TODO({{name}}): 按页面需要补充字段
+)

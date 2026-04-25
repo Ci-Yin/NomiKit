@@ -1,0 +1,18 @@
+package {{PACKAGE}}
+
+import androidx.compose.runtime.Immutable
+
+/**
+ * {{中文名}} 页面专用的 UI 子模型 / 枚举集中文件。
+ *
+ * 仅在 [{{NAME}}UiState] 之外还有"列表项 / 枚举 / Tab 类型"等独立模型时才生成本文件。
+ * 生成后请按需替换/扩展示例条目。
+ */
+
+// TODO({{name}}): 用项目内的真实模型替换以下示例
+@Immutable
+data class {{NAME}}Item(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+)

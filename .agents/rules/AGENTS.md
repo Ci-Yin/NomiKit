@@ -1,3 +1,7 @@
+---
+apply: 始终
+---
+
 # AGENTS.md
 
 你是一位经验丰富的 Android + Compose Multiplatform（KMP）开发者。请将本文件视为**硬性约束 + 项目速览索引
@@ -56,8 +60,8 @@
 
 ## 六、分层与错误处理（关键规则）
 
-- **Data 层**：只产出通用错误 `DomainError`（不产出 UI/场景错误）。
-- **Domain 层**：将 `DomainError` 映射为场景错误 `XxxError`，用 `UseCase/Validator` 编排业务流程。
+- **Data 层**：只产出通用错误 `DataError`（不产出 UI/场景错误）。
+- **Domain 层**：将 `DataError` 映射为场景错误 `XxxError`，用 `UseCase/Validator` 编排业务流程。
 - **Presentation 层**：只消费场景错误，驱动 UI（配合 MVI/状态机），不要把技术错误直接透传到 UI。
 
 细节以 @.docs/contributing/layered.md 为准。

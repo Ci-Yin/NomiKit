@@ -1,0 +1,18 @@
+package {{PACKAGE}}
+
+/**
+ * {{中文名}} 页面的一次性副作用事件。
+ *
+ * 用于表达"导航 / Toast / 弹窗 / 滚动到顶部"等不应该塞进 [{{NAME}}UiState] 的瞬时事件，
+ * 由 [{{NAME}}ViewModel] 通过 `poseEffect(...)` 触发，
+ * 由 [{{NAME}}Screen] 中 `vm.collectSideEffects { ... }` 消费。
+ */
+sealed interface {{NAME}}Effect {
+
+    /** 请求宿主退栈（由 [{{NAME}}Screen] 调用 `onBack()`）。 */
+    data object NavigateBack : {{NAME}}Effect
+
+    // TODO({{name}}): 按需补充其他副作用，例如：
+    // data class ShowMessage(val message: String) : {{NAME}}Effect
+    // data class OpenUrl(val url: String) : {{NAME}}Effect
+}

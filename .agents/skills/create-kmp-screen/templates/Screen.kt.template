@@ -1,0 +1,95 @@
+package {{PACKAGE}}
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.ui.foundation.viewmodel.collectSideEffects
+import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.ui.component.AppPreview
+import com.ciyin.app.ui.component.ScreenScaffold
+import com.ciyin.app.ui.theme.AppTheme
+import com.ciyin.app.ui.util.AppPreview
+
+/**
+ * {{中文名}} 页面入口。
+ *
+ * 仅做三件事：
+ * 1. 创建 / 取得 [{{NAME}}ViewModel]
+ * 2. 收集 `state` 与 `sideEffects`
+ * 3. 把 [{{NAME}}Action] 路由给 ViewModel，把导航类 [{{NAME}}Effect] 路由给宿主
+ */
+@Composable
+fun {{NAME}}Screen(
+    onBack: () -> Unit,
+    viewModel: {{NAME}}ViewModel = viewModel(::{{NAME}}ViewModel),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    viewModel.collectSideEffects { effect ->
+        when (effect) {
+            {{NAME}}Effect.NavigateBack -> onBack()
+        }
+    }
+
+    {{NAME}}Content(
+        state = state,
+        onAction = viewModel.dispatchAction,
+    )
+}
+
+/**
+ * {{中文名}} 页面的纯 UI。
+ *
+ * 仅依赖 [{{NAME}}UiState] + `(action: {{NAME}}Action) -> Unit`，可在 Preview 中独立渲染。
+ * 子 Composable 不要直接 `import {{NAME}}Action / {{NAME}}Effect`，全部通过 [onAction] 回传。
+ */
+@Composable
+private fun {{NAME}}Content(
+    state: {{NAME}}UiState,
+    onAction: ({{NAME}}Action) -> Unit,
+) = ScreenScaffold(
+    title = "{{中文名}}",
+    topBar = {
+        IconButton(onClick = { onAction({{NAME}}Action.BackClick) }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+        }
+    },
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
+    ) {
+        // TODO({{name}}): 在此渲染页面内容
+        Text(
+            text = "{{中文名}}",
+            style = AppTheme.typography.titleMedium,
+            color = AppTheme.colorScheme.onBackground,
+        )
+
+        state.errorMessage?.let { err ->
+            Text(
+                text = err,
+                color = AppTheme.colorScheme.error,
+                style = AppTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@AppPreview
+@Composable
+private fun {{NAME}}ContentPreview() = AppPreview {
+    {{NAME}}Content(
+        state = {{NAME}}UiState(),
+        onAction = {},
+    )
+}

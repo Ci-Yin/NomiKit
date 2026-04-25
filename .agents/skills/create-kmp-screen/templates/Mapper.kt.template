@@ -1,0 +1,15 @@
+package {{PACKAGE}}
+
+/**
+ * {{中文名}} 页面的 Domain ↔ UI 映射函数集中文件。
+ *
+ * 仅在页面需要把 Domain 模型转成 UI 模型（[{{NAME}}Item] 等）时才生成本文件。
+ * 不要在 [{{NAME}}ViewModel] 里直接写映射逻辑；让 ViewModel 只负责"取数据 → 调 mapper → 写状态"。
+ */
+
+// TODO({{name}}): 把项目里的 Domain 模型映射到 UI 模型，例如：
+// internal fun XxxDomain.to{{NAME}}Item(): {{NAME}}Item = {{NAME}}Item(
+//     id = id,
+//     title = title,
+//     subtitle = subtitle,
+// )

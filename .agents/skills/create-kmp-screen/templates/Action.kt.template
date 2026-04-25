@@ -1,0 +1,17 @@
+package {{PACKAGE}}
+
+/**
+ * {{中文名}} 页面的所有 UI 事件和用户交互。
+ *
+ * 采用密封接口集中管理输入事件，由 [{{NAME}}ViewModel] 在 FlowRedux2 状态机内通过
+ * `on<{{NAME}}Action.XxxClick> { ... }` 分发处理。
+ */
+sealed interface {{NAME}}Action {
+
+    /** 点击返回按钮。 */
+    data object BackClick : {{NAME}}Action
+
+    // TODO({{name}}): 按页面交互补全 Action，例如：
+    // data class InputChange(val value: String) : {{NAME}}Action
+    // data object Submit : {{NAME}}Action
+}

@@ -1,0 +1,43 @@
+package {{PACKAGE}}
+
+import ciyin.ui.foundation.viewmodel.StateMachineMviViewModel
+import com.freeletics.flowredux2.FlowReduxBuilder
+import com.freeletics.flowredux2.FlowReduxStateMachineFactory
+import org.koin.core.component.KoinComponent
+import com.ciyin.app.ui.util.UiEffectHandler
+
+/**
+ * {{中文名}} 页面的 ViewModel。
+ *
+ * 基于项目自带的 [StateMachineMviViewModel] + FlowRedux2 状态机：
+ * - [initialize]：声明初始状态
+ * - [spec]：在 `inState<{{NAME}}UiState>` 内通过 `on<XxxAction> { mutate { ... } }` 描述转换
+ *
+ * 强约束：
+ * - 所有 `on<Action> { }` / `onEnter { }` 必须套在 `inState<{{NAME}}UiState> { }` 内。
+ * - 一个 `on<Action> { }` 块里只允许调用一次 `mutate { } / override { } / noChange()`。
+ * - 触发副作用统一用 `poseEffect({{NAME}}Effect.Xxx)`。
+ *
+ * 仅在需要 `by inject<XxxUseCase>()` 时才保留 [KoinComponent]；否则可移除。
+ */
+class {{NAME}}ViewModel :
+    StateMachineMviViewModel<{{NAME}}UiState, {{NAME}}Action, {{NAME}}Effect>(),
+    KoinComponent, UiEffectHandler {
+
+    override fun FlowReduxStateMachineFactory<{{NAME}}UiState, {{NAME}}Action>.initialize() {
+        initializeWith { {{NAME}}UiState() }
+    }
+
+    override fun FlowReduxBuilder<{{NAME}}UiState, {{NAME}}Action>.spec() {
+        inState<{{NAME}}UiState> {
+
+            // 返回按钮
+            on<{{NAME}}Action.BackClick> { _ ->
+                poseEffect({{NAME}}Effect.NavigateBack)
+                noChange()
+            }
+
+            // TODO({{name}}): 按页面交互补充 on<{{NAME}}Action.Xxx> { ... } 处理块
+        }
+    }
+}
