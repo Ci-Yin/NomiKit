@@ -3,6 +3,9 @@ package ciyin.sdwebui.payload.script
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * 写入 `alwayson_scripts.ADetailer` 的脚本参数（与扩展字段名一一对应）。
+ */
 @Serializable
 data class ADetailerScriptArgs(
     @SerialName("ad_model") val model: String,

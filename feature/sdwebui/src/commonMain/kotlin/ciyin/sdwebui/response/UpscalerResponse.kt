@@ -3,6 +3,9 @@ package ciyin.sdwebui.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/upscalers` 中的放大器及其模型信息。
+ */
 @Serializable
 data class UpscalerResponse(
     @SerialName("name") val name: String,

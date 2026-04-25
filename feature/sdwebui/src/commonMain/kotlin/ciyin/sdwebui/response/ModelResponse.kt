@@ -3,6 +3,9 @@ package ciyin.sdwebui.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/sd-models` 中的单个 checkpoint 描述。
+ */
 @Serializable
 data class ModelResponse(
     @SerialName("title") val title: String,

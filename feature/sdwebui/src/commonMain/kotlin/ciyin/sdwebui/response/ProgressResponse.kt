@@ -3,6 +3,9 @@ package ciyin.sdwebui.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/progress` 返回的当前采样进度、预览图与任务状态。
+ */
 @Serializable
 data class ProgressResponse(
     @SerialName("progress") val progress: Float,
@@ -12,6 +15,9 @@ data class ProgressResponse(
     @SerialName("textinfo") val textInfo: String?,
 ) {
 
+    /**
+     * 当前作业是否跳过、中断及采样步数等运行时状态。
+     */
     @Serializable
     data class State(
         @SerialName("skipped") val skipped: Boolean,

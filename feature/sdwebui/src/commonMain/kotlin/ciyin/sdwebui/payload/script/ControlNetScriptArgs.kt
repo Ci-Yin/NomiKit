@@ -3,6 +3,9 @@ package ciyin.sdwebui.payload.script
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * 写入 `alwayson_scripts.ControlNet` 的单个控制单元参数。
+ */
 @Serializable
 data class ControlNetScriptArgs(
     @SerialName("input_image") val inputImage: String?,

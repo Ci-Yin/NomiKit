@@ -4,6 +4,9 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/img2img` 请求体。
+ */
 @Serializable
 data class Image2ImagePayload(
     @SerialName("init_images") val initImages: List<String>,

@@ -4,10 +4,16 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.process.Process
 import kotlinx.serialization.json.JsonPrimitive
 
+/**
+ * ReActor 换脸扩展的 `alwayson_scripts` 负载（键名 `reactor`），参数以 JSON 数组顺序与 WebUI 对齐。
+ */
 class ReActor private constructor(
     internal val args: List<JsonPrimitive>,
 ) : Extension {
 
+    /**
+     * 按 ReActor UI 顺序配置换脸、修复与放大等选项。
+     */
     class Builder {
 
         private var image: String? = null
@@ -127,6 +133,9 @@ class ReActor private constructor(
             this.faceModel = faceModel
         }
 
+        /**
+         * 将当前字段序列化为与 WebUI 约定顺序一致的 [JsonPrimitive] 列表并封装为 [ReActor]。
+         */
         fun build() = ReActor(
             args = listOf(
                 JsonPrimitive(image),
@@ -159,12 +168,18 @@ class ReActor private constructor(
 
     companion object {
 
+        /**
+         * 使用 DSL 创建 [ReActor]。
+         */
         fun reActor(init: Builder.() -> Unit): ReActor {
             val builder = Builder()
             builder.init()
             return builder.build()
         }
 
+        /**
+         * 将 [ReActor] 注册为键名 `reactor` 的常驻脚本。
+         */
         fun <T : Process.Builder> T.reActor(reActor: ReActor) = apply {
             addAlwaysonScript("reactor", ScriptPayload.Array(reActor.args))
         }

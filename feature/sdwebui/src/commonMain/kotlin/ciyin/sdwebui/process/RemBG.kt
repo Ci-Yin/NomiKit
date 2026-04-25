@@ -5,15 +5,24 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.response.RemBGResponse
 import ciyin.sdwebui.service.StableDiffusionService
 
+/**
+ * RemBG 抠图流程：调用 `StableDiffusionService.remBG`。
+ */
 class RemBG private constructor(
     private val stableDiffusionService: StableDiffusionService,
     private val payload: RemBGPayload,
 ): Process {
 
+    /**
+     * 发起抠图请求并返回处理后的图像。
+     */
     suspend fun run(): Result<RemBGResponse> {
         return stableDiffusionService.remBG(payload)
     }
 
+    /**
+     * 配置输入图、抠图模型与 alpha matting 等 RemBG 参数。
+     */
     class Builder internal constructor(
         private val stableDiffusionService: StableDiffusionService,
     ) : Process.Builder {
@@ -58,6 +67,9 @@ class RemBG private constructor(
             // Do nothing
         }
 
+        /**
+         * 根据当前配置创建可执行的 [RemBG]。
+         */
         fun build(): RemBG = RemBG(
             stableDiffusionService = stableDiffusionService,
             payload = RemBGPayload(

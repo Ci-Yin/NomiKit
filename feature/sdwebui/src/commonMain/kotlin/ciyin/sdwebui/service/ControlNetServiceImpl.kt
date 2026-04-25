@@ -8,6 +8,9 @@ import ciyin.sdwebui.response.ControlNetModulesResponse
 import ciyin.sdwebui.response.ControlNetVersionResponse
 import kotlinx.serialization.json.Json
 
+/**
+ * [ControlNetService] 的默认实现。
+ */
 class ControlNetServiceImpl(
     override val baseUrl: String,
     override val client: Client,

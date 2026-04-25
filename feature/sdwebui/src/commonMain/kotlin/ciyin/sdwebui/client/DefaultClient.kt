@@ -17,18 +17,14 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 /**
- * [Client] 的默认实现，基于 Ktor `HttpClient` 完成实际网络请求。
+ * [Client] 的默认实现，基于 Ktor [HttpClient] 发起真实 HTTP 请求。
  *
- * 所使用的 HTTP 引擎按平台动态选择：
- * - Android：OkHttp
- * - JVM/Desktop：CIO
- * - iOS：Darwin
+ * 各平台默认 HTTP 引擎为：Android 使用 OkHttp，Desktop/JVM 使用 CIO，iOS 使用 Darwin；
+ * 通过 [defaultHttpClientEngineFactory] 的 expect/actual 在各源码集落地。
  *
- * 通过 [defaultHttpClientEngineFactory] 这一 `expect` 函数桥接到各平台 `actual` 实现。
+ * 若需完全自定义网络栈，可实现 [Client] 并通过 [SdWebUi.Builder.client] 注入；本类仅提供开箱即用方案。
  *
- * 调用方仍可通过自行实现 [Client] 抽象类完全替换底层网络栈；本类只是提供开箱即用的默认能力。
- *
- * @param json 用于序列化请求体与解析响应内容的 [Json] 实例。
+ * @param json 用于编码请求体与解码响应 JSON 的实例。
  */
 class DefaultClient(private val json: Json) : Client() {
 
@@ -43,6 +39,9 @@ class DefaultClient(private val json: Json) : Client() {
         }
     }
 
+    /**
+     * 使用内部 [HttpClient] 执行 [RequestBuilder] 描述的一次请求并返回 [Response]。
+     */
     override suspend fun request(builder: RequestBuilder.() -> RequestBuilder): Response {
         val request = RequestBuilder().builder().build()
         val httpResponse = httpClient.request {
@@ -61,9 +60,8 @@ class DefaultClient(private val json: Json) : Client() {
 }
 
 /**
- * 由各平台提供默认的 Ktor [HttpClientEngineFactory]。
+ * 由各平台提供的默认 Ktor [HttpClientEngineFactory]。
  *
- * 仅在 [DefaultClient] 内部使用，库使用方不应直接依赖此函数；
- * 如需自定义引擎，请实现 [Client] 抽象类并通过 `SdWebUi.Builder.client(...)` 注入。
+ * 仅供 [DefaultClient] 内部使用；调用方若要替换引擎应自行实现 [Client] 并通过 `SdWebUi.Builder.client` 注入。
  */
 internal expect fun defaultHttpClientEngineFactory(): HttpClientEngineFactory<*>

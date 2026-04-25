@@ -6,6 +6,9 @@ import ciyin.sdwebui.response.ReActorModelsResponse
 import ciyin.sdwebui.response.ReActorUpscalersResponse
 import kotlinx.serialization.json.Json
 
+/**
+ * [ReActorService] 的默认实现。
+ */
 class ReActorServiceImpl(
     override val baseUrl: String,
     override val client: Client,

@@ -3,6 +3,9 @@ package ciyin.sdwebui.payload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * RemBG 扩展 `rembg` 端点的请求体。
+ */
 @Serializable
 class RemBGPayload(
     @SerialName("input_image") val inputImage: String,

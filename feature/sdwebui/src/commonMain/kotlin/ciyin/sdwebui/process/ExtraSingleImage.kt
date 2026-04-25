@@ -5,15 +5,24 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.response.ExtraSingleImageResponse
 import ciyin.sdwebui.service.StableDiffusionService
 
+/**
+ * 单张后期处理（放大 / 面部修复等）：调用 `StableDiffusionService.extraSingleImage`。
+ */
 class ExtraSingleImage private constructor(
     private val stableDiffusionService: StableDiffusionService,
     private val payload: ExtraSingleImagePayload,
 ) : Process {
 
+    /**
+     * 发起单张后期处理请求。
+     */
     suspend fun run(): Result<ExtraSingleImageResponse> {
         return stableDiffusionService.extraSingleImage(payload)
     }
 
+    /**
+     * 配置放大倍数、所用放大器及输入 Base64 图像等。
+     */
     class Builder internal constructor(
         private val stableDiffusionService: StableDiffusionService,
     ) : Process.Builder {
@@ -93,6 +102,9 @@ class ExtraSingleImage private constructor(
             // Do nothing
         }
 
+        /**
+         * 根据当前配置创建可执行的 [ExtraSingleImage]。
+         */
         fun build(): ExtraSingleImage = ExtraSingleImage(
             stableDiffusionService = stableDiffusionService,
             payload = ExtraSingleImagePayload(

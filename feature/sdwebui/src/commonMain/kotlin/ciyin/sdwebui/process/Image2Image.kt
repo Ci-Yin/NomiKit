@@ -5,15 +5,24 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.response.GenerateProcessResponse
 import ciyin.sdwebui.service.StableDiffusionService
 
+/**
+ * 图生图流程：由 [Builder] 组装 [Image2ImagePayload] 后调用 `StableDiffusionService.image2Image`。
+ */
 class Image2Image private constructor(
     private val stableDiffusionService: StableDiffusionService,
     private val payload: Image2ImagePayload,
 ) : Process {
 
+    /**
+     * 发起图生图请求并返回生成结果。
+     */
     suspend fun run(): Result<GenerateProcessResponse> {
         return stableDiffusionService.image2Image(payload)
     }
 
+    /**
+     * 配置初始图、重绘强度、遮罩与 `alwayson_scripts` 等图生图参数。
+     */
     class Builder internal constructor(
         private val stableDiffusionService: StableDiffusionService,
     ) : Process.Builder {
@@ -239,6 +248,9 @@ class Image2Image private constructor(
             this.alwaysonScripts[key] = payload
         }
 
+        /**
+         * 根据当前配置创建可执行的 [Image2Image]。
+         */
         fun build(): Image2Image = Image2Image(
             stableDiffusionService = stableDiffusionService,
             payload = Image2ImagePayload(

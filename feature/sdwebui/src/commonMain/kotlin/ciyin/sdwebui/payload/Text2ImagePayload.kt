@@ -4,6 +4,9 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/txt2img` 请求体，字段名与 WebUI API 一致。
+ */
 @Serializable
 data class Text2ImagePayload(
     @SerialName("prompt") val prompt: String,

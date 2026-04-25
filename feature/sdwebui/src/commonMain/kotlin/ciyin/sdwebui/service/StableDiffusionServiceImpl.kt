@@ -8,6 +8,9 @@ import ciyin.sdwebui.payload.*
 import ciyin.sdwebui.response.*
 import kotlinx.serialization.json.Json
 
+/**
+ * [StableDiffusionService] 的默认实现，路径与官方 WebUI REST 文档对齐。
+ */
 class StableDiffusionServiceImpl(
     override val baseUrl: String,
     override val client: Client,

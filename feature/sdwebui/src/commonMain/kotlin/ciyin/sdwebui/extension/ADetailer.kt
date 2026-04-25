@@ -4,10 +4,16 @@ import ciyin.sdwebui.payload.script.ADetailerScriptArgs
 import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.process.Process
 
+/**
+ * ADetailer 扩展的脚本参数封装，键名为 `ADetailer`。
+ */
 class ADetailer private constructor(
     internal val args: ADetailerScriptArgs,
 ) : Extension {
 
+    /**
+     * 配置检测模型、局部重绘与可选内置 ControlNet 等 ADetailer 字段。
+     */
     class Builder {
 
         private var model: String = "None"
@@ -171,6 +177,9 @@ class ADetailer private constructor(
             this.controlNetGuidanceEnd = controlNetGuidanceEnd
         }
 
+        /**
+         * 生成 [ADetailer] 实例。
+         */
         fun build() = ADetailer(
             args = ADetailerScriptArgs(
                 model = model,
@@ -211,12 +220,18 @@ class ADetailer private constructor(
 
     companion object {
 
+        /**
+         * 使用 DSL 创建 [ADetailer]。
+         */
         fun aDetailer(init: Builder.() -> Unit): ADetailer {
             val builder = Builder()
             builder.init()
             return builder.build()
         }
 
+        /**
+         * 将 [ADetailer] 注册为 `ADetailer` 常驻脚本。
+         */
         fun <T : Process.Builder> T.aDetailer(aDetailer: ADetailer) = apply {
             addAlwaysonScript("ADetailer", ScriptPayload.Multiple(listOf(aDetailer.args)))
         }

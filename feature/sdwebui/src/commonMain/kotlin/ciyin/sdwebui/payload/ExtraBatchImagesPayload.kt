@@ -3,6 +3,9 @@ package ciyin.sdwebui.payload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `extra-batch-images` 请求体，内含多张待处理图片。
+ */
 @Serializable
 class ExtraBatchImagesPayload(
     @SerialName("resize_mode") val resizeMode: Int,
@@ -21,6 +24,9 @@ class ExtraBatchImagesPayload(
     @SerialName("imageList") val images: List<Image>,
 ) {
 
+    /**
+     * 批量项中单张图片的 Base64 与文件名。
+     */
     @Serializable
     data class Image(
         @SerialName("data") val data: String,

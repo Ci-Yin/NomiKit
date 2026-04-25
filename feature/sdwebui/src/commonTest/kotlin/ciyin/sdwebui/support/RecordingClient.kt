@@ -46,6 +46,9 @@ class RecordingClient : Client() {
         responses.addLast(Response(isSuccess = false, body = body))
     }
 
+    /**
+     * 记录构建后的 [Request]，并从队列取出预设 [Response]（空队列时返回成功空体）。
+     */
     override suspend fun request(builder: RequestBuilder.() -> RequestBuilder): Response {
         val builtRequest = RequestBuilder().builder().build()
         requests += builtRequest

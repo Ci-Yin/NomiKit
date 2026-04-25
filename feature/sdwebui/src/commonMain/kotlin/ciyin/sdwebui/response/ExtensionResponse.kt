@@ -3,6 +3,9 @@ package ciyin.sdwebui.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `sdapi/v1/extensions` 返回的已安装扩展元数据。
+ */
 @Serializable
 data class ExtensionResponse(
     @SerialName("name") val name: String,

@@ -3,6 +3,9 @@ package ciyin.sdwebui.payload
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `extra-single-image` 请求体，对应 WebUI 后期处理单张 API。
+ */
 @Serializable
 class ExtraSingleImagePayload(
     @SerialName("resize_mode") val resizeMode: Int,

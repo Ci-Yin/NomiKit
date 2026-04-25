@@ -20,6 +20,9 @@ import kotlin.test.assertTrue
  */
 class ClientTest {
 
+    /**
+     * 用于校验 [Client.Companion.body] 与 JSON 编解码的最小可序列化模型。
+     */
     @Serializable
     private data class SamplePayload(
         @SerialName("name") val name: String,

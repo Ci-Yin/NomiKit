@@ -5,20 +5,32 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.response.ExtraBatchImagesResponse
 import ciyin.sdwebui.service.StableDiffusionService
 
+/**
+ * 批量后期处理：调用 `StableDiffusionService.extraBatchImages`。
+ */
 class ExtraBatchImages private constructor(
     private val stableDiffusionService: StableDiffusionService,
     private val payload: ExtraBatchImagesPayload,
 ) : Process {
 
+    /**
+     * 发起批量后期处理请求。
+     */
     suspend fun run(): Result<ExtraBatchImagesResponse> {
         return stableDiffusionService.extraBatchImages(payload)
     }
 
+    /**
+     * 批量任务中的单张图片项（Base64 数据与文件名）。
+     */
     data class Image(
         val data: String,
         val name: String,
     )
 
+    /**
+     * 与 [ExtraSingleImage.Builder] 类似，额外支持多张 [Image]。
+     */
     class Builder internal constructor(
         private val stableDiffusionService: StableDiffusionService,
     ) : Process.Builder {
@@ -98,6 +110,9 @@ class ExtraBatchImages private constructor(
             // Do nothing
         }
 
+        /**
+         * 根据当前配置创建可执行的 [ExtraBatchImages]。
+         */
         fun build(): ExtraBatchImages = ExtraBatchImages(
             stableDiffusionService = stableDiffusionService,
             payload = ExtraBatchImagesPayload(

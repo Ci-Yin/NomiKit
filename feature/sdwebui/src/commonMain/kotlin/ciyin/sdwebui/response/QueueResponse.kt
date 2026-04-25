@@ -3,6 +3,9 @@ package ciyin.sdwebui.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * `queue/status` 接口返回的队列位置、长度与 ETA 等信息。
+ */
 @Serializable
 data class QueueResponse(
     @SerialName("msg") val msg: String,

@@ -4,14 +4,23 @@ import ciyin.sdwebui.payload.script.ControlNetScriptArgs
 import ciyin.sdwebui.payload.script.ScriptPayload
 import ciyin.sdwebui.process.Process
 
+/**
+ * ControlNet 多单元 DSL：生成 [ScriptPayload.Multiple] 并可通过 [Companion.controlNet] 挂到 [Process.Builder]。
+ */
 class ControlNet private constructor(
     internal val units: List<Unit>,
 ) : Extension {
 
+    /**
+     * 单个 ControlNet 控制单元（对应 `alwayson_scripts` 中的一项参数对象）。
+     */
     class Unit private constructor(
         internal val args: ControlNetScriptArgs,
     ) {
 
+        /**
+         * 配置模块、模型、权重与引导区间等 ControlNet 字段。
+         */
         class Builder {
 
             private var inputImage: String? = null
@@ -90,6 +99,9 @@ class ControlNet private constructor(
                 this.pixelPerfect = pixelPerfect
             }
 
+            /**
+             * 生成不可变的 [Unit]。
+             */
             fun build() = Unit(
                 args = ControlNetScriptArgs(
                     inputImage = inputImage,
@@ -112,29 +124,47 @@ class ControlNet private constructor(
         }
     }
 
+    /**
+     * 聚合多个 [Unit] 为一次 ControlNet 脚本负载。
+     */
     class Builder {
 
         private val units = mutableListOf<Unit>()
 
+        /**
+         * 追加若干控制单元。
+         */
         fun addUnit(vararg unit: Unit) = apply { units.addAll(unit) }
 
+        /**
+         * 组装 [ControlNet] 实例。
+         */
         fun build(): ControlNet = ControlNet(units)
     }
 
     companion object {
 
+        /**
+         * 使用 DSL 创建单个 [Unit]。
+         */
         fun controlNetUnit(init: Unit.Builder.() -> kotlin.Unit): Unit {
             val builder = Unit.Builder()
             builder.init()
             return builder.build()
         }
 
+        /**
+         * 使用 DSL 创建包含多单元的 [ControlNet]。
+         */
         fun controlNet(init: Builder.() -> kotlin.Unit): ControlNet {
             val builder = Builder()
             builder.init()
             return builder.build()
         }
 
+        /**
+         * 将 [ControlNet] 注册为键名为 `ControlNet` 的常驻脚本。
+         */
         fun <T : Process.Builder> T.controlNet(controlNet: ControlNet) = apply {
             addAlwaysonScript("ControlNet", ScriptPayload.Multiple(controlNet.units.map { unit -> unit.args }))
         }
