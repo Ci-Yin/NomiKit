@@ -10,6 +10,7 @@ package ciyin.serialization.json
  */
 
 
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -17,6 +18,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
 
 /**
  * 将 Any 类型转换为 JsonElement
@@ -35,7 +37,7 @@ import kotlinx.serialization.json.buildJsonObject
  * val map = mapOf("key" to "value").toJsonElement() // JsonObject({"key": "value"})
  * ```
  */
-fun Any?.toJsonElement(): JsonElement = when (this) {
+inline fun <reified T : Any> T?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull
     is JsonElement -> this
     is String -> JsonPrimitive(this)
@@ -53,11 +55,7 @@ fun Any?.toJsonElement(): JsonElement = when (this) {
     is DoubleArray -> toList().toJsonArray()
     is BooleanArray -> toList().toJsonArray()
     is CharArray -> toList().toJsonArray()
-    else -> throw IllegalArgumentException(
-        "无法将类型 ${this::class.simpleName} 转换为 JsonElement。" +
-                "支持的类型：基本类型(String, Number, Boolean, Char)、" +
-                "集合(List, Set, Array)、Map 和 JsonElement。"
-    )
+    else -> Json.encodeToJsonElement(this)
 }
 
 /**

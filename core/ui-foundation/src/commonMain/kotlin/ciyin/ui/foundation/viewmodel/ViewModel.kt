@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 /**
  * 一个 Composable 函数，它使用一个简单的工厂来提供一个 [ViewModel] 实例。
  *
- * 这是对标准的 `androidx.lifecycle.viewmodel.compose.viewModel` 的一个便捷包装，
+ * 这是对标准的 [androidx.lifecycle.viewmodel.compose.viewModel] 的一个便捷包装，
  * 用于在不需要 `SavedStateHandle` 的情况下简化 ViewModel 的创建。
  *
  * @param VM 要创建的 [ViewModel] 的类型。
