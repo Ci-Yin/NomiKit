@@ -1,11 +1,14 @@
 package ciyin.sdwebui.client
 
+import ciyin.platform.logger
 import ciyin.sdwebui.SdWebUi
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -15,6 +18,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import io.ktor.client.plugins.logging.Logger as KtorHttpLogger
 
 /**
  * [Client] 的默认实现，基于 Ktor [HttpClient] 发起真实 HTTP 请求。
@@ -28,13 +32,26 @@ import kotlinx.serialization.json.Json
  */
 class DefaultClient(private val json: Json) : Client() {
 
+    private val httpLog = logger("StableDiffusion.HttpClient")
+
     private val httpClient: HttpClient by lazy {
         HttpClient(defaultHttpClientEngineFactory()) {
             install(ContentNegotiation) {
                 json(json)
             }
+            install(Logging) {
+                logger = object : KtorHttpLogger {
+                    override fun log(message: String) {
+                        httpLog.d { message }
+                    }
+                }
+                level = LogLevel.ALL
+            }
             install(HttpTimeout) {
                 requestTimeoutMillis = SdWebUi.DEFAULT_TIMEOUT
+                // OkHttp 未配置时 readTimeout 约 10s；txt2img 出图前可能长时间无字节，需与整次请求同量级。
+                socketTimeoutMillis = SdWebUi.DEFAULT_TIMEOUT
+                connectTimeoutMillis = 60_000L
             }
         }
     }

@@ -4,8 +4,26 @@ import ciyin.sdwebui.client.Client
 import ciyin.sdwebui.client.Client.Companion.body
 import ciyin.sdwebui.client.Client.Companion.get
 import ciyin.sdwebui.client.Client.Companion.post
-import ciyin.sdwebui.payload.*
-import ciyin.sdwebui.response.*
+import ciyin.sdwebui.logging.SdWebUiGenerationInfoLog
+import ciyin.sdwebui.payload.ExtraBatchImagesPayload
+import ciyin.sdwebui.payload.ExtraSingleImagePayload
+import ciyin.sdwebui.payload.Image2ImagePayload
+import ciyin.sdwebui.payload.RemBGPayload
+import ciyin.sdwebui.payload.Text2ImagePayload
+import ciyin.sdwebui.response.ExtensionResponse
+import ciyin.sdwebui.response.ExtraBatchImagesResponse
+import ciyin.sdwebui.response.ExtraSingleImageResponse
+import ciyin.sdwebui.response.FaceRestorerResponse
+import ciyin.sdwebui.response.GenerateProcessResponse
+import ciyin.sdwebui.response.LatentUpscaleModeResponse
+import ciyin.sdwebui.response.MemoryResponse
+import ciyin.sdwebui.response.ModelResponse
+import ciyin.sdwebui.response.ProgressResponse
+import ciyin.sdwebui.response.RealesrganModelResponse
+import ciyin.sdwebui.response.RemBGResponse
+import ciyin.sdwebui.response.ScriptsResponse
+import ciyin.sdwebui.response.UpscalerResponse
+import ciyin.sdwebui.response.VaeResponse
 import kotlinx.serialization.json.Json
 
 /**
@@ -18,18 +36,24 @@ class StableDiffusionServiceImpl(
 ) : Service(), StableDiffusionService {
 
     override suspend fun text2Image(payload: Text2ImagePayload): Result<GenerateProcessResponse> {
-        return client.post(json) {
+        return client.post<GenerateProcessResponse>(json) {
             baseUrl(baseUrl)
             path("sdapi/v1/txt2img")
             body(payload)
+        }.map { response ->
+            SdWebUiGenerationInfoLog.afterTxt2img(payload, response.info)
+            response
         }
     }
 
     override suspend fun image2Image(payload: Image2ImagePayload): Result<GenerateProcessResponse> {
-        return client.post(json) {
+        return client.post<GenerateProcessResponse>(json) {
             baseUrl(baseUrl)
             path("sdapi/v1/img2img")
             body(payload)
+        }.map { response ->
+            SdWebUiGenerationInfoLog.afterImg2img(payload, response.info)
+            response
         }
     }
 

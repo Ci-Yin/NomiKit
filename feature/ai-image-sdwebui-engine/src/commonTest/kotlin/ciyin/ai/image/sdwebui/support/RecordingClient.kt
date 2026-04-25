@@ -13,6 +13,13 @@ internal class RecordingClient : Client() {
 
     private val responses: ArrayDeque<Response> = ArrayDeque()
 
+    /**
+     * 对 `sdapi/v1/progress` 的固定响应，不消耗 [responses] 队列。
+     *
+     * 生图与进度轮询并行时，若全部走 FIFO，GET 可能误取 POST 的 JSON 体；单测里可设此项模拟进度接口。
+     */
+    var progressStub: Response? = null
+
     /** 已记录的请求列表，按调用顺序排列。 */
     val requests: MutableList<Request> = mutableListOf()
 
@@ -44,6 +51,9 @@ internal class RecordingClient : Client() {
     override suspend fun request(builder: RequestBuilder.() -> RequestBuilder): Response {
         val request = RequestBuilder().builder().build()
         requests += request
+        if (request.path == "sdapi/v1/progress") {
+            progressStub?.let { return it }
+        }
         return if (responses.isNotEmpty()) responses.removeFirst() else Response(true, "")
     }
 }

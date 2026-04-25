@@ -6,9 +6,9 @@ import ciyin.ai.core.error.AiEngineError
 import ciyin.ai.facade.observability.AiInvocationListener
 import ciyin.ai.facade.observability.InvocationMetadata
 import ciyin.ai.facade.selection.FallbackPolicy
-import kotlin.time.TimeSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlin.time.TimeSource
 
 /**
  * 一次"选定的引擎尝试"——封装"调用什么引擎、用什么 model、产出什么 Flow"三件事。
@@ -36,6 +36,7 @@ internal class EngineAttempt<E, V>(
  * 3. 同一引擎内的失败若不命中 [FallbackPolicy.triggerOn]，立即停止重试并跳出（**不**再切下一个引擎）；
  * 4. 单引擎彻底失败后，若错误类型命中 [FallbackPolicy.triggerOn]，才切到下一个引擎；
  * 5. 全部失败时，**透传最后一次的失败事件**给下游（已经被下游收到的部分事件不撤销）；
+ *    事件在引擎产出时**立即** `emit` 给下游，不在成功路径上整段缓冲后再重放（以便生图进度 / 预览等流式 UI）；
  * 6. 任何一次成功（命中 [isCompleted]）后立即返回，不再尝试后续引擎。
  *
  * 每次"尝试"会触发一次完整的 listener 回调对：
@@ -70,6 +71,9 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
     var lastFailureEvent: V? = null
     var lastFailureError: AiEngineError? = null
 
+    /** 最近一次失败尝试是否已在流中 `emit` 过 [errorOf] 非空事件（用于避免末尾重复 `emit`）。 */
+    var lastAttemptStreamedFailure = false
+
     attemptsLoop@ for (attempt in attempts) {
         var retryLeft = policy.maxRetries
         while (true) {
@@ -84,16 +88,21 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             listeners.notify { it.onStart(metadata) }
 
             val mark = TimeSource.Monotonic.markNow()
-            val collected = mutableListOf<V>()
             var failureError: AiEngineError? = null
             var completed = false
 
+            /** 本次尝试内是否已通过流发出过带 [errorOf] 的终端失败事件（避免末尾再 `emit` 一次）。 */
+            var streamedFailureEvent = false
+            var attemptLastFailureEvent: V? = null
+
             try {
                 attempt.stream().collect { event ->
-                    collected += event
+                    emit(event)
                     val err = errorOf(event)
                     if (err != null) {
                         failureError = err
+                        attemptLastFailureEvent = event
+                        streamedFailureEvent = true
                     } else if (isCompleted(event)) {
                         completed = true
                     }
@@ -108,7 +117,6 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             }
 
             if (completed) {
-                collected.forEach { emit(it) }
                 listeners.notify { it.onCompleted(metadata, mark.elapsedNow().inWholeMilliseconds) }
                 return
             }
@@ -121,7 +129,8 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
 
             listeners.notify { it.onFailed(metadata, finalError) }
             lastFailureError = finalError
-            lastFailureEvent = collected.lastOrNull { errorOf(it) != null }
+            lastFailureEvent = attemptLastFailureEvent
+            lastAttemptStreamedFailure = streamedFailureEvent
 
             if (retryLeft > 0 && policy.shouldFallback(finalError)) {
                 retryLeft--
@@ -130,13 +139,13 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             break
         }
 
-        if (lastFailureError != null && !policy.shouldFallback(lastFailureError)) {
+        if (!policy.shouldFallback(lastFailureError!!)) {
             break@attemptsLoop
         }
     }
 
     val toEmit = lastFailureEvent
-    if (toEmit != null) {
+    if (toEmit != null && !lastAttemptStreamedFailure) {
         emit(toEmit)
     }
 }

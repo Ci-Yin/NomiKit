@@ -124,9 +124,11 @@ class DefaultAiChatTest {
         )
         assertEquals(1, primary.receivedRequests.size)
         assertEquals(1, backup.receivedRequests.size)
-        assertEquals(2, events.size)
+        assertEquals(4, events.size)
         assertIs<ChatEvent.Started>(events[0])
-        assertEquals("fallback-ok", (events[1] as ChatEvent.Completed).response.content)
+        assertIs<ChatEvent.Failed>(events[1])
+        assertIs<ChatEvent.Started>(events[2])
+        assertEquals("fallback-ok", (events[3] as ChatEvent.Completed).response.content)
     }
 
     /**
@@ -182,8 +184,9 @@ class DefaultAiChatTest {
             ),
             listener.records,
         )
-        assertEquals(1, events.size)
-        assertIs<ChatEvent.Failed>(events.single())
+        assertEquals(2, events.size)
+        assertIs<ChatEvent.Started>(events[0])
+        assertIs<ChatEvent.Failed>(events[1])
     }
 
     /**
