@@ -363,7 +363,7 @@ val activeUsers = users.let { list ->
 
 | 层级       | 后缀             | 示例                            | 说明           |
 |----------|----------------|-------------------------------|--------------|
-| **通用错误** | `DomainError`  | `DomainError.Network.Http`    | 跨用例复用的技术性错误  |
+| **通用错误** | `DataError`    | `DataError.Network.Http`      | 跨用例复用的技术性错误  |
 | **场景错误** | `XxxError`     | `RegisterError`, `LoginError` | 特定业务场景的错误    |
 | **通用错误** | `GenericError` | `GenericError`                | 最终展示给用户的通用错误 |
 

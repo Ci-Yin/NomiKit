@@ -21,7 +21,7 @@
 ┌──────────────────────────▼─────────────────────────────────┐
 │                       Data Layer                            │
 │  (Repository实现, DataSource, API, Mapper, Entity)          │
-│  - 只产出通用错误 `DomainError` │
+│  - 只产出通用错误 `DataError` │
 │  - 数据获取与持久化                                           │
 └────────────────────────────────────────────────────────────┘
 ```
@@ -40,10 +40,10 @@
     - 输入校验（可委托给 `Validator`）
     - 串并行调用一个或多个 `Repository`
     - 聚合/转换结果
-    - 将通用错误（`DomainError`）映射为场景错误 `XxxError`（预期错误→业务错误；未知错误→`Unknown` 兜底）
+    - 将通用错误（`DataError`）映射为场景错误 `XxxError`（预期错误→业务错误；未知错误→`Unknown` 兜底）
 - **Repository（Domain 接口 / Data 实现）**：负责具体的数据拉取与存储策略（网络、数据库、缓存、本地设置等）：
     - 对上层提供稳定抽象，隐藏数据源细节
-    - 在 Data 层将异常/失败统一转换为通用错误（`DomainError`）并返回
+    - 在 Data 层将异常/失败统一转换为通用错误（`DataError`）并返回
 
 推荐调用链：`Screen → ViewModel → UseCase → Repository(接口) → RepositoryImpl/数据源`
 
@@ -58,18 +58,18 @@
 
 以及错误的“作用域”：
 
-- **通用错误（DomainError）**：可跨领域复用。
+- **通用错误（DataError）**：可跨领域复用。
 - **场景错误（XxxError）**：限定在某个用例/交互/页面语境下消费，用于驱动 UI（Presentation 只消费这一层错误）。
 
 推荐落位规则：
 
 - **Data 层**
-    - 只将“异常/失败”转换为通用错误（`DomainError`）（不产出业务/场景错误）。
+    - 只将“异常/失败”转换为通用错误（`DataError`）（不产出业务/场景错误）。
     - 不直接产出 UI/场景错误（避免把 UI 语义带入底层）。
 - **Domain / UseCase 层**
-    - 将通用错误（`DomainError`）映射为场景错误 `XxxError`，并编排业务流程：
-        - **预期的错误**：把 `DomainError` 解释为业务语义（例如 HTTP 409 → `EmailAlreadyRegistered`）。
-        - **未知的错误**：统一映射为 `XxxError.Unknown(DomainError)` 兜底，避免 UI 依赖底层细节。
+    - 将通用错误（`DataError`）映射为场景错误 `XxxError`，并编排业务流程：
+        - **预期的错误**：把 `DataError` 解释为业务语义（例如 HTTP 409 → `EmailAlreadyRegistered`）。
+        - **未知的错误**：统一映射为 `XxxError.Unknown(DataError)` 兜底，避免 UI 依赖底层细节。
     - 必要时再把场景错误映射为最终展示用的 `GenericError`（作为 UI 展示兜底模型）。
 - **Presentation 层**
     - 只消费 `XxxError`（以及可选的 `GenericError`），负责把错误呈现为状态/副作用，不分支处理底层错误细节。
@@ -81,14 +81,14 @@
 - **提高复用与可测试性**：错误映射集中在 Domain，单元测试更稳定。
 - **避免 ViewModel 变胖**：错误分支与组合逻辑不会散落在多个 ViewModel 中。
 
-### 1. 通用错误（`DomainError`）
+### 1. 通用错误（`DataError`）
 
 定义跨用例复用的技术性错误，使用 `sealed interface` 建模：
 
 ```kotlin
-sealed interface DomainError {
+sealed interface DataError {
     // 网络相关
-    sealed interface Network : DomainError {
+    sealed interface Network : DataError {
         object NoConnection : Network      // 离线/无网络
         object Timeout : Network           // 连接/读取超时
         data class Http(
@@ -102,14 +102,14 @@ sealed interface DomainError {
     }
 
     // 数据/解析
-    object Serialization : DomainError     // JSON 解析等
-    object Persistence : DomainError       // DB/文件
+    object Serialization : DataError     // JSON 解析等
+    object Persistence : DataError       // DB/文件
 
     // 其他
     data class Unknown(
         val cause: Throwable? = null,
         val message: String? = cause?.message
-    ) : DomainError
+    ) : DataError
 }
 ```
 
@@ -120,8 +120,8 @@ sealed interface DomainError {
 > **同一领域通常会有多个场景错误类型**，以用例/交互命名更清晰，例如：`LoginError`、`RegisterError`。
 >
 > 为了避免每个场景错误类型都重复声明 `Generic(GenericError)` 包装，建议统一使用
-`Unknown(DomainError)`
-> 作为兜底，并在需要展示时通过 `DomainError.toGenericError()` / `XxxError.toDisplayMessage()`
+`Unknown(DataError)`
+> 作为兜底，并在需要展示时通过 `DataError.toGenericError()` / `XxxError.toDisplayMessage()`
 > 等转换为最终文案。
 
 ```kotlin
@@ -138,8 +138,8 @@ sealed class RegisterError(val message: String) {
     object EmailAlreadyRegistered : RegisterError("邮箱已存在")
     class InvalidCaptcha(message: String) : RegisterError(message.ifEmpty { "邮箱验证码错误" })
 
-    // 未知错误兜底：未能被识别为“预期业务错误”的 `DomainError`，统一在这里承接
-    data class Unknown(val error: DomainError) : RegisterError(error.toGenericError().message)
+    // 未知错误兜底：未能被识别为“预期业务错误”的 `DataError`，统一在这里承接
+    data class Unknown(val error: DataError) : RegisterError(error.toGenericError().message)
 }
 ```
 
@@ -147,13 +147,13 @@ sealed class RegisterError(val message: String) {
 
 在 `domain` 层集中定义错误到场景错误的映射函数：
 
-- 简单场景：`DomainError -> XxxError`
-- 同一领域不同用例：通常是 `DomainError -> LoginError`、`DomainError -> RegisterError` 等分别映射
+- 简单场景：`DataError -> XxxError`
+- 同一领域不同用例：通常是 `DataError -> LoginError`、`DataError -> RegisterError` 等分别映射
 
 ```kotlin
 // domain/auth/error/RegisterError.kt
-fun DomainError.toRegisterError(): RegisterError = when (this) {
-    is DomainError.Network.Http -> when (code) {
+fun DataError.toRegisterError(): RegisterError = when (this) {
+    is DataError.Network.Http -> when (code) {
         400 -> RegisterError.InvalidCaptcha(this.description)
         409 -> RegisterError.EmailAlreadyRegistered
         else -> RegisterError.Unknown(this)
@@ -164,11 +164,11 @@ fun DomainError.toRegisterError(): RegisterError = when (this) {
 
 ### 4. 错误流转规则
 
-| 层级                   | 职责                                      |
-|----------------------|-----------------------------------------|
-| **Data 层**           | 只产出通用错误（`DomainError`）                  |
-| **Domain/UseCase 层** | 将通用错误（`DomainError`）映射为场景错误（`XxxError`） |
-| **Presentation 层**   | 只消费场景错误，用于 UI 展示（不做 `DomainError` 映射）   |
+| 层级                   | 职责                                    |
+|----------------------|---------------------------------------|
+| **Data 层**           | 只产出通用错误（`DataError`）                  |
+| **Domain/UseCase 层** | 将通用错误（`DataError`）映射为场景错误（`XxxError`） |
+| **Presentation 层**   | 只消费场景错误，用于 UI 展示（不做 `DataError` 映射）   |
 
 ## 三、UseCase 与 Validator
 
@@ -220,7 +220,7 @@ class RegisterUserUseCase(
         // 1. 校验输入
         validator.validate(input).bind()
         // 2. 调用 Repository，映射错误
-        repository.register(input).mapLeft(DomainError::toRegisterError).bind()
+        repository.register(input).mapLeft(DataError::toRegisterError).bind()
     }
 }
 ```
@@ -253,7 +253,7 @@ class ObserveUserProfileUseCase(
 ) {
     operator fun invoke(): Flow<Either<ProfileError, UserProfile>> =
         repository.observeUserProfile()
-            .map { it.mapLeft(DomainError::toProfileError) }
+            .map { it.mapLeft(DataError::toProfileError) }
 }
 ```
 
@@ -270,20 +270,20 @@ class ObserveUserProfileUseCase(
 
 ### 1. Repository 接口 (Domain 层)
 
-定义数据操作的抽象，返回 `Either<DomainError, ...>`：
+定义数据操作的抽象，返回 `Either<DataError, ...>`：
 
 ```kotlin
 // domain/auth/AuthRepository.kt
 interface AuthRepository {
-    suspend fun register(input: RegisterInput): Either<DomainError, RegisterResult>
-    suspend fun login(input: LoginInput): Either<DomainError, LoginResult>
-    suspend fun logout(): Either<DomainError, Unit>
+    suspend fun register(input: RegisterInput): Either<DataError, RegisterResult>
+    suspend fun login(input: LoginInput): Either<DataError, LoginResult>
+    suspend fun logout(): Either<DataError, Unit>
 }
 ```
 
 ### 2. Repository 实现 (Data 层)
 
-组合多种数据源，处理异常/失败并转换为通用错误 `DomainError`：
+组合多种数据源，处理异常/失败并转换为通用错误 `DataError`：
 
 ```kotlin
 // data/auth/AuthRepositoryImpl.kt
@@ -292,14 +292,14 @@ class AuthRepositoryImpl(
     private val authSettings: AuthSettings
 ) : AuthRepository {
 
-    override suspend fun register(input: RegisterInput): Either<DomainError, RegisterResult> =
+    override suspend fun register(input: RegisterInput): Either<DataError, RegisterResult> =
         Either.catch {
             val request = input.toRegisterRequest()
             val response = api.register(request)
             response.toRegisterResult()
-        }.mapLeft { it.toDomainError() }
+        }.mapLeft { it.toDataError() }
 
-    override suspend fun login(input: LoginInput): Either<DomainError, LoginResult> =
+    override suspend fun login(input: LoginInput): Either<DataError, LoginResult> =
         Either.catch {
             val request = input.toLoginRequest()
             val response = api.login(request)
@@ -307,7 +307,7 @@ class AuthRepositoryImpl(
             authSettings.accessToken = response.accessToken
             authSettings.refreshToken = response.refreshToken
             response.toLoginResult()
-        }.mapLeft { it.toDomainError() }
+        }.mapLeft { it.toDataError() }
 }
 ```
 
@@ -499,7 +499,7 @@ class RegisterUserUseCaseTest {
     @Test
     fun `invoke returns EmailAlreadyRegistered when API returns 409`() = runTest {
         val input = validRegisterInput()
-        coEvery { repository.register(any()) } returns DomainError.Network.Http(409, "").left()
+        coEvery { repository.register(any()) } returns DataError.Network.Http(409, "").left()
 
         val result = useCase(input)
 
@@ -536,7 +536,7 @@ class AuthRepositoryImplTest {
         val result = repository.register(validRegisterInput())
 
         val error = result.leftOrNull()
-        assertTrue(error is DomainError.Network)
+        assertTrue(error is DataError.Network)
     }
 }
 ```
@@ -655,8 +655,8 @@ data class FilmUiItem(
 
 ## 九、最佳实践总结
 
-1. **Data 层**: 只负责数据获取，异常转换为通用错误 `DomainError`，使用 ApiData/Entity
-2. **Domain 层**: 编排业务流程，将通用错误 `DomainError`映射为场景错误，定义核心业务模型
+1. **Data 层**: 只负责数据获取，异常转换为通用错误 `DataError`，使用 ApiData/Entity
+2. **Domain 层**: 编排业务流程，将通用错误 `DataError`映射为场景错误，定义核心业务模型
 3. **Presentation 层**: 只消费场景错误，专注 UI 展示，必要时使用 UiModel/UiItem
 4. **依赖关系**: Domain 层不依赖任何层，Presentation 层和 Data 层只依赖 Domain 层，不会依赖彼此
 5. **数据隔离**: 各层使用独立数据模型，通过 Mapper 转换，避免跨层耦合
