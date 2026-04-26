@@ -3,9 +3,9 @@ package com.ciyin.app.ui.screen.aiimage
 /**
  * 文生图演示页面的不可变 UI 状态。
  *
- * 所有变更经 [AiImageDemoViewModel] 通过 `copy` 产生新实例；[resultBytes] 使用自定义 [equals] / [hashCode] 以按内容比较字节数组。
+ * 所有变更经 [AiImageViewModel] 通过 `copy` 产生新实例；[resultBytes] 使用自定义 [equals] / [hashCode] 以按内容比较字节数组。
  */
-internal data class AiImageDemoUiState(
+internal data class AiImageUiState(
     /** WebUI 主机名或 IP，无协议与端口。 */
     val serverHost: String = "192.168.31.10",
     /** 正向提示词文本。 */
@@ -27,7 +27,7 @@ internal data class AiImageDemoUiState(
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as AiImageDemoUiState
+        other as AiImageUiState
 
         if (isLoading != other.isLoading) return false
         if (progress != other.progress) return false

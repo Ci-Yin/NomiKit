@@ -12,7 +12,14 @@ kotlin {
         implementation(libs.bundles.material3)
         implementation(projects.core.uiFoundation)
         implementation(projects.feature.aiFacade)
+        implementation(projects.feature.aiChatOpenaiEngine)
         implementation(projects.feature.aiImageSdwebuiEngine)
+        implementation(projects.component.dataStore)
+        implementation(projects.component.koin)
+    }
+
+    sourceSets.androidMain.dependencies {
+        implementation(libs.compose.ui.tooling.preview)
     }
 
     sourceSets.desktopMain.dependencies {

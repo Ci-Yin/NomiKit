@@ -64,13 +64,13 @@ private val AiImageDemoErrorColor = Color(0xFFB3261E)
 @Composable
 internal fun AiImageDemoScreen(
     onBack: () -> Unit,
-    viewModel: AiImageDemoViewModel = viewModel(::AiImageDemoViewModel),
+    viewModel: AiImageViewModel = viewModel(::AiImageViewModel),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     viewModel.collectSideEffects { effect ->
         when (effect) {
-            AiImageDemoEffect.NavigateBack -> onBack()
+            AiImageEffect.NavigateBack -> onBack()
         }
     }
 
@@ -83,13 +83,13 @@ internal fun AiImageDemoScreen(
 /**
  * 文生图演示页面的纯 UI。
  *
- * 仅依赖 [AiImageDemoUiState] 与 [onAction]；交互统一通过 [onAction] 回传，不持有 ViewModel。
+ * 仅依赖 [AiImageUiState] 与 [onAction]；交互统一通过 [onAction] 回传，不持有 ViewModel。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AiImageDemoContent(
-    state: AiImageDemoUiState,
-    onAction: (AiImageDemoAction) -> Unit,
+    state: AiImageUiState,
+    onAction: (AiImageAction) -> Unit,
 ) {
     val bitmap: ImageBitmap? = remember(state.resultBytes, state.resultMimeType) {
         val bytes = state.resultBytes
@@ -102,7 +102,7 @@ private fun AiImageDemoContent(
             TopAppBar(
                 title = { Text("文生图演示") },
                 navigationIcon = {
-                    IconButton(onClick = { onAction(AiImageDemoAction.BackClick) }) {
+                    IconButton(onClick = { onAction(AiImageAction.BackClick) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
@@ -123,7 +123,7 @@ private fun AiImageDemoContent(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.serverHost,
-                onValueChange = { onAction(AiImageDemoAction.ServerHostChange(it)) },
+                onValueChange = { onAction(AiImageAction.ServerHostChange(it)) },
                 enabled = !state.isLoading,
                 label = { Text("WebUI 主机 / IP") },
                 placeholder = { Text("127.0.0.1") },
@@ -133,11 +133,11 @@ private fun AiImageDemoContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.prompt,
                 maxLines = 2,
-                onValueChange = { onAction(AiImageDemoAction.PromptChange(it)) },
+                onValueChange = { onAction(AiImageAction.PromptChange(it)) },
                 label = { Text("提示词") },
             )
             Button(
-                onClick = { onAction(AiImageDemoAction.GenerateClick) },
+                onClick = { onAction(AiImageAction.GenerateClick) },
                 enabled = !state.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -191,7 +191,7 @@ private fun AiImageDemoContent(
 @Composable
 private fun AiImageDemoContentPreview() {
     AiImageDemoContent(
-        state = AiImageDemoUiState(),
+        state = AiImageUiState(),
         onAction = {},
     )
 }

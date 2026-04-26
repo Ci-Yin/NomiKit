@@ -7,10 +7,11 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 
 /**
- * 样例模块根 Composable：独立子导航栈，从 [com.ciyin.app.ui.app.navigation.SampleHubRouter] 进入各占位页；[onExitSampleModule] 回到主 App 栈中的首页。
+ * 样例模块根 Composable：独立子导航栈
  */
 @Composable
 fun SampleModuleRoot() {
@@ -34,6 +35,11 @@ fun SampleModuleRoot() {
             }
             entry<AiImageDemoRouter> {
                 AiImageDemoScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<AiChatRouter> {
+                AiChatScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

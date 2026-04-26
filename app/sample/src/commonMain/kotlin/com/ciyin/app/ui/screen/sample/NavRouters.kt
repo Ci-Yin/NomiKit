@@ -17,6 +17,9 @@ internal object SampleHubRouter : NavRouter
 @Serializable
 internal object AiImageDemoRouter : NavRouter
 
+@Serializable
+internal object AiChatRouter : NavRouter
+
 /** 占位样例子页 A。 */
 @Serializable
 internal object SampleExamplePlaceholderARouter : NavRouter
@@ -26,6 +29,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(SampleHubRouter::class, SampleHubRouter.serializer())
             subclass(AiImageDemoRouter::class, AiImageDemoRouter.serializer())
+            subclass(AiChatRouter::class, AiChatRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
                 SampleExamplePlaceholderARouter.serializer()

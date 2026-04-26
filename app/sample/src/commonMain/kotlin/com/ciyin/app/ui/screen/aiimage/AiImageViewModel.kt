@@ -2,11 +2,8 @@ package com.ciyin.app.ui.screen.aiimage
 
 import ciyin.ai.core.error.AiEngineError
 import ciyin.ai.core.image.ImageEvent
-import ciyin.ai.core.image.ImageRequest
-import ciyin.ai.core.image.ImageSize
-import ciyin.ai.core.image.ImageSource
-import ciyin.ai.image.sdwebui.model.buildSdWebUiText2ImageExtras
 import ciyin.ui.foundation.viewmodel.StateMachineMviViewModel
+import com.ciyin.app.ui.screen.aiimage.data.AiImageRepository
 import com.freeletics.flowredux2.FlowReduxBuilder
 import com.freeletics.flowredux2.FlowReduxStateMachineFactory
 import com.freeletics.flowredux2.initializeWith
@@ -19,30 +16,59 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * 文生图演示页面的 ViewModel。
  *
- * 基于 [StateMachineMviViewModel] 与 FlowRedux2：用户操作走 [AiImageDemoAction]；
- * 生成过程中由内部协程将 [ciyin.ai.core.image.ImageEvent] 回灌为 [AiImageDemoAction]，保证每个 `on<...>` 内至多一次
+ * 基于 [StateMachineMviViewModel] 与 FlowRedux2：用户操作走 [AiImageAction]；
+ * 生成过程中由内部协程将 [ciyin.ai.core.image.ImageEvent] 回灌为 [AiImageAction]，保证每个 `on<...>` 内至多一次
  * `mutate` / `override` / `noChange`。
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class AiImageDemoViewModel :
-    StateMachineMviViewModel<AiImageDemoUiState, AiImageDemoAction, AiImageDemoEffect>() {
+internal class AiImageViewModel(
+    private val repository: AiImageRepository = AiImageRepository(),
+) : StateMachineMviViewModel<AiImageUiState, AiImageAction, AiImageEffect>() {
 
-    override fun FlowReduxStateMachineFactory<AiImageDemoUiState, AiImageDemoAction>.initialize() {
-        initializeWith { AiImageDemoUiState() }
+    override fun FlowReduxStateMachineFactory<AiImageUiState, AiImageAction>.initialize() {
+        initializeWith { AiImageUiState() }
     }
 
-    override fun FlowReduxBuilder<AiImageDemoUiState, AiImageDemoAction>.spec() {
-        inState<AiImageDemoUiState> {
-            onActionEffect<AiImageDemoAction.BackClick> {
-                poseEffect(AiImageDemoEffect.NavigateBack)
+    override fun FlowReduxBuilder<AiImageUiState, AiImageAction>.spec() {
+        inState<AiImageUiState> {
+
+            // 进入页面时从 DataStore 读取偏好并派发 PrefsLoaded
+            onEnterEffect {
+                val prefs = repository.loadPreferences()
+                dispatchAction(AiImageAction.PrefsLoaded(prefs))
             }
-            on<AiImageDemoAction.ServerHostChange> { action ->
-                mutate { copy(serverHost = action.value) }
+
+            // 合并 DataStore 中的主机与提示词
+            on<AiImageAction.PrefsLoaded> { action ->
+                mutate {
+                    copy(
+                        serverHost = action.prefs.serverHost,
+                        prompt = action.prefs.prompt,
+                    )
+                }
             }
-            on<AiImageDemoAction.PromptChange> { action ->
-                mutate { copy(prompt = action.value) }
+
+            // 返回上一页（副作用导航）
+            onActionEffect<AiImageAction.BackClick> {
+                poseEffect(AiImageEffect.NavigateBack)
             }
-            on<AiImageDemoAction.GenerateClick> {
+
+            // 更新 SD WebUI 服务地址并异步写回偏好
+            on<AiImageAction.ServerHostChange> { action ->
+                mutate {
+                    copy(serverHost = action.value).apply { persistDemoInput(this) }
+                }
+            }
+
+            // 更新文生图提示词并异步写回偏好
+            on<AiImageAction.PromptChange> { action ->
+                mutate {
+                    copy(prompt = action.value).apply { persistDemoInput(this) }
+                }
+            }
+
+            // 校验提示词后启动后台生成并进入加载态
+            on<AiImageAction.GenerateClick> {
                 val trimmed = snapshot.prompt.trim()
                 when {
                     snapshot.isLoading -> noChange()
@@ -60,7 +86,9 @@ internal class AiImageDemoViewModel :
                     }
                 }
             }
-            on<AiImageDemoAction.GenerationProgress> { action ->
+
+            // 回灌生成进度与阶段说明
+            on<AiImageAction.GenerationProgress> { action ->
                 mutate {
                     copy(
                         progress = action.progress,
@@ -68,7 +96,9 @@ internal class AiImageDemoViewModel :
                     )
                 }
             }
-            on<AiImageDemoAction.GenerationPreview> { action ->
+
+            // 回灌中间预览图
+            on<AiImageAction.GenerationPreview> { action ->
                 mutate {
                     copy(
                         resultBytes = action.bytes.copyOf(),
@@ -76,7 +106,9 @@ internal class AiImageDemoViewModel :
                     )
                 }
             }
-            on<AiImageDemoAction.GenerationCompleted> { action ->
+
+            // 生成成功：展示最终图像并清除加载态
+            on<AiImageAction.GenerationCompleted> { action ->
                 mutate {
                     copy(
                         isLoading = false,
@@ -88,7 +120,9 @@ internal class AiImageDemoViewModel :
                     )
                 }
             }
-            on<AiImageDemoAction.GenerationCompletedEmpty> {
+
+            // 完成事件但无图像数据
+            on<AiImageAction.GenerationCompletedEmpty> {
                 mutate {
                     copy(
                         isLoading = false,
@@ -98,7 +132,9 @@ internal class AiImageDemoViewModel :
                     )
                 }
             }
-            on<AiImageDemoAction.GenerationFailed> { action ->
+
+            // 生成失败：展示错误信息
+            on<AiImageAction.GenerationFailed> { action ->
                 mutate {
                     copy(
                         isLoading = false,
@@ -108,7 +144,9 @@ internal class AiImageDemoViewModel :
                     )
                 }
             }
-            on<AiImageDemoAction.GenerationDismissed> {
+
+            // 协程取消等：结束加载态不保留错误图
+            on<AiImageAction.GenerationDismissed> {
                 mutate {
                     copy(
                         isLoading = false,
@@ -121,52 +159,31 @@ internal class AiImageDemoViewModel :
     }
 
     /**
-     * 在后台收集 [ciyin.ai.facade.AiImage] 的 `generate` 事件流，并回灌为 [AiImageDemoAction]。
+     * 在后台收集 [ciyin.ai.facade.AiImage] 的 `generate` 事件流，并回灌为 [AiImageAction]。
      */
     private fun launchDemoImageGeneration(host: String, prompt: String) {
         backgroundScope.launch(Dispatchers.IO) {
             try {
-                val request = ImageRequest(
-                    prompt = prompt,
-                    source = ImageSource.TextToImage,
-                    size = ImageSize(600, 1000),
-                    negativePrompt = "mosaic,fellatio,lowres,(bad),missing,worst quality,low quality,watermark,oldest,chromatic aberration,extra digits,artistic error,username,[abstract],",
-                    steps = 34,
-//                    seed = 146333388,
-                    vendorOptions = mapOf(
-                        buildSdWebUiText2ImageExtras {
-                            copy(
-                                samplerName = "Euler a",
-//                                hiresFix = SdWebUiText2ImageHiresFix(
-//                                    enable = true,
-//                                    scale = 2,
-//                                    upscaler = "R-ESRGAN 4x+ Anime6B",
-//                                    denoisingStrength = 0.4f,
-//                                )
-                            )
-                        }
-                    )
-                )
-                AiImageDemoGraph.aiImage(host).generate(request).collect { event ->
+                repository.generate(host, prompt).collect { event ->
                     logger.d { "ImageEvent: $event" }
                     dispatchImageEvent(event)
                 }
             } catch (e: CancellationException) {
-                dispatchAction(AiImageDemoAction.GenerationDismissed)
+                dispatchAction(AiImageAction.GenerationDismissed)
                 throw e
             } catch (e: Throwable) {
-                dispatchAction(AiImageDemoAction.GenerationFailed(e.message ?: "未知错误"))
+                dispatchAction(AiImageAction.GenerationFailed(e.message ?: "未知错误"))
             }
         }
     }
 
-    /** 将单次 [ciyin.ai.core.image.ImageEvent] 映射为对应的回灌 [AiImageDemoAction]。 */
+    /** 将单次 [ciyin.ai.core.image.ImageEvent] 映射为对应的回灌 [AiImageAction]。 */
     private fun dispatchImageEvent(event: ImageEvent) {
         when (event) {
             ImageEvent.Started -> Unit
             is ImageEvent.Progress -> {
                 dispatchAction(
-                    AiImageDemoAction.GenerationProgress(
+                    AiImageAction.GenerationProgress(
                         progress = event.progress,
                         message = event.message,
                     ),
@@ -176,7 +193,7 @@ internal class AiImageDemoViewModel :
             is ImageEvent.Preview -> {
                 val img = event.image
                 dispatchAction(
-                    AiImageDemoAction.GenerationPreview(
+                    AiImageAction.GenerationPreview(
                         bytes = img.bytes.copyOf(),
                         mimeType = img.mimeType,
                     ),
@@ -187,19 +204,28 @@ internal class AiImageDemoViewModel :
                 val first = event.result.images.firstOrNull()
                 if (first != null) {
                     dispatchAction(
-                        AiImageDemoAction.GenerationCompleted(
+                        AiImageAction.GenerationCompleted(
                             bytes = first.bytes.copyOf(),
                             mimeType = first.mimeType,
                         ),
                     )
                 } else {
-                    dispatchAction(AiImageDemoAction.GenerationCompletedEmpty)
+                    dispatchAction(AiImageAction.GenerationCompletedEmpty)
                 }
             }
 
             is ImageEvent.Failed -> {
-                dispatchAction(AiImageDemoAction.GenerationFailed(event.error.toReadableMessage()))
+                dispatchAction(AiImageAction.GenerationFailed(event.error.toReadableMessage()))
             }
+        }
+    }
+
+    private fun persistDemoInput(state: AiImageUiState) {
+        backgroundScope.launch {
+            repository.persistServerHostAndPrompt(
+                serverHost = state.serverHost,
+                prompt = state.prompt,
+            )
         }
     }
 

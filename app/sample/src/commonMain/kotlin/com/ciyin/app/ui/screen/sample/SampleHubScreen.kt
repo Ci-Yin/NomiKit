@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,18 +83,14 @@ private fun rememberSampleHubEntries() = remember {
             navRouter = AiImageDemoRouter,
         ),
         SampleHubEntry(
+            title = "AI 聊天（AiChat + OpenAI 兼容）",
+            description = "类 ChatGPT 最小流式聊天示例，支持本地 Ollama 或云端兼容端点。",
+            navRouter = AiChatRouter,
+        ),
+        SampleHubEntry(
             title = "占位示例 A",
             description = "第二个占位入口。",
             navRouter = SampleExamplePlaceholderARouter,
         ),
-    )
-}
-
-@Preview
-@Composable
-private fun SampleHubPreview() {
-    SampleHubScreen(
-        onExitSampleModule = {},
-        toNavigate = {},
     )
 }
