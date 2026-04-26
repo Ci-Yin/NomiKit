@@ -2,7 +2,6 @@ package ciyin.ai.chat.openai.mapper
 
 import ciyin.ai.chat.openai.dto.ChatCompletionChunkDto
 import ciyin.ai.chat.openai.dto.ChatCompletionResponseDto
-import ciyin.ai.chat.openai.dto.FunctionCallDto
 import ciyin.ai.chat.openai.dto.ToolCallDto
 import ciyin.ai.chat.openai.dto.UsageDto
 import ciyin.ai.core.chat.ChatEvent
@@ -73,7 +72,7 @@ internal class ChatResponseAccumulator {
      */
     fun build(): ChatResponse = ChatResponse(
         content = content.toString(),
-        toolCalls = toolCalls.toSortedMap().values.map { it.toChatToolCall() },
+        toolCalls = toolCalls.toMap().values.map { it.toChatToolCall() },
         usage = usage,
         finishReason = finishReason,
     )

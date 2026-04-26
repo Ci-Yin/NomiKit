@@ -13,6 +13,7 @@ import ciyin.ai.image.sdwebui.SdWebUiImageEngine
 import ciyin.ai.image.sdwebui.SdWebUiImageEngineConfig
 import ciyin.ai.image.sdwebui.model.buildSdWebUiText2ImageExtras
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
