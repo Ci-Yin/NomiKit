@@ -33,6 +33,7 @@ include(":app:android")
 include(":app:desktop")
 include(":app:ios")
 include(":app:web")
+include(":app:sample")
 include(":app:shared")
 
 include(":component")

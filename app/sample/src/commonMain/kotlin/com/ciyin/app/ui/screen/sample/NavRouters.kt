@@ -1,0 +1,35 @@
+package com.ciyin.app.ui.screen.sample
+
+import androidx.navigation3.runtime.NavKey
+import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+
+@Serializable
+internal sealed interface NavRouter : NavKey
+
+
+/** 样例模块子栈根：样例入口列表。 */
+@Serializable
+internal object SampleHubRouter : NavRouter
+
+@Serializable
+internal object AiImageDemoRouter : NavRouter
+
+/** 占位样例子页 A。 */
+@Serializable
+internal object SampleExamplePlaceholderARouter : NavRouter
+
+internal val NavSavedStateConfig = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(SampleHubRouter::class, SampleHubRouter.serializer())
+            subclass(AiImageDemoRouter::class, AiImageDemoRouter.serializer())
+            subclass(
+                SampleExamplePlaceholderARouter::class,
+                SampleExamplePlaceholderARouter.serializer()
+            )
+        }
+    }
+}
