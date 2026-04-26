@@ -27,7 +27,6 @@ description: Use the feature/ai-core Kotlin Multiplatform module (package ciyin.
 - 在新增 `ai-xxx-engine` 或调整 `ai-facade` 时需要确认 `ai-core` 接口契约
 - 修改 `feature/ai-core/build.gradle.kts` 或 `settings.gradle.kts` 中 `:feature:ai-core` 的依赖
 
-不命中则忽略本 skill。设计稿与上下文完整版见 [`AI_ENGINES_DESIGN.md`](../../../AI_ENGINES_DESIGN.md)
 第三节。
 
 ## 模块速览
@@ -231,7 +230,6 @@ class EngineSelector(chatRegistry, imageRegistry) {
 
 ## 附加资源
 
-- 顶层设计稿：[`AI_ENGINES_DESIGN.md`](../../../AI_ENGINES_DESIGN.md)（看第三节"`ai-core` 接口契约"）
 - 分层错误流转：[`.docs/contributing/layered.md`](../../../.docs/contributing/layered.md)
 - 相关 skill：`.agents/skills/ai-facade/SKILL.md`、`.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
   `.agents/skills/ai-chat-openai-engine/SKILL.md`

@@ -319,7 +319,6 @@ class KermitAiInvocationListener : AiInvocationListener {
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
 - 引擎实现：`.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
   `.agents/skills/ai-chat-openai-engine/SKILL.md`
-- 顶层设计稿：[`AI_ENGINES_DESIGN.md`](../../../AI_ENGINES_DESIGN.md)（**重点看第六节"
   上层入口（Facade）"**）
 - 应用层 Facade 装配示例：`app/shared/src/commonMain/kotlin/com/ciyin/app/data/ai/`
 - 分层错误流转：[`.docs/contributing/layered.md`](../../../.docs/contributing/layered.md)

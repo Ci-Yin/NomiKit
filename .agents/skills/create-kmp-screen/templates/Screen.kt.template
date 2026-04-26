@@ -29,8 +29,8 @@ import com.ciyin.app.ui.util.AppPreview
  */
 @Composable
 fun {{NAME}}Screen(
-    onBack: () -> Unit,
     viewModel: {{NAME}}ViewModel = viewModel(::{{NAME}}ViewModel),
+    onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

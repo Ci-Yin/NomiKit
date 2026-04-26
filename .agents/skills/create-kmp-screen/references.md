@@ -70,4 +70,4 @@
 - `SettingScreen`：没有 ViewModel，没有 `ScreenScaffold`，是占位。**不要**作为完整 Screen 模板。
 - 任何把 `LazyListState` / `PagerState` 直接放进 `UiState` 的写法 —— 详见
   `.docs/contributing/mvi.md` 第四节第三点。
-- 任何在 `Screen` 顶层之外（例如子 Composable / `components/` 下）`import XxxAction / XxxEffect` 的写法。
+- 任何在 `Screen` 顶层之外（例如子 Composable / `component/` 下）`import XxxAction / XxxEffect` 的写法。

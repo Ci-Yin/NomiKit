@@ -108,7 +108,11 @@ engine.generate(
     ImageRequest(
         prompt = "a cat",
         controls = listOf(
-            ImageControl.ControlNet(module = "openpose", model = "control_v11p_sd15_openpose", image = poseBytes),
+            ImageControl.ControlNet(
+                module = "openpose",
+                model = "control_v11p_sd15_openpose",
+                image = poseBytes
+            ),
         ),
         postProcessors = listOf(
             ImagePostProcessor.FaceDetailer(model = "face_yolov8n.pt"),
@@ -260,5 +264,3 @@ private fun engine(client: RecordingClient) = SdWebUiImageEngine(
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
 - 底层 SDK：`.agents/skills/sdwebui/SKILL.md`
 - 上层 Facade：`.agents/skills/ai-facade/SKILL.md`
-- 顶层设计稿：[`AI_ENGINES_DESIGN.md`](../../../AI_ENGINES_DESIGN.md)（看第五节"
-  `ai-image-sdwebui-engine` 引擎契约"）

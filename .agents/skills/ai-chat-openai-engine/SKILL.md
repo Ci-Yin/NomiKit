@@ -139,10 +139,19 @@ engine.stream(
         model = "gpt-4o-mini",                     // null 时用 config.defaultModel
         messages = listOf(
             ChatMessage.System("你是助手"),
-            ChatMessage.User("hi", attachments = listOf(ChatAttachment.Image(pngBytes, "image/png"))),
+            ChatMessage.User(
+                "hi",
+                attachments = listOf(ChatAttachment.Image(pngBytes, "image/png"))
+            ),
         ),
         options = ChatOptions(temperature = 0.7f, stream = true),
-        tools = listOf(ChatToolSpec(name = "get_weather", description = "...", parametersJsonSchema = schema)),
+        tools = listOf(
+            ChatToolSpec(
+                name = "get_weather",
+                description = "...",
+                parametersJsonSchema = schema
+            )
+        ),
         vendorOptions = mapOf("response_format" to buildJsonObject { put("type", "json_object") }),
     ),
 ).collect { event -> /* Started / Delta / ToolCall / Completed / Failed */ }
@@ -256,7 +265,12 @@ internal expect fun defaultHttpClientEngineFactory(): HttpClientEngineFactory<*>
 
 ```kotlin
 private fun engine(baseUrl: String, mockEngine: MockEngine): OpenAiChatEngine {
-    val config = OpenAiChatEngineConfig(EngineId("openai:test"), baseUrl, apiKey = "test-key", defaultModel = "gpt-4o-mini")
+    val config = OpenAiChatEngineConfig(
+        EngineId("openai:test"),
+        baseUrl,
+        apiKey = "test-key",
+        defaultModel = "gpt-4o-mini"
+    )
     val httpClient = HttpClient(mockEngine) {
         install(ContentNegotiation) { json(OpenAiJson) }
     }
@@ -314,5 +328,3 @@ private fun engine(baseUrl: String, mockEngine: MockEngine): OpenAiChatEngine {
 
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
 - 上层 Facade：`.agents/skills/ai-facade/SKILL.md`
-- 顶层设计稿：[`AI_ENGINES_DESIGN.md`](../../../AI_ENGINES_DESIGN.md)（看第四节"
-  `ai-chat-openai-engine` 引擎契约"）

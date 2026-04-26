@@ -1,6 +1,6 @@
 ---
 name: create-kmp-screen
-description: 在 NomiKit 项目中按 MVI + FlowRedux2 + StateMachineMviViewModel 规范脚手架式生成一个新的 UI screen，包含 Action / Effect / UiState / Model / Mapper / ViewModel / Screen 与可选 components/ 子目录。当用户要求"新建一个 screen / 新建页面 / 加一个 XxxScreen / 写一个 XxxViewModel / 按 main 模板再做一个页面"等场景时使用。
+description: 在 NomiKit 项目中按 MVI + FlowRedux2 + StateMachineMviViewModel 规范脚手架式生成一个新的 UI screen，包含 Action / Effect / UiState / Model / Mapper / ViewModel / Screen 与可选 component/ 子目录。当用户要求"新建一个 screen / 新建页面 / 加一个 XxxScreen / 写一个 XxxViewModel / 按 main 模板再做一个页面"等场景时使用。
 ---
 
 # 创建 NomiKit Screen 模板
@@ -44,7 +44,7 @@ skill；直接编辑现有文件即可。
 4. **是否需要 `Mapper` 文件**：当页面要在 Domain 模型 ↔ UI 模型之间转换时为"是"
 5. **是否需要 `Model` 文件**：当 UiState 之外还有专门的 UI 子模型 / 枚举时为"是"
    （参考 `main` 的 `MainDemoDestination` / `MainDemoItem`）
-6. **是否需要 `components/` 子目录**：当页面需要拆分独立可复用的子 Composable 时为"是"
+6. **是否需要 `component/` 子目录**：当页面需要拆分独立可复用的子 Composable 时为"是"
 7. **页面会触发的副作用类型**：
     - 仅状态更新 / 列表展示 → `XxxEffect` 留空（参考 `MainEffect`）
     - 需要导航 / 跳转 → 添加 `data object NavigateBack : XxxEffect` 等具体 Effect
@@ -63,14 +63,14 @@ app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/<name>/
 ├── <Name>Mapper.kt        可选 - Domain ↔ UI 映射（按需）
 ├── <Name>ViewModel.kt     必选 - StateMachineMviViewModel
 ├── <Name>Screen.kt        必选 - Composable 入口
-└── components/            可选 - 子 Composable
+└── component/            可选 - 子 Composable
 ```
 
 包名规则：
 
 - 顶级页面：`com.ciyin.app.ui.screen.<name>`
 - 子模块页面：`com.ciyin.app.ui.screen.<parent>.<name>`
-- `components/` 子目录：在父包名后追加 `.components`
+- `component/` 子目录：在父包名后追加 `.component`
 
 ## 四、生成工作流
 
