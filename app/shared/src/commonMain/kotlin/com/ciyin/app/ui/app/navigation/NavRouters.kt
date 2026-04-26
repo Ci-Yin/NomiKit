@@ -15,11 +15,16 @@ object MainRouter : NavRouter
 @Serializable
 object SettingRouter : NavRouter
 
+@Serializable
+object AiImageDemoRouter : NavRouter
+
+
 val NavSavedStateConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(MainRouter::class, MainRouter.serializer())
             subclass(SettingRouter::class, SettingRouter.serializer())
+            subclass(AiImageDemoRouter::class, AiImageDemoRouter.serializer())
         }
     }
 }

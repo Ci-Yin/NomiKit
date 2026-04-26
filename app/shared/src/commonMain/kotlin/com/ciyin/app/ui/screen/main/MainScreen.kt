@@ -18,6 +18,7 @@ import com.ciyin.app.shared.Res
 import com.ciyin.app.shared.nav_home
 import com.ciyin.app.ui.component.AppPreview
 import com.ciyin.app.ui.component.ScreenScaffold
+import com.ciyin.app.ui.screen.sample.SampleModuleRoot
 import com.ciyin.app.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
@@ -26,10 +27,11 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel(::MainViewModel)) {
     val state by vm.state.collectAsStateWithLifecycle()
-    MainContent(
-        state = state,
-        onAction = vm.dispatchAction
-    )
+//    MainContent(
+//        state = state,
+//        onAction = vm.dispatchAction
+//    )
+    SampleModuleRoot()
 }
 
 @Composable
@@ -58,7 +60,6 @@ private fun MainContent(
         }
     }
 }
-
 
 @AppPreview
 @Composable

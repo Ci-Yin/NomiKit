@@ -25,6 +25,8 @@ kotlin {
         implementation(libs.bundles.filekit)
         implementation(libs.bundles.navigation)
 
+        implementation(projects.app.sample)
+
         api(projects.core.io)
         api(projects.core.lang)
         api(projects.core.platform)
