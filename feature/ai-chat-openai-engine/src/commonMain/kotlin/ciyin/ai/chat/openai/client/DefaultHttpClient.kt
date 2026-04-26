@@ -1,11 +1,13 @@
 package ciyin.ai.chat.openai.client
 
 import ciyin.ai.chat.openai.OpenAiChatEngineConfig
+import ciyin.platform.logger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -18,6 +20,7 @@ internal fun createDefaultHttpClient(
     config: OpenAiChatEngineConfig,
     json: Json,
 ): HttpClient = HttpClient(defaultHttpClientEngineFactory()) {
+    val log = logger("AiChat.OpenAi.HttpClient")
     install(ContentNegotiation) {
         json(json)
     }
@@ -26,7 +29,12 @@ internal fun createDefaultHttpClient(
         socketTimeoutMillis = config.streamReadTimeoutMs
     }
     install(Logging) {
-        level = LogLevel.NONE
+        logger = object : Logger {
+            override fun log(message: String) {
+                log.d { message }
+            }
+        }
+        level = LogLevel.ALL
     }
 }
 

@@ -13,6 +13,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
@@ -49,7 +50,8 @@ internal class OpenAiChatClient(
             setBody(body)
         }
         if (!response.status.isSuccess()) {
-            throw io.ktor.client.plugins.ResponseException(response, "SSE chat request failed")
+            val errorBody = runCatching { response.bodyAsText() }.getOrNull().orEmpty()
+            throw OpenAiChatStreamHttpException(response.status, errorBody)
         }
         return response.bodyAsChannel()
             .readSseDataFrames()

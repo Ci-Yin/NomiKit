@@ -25,5 +25,5 @@ data class ChatRequest(
     val options: ChatOptions = ChatOptions(),
     val tools: List<ChatToolSpec> = emptyList(),
     val attachments: List<ChatAttachment> = emptyList(),
-    val fvendorOptions: Map<String, JsonElement> = emptyMap(),
+    val vendorOptions: Map<String, JsonElement> = emptyMap(),
 )
