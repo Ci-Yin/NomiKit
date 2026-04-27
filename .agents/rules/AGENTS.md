@@ -45,7 +45,7 @@ apply: 始终
 ## 四、常用代码入口（快速定位）
 
 - 应用业务（跨平台）：`app/shared/src/commonMain/kotlin/`
-    - 推荐按三层组织：`presentation/`、`domain/`、`data/`
+    - 推荐按三层组织：`ui/`、`domain/`、`data/`
 - 平台差异实现：各模块的 `src/androidMain`、`src/iosMain`、`src/desktopMain`
 - ViewModel 基类与 MVI 基建：`core/ui-foundation/src/commonMain/kotlin/viewmodel/`
 - Compose 基础组件/主题/预览：`core/ui-foundation/src/commonMain/kotlin/widgets/`
@@ -62,7 +62,7 @@ apply: 始终
 
 - **Data 层**：只产出通用错误 `DataError`（不产出 UI/场景错误）。
 - **Domain 层**：将 `DataError` 映射为场景错误 `XxxError`，用 `UseCase/Validator` 编排业务流程。
-- **Presentation 层**：只消费场景错误，驱动 UI（配合 MVI/状态机），不要把技术错误直接透传到 UI。
+- **UI 层**：只消费场景错误，驱动 UI（配合 MVI/状态机），不要把技术错误直接透传到 UI。
 
 细节以 @.docs/contributing/layered.md 为准。
 

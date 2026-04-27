@@ -1,0 +1,3 @@
+interface:
+  display_name: "AI Chat OpenAI Engine"
+  short_description: "Help with AI Chat OpenAI Engine tasks"
