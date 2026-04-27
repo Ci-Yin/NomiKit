@@ -36,6 +36,9 @@ include(":app:web")
 include(":app:sample")
 include(":app:shared")
 
+include(":business")
+include(":business:base")
+
 include(":component")
 include(":component:koin")
 include(":component:room")
