@@ -216,7 +216,7 @@ graph TD
 
 - **`shared`**: 跨平台的应用业务与页面代码
     - `commonMain`: 绝大部分业务代码所在地
-        - **`presentation`**: UI 层。包含 Compose `Screen`、`UiState/UiEvent/Action/Effect` 与对应的
+        - **`ui`**: UI 层。包含 Compose `Screen`、`UiState/UiEvent/Action/Effect` 与对应的
           `ViewModel`。
             - `Screen` 只负责渲染与事件分发，不直连 `Repository/Api/Dao`。
             - `ViewModel` 不处理业务逻辑：只调用 `UseCase` 并更新 `UiState/Effect`。
@@ -226,7 +226,7 @@ graph TD
             - `UseCase` 面向“一次用户交互/一次业务意图”进行编排；`ObserveXxxUseCase` 用于对外暴露可订阅的
               `Flow`。
             - 在 Domain 层将 Data 层返回的通用错误 `DataError`映射为场景错误，并对未知错误做
-              `Unknown` 兜底，保证 Presentation 只消费场景错误。
+              `Unknown` 兜底，保证 UI 只消费场景错误。
         - **`data`**: 数据实现层。包含 `Repository` 实现与各类数据源（网络/数据库/缓存/本地设置等），负责具体的数据拉取与存储策略并隐藏实现细节。
 
       > 分层与错误处理的权威约定请参考：@.docs/contributing/layered.md

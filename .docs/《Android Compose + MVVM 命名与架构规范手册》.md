@@ -11,7 +11,7 @@
 > 模块按职责划分，核心模块可跨功能共享。
 
 ```bash
-org.ciyin.app
+com.ciyin.app
 ├── core/                          # ⚙️ 核心模块（全局可复用的基础能力）
 │    ├── network/                  # 网络封装（Retrofit / Ktor 客户端、拦截器、响应模型）
 │    ├── database/                 # 本地存储（Room、DataStore、Preferences）
@@ -84,15 +84,15 @@ org.ciyin.app
 
 ## 二、MVVM 架构命名规范
 
-| 层级                      | 命名示例                                     | 说明                               |
-|-------------------------|------------------------------------------|----------------------------------|
-| **数据层 (Data)**          | `LoginRepository`, `UserLocalDataSource` | 封装网络与本地数据访问逻辑                    |
-| **领域层 (Domain)**        | `LoginUseCase`, `FetchUserInfoUseCase`   | 业务逻辑与操作的封装层                      |
-| **UI 层 (Presentation)** | `LoginViewModel`, `LoginScreen`          | 页面与状态逻辑                          |
-| **UI 数据模型 (UiModel)**   | `LoginUiModel`, `UserUiModel`            | ✅ 仅供 UI 层使用的状态模型（包含展示数据、加载与错误状态） |
-| **事件类 (UiEvent)**       | `LoginUiEvent`, `HomeUiEvent`            | UI 事件（如点击、刷新、滚动）                 |
-| **组件 (Component)**      | `LoginForm`, `VipCard`, `BannerSection`  | 可复用的 Compose 子组件                 |
-| **导航 (Navigation)**     | `AppNavGraph`, `HomeNavGraph`            | Compose Navigation 路由定义          |
+| 层级                    | 命名示例                                     | 说明                               |
+|-----------------------|------------------------------------------|----------------------------------|
+| **数据层 (Data)**        | `LoginRepository`, `UserLocalDataSource` | 封装网络与本地数据访问逻辑                    |
+| **领域层 (Domain)**      | `LoginUseCase`, `FetchUserInfoUseCase`   | 业务逻辑与操作的封装层                      |
+| **UI 层 (UI)**         | `LoginViewModel`, `LoginScreen`          | 页面与状态逻辑                          |
+| **UI 数据模型 (UiModel)** | `LoginUiModel`, `UserUiModel`            | ✅ 仅供 UI 层使用的状态模型（包含展示数据、加载与错误状态） |
+| **事件类 (UiEvent)**     | `LoginUiEvent`, `HomeUiEvent`            | UI 事件（如点击、刷新、滚动）                 |
+| **组件 (Component)**    | `LoginForm`, `VipCard`, `BannerSection`  | 可复用的 Compose 子组件                 |
+| **导航 (Navigation)**   | `AppNavGraph`, `HomeNavGraph`            | Compose Navigation 路由定义          |
 
 ---
 

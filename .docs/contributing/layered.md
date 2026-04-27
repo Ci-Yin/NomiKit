@@ -6,7 +6,7 @@
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                       │
+│                    UI Layer                       │
 │  (Screen, ViewModel, State, Action, Effect)                 │
 │  - 消费场景错误，展示 UI                                       │
 └──────────────────────────┬─────────────────────────────────┘
@@ -32,7 +32,7 @@
 
 - **Screen（Compose UI）**：只负责 UI 渲染与事件分发（将用户交互转换为 `UiEvent/UiAction`），不直接调用
   `UseCase/Repository`。
-- **ViewModel（Presentation）**：不处理业务逻辑；只负责状态管理与协调 UI 交互：
+- **ViewModel（UI）**：不处理业务逻辑；只负责状态管理与协调 UI 交互：
     - 接收 `UiAction/UiEvent`
     - 调用 `UseCase`
     - 将结果映射为 `UiState`，并在需要时发出 `Effect`
@@ -45,7 +45,7 @@
     - 对上层提供稳定抽象，隐藏数据源细节
     - 在 Data 层将异常/失败统一转换为通用错误（`DataError`）并返回
 
-推荐调用链：`Screen → ViewModel → UseCase → Repository(接口) → RepositoryImpl/数据源`
+推荐调用链：`Screen → ViewModel → UseCase → Repository/数据源`
 
 ## 二、错误处理规范
 
@@ -59,7 +59,7 @@
 以及错误的“作用域”：
 
 - **通用错误（DataError）**：可跨领域复用。
-- **场景错误（XxxError）**：限定在某个用例/交互/页面语境下消费，用于驱动 UI（Presentation 只消费这一层错误）。
+- **场景错误（XxxError）**：限定在某个用例/交互/页面语境下消费，用于驱动 UI（UI 只消费这一层错误）。
 
 推荐落位规则：
 
@@ -71,83 +71,31 @@
         - **预期的错误**：把 `DataError` 解释为业务语义（例如 HTTP 409 → `EmailAlreadyRegistered`）。
         - **未知的错误**：统一映射为 `XxxError.Unknown(DataError)` 兜底，避免 UI 依赖底层细节。
     - 必要时再把场景错误映射为最终展示用的 `GenericError`（作为 UI 展示兜底模型）。
-- **Presentation 层**
+- **UI 层**
     - 只消费 `XxxError`（以及可选的 `GenericError`），负责把错误呈现为状态/副作用，不分支处理底层错误细节。
 
 为什么要这样划分：
 
-- **保持职责单一**：Data 只关心数据与失败建模；Domain 只关心业务编排与语义映射；Presentation 只关心状态与展示。
+- **保持职责单一**：Data 只关心数据与失败建模；Domain 只关心业务编排与语义映射；UI 只关心状态与展示。
 - **避免耦合与泄漏**：UI 不需要知道 Dao/网络/缓存等细节；更换数据源策略时，上层不需要跟着改。
 - **提高复用与可测试性**：错误映射集中在 Domain，单元测试更稳定。
 - **避免 ViewModel 变胖**：错误分支与组合逻辑不会散落在多个 ViewModel 中。
 
 ### 1. 通用错误（`DataError`）
 
-定义跨用例复用的技术性错误，使用 `sealed interface` 建模：
-
-```kotlin
-sealed interface DataError {
-    // 网络相关
-    sealed interface Network : DataError {
-        object NoConnection : Network      // 离线/无网络
-        object Timeout : Network           // 连接/读取超时
-        data class Http(
-            val code: Int,
-            val description: String,
-            val cause: Throwable? = null
-        ) : Network                        // 非 2xx 响应
-        object Unauthorized : Network      // 401/鉴权失效
-        object SSL : Network               // 证书/握手问题
-        object DNS : Network               // 解析失败
-    }
-
-    // 数据/解析
-    object Serialization : DataError     // JSON 解析等
-    object Persistence : DataError       // DB/文件
-
-    // 其他
-    data class Unknown(
-        val cause: Throwable? = null,
-        val message: String? = cause?.message
-    ) : DataError
-}
-```
+定义跨用例复用的技术性错误，使用 `sealed class` 建模：
 
 ### 2. 场景错误 (`XxxError`)
 
 定义特定业务场景关注的错误，更具业务语义：
 
 > **同一领域通常会有多个场景错误类型**，以用例/交互命名更清晰，例如：`LoginError`、`RegisterError`。
->
-> 为了避免每个场景错误类型都重复声明 `Generic(GenericError)` 包装，建议统一使用
-`Unknown(DataError)`
-> 作为兜底，并在需要展示时通过 `DataError.toGenericError()` / `XxxError.toDisplayMessage()`
-> 等转换为最终文案。
-
-```kotlin
-sealed class RegisterError(val message: String) {
-    // 输入校验错误
-    object EmptyEmail : RegisterError("请输入邮箱")
-    object EmptyCaptcha : RegisterError("请输入邮箱验证码")
-    object EmptyPassword : RegisterError("请输入密码")
-    object EmptyConfirmPassword : RegisterError("请输入确认密码")
-    object PasswordMismatch : RegisterError("密码不一致")
-    data class PasswordTooShort(val min: Int) : RegisterError("密码长度不能小于${min}位")
-
-    // 服务端业务错误
-    object EmailAlreadyRegistered : RegisterError("邮箱已存在")
-    class InvalidCaptcha(message: String) : RegisterError(message.ifEmpty { "邮箱验证码错误" })
-
-    // 未知错误兜底：未能被识别为“预期业务错误”的 `DataError`，统一在这里承接
-    data class Unknown(val error: DataError) : RegisterError(error.toGenericError().message)
-}
-```
 
 ### 3. 错误映射规则
 
 在 `domain` 层集中定义错误到场景错误的映射函数：
 
-- 简单场景：`DataError -> XxxError`
+- 简单场景：`DataError -> GenericError`
 - 同一领域不同用例：通常是 `DataError -> LoginError`、`DataError -> RegisterError` 等分别映射
 
 ```kotlin
@@ -168,7 +116,7 @@ fun DataError.toRegisterError(): RegisterError = when (this) {
 |----------------------|---------------------------------------|
 | **Data 层**           | 只产出通用错误（`DataError`）                  |
 | **Domain/UseCase 层** | 将通用错误（`DataError`）映射为场景错误（`XxxError`） |
-| **Presentation 层**   | 只消费场景错误，用于 UI 展示（不做 `DataError` 映射）   |
+| **UI 层**             | 只消费场景错误，用于 UI 展示（不做 `DataError` 映射）   |
 
 ## 三、UseCase 与 Validator
 
@@ -216,12 +164,13 @@ class RegisterUserUseCase(
     private val repository: AuthRepository,
     private val validator: RegisterInputValidator
 ) {
-    suspend operator fun invoke(input: RegisterInput): Either<RegisterError, RegisterResult> = either {
-        // 1. 校验输入
-        validator.validate(input).bind()
-        // 2. 调用 Repository，映射错误
-        repository.register(input).mapLeft(DataError::toRegisterError).bind()
-    }
+    suspend operator fun invoke(input: RegisterInput): Either<RegisterError, RegisterResult> =
+        either {
+            // 1. 校验输入
+            validator.validate(input).bind()
+            // 2. 调用 Repository，映射错误
+            repository.register(input).mapLeft(DataError::toRegisterError).bind()
+        }
 }
 ```
 
@@ -235,9 +184,9 @@ class RegisterUserUseCase(
     - 保持 `ViewModel` 不处理业务逻辑：VM 只负责 collect 并更新 `UiState/Effect`
     - 统一业务语义与边界：上层依赖“观察用户资料/登录态”等语义，而不是某张表/某个 Dao
     - 集中编排与组合：更容易在 UseCase 中组合多个 Flow、做去重/节流/合并等业务规则
-    - 统一错误模型到场景错误的映射：确保 Presentation 只消费 `XxxError`
-    - 更易测试：UseCase 的输出序列可用纯单元测试验证
-    - 隐藏数据源细节：Repository 可替换 Room/DataStore/缓存策略而不影响上层
+    - 统一错误模型到场景错误的映射：确保 UI 只消费 `XxxError`
+        - 更易测试：UseCase 的输出序列可用纯单元测试验证
+        - 隐藏数据源细节：Repository 可替换 Room/DataStore/缓存策略而不影响上层
 
 实现建议：
 
@@ -268,38 +217,25 @@ class ObserveUserProfileUseCase(
 
 ## 四、Repository 与 DataSource
 
-### 1. Repository 接口 (Domain 层)
-
-定义数据操作的抽象，返回 `Either<DataError, ...>`：
-
-```kotlin
-// domain/auth/AuthRepository.kt
-interface AuthRepository {
-    suspend fun register(input: RegisterInput): Either<DataError, RegisterResult>
-    suspend fun login(input: LoginInput): Either<DataError, LoginResult>
-    suspend fun logout(): Either<DataError, Unit>
-}
-```
-
-### 2. Repository 实现 (Data 层)
+### 1. Repository
 
 组合多种数据源，处理异常/失败并转换为通用错误 `DataError`：
 
 ```kotlin
-// data/auth/AuthRepositoryImpl.kt
-class AuthRepositoryImpl(
+// data/auth/AuthRepository.kt
+class AuthRepository(
     private val api: UserAuthApi,
     private val authSettings: AuthSettings
-) : AuthRepository {
+) {
 
-    override suspend fun register(input: RegisterInput): Either<DataError, RegisterResult> =
+    suspend fun register(input: RegisterInput): Either<DataError, RegisterResult> =
         Either.catch {
             val request = input.toRegisterRequest()
             val response = api.register(request)
             response.toRegisterResult()
         }.mapLeft { it.toDataError() }
 
-    override suspend fun login(input: LoginInput): Either<DataError, LoginResult> =
+    suspend fun login(input: LoginInput): Either<DataError, LoginResult> =
         Either.catch {
             val request = input.toLoginRequest()
             val response = api.login(request)
@@ -315,11 +251,10 @@ class AuthRepositoryImpl(
 
 根据存储类型选择对应的命名后缀：
 
-| 存储类型                     | 命名后缀        | 示例              | 说明          |
-|--------------------------|-------------|-----------------|-------------|
-| `multiplatform-settings` | `Settings`  | `AuthSettings`  | 简单键值对存储     |
-| `androidx.datastore`     | `DataStore` | `UserDataStore` | 类型安全的复杂数据结构 |
-| `Room`                   | `Dao`       | `AuthInfoDao`   | 数据库存储       |
+| 存储类型                 | 命名后缀        | 示例              | 说明          |
+|----------------------|-------------|-----------------|-------------|
+| `androidx.datastore` | `DataStore` | `UserDataStore` | 类型安全的复杂数据结构 |
+| `Room`               | `Dao`       | `AuthInfoDao`   | 数据库存储       |
 
 ```kotlin
 // 远程数据源 (API)
@@ -328,23 +263,12 @@ interface UserAuthApi {
     suspend fun login(request: LoginRequest): LoginResponse
 }
 
-// 本地数据源 - Settings（简单键值对）
-class AuthSettings(settings: Settings) {
-    var accessToken: String? by settings.nullableString()
-    var refreshToken: String? by settings.nullableString()
-    
-    fun clear() {
-        accessToken = null
-        refreshToken = null
-    }
-}
-
 // 本地数据源 - Dao（数据库）
 @Dao
 interface AuthInfoDao {
     @Query("SELECT * FROM auth_info WHERE id = :id")
     suspend fun getAuthInfo(id: String): AuthInfoEntity?
-    
+
     @Upsert
     suspend fun saveAuthInfo(entity: AuthInfoEntity)
 }
@@ -370,17 +294,16 @@ val AuthDomainModule = module {
     singleOf(::SendVerifyCodeUseCase)
 }
 
-// presentation (通过 koin-boot 自动注册 ViewModel)
+// ui (通过 koin-boot 自动注册 ViewModel)
 ```
 
 ### 2. 聚合模块
 
 ```kotlin
 // 可选：聚合所有 Auth 相关模块
-val AuthModules = listOf(
-    AuthDataModule,
-    AuthDomainModule
-)
+val AuthModules: KoinBootInitializer = {
+    modules(AuthDataModule, AuthDomainModule)
+}
 ```
 
 ## 六、UI 集成 (ViewModel)
@@ -400,7 +323,14 @@ class ProfileViewModel(
             _state.update { it.copy(isLoading = true) }
             getUserProfileUseCase()
                 .fold(
-                    { error -> _state.update { it.copy(isLoading = false, error = error.message) } },
+                    { error ->
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = error.message
+                            )
+                        }
+                    },
                     { profile -> _state.update { it.copy(isLoading = false, profile = profile) } }
                 )
         }
@@ -478,7 +408,8 @@ class RegisterInputValidatorTest {
 
     @Test
     fun `validate returns PasswordMismatch when passwords differ`() {
-        val input = RegisterInput(email = "test@gmail.com", password = "123456", confirmPassword = "654321")
+        val input =
+            RegisterInput(email = "test@gmail.com", password = "123456", confirmPassword = "654321")
         val result = validator.validate(input)
 
         assertEquals(RegisterError.PasswordMismatch, result.leftOrNull())
@@ -581,7 +512,7 @@ class AuthViewModelTest {
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Presentation 层                                            │
+│  UI 层                                            │
 │  使用: State, UiItem, UiModel                               │
 │        ↑ .toUiModel() / .toUiItem()                        │
 ├─────────────────────────────────────────────────────────────┤
@@ -618,47 +549,20 @@ fun AuthInfo.toEntity(): AuthInfoEntity { /*...*/
 fun AuthInfoEntity.toDomain(): AuthInfo { /*...*/
 }
 
-// Presentation 层: Domain Model → UiModel/UiItem (可选，简单场景可省略)
-// presentation/screen/home/mappers/HomeUiMapper.kt
+// UI 层: Domain Model → UiModel/UiItem (可选，简单场景可省略)
+// ui/screen/home/mappers/HomeUiMapper.kt
 fun HomeVideo.toUiItem(): HomeVideoUiItem { /*...*/
 }
 fun Film.toUiModel(): FilmUiModel { /*...*/
 }
 ```
 
-### 4. 何时可以省略 UI 层 Mapper
-
-- Domain Model 结构简单，与 UI 展示需求一致
-- 不需要额外的 UI 特有字段（如格式化文本、计算属性）
-- State 中直接持有 Domain Model 列表
-
-```kotlin
-// ✅ 简单场景：State 直接持有 Domain Model
-data class HomeState(
-    val recommendations: List<HomeVideo> = emptyList(),  // Domain Model
-    val isLoading: Boolean = false
-)
-
-// ✅ 复杂场景：需要 UI 特有字段时使用 UiItem
-data class HomeState(
-    val films: List<FilmUiItem> = emptyList(),  // UiItem
-)
-
-data class FilmUiItem(
-    val id: Int,
-    val title: String,
-    val formattedScore: String,      // UI 特有：格式化后的评分
-    val episodeProgress: String,     // UI 特有：如 "更新至第12集"
-    val isNew: Boolean,              // UI 特有：计算属性
-)
-```
-
 ## 九、最佳实践总结
 
 1. **Data 层**: 只负责数据获取，异常转换为通用错误 `DataError`，使用 ApiData/Entity
 2. **Domain 层**: 编排业务流程，将通用错误 `DataError`映射为场景错误，定义核心业务模型
-3. **Presentation 层**: 只消费场景错误，专注 UI 展示，必要时使用 UiModel/UiItem
-4. **依赖关系**: Domain 层不依赖任何层，Presentation 层和 Data 层只依赖 Domain 层，不会依赖彼此
+3. **UI 层**: 只消费场景错误，专注 UI 展示，必要时使用 UiModel/UiItem
+4. **依赖关系**: Domain 层不依赖任何层，UI 层和 Data 层只依赖 Domain 层，不会依赖彼此
 5. **数据隔离**: 各层使用独立数据模型，通过 Mapper 转换，避免跨层耦合
 6. **错误映射集中管理**: 在场景错误文件中定义映射函数
 7. **测试覆盖每一层**: Validator、UseCase、Repository、ViewModel 都应有对应测试
