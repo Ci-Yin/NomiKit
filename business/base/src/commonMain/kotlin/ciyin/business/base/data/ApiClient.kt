@@ -1,10 +1,10 @@
-package ciyin.business.data
+package ciyin.business.base.data
 
 import arrow.core.Either
 import arrow.core.flatMap
-import ciyin.business.error.DataError
-import ciyin.business.util.ApiException
-import ciyin.business.util.unwrapApiData
+import ciyin.business.base.error.DataError
+import ciyin.business.base.util.ApiException
+import ciyin.business.base.util.unwrapApiData
 import ciyin.platform.thisLogger
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient

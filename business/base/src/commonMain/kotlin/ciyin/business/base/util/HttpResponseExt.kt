@@ -1,4 +1,4 @@
-package ciyin.business.util
+package ciyin.business.base.util
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse

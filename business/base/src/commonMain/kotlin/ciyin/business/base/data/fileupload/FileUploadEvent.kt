@@ -1,6 +1,6 @@
-package ciyin.business.data.fileupload
+package ciyin.business.base.data.fileupload
 
-import ciyin.business.error.DataError
+import ciyin.business.base.error.DataError
 
 /**
  * 图片上传事件（Data 层）

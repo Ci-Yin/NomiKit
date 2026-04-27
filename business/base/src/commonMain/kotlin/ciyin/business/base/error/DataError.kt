@@ -1,4 +1,4 @@
-package ciyin.business.error
+package ciyin.business.base.error
 
 sealed class DataError(val message: String) {
 

@@ -1,8 +1,8 @@
-package ciyin.business.data.fileupload
+package ciyin.business.base.data.fileupload
 
-import ciyin.business.data.ApiClient
-import ciyin.business.error.DataError
-import ciyin.business.util.unwrapApiData
+import ciyin.business.base.data.ApiClient
+import ciyin.business.base.error.DataError
+import ciyin.business.base.util.unwrapApiData
 import io.ktor.client.plugins.onUpload
 import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.formData

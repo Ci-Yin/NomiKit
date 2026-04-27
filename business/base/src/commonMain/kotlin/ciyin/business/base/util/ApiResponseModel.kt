@@ -1,4 +1,4 @@
-package ciyin.business.util
+package ciyin.business.base.util
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

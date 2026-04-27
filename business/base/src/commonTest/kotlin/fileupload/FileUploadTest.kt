@@ -1,8 +1,8 @@
 package com.yy.myuko.business.base.data.fileupload
 
-import ciyin.business.data.ApiClient
-import ciyin.business.data.fileupload.FileUploadEvent
-import ciyin.business.data.fileupload.uploadFiles
+import ciyin.business.base.data.ApiClient
+import ciyin.business.base.data.fileupload.FileUploadEvent
+import ciyin.business.base.data.fileupload.uploadFiles
 import com.yy.myuko.core.io.SystemPath
 import com.yy.myuko.core.io.SystemPaths
 import com.yy.myuko.core.io.absolutePath

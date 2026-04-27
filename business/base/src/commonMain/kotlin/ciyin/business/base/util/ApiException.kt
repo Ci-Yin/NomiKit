@@ -1,4 +1,4 @@
-package ciyin.business.util
+package ciyin.business.base.util
 
 /**
  * API 业务异常
