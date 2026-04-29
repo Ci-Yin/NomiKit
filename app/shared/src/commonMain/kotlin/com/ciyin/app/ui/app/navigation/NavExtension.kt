@@ -1,5 +1,10 @@
 package com.ciyin.app.ui.app.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 
@@ -50,4 +55,35 @@ fun NavBackStack<NavKey>.navigateWithSingleTop(route: NavKey) {
     }
 
     add(route)
+}
+
+/**
+ * 一个 Composable 函数，它使用一个接收 [SavedStateHandle] 和 [NavKey] 的工厂来提供一个 [ViewModel] 实例。
+ */
+@Composable
+inline fun <reified VM : ViewModel, NK : NavKey> viewModel(
+    crossinline factory: (SavedStateHandle, NK) -> VM,
+    navKey: NK,
+    key: String? = null,
+): VM = viewModel(key = key) {
+    val handle = try {
+        // ✅ Android 正常创建
+        createSavedStateHandle()
+    } catch (_: Throwable) {
+        // ✅ 非 Android 环境优雅降级
+        SavedStateHandle()
+    }
+    factory(handle, navKey)
+}
+
+/**
+ * 一个 Composable 函数，它使用一个接收 [SavedStateHandle] 和 [NavKey] 的工厂来提供一个 [ViewModel] 实例。
+ */
+@Composable
+inline fun <reified VM : ViewModel, NK : NavKey> viewModel(
+    crossinline factory: (NK) -> VM,
+    navKey: NK,
+    key: String? = null,
+): VM = viewModel(key = key) {
+    factory(navKey)
 }
