@@ -30,6 +30,7 @@ jetbrains-annotations = "26.0.2-1"
 kotlinxDatetime = "0.7.0"
 materialIcons = "1.7.0"
 coilVersion = "3.0.0"
+zoomimage = "1.4.0" # https://github.com/panpf/zoomimage
 gson = "2.11.0"
 jna = "5.18.0"
 ivy = "2.5.2"
@@ -173,6 +174,19 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilVersion" }
 coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coilVersion" }
 
+# ZoomImage (https://github.com/panpf/zoomimage)
+zoomimage-compose-sketch4 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4", version.ref = "zoomimage" }
+zoomimage-compose-sketch4-koin = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-koin", version.ref = "zoomimage" }
+zoomimage-compose-sketch4-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-core", version.ref = "zoomimage" }
+zoomimage-compose-sketch3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3", version.ref = "zoomimage" }
+zoomimage-compose-sketch3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3-core", version.ref = "zoomimage" }
+zoomimage-compose-coil3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoomimage" }
+zoomimage-compose-coil3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3-core", version.ref = "zoomimage" }
+zoomimage-compose-coil2 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2", version.ref = "zoomimage" }
+zoomimage-compose-coil2-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2-core", version.ref = "zoomimage" }
+zoomimage-compose = { module = "io.github.panpf.zoomimage:zoomimage-compose", version.ref = "zoomimage" }
+zoomimage-compose-resources = { module = "io.github.panpf.zoomimage:zoomimage-compose-resources", version.ref = "zoomimage" }
+
 ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin" }
 mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
@@ -291,6 +305,12 @@ compottie = [
 room = [
     "androidx-room-runtime",
     "androidx-room-ktx",
+]
+
+zoomimage = [
+    "zoomimage-compose",
+    "zoomimage-compose-coil3",
+    "zoomimage-compose-coil3-core",
 ]
 
 [plugins]

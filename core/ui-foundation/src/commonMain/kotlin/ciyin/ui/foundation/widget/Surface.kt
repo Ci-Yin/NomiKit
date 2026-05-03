@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SurfaceBox(
+fun BoxSurface(
     modifier: Modifier = Modifier.Companion,
     shape: Shape = RectangleShape,
     color: Color = MaterialTheme.colorScheme.surface,
@@ -50,7 +50,7 @@ fun SurfaceBox(
 )
 
 @Composable
-fun SurfaceColumn(
+fun ColumnSurface(
     modifier: Modifier = Modifier.Companion,
     shape: Shape = RectangleShape,
     color: Color = MaterialTheme.colorScheme.surface,
@@ -79,7 +79,7 @@ fun SurfaceColumn(
 )
 
 @Composable
-fun SurfaceRow(
+fun RowSurface(
     modifier: Modifier = Modifier.Companion,
     shape: Shape = RectangleShape,
     color: Color = MaterialTheme.colorScheme.surface,
