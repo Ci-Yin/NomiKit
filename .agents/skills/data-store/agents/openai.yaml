@@ -1,0 +1,3 @@
+interface:
+  display_name: "DataStore (component/data-store)"
+  short_description: "Help with ciyin.datastore DataStoreFactory, JsonDataStoreSerializer, Koin boot, and Room List TypeConverter guidance"

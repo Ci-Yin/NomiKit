@@ -38,6 +38,11 @@ apply: always
 - 写复杂 FlowRedux2 状态机（子状态机、`condition`、`untilIdentityChanges`、`collectWhileInState` 等）→
   `flowredux-statemachine`
 - 新增 / 修改 `app/shared/src/commonMain/kotlin/{data,domain}/<feature>/` → `data-domain`
+- 使用 `component:room`、Room 实体/DAO/版本、`TypeConverter` / `@TypeConverters`、Koin `singleDao` /
+  `singleDatabase` → `room`（**不要**主动写 `Migration` / 数据兼容，除非用户明确要求；见该 skill）
+- 使用 `component:data-store`、`DataStoreFactory`、`JsonDataStoreSerializer`、
+  `DataStoreBootInitializer`、
+  Koin `dataStore(...)` / `DataStorePath` → `data-store`
 - 涉及 AI 抽象层（`AiEngine` / `ChatEngine` / `ImageEngine` / `Registry` / 通用错误模型）→ `ai-core`
 - 业务侧调用 AI（`AiChat` / `AiImage` / `EnginePreferences` / `FallbackPolicy` / 埋点）→ `ai-facade`
 - 接入 OpenAI 兼容协议引擎（OpenAI / OpenRouter / DeepSeek / Ollama / vLLM 等）→
