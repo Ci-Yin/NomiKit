@@ -8,6 +8,7 @@ import ciyin.ai.facade.observability.InvocationMetadata
 import ciyin.ai.facade.selection.FallbackPolicy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.TimeSource
 
 /**
@@ -107,7 +108,7 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
                         completed = true
                     }
                 }
-            } catch (ce: kotlin.coroutines.cancellation.CancellationException) {
+            } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
                 failureError = AiEngineError.Unknown(
@@ -139,7 +140,7 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             break
         }
 
-        if (!policy.shouldFallback(lastFailureError!!)) {
+        if (!policy.shouldFallback(lastFailureError)) {
             break@attemptsLoop
         }
     }
@@ -159,7 +160,7 @@ private inline fun List<AiInvocationListener>.notify(block: (AiInvocationListene
     for (l in this) {
         try {
             block(l)
-        } catch (ce: kotlin.coroutines.cancellation.CancellationException) {
+        } catch (ce: CancellationException) {
             throw ce
         } catch (_: Throwable) {
             // 故意吞掉：观察者副作用不应阻断业务

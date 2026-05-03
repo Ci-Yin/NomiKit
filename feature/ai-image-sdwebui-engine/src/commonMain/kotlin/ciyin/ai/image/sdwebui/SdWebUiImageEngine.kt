@@ -89,14 +89,11 @@ class SdWebUiImageEngine(
                         val h = bytes.contentHashCode()
                         if (h == lastPreviewContentHash) return@let
                         lastPreviewContentHash = h
-                        emit(
-                            ImageEvent.Preview(
-                                GeneratedImage(
-                                    bytes = bytes,
-                                    mimeType = mimeTypeForDecodedPreview(bytes),
-                                ),
-                            ),
+                        val image = GeneratedImage(
+                            bytes = bytes,
+                            mimeType = mimeTypeForDecodedPreview(bytes),
                         )
+                        emit(ImageEvent.Preview(image))
                     }
                     delay(ProgressPollIntervalMs)
                 }

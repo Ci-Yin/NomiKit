@@ -71,21 +71,24 @@ internal suspend operator fun SdWebUi.invoke(request: ImageRequest): Result<Imag
             ImageSource.TextToImage -> runText2Image {
                 applyCommonTextSettings(request)
                 applyTxt2imgVendorExtras(request)
-            }.getOrThrow().toImageResult()
+            }.getOrThrow()
 
             is ImageSource.ImageToImage -> runImage2Image {
                 applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
                 applyImg2imgVendorExtras(request)
-            }.getOrThrow().toImageResult()
+            }.getOrThrow()
 
             is ImageSource.Inpainting -> runImage2Image {
                 applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
                 mask(source.mask.toSdWebUiBase64())
                 applyImg2imgVendorExtras(request)
-            }.getOrThrow().toImageResult()
+            }.getOrThrow()
         }
 
-        applyPostGenerationPostProcessors(generated, request.postProcessors).getOrThrow()
+        applyPostGenerationPostProcessors(
+            generated.toImageResult(),
+            request.postProcessors
+        ).getOrThrow()
     }
 
 /**

@@ -49,7 +49,7 @@ class StableDiffusionServiceImplTest {
 
         val response = assertNotNull(result.getOrNull())
         assertEquals(listOf("base64-image"), response.images)
-        assertEquals("info-string", response.info)
+        assertEquals("info-string", response.info.toString())
     }
 
     @Test

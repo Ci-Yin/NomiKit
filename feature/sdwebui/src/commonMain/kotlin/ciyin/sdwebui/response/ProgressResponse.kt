@@ -11,8 +11,8 @@ data class ProgressResponse(
     @SerialName("progress") val progress: Float,
     @SerialName("eta_relative") val etaRelative: Float,
     @SerialName("state") val state: State,
-    @SerialName("current_image") val currentImage: String?,
     @SerialName("textinfo") val textInfo: String?,
+    @SerialName("current_image") val currentImage: String?,
 ) {
 
     /**

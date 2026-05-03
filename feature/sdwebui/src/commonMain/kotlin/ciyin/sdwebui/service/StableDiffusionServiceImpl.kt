@@ -1,10 +1,10 @@
 package ciyin.sdwebui.service
 
+import ciyin.platform.logger
 import ciyin.sdwebui.client.Client
 import ciyin.sdwebui.client.Client.Companion.body
 import ciyin.sdwebui.client.Client.Companion.get
 import ciyin.sdwebui.client.Client.Companion.post
-import ciyin.sdwebui.logging.SdWebUiGenerationInfoLog
 import ciyin.sdwebui.payload.ExtraBatchImagesPayload
 import ciyin.sdwebui.payload.ExtraSingleImagePayload
 import ciyin.sdwebui.payload.Image2ImagePayload
@@ -24,6 +24,7 @@ import ciyin.sdwebui.response.RemBGResponse
 import ciyin.sdwebui.response.ScriptsResponse
 import ciyin.sdwebui.response.UpscalerResponse
 import ciyin.sdwebui.response.VaeResponse
+import io.ktor.util.logging.debug
 import kotlinx.serialization.json.Json
 
 /**
@@ -35,14 +36,16 @@ class StableDiffusionServiceImpl(
     override val json: Json,
 ) : Service(), StableDiffusionService {
 
+    private val logger = logger("StableDiffusion.Service")
+
     override suspend fun text2Image(payload: Text2ImagePayload): Result<GenerateProcessResponse> {
         return client.post<GenerateProcessResponse>(json) {
             baseUrl(baseUrl)
             path("sdapi/v1/txt2img")
             body(payload)
-        }.map { response ->
-            SdWebUiGenerationInfoLog.afterTxt2img(payload, response.info)
-            response
+        }.map {
+            logger.d { "text2Image response: ${it.info}" }
+            it
         }
     }
 
@@ -51,25 +54,31 @@ class StableDiffusionServiceImpl(
             baseUrl(baseUrl)
             path("sdapi/v1/img2img")
             body(payload)
-        }.map { response ->
-            SdWebUiGenerationInfoLog.afterImg2img(payload, response.info)
-            response
+        }.map {
+            logger.d { "image2Image response: ${it.info}" }
+            it
         }
     }
 
     override suspend fun extraSingleImage(payload: ExtraSingleImagePayload): Result<ExtraSingleImageResponse> {
-        return client.post(json) {
+        return client.post<ExtraSingleImageResponse>(json) {
             baseUrl(baseUrl)
             path("sdapi/v1/extra-single-image")
             body(payload)
+        }.map {
+            logger.d { "extraSingleImage response: ${it.htmlInfo}" }
+            it
         }
     }
 
     override suspend fun extraBatchImages(payload: ExtraBatchImagesPayload): Result<ExtraBatchImagesResponse> {
-        return client.post(json) {
+        return client.post<ExtraBatchImagesResponse>(json) {
             baseUrl(baseUrl)
             path("sdapi/v1/extra-batch-images")
             body(payload)
+        }.map {
+            logger.d { "extraBatchImages response: ${it.htmlInfo}" }
+            it
         }
     }
 
