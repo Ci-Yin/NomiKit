@@ -6,7 +6,9 @@ import kotlinx.coroutines.yield
 import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource
+import okio.FileSystem
 import okio.HashingSink
+import okio.SYSTEM
 import okio.Sink
 import okio.Source
 import okio.buffer
@@ -19,6 +21,11 @@ import okio.buffer
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2025/11/1 14:00
  */
+
+/**
+ * 转为 Source，等同于 FileSystem.SYSTEM.source(toPath())
+ */
+fun File.source() = FileSystem.SYSTEM.source(toPath())
 
 /**
  * 读取所有数据到 HashingSink
