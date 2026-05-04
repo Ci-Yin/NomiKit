@@ -60,6 +60,7 @@ class DefaultAiImage(
             engineIdOf = { it.id },
             errorOf = { event -> (event as? Failed)?.error },
             isCompleted = { event -> event is Completed },
+            uncaughtFailureEvent = { err -> Failed(err) },
         )
     }
 

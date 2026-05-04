@@ -40,7 +40,7 @@ data class Text2ImagePayload(
     @SerialName("enable_hr") val enableHr: Boolean,
     @SerialName("firstphase_width") val firstphaseWidth: Int,
     @SerialName("firstphase_height") val firstphaseHeight: Int,
-    @SerialName("hr_scale") val hrScale: Int,
+    @SerialName("hr_scale") val hrScale: Float,
     @SerialName("hr_upscaler") val hrUpscaler: String,
     @SerialName("hr_second_pass_steps") val hrSecondPassSteps: Int,
     @SerialName("hr_resize_x") val hrResizeX: Int,

@@ -23,11 +23,18 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class SdWebUiText2ImageHiresFix(
+    @SerialName("enable_hr")
     val enable: Boolean? = true,
+    @SerialName("hr_upscaler")
     val upscaler: String? = null,
+    @SerialName("denoising_strength")
     val denoisingStrength: Float? = null,
+    @SerialName("hr_second_pass_steps")
     val secondPassSteps: Int? = null,
-    val scale: Int? = null,
+    @SerialName("hr_scale")
+    val scale: Float? = null,
+    @SerialName("hr_resize_x")
     val resizeX: Int? = null,
+    @SerialName("hr_resize_y")
     val resizeY: Int? = null,
 )

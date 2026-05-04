@@ -63,6 +63,7 @@ data class SdWebUiText2ImageExtras(
     val subseedStrength: Int? = null,
     val seedResizeFromH: Int? = null,
     val seedResizeFromW: Int? = null,
+    @SerialName("sampler_name")
     val samplerName: String? = null,
     val nIter: Int? = null,
     val restoreFaces: Boolean? = null,
@@ -79,7 +80,9 @@ data class SdWebUiText2ImageExtras(
     val comments: Map<String, String>? = null,
     val firstphaseWidth: Int? = null,
     val firstphaseHeight: Int? = null,
+    @SerialName("hi_res")
     val hiresFix: SdWebUiText2ImageHiresFix? = null,
+    @SerialName("sampler_index")
     val samplerIndex: String? = null,
     val scriptName: String? = null,
     val scriptArgs: List<String>? = null,

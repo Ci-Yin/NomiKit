@@ -67,7 +67,7 @@ class Text2Image private constructor(
         private var enableHr: Boolean = false
         private var firstphaseWidth: Int = 0
         private var firstphaseHeight: Int = 0
-        private var hrScale: Int = 0
+        private var hrScale: Float = 2f
         private var hrUpscaler: String = "Latent"
         private var hrSecondPassSteps: Int = 0
         private var hrResizeX: Int = 0
@@ -238,7 +238,7 @@ class Text2Image private constructor(
         }
 
         /** HR 放大倍数（`hr_scale`）。 */
-        fun hrScale(hrScale: Int) = apply {
+        fun hrScale(hrScale: Float) = apply {
             this.hrScale = hrScale
         }
 

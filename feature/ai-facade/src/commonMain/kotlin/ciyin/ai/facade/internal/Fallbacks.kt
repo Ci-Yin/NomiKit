@@ -55,6 +55,9 @@ internal class EngineAttempt<E, V>(
  * @param engineIdOf 从引擎实例上读取 EngineId 的 lambda（避免本文件依赖具体引擎接口）。
  * @param errorOf 从事件中识别"失败事件"并提取 [AiEngineError] 的 lambda；命中即认为本次尝试失败。
  * @param isCompleted 判断事件是否为"成功完结事件"的 lambda；命中即认为本次尝试成功，停止后续尝试。
+ * @param uncaughtFailureEvent 当 `collect` 抛错或流正常结束却未发出带 [errorOf] 的终端事件时，用其构造一条失败事件并 `emit`；
+ *   保证下游总能收到与 [errorOf] 契约一致的终端形态（如 `ChatEvent.Failed` / `ImageEvent.Failed`）。传 `null` 则保持旧行为。
+ *   若某次 [emit] 已被下游收集器打断（抛错），Kotlin Flow 禁止再 `emit` 补发事件（异常透明度）；此时会**原样抛出**下游异常，不再补发。
  */
 internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
     attempts: List<EngineAttempt<E, V>>,
@@ -65,6 +68,7 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
     engineIdOf: (E) -> EngineId,
     errorOf: (V) -> AiEngineError?,
     isCompleted: (V) -> Boolean,
+    uncaughtFailureEvent: ((AiEngineError) -> V)? = null,
 ) {
     require(attempts.isNotEmpty()) { "collectWithFallback 至少需要一个候选引擎" }
 
@@ -96,9 +100,19 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             var streamedFailureEvent = false
             var attemptLastFailureEvent: V? = null
 
+            /** 下游 [FlowCollector.emit] 在处理某次事件时抛错（如 UI 侧 NPE），不得再补发终端事件。 */
+            var downstreamCollectorFailed = false
+
             try {
                 attempt.stream().collect { event ->
-                    emit(event)
+                    try {
+                        emit(event)
+                    } catch (ce: CancellationException) {
+                        throw ce
+                    } catch (e: Throwable) {
+                        downstreamCollectorFailed = true
+                        throw e
+                    }
                     val err = errorOf(event)
                     if (err != null) {
                         failureError = err
@@ -111,6 +125,15 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
+                if (downstreamCollectorFailed) {
+                    listeners.notify {
+                        it.onFailed(
+                            metadata,
+                            AiEngineError.Unknown(cause = t, message = t.message),
+                        )
+                    }
+                    throw t
+                }
                 failureError = AiEngineError.Unknown(
                     cause = t,
                     message = t.message,
@@ -130,8 +153,24 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
 
             listeners.notify { it.onFailed(metadata, finalError) }
             lastFailureError = finalError
-            lastFailureEvent = attemptLastFailureEvent
-            lastAttemptStreamedFailure = streamedFailureEvent
+
+            var streamedForTerminal = streamedFailureEvent
+            var attemptTerminalEvent = attemptLastFailureEvent
+            if (!streamedForTerminal && uncaughtFailureEvent != null && !downstreamCollectorFailed) {
+                try {
+                    val synthetic = uncaughtFailureEvent(finalError)
+                    emit(synthetic)
+                    streamedForTerminal = true
+                    attemptTerminalEvent = synthetic
+                } catch (ce: CancellationException) {
+                    throw ce
+                } catch (_: Throwable) {
+                    // 补发终端事件时下游再抛错：遵守 Flow 透明度，不再 emit。
+                }
+            }
+
+            lastFailureEvent = attemptTerminalEvent
+            lastAttemptStreamedFailure = streamedForTerminal
 
             if (retryLeft > 0 && policy.shouldFallback(finalError)) {
                 retryLeft--
@@ -140,14 +179,21 @@ internal suspend fun <E : Any, V> FlowCollector<V>.collectWithFallback(
             break
         }
 
-        if (!policy.shouldFallback(lastFailureError)) {
+        val errorForEngineSwitch = lastFailureError ?: break@attemptsLoop
+        if (!policy.shouldFallback(errorForEngineSwitch)) {
             break@attemptsLoop
         }
     }
 
     val toEmit = lastFailureEvent
     if (toEmit != null && !lastAttemptStreamedFailure) {
-        emit(toEmit)
+        try {
+            emit(toEmit)
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (_: Throwable) {
+            // 与上文 synthetic 同理：末尾补发若被下游打断则放弃。
+        }
     }
 }
 

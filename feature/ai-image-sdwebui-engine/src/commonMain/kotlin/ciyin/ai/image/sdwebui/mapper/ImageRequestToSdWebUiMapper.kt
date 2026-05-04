@@ -61,35 +61,36 @@ private val vendorJson = Json {
 /**
  * 把通用层 [ImageRequest] 调用到 SD WebUI，并在需要时串接生成后处理流水线。
  */
-internal suspend operator fun SdWebUi.invoke(request: ImageRequest): Result<ImageResult> =
-    runCatching {
-        request.model?.takeIf { it.isNotBlank() }?.let { model ->
-            stableDiffusion.setModel(model).getOrThrow()
-        }
-
-        val generated = when (val source = request.source) {
-            ImageSource.TextToImage -> runText2Image {
-                applyCommonTextSettings(request)
-                applyTxt2imgVendorExtras(request)
-            }.getOrThrow()
-
-            is ImageSource.ImageToImage -> runImage2Image {
-                applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
-                applyImg2imgVendorExtras(request)
-            }.getOrThrow()
-
-            is ImageSource.Inpainting -> runImage2Image {
-                applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
-                mask(source.mask.toSdWebUiBase64())
-                applyImg2imgVendorExtras(request)
-            }.getOrThrow()
-        }
-
-        applyPostGenerationPostProcessors(
-            generated.toImageResult(),
-            request.postProcessors
-        ).getOrThrow()
+internal suspend operator fun SdWebUi.invoke(
+    request: ImageRequest
+): Result<ImageResult> = runCatching {
+    request.model?.takeIf { it.isNotBlank() }?.let { model ->
+        stableDiffusion.setModel(model).getOrThrow()
     }
+
+    val generated = when (val source = request.source) {
+        ImageSource.TextToImage -> runText2Image {
+            applyCommonTextSettings(request)
+            applyTxt2imgVendorExtras(request)
+        }.getOrThrow()
+
+        is ImageSource.ImageToImage -> runImage2Image {
+            applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
+            applyImg2imgVendorExtras(request)
+        }.getOrThrow()
+
+        is ImageSource.Inpainting -> runImage2Image {
+            applyCommonImageSettings(request, source.sourceImage, source.denoisingStrength)
+            mask(source.mask.toSdWebUiBase64())
+            applyImg2imgVendorExtras(request)
+        }.getOrThrow()
+    }
+
+    applyPostGenerationPostProcessors(
+        generated.toImageResult(),
+        request.postProcessors
+    ).getOrThrow()
+}
 
 /**
  * 把通用请求映射到 `txt2img` builder。

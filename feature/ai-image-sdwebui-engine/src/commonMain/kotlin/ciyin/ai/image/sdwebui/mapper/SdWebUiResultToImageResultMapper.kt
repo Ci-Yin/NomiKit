@@ -5,11 +5,9 @@ import ciyin.ai.core.image.ImageResult
 import ciyin.sdwebui.response.ExtraSingleImageResponse
 import ciyin.sdwebui.response.GenerateProcessResponse
 import ciyin.sdwebui.response.RemBGResponse
-import ciyin.serialization.json.toJsonElement
-import ciyin.serialization.json.toJsonStr
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlin.io.encoding.Base64
@@ -19,8 +17,12 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * 把 SD WebUI 响应统一映射为 `ai-core` 的 [ImageResult]。
  */
 internal fun GenerateProcessResponse.toImageResult(): ImageResult {
-    // ⚠️ 关键：info 是字符串，需要 decode
-    val json = Json.parseToJsonElement(info).jsonObject
+    // `info` 在 WebUI 中应为 JSON 对象字符串；单测或异常后端可能给 `"ok"` 等非对象字面量，避免 `.jsonObject` 直接崩。
+    val json: JsonObject =
+        when (val root = runCatching { Json.parseToJsonElement(info) }.getOrNull()) {
+            is JsonObject -> root
+            else -> JsonObject(emptyMap())
+        }
 
     val seeds = json["all_seeds"]
         ?.jsonArray
@@ -44,6 +46,7 @@ internal fun GenerateProcessResponse.toImageResult(): ImageResult {
         info = mapOf("info" to info),
     )
 }
+
 /**
  * 把 RemBG 单图响应映射为 [GeneratedImage]。
  */

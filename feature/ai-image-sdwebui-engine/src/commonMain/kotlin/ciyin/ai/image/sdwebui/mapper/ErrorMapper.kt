@@ -3,6 +3,7 @@ package ciyin.ai.image.sdwebui.mapper
 import ciyin.ai.core.error.AiEngineError
 import ciyin.sdwebui.client.Client
 import kotlinx.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 把 `feature/sdwebui` 层抛出的失败统一映射为 [AiEngineError]。
@@ -15,7 +16,7 @@ import kotlinx.io.IOException
  * - 其余未知异常统一收口到 [AiEngineError.Unknown]。
  */
 internal fun Throwable.toAiEngineError(): AiEngineError = when (this) {
-    is kotlin.coroutines.cancellation.CancellationException -> throw this
+    is CancellationException -> throw this
     is AiEngineErrorException -> error
     is IOException -> AiEngineError.Network(cause = this, message = message)
     is Client.Error -> AiEngineError.Protocol(message = body, cause = this)
