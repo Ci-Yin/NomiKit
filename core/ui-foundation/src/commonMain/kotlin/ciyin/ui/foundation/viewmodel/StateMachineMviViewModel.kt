@@ -1,7 +1,6 @@
 package ciyin.ui.foundation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import ciyin.ui.foundation.uitl.installKermitLogger
 import com.freeletics.flowredux2.FlowReduxBuilder
 import com.freeletics.flowredux2.FlowReduxStateMachine
 import com.freeletics.flowredux2.FlowReduxStateMachineFactory
@@ -45,7 +44,7 @@ abstract class StateMachineMviViewModel<S : Any, A : Any, E : Any> :
     private val stateMachine: FlowReduxStateMachine<StateFlow<S>, A> by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         object : FlowReduxStateMachineFactory<S, A>() {
             init {
-                installKermitLogger(logger, this@StateMachineMviViewModel::class.simpleName!!)
+//                installKermitLogger(logger, this@StateMachineMviViewModel::class.simpleName!!)
                 initialize()
                 spec { spec() }
             }
