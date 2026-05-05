@@ -1,6 +1,6 @@
 ---
 name: ai-facade
-description: Use the feature/ai-facade Kotlin Multiplatform module (package ciyin.ai.facade) as 业务侧调用 AI 能力的**唯一统一入口**。Covers AiChat / AiImage 接口与 DefaultAiChat / DefaultAiImage 默认实现、ChatModelSpec / ImageModelSpec / EnginePreferences / FallbackPolicy 选择与降级策略、AiInvocationListener / InvocationMetadata 观测埋点、internal Fallbacks（EngineAttempt + collectWithFallback + buildAttempts）调度核心，以及单测使用的 RecordingChatEngine / RecordingImageEngine / FakeEnginePreferences 模式。Use when 用户提到 ai-facade、AiChat、AiImage、DefaultAiChat、DefaultAiImage、ChatModelSpec、ImageModelSpec、EnginePreferences、FallbackPolicy、AiInvocationListener、InvocationMetadata，需要在业务侧（app:shared/data 或 domain）调用 AI 能力，需要配置默认模型 / 降级策略 / 埋点，或调整 fallback 调度逻辑。
+description: Use the feature/ai-facade Kotlin Multiplatform module (package ciyin.ai.facade) as 业务侧调用 AI 能力的**唯一统一入口**。Covers AiChat / AiImage 接口与 DefaultAiChat / DefaultAiImage 默认实现、ChatEngineSpec / ImageEngineSpec / EnginePreferences / FallbackPolicy 选择与降级策略、AiInvocationListener / InvocationMetadata 观测埋点、internal Fallbacks（EngineAttempt + collectWithFallback + buildAttempts）调度核心，以及单测使用的 RecordingChatEngine / RecordingImageEngine / FakeEnginePreferences 模式。Use when 用户提到 ai-facade、AiChat、AiImage、DefaultAiChat、DefaultAiImage、ChatEngineSpec、ImageEngineSpec、EnginePreferences、FallbackPolicy、AiInvocationListener、InvocationMetadata，需要在业务侧（app:shared/data 或 domain）调用 AI 能力，需要配置默认模型 / 降级策略 / 埋点，或调整 fallback 调度逻辑。
 ---
 
 # feature/ai-facade 模块协作指南
@@ -8,10 +8,12 @@ description: Use the feature/ai-facade Kotlin Multiplatform module (package ciyi
 `feature/ai-facade` 是 NomiKit AI 能力的**业务统一入口**。所有 Kotlin 源码包名为 `ciyin.ai.facade.*`
 ，仅 `commonMain` + `commonTest`（无平台源集——平台细节由各引擎模块解决）。
 
-它是上层（`app:shared/data` Repository、UseCase、跨模块工具）唯一应该 import
-的入口；具体走哪个引擎、用哪个模型、是否降级、要不要重试、怎么打日志埋点——**全部由本模块内部决定**。
+它是上层（`app:shared/data` Repository、UseCase、跨模块工具）编排 AI
+调用的主要入口；具体走哪个引擎、用哪个模型、是否降级、要不要重试、怎么打日志埋点——**全部由本模块内部决定
+**（或通过 `feature:ai-integrat` 装配后再委托本模块）。
 
-铁律：**业务代码只 import `ciyin.ai.facade.*` 与 `ciyin.ai.core.*`；绝对不直接 import
+铁律：**业务代码只 import `ciyin.ai.facade.*` 与 `ciyin.ai.core.*`；生图引擎装配入口
+import `ciyin.ai.integrat.image.*`（[AiImageIntegrat] / [ImageEngineConfig]）。绝对不直接 import
 任何 `ciyin.ai.image.sdwebui.*` / `ciyin.ai.chat.openai.*` / 其他 `ai-xxx-engine` 类。**
 
 ## 触发场景
@@ -19,7 +21,7 @@ description: Use the feature/ai-facade Kotlin Multiplatform module (package ciyi
 任意一项命中即按本 skill 处理：
 
 - 用户提到 `ai-facade`、`AiChat`、`AiImage`、`DefaultAiChat`、`DefaultAiImage`
-- 用户提到 `ChatModelSpec`、`ImageModelSpec`、`EnginePreferences`、`FallbackPolicy`
+- 用户提到 `ChatEngineSpec`、`ImageEngineSpec`、`EnginePreferences`、`FallbackPolicy`
 - 用户提到 `AiInvocationListener`、`InvocationMetadata`、调用埋点 / 日志 / 计费 / Sentry 上报
 - 用户希望在业务侧（`app:shared/data`、`app:shared/domain`、Repository、UseCase）调用 AI 能力
 - 用户希望配置默认模型、引擎降级链路、单引擎重试次数、Retry-After 行为
@@ -41,8 +43,8 @@ feature/ai-facade/
     │   ├── DefaultAiChat.kt               # 默认实现：spec 解析 + 主引擎选择 + 降级 + 观测
     │   ├── DefaultAiImage.kt              # 与 DefaultAiChat 完全对称
     │   ├── selection/
-    │   │   ├── ChatModelSpec.kt           # sealed: Default / Explicit(engineId, model?) / ByCapability(required)
-    │   │   ├── ImageModelSpec.kt          # 与 ChatModelSpec 形态对称
+    │   │   ├── ChatEngineSpec.kt           # sealed: Default / Explicit(engineId, model?) / ByCapability(required)
+    │   │   ├── ImageEngineSpec.kt          # 与 ChatEngineSpec 形态对称
     │   │   ├── EnginePreferences.kt       # 业务侧实现 4 个 suspend 方法注入偏好
     │   │   └── FallbackPolicy.kt          # maxRetries / backupEngines / triggerOn
     │   ├── observability/
@@ -66,7 +68,7 @@ feature/ai-facade/
 ### 步骤 1：在 `app:shared` 装配点构造 Facade
 
 ```kotlin
-// app:shared/.../data/ai/AiModule.kt
+// app:shared/.../di/modules/Modules.kt 中 includes(aiIntegratImageKoinModule()) 等
 val openai: ChatEngine = OpenAiChatEngine(...)
 val ollama: ChatEngine = OpenAiChatEngine(...)
 val sdwebui: ImageEngine = SdWebUiImageEngine(...)
@@ -99,7 +101,7 @@ class ChatRepositoryImpl(private val aiChat: AiChat) {
     fun stream(messages: List<ChatMessage>): Flow<ChatEvent> =
         aiChat.stream(ChatRequest(messages = messages))                           // 用偏好默认模型
 
-    fun streamWith(spec: ChatModelSpec, messages: List<ChatMessage>): Flow<ChatEvent> =
+    fun streamWith(spec: ChatEngineSpec, messages: List<ChatMessage>): Flow<ChatEvent> =
         aiChat.stream(spec, ChatRequest(messages = messages))                     // 用户在 UI 上选了某个模型
 
     suspend fun availableModels(): Result<List<ChatModelInfo>> =
@@ -111,11 +113,11 @@ class ChatRepositoryImpl(private val aiChat: AiChat) {
 
 ```kotlin
 class AppEnginePreferences : EnginePreferences {
-    override suspend fun defaultChatSpec() = ChatModelSpec.Explicit(
+    override suspend fun defaultChatSpec() = ChatEngineSpec.Explicit(
         engineId = EngineId("openai-compatible:local-ollama"),
         model = "llama3.1",
     )
-    override suspend fun defaultImageSpec() = ImageModelSpec.Explicit(
+    override suspend fun defaultImageSpec() = ImageEngineSpec.Explicit(
         engineId = EngineId("sdwebui:local-7860"),
         model = null,
     )
@@ -130,9 +132,9 @@ class AppEnginePreferences : EnginePreferences {
 
 > Facade **不**自行持久化偏好；业务侧 `AppEnginePreferences` 才负责读 DataStore / Room。
 
-## ChatModelSpec / ImageModelSpec 三种语义
+## ChatEngineSpec / ImageEngineSpec 三种语义
 
-`ChatModelSpec` 与 `ImageModelSpec` 形态完全对称：
+`ChatEngineSpec` 与 `ImageEngineSpec` 形态完全对称：
 
 | Spec                         | 何时用                           | DefaultAiChat 解析行为                                                                                 |
 |------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------|
@@ -212,10 +214,11 @@ interface AiInvocationListener {
 
 按"业务只与 Facade 交互"原则：
 
-1. 在 `app:shared/data/ai/AiModule.kt`（或装配点）注入 `AiChat` / `AiImage`。
+1. 在 `app:shared/.../di/modules/Modules.kt`（或装配点）`includes(aiIntegratImageKoinModule())` 并注入
+   `AiChat` / `AiImageIntegrat`（生图经聚合模块；聊天仍可直接 `AiChat` 若已装配）。
 2. 在 Repository / UseCase 持有该接口；构造时**禁止** import 任何 `ai-xxx-engine`。
 3. 用 `aiChat.stream(request)` 走偏好默认；用户切换模型时用
-   `aiChat.stream(ChatModelSpec.Explicit(...), request)`。
+   `aiChat.stream(ChatEngineSpec.Explicit(...), request)`。
 4. 错误转译：在 Repository 把 `ChatEvent.Failed.error: AiEngineError` 映射为业务 `DataError`，再由
    domain 翻译为场景错误（参考 `.docs/contributing/layered.md`）。
 
@@ -233,7 +236,7 @@ interface AiInvocationListener {
 
 ### 工作流：写 `EnginePreferences` 实现
 
-1. 用 `suspend` 而非 `flow`：偏好读取一次性即可，不需要持续订阅；要"换模型立即生效"用 `ChatModelSpec`
+1. 用 `suspend` 而非 `flow`：偏好读取一次性即可，不需要持续订阅；要"换模型立即生效"用 `ChatEngineSpec`
    显式传入。
 2. `defaultChatSpec()` 返回 `Default` 等价于"兜底 ByCapability(emptySet())"；想真正"任意一个" 引擎就直接返回
    `Default`。
@@ -306,13 +309,13 @@ class KermitAiInvocationListener : AiInvocationListener {
 
 ## 与上下游模块的边界
 
-| 模块                                              | 与本模块的关系                                                                | 注意                                                    |
-|-------------------------------------------------|------------------------------------------------------------------------|-------------------------------------------------------|
-| `feature/ai-core`                               | 提供 `ChatEngine` / `ImageEngine` 接口、Spec 转换的目标类型、`AiEngineError` 等      | `api` 依赖，可暴露在公共签名                                     |
-| `ai-xxx-engine`（OpenAI / SD WebUI / 未来其他）       | **不**直接依赖；引擎实例通过 `EngineSelector` 构造时由调用方注入                            | 编译期完全解耦，新增引擎不需要改 facade                               |
-| `app:shared`（业务层）                               | 装配 `DefaultAiChat` / `DefaultAiImage`，业务代码 import `AiChat` / `AiImage` | 业务代码**禁止**绕开 Facade 直接持有 `ChatEngine` / `ImageEngine` |
-| `app:shared/data/ai/AppEnginePreferences`       | 提供 `EnginePreferences` 实现，读 DataStore                                  | 业务侧负责，不进 facade                                       |
-| `app:shared/data/ai/KermitAiInvocationListener` | 提供 `AiInvocationListener` 实现，落 Kermit 日志                               | 同上                                                    |
+| 模块                                              | 与本模块的关系                                                                | 注意                                                                                                                                                                                |
+|-------------------------------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `feature/ai-core`                               | 提供 `ChatEngine` / `ImageEngine` 接口、Spec 转换的目标类型、`AiEngineError` 等      | `api` 依赖，可暴露在公共签名                                                                                                                                                                 |
+| `ai-xxx-engine`（OpenAI / SD WebUI / 未来其他）       | **不**直接依赖；引擎实例通过 `EngineSelector` 构造时由调用方注入                            | 编译期完全解耦，新增引擎不需要改 facade                                                                                                                                                           |
+| `app:shared`（业务层）                               | 装配 `DefaultAiChat` / `DefaultAiImage`，业务代码 import `AiChat` / `AiImage` | 业务代码**禁止**绕开 Facade 直接持有 `ChatEngine` / `ImageEngine`；**生图**引擎实例与 `DefaultAiImage` 的组装见 **`feature:ai-integrat`**（`app:shared` 与 **`app:sample`** 均须经 [AiImageIntegrat]，二者同为迁移范围） |
+| `app:shared/data/ai/AppEnginePreferences`       | 提供 `EnginePreferences` 实现，读 DataStore                                  | 业务侧负责，不进 facade                                                                                                                                                                   |
+| `app:shared/data/ai/KermitAiInvocationListener` | 提供 `AiInvocationListener` 实现，落 Kermit 日志                               | 同上                                                                                                                                                                                |
 
 ## 附加资源
 
