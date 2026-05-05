@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.Flow
  * - 调用过程通过 `AiInvocationListener` 暴露可观测信号；
  * - **不**自行持久化用户偏好；偏好通过 [EnginePreferences] 接口由调用方注入。
  *
- * 默认实现见 [ciyin.ai.facade.impl.chat.DefaultAiChat]。
+ * 默认实现见 [DefaultAiChat]。
  */
 interface AiChat {
 

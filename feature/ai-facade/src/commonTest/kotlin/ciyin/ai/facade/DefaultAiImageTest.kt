@@ -7,7 +7,6 @@ import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageResult
 import ciyin.ai.core.registry.DefaultImageEngineRegistry
 import ciyin.ai.core.registry.ImageEngineSelector
-import ciyin.ai.facade.impl.image.DefaultAiImage
 import ciyin.ai.facade.selection.FallbackPolicy
 import ciyin.ai.facade.selection.ImageEngineSpec
 import ciyin.ai.facade.support.FakeEnginePreferences

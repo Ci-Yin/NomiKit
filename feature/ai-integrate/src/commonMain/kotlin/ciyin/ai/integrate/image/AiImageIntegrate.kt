@@ -7,7 +7,7 @@ import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.registry.DefaultImageEngineRegistry
 import ciyin.ai.core.registry.ImageEngineSelector
-import ciyin.ai.facade.impl.image.DefaultAiImage
+import ciyin.ai.facade.DefaultAiImage
 import ciyin.ai.facade.selection.EnginePreferences
 import ciyin.ai.facade.selection.ImageEngineSpec
 import kotlinx.coroutines.flow.Flow

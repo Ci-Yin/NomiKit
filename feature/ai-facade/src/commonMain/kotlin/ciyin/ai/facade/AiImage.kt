@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * 生图能力的统一入口，与 [AiChat] 形态完全对称。
  *
- * 默认实现见 [ciyin.ai.facade.impl.image.DefaultAiImage]。
+ * 默认实现见 [DefaultAiImage]。
  */
 interface AiImage {
 

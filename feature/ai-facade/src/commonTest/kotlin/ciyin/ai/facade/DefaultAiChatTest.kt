@@ -8,7 +8,6 @@ import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.error.AiEngineError
 import ciyin.ai.core.registry.ChatEngineSelector
 import ciyin.ai.core.registry.DefaultChatEngineRegistry
-import ciyin.ai.facade.impl.chat.DefaultAiChat
 import ciyin.ai.facade.selection.ChatEngineSpec
 import ciyin.ai.facade.selection.FallbackPolicy
 import ciyin.ai.facade.support.FakeEnginePreferences

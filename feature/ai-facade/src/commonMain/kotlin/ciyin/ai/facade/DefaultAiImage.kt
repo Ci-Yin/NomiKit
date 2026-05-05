@@ -4,22 +4,19 @@ import ciyin.ai.core.capability.ImageCapability
 import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.engine.ImageEngine
 import ciyin.ai.core.image.ImageEvent
-import ciyin.ai.core.image.ImageEvent.Completed
-import ciyin.ai.core.image.ImageEvent.Failed
 import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImagePostProcessor
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageSource
-import ciyin.ai.core.registry.EngineSelector
+import ciyin.ai.core.registry.ImageEngineSelector
 import ciyin.ai.facade.internal.EngineAttempt
 import ciyin.ai.facade.internal.InvocationIds
 import ciyin.ai.facade.internal.buildAttempts
 import ciyin.ai.facade.internal.collectWithFallback
 import ciyin.ai.facade.observability.AiInvocationListener
 import ciyin.ai.facade.selection.EnginePreferences
-import ciyin.ai.facade.selection.ImageModelSpec
+import ciyin.ai.facade.selection.ImageEngineSpec
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 
 /**
@@ -32,16 +29,15 @@ import kotlinx.coroutines.flow.flow
  * @property listeners 调用观测监听器列表。
  */
 class DefaultAiImage(
-    private val selector: EngineSelector,
+    private val selector: ImageEngineSelector,
     private val preferences: EnginePreferences,
     private val listeners: List<AiInvocationListener> = emptyList(),
 ) : AiImage {
 
-    override fun generate(request: ImageRequest): Flow<ImageEvent> = flow {
-        emitAll(generate(ImageModelSpec.Default, request))
-    }
-
-    override fun generate(spec: ImageModelSpec, request: ImageRequest): Flow<ImageEvent> = flow {
+    override fun generate(
+        request: ImageRequest,
+        spec: ImageEngineSpec
+    ): Flow<ImageEvent> = flow {
         val resolvedSpec = resolveRequestedSpec(spec)
         val fallbackPolicy = preferences.imageFallback()
         val primaryAttempt = resolveAttempt(resolvedSpec, request)
@@ -58,38 +54,26 @@ class DefaultAiImage(
             capability = request.primaryCapability(),
             listeners = listeners,
             engineIdOf = { it.id },
-            errorOf = { event -> (event as? Failed)?.error },
-            isCompleted = { event -> event is Completed },
-            uncaughtFailureEvent = { err -> Failed(err) },
+            errorOf = { event -> (event as? ImageEvent.Failed)?.error },
+            isCompleted = { event -> event is ImageEvent.Completed },
+            uncaughtFailureEvent = { err -> ImageEvent.Failed(err) },
         )
     }
 
-    override suspend fun listAvailableModels(): Result<List<ImageModelInfo>> {
-        val failures = mutableListOf<Throwable>()
+    override suspend fun models(): List<ImageModelInfo> {
         val deduped = LinkedHashMap<String, ImageModelInfo>()
-
-        selector.allImage().forEach { engine ->
-            engine.listModels()
-                .onSuccess { models ->
-                    models.forEach { model ->
-                        deduped.getOrPut(model.model.lowercase()) { model }
-                    }
-                }
-                .onFailure { failures += it }
+        selector.all().forEach { engine ->
+            engine.models().forEach { model ->
+                deduped.getOrPut(model.model.lowercase()) { model }
+            }
         }
-
-        if (deduped.isNotEmpty()) {
-            return Result.success(deduped.values.toList())
-        }
-        return Result.failure(
-            failures.lastOrNull() ?: IllegalStateException("没有任何生图引擎返回可用模型"),
-        )
+        return deduped.values.toList()
     }
 
-    private suspend fun resolveRequestedSpec(spec: ImageModelSpec): ImageModelSpec = when (spec) {
-        ImageModelSpec.Default -> {
+    private suspend fun resolveRequestedSpec(spec: ImageEngineSpec): ImageEngineSpec = when (spec) {
+        ImageEngineSpec.Default -> {
             when (val preferred = preferences.defaultImageSpec()) {
-                ImageModelSpec.Default -> ImageModelSpec.ByCapability(emptySet())
+                ImageEngineSpec.Default -> ImageEngineSpec.ByCapability(emptySet())
                 else -> preferred
             }
         }
@@ -98,21 +82,21 @@ class DefaultAiImage(
     }
 
     private fun resolveAttempt(
-        spec: ImageModelSpec,
+        spec: ImageEngineSpec,
         request: ImageRequest,
     ): EngineAttempt<ImageEngine, ImageEvent> = when (spec) {
-        is ImageModelSpec.Default -> {
-            val engine = selector.selectImage()
+        is ImageEngineSpec.Default -> {
+            val engine = selector.select()
             engine.toAttempt(model = request.model, request = request)
         }
 
-        is ImageModelSpec.Explicit -> {
-            val engine = selector.selectImage(preferredId = spec.engineId)
-            engine.toAttempt(model = spec.model ?: request.model, request = request)
+        is ImageEngineSpec.Explicit -> {
+            val engine = selector.select(preferredId = spec.engineId)
+            engine.toAttempt(model = request.model ?: spec.model, request = request)
         }
 
-        is ImageModelSpec.ByCapability -> {
-            val engine = selector.selectImage(required = spec.required)
+        is ImageEngineSpec.ByCapability -> {
+            val engine = selector.select(required = spec.required)
             engine.toAttempt(model = request.model, request = request)
         }
     }
@@ -127,7 +111,7 @@ class DefaultAiImage(
         engineId: EngineId,
         request: ImageRequest,
     ): EngineAttempt<ImageEngine, ImageEvent>? {
-        val engine = selector.allImage().firstOrNull { it.id == engineId } ?: return null
+        val engine = selector.all().firstOrNull { it.id == engineId } ?: return null
         return engine.toAttempt(model = request.model, request = request)
     }
 

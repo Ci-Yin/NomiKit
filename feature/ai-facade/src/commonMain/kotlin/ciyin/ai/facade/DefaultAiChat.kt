@@ -2,30 +2,28 @@ package ciyin.ai.facade
 
 import ciyin.ai.core.capability.ChatCapability
 import ciyin.ai.core.chat.ChatEvent
-import ciyin.ai.core.chat.ChatEvent.Completed
-import ciyin.ai.core.chat.ChatEvent.Failed
+import ciyin.ai.core.chat.ChatMessage
 import ciyin.ai.core.chat.ChatModelInfo
 import ciyin.ai.core.chat.ChatRequest
 import ciyin.ai.core.engine.ChatEngine
 import ciyin.ai.core.engine.EngineId
-import ciyin.ai.core.registry.EngineSelector
+import ciyin.ai.core.registry.ChatEngineSelector
 import ciyin.ai.facade.internal.EngineAttempt
 import ciyin.ai.facade.internal.InvocationIds
 import ciyin.ai.facade.internal.buildAttempts
 import ciyin.ai.facade.internal.collectWithFallback
 import ciyin.ai.facade.observability.AiInvocationListener
-import ciyin.ai.facade.selection.ChatModelSpec
+import ciyin.ai.facade.selection.ChatEngineSpec
 import ciyin.ai.facade.selection.EnginePreferences
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 
 /**
  * [AiChat] 的默认实现。
  *
  * 该实现只承担技术策略：
- * - 解析 [ChatModelSpec]；
- * - 通过 [EngineSelector] 挑选主引擎；
+ * - 解析 [ChatEngineSpec]；
+ * - 通过 [ChatEngineSelector] 挑选主引擎；
  * - 按 [EnginePreferences.chatFallback] 执行单引擎重试与跨引擎降级；
  * - 通过 [AiInvocationListener] 暴露每次尝试的观测事件。
  *
@@ -36,16 +34,12 @@ import kotlinx.coroutines.flow.flow
  * @property listeners 调用观测监听器列表。
  */
 class DefaultAiChat(
-    private val selector: EngineSelector,
+    private val selector: ChatEngineSelector,
     private val preferences: EnginePreferences,
     private val listeners: List<AiInvocationListener> = emptyList(),
 ) : AiChat {
 
-    override fun stream(request: ChatRequest): Flow<ChatEvent> = flow {
-        emitAll(stream(ChatModelSpec.Default, request))
-    }
-
-    override fun stream(spec: ChatModelSpec, request: ChatRequest): Flow<ChatEvent> = flow {
+    override fun stream(request: ChatRequest, spec: ChatEngineSpec): Flow<ChatEvent> = flow {
         val resolvedSpec = resolveRequestedSpec(spec)
         val fallbackPolicy = preferences.chatFallback()
         val primaryAttempt = resolveAttempt(resolvedSpec, request)
@@ -62,38 +56,26 @@ class DefaultAiChat(
             capability = request.primaryCapability(),
             listeners = listeners,
             engineIdOf = { it.id },
-            errorOf = { event -> (event as? Failed)?.error },
-            isCompleted = { event -> event is Completed },
-            uncaughtFailureEvent = { err -> Failed(err) },
+            errorOf = { event -> (event as? ChatEvent.Failed)?.error },
+            isCompleted = { event -> event is ChatEvent.Completed },
+            uncaughtFailureEvent = { err -> ChatEvent.Failed(err) },
         )
     }
 
-    override suspend fun listAvailableModels(): Result<List<ChatModelInfo>> {
-        val failures = mutableListOf<Throwable>()
+    override suspend fun models(): List<ChatModelInfo> {
         val deduped = LinkedHashMap<String, ChatModelInfo>()
-
-        selector.allChat().forEach { engine ->
-            engine.listModels()
-                .onSuccess { models ->
-                    models.forEach { model ->
-                        deduped.getOrPut(model.model.lowercase()) { model }
-                    }
-                }
-                .onFailure { failures += it }
+        selector.all().forEach { engine ->
+            engine.models().forEach { model ->
+                deduped.getOrPut(model.model.lowercase()) { model }
+            }
         }
-
-        if (deduped.isNotEmpty()) {
-            return Result.success(deduped.values.toList())
-        }
-        return Result.failure(
-            failures.lastOrNull() ?: IllegalStateException("没有任何聊天引擎返回可用模型"),
-        )
+        return deduped.values.toList()
     }
 
-    private suspend fun resolveRequestedSpec(spec: ChatModelSpec): ChatModelSpec = when (spec) {
-        ChatModelSpec.Default -> {
+    private suspend fun resolveRequestedSpec(spec: ChatEngineSpec): ChatEngineSpec = when (spec) {
+        ChatEngineSpec.Default -> {
             when (val preferred = preferences.defaultChatSpec()) {
-                ChatModelSpec.Default -> ChatModelSpec.ByCapability(emptySet())
+                ChatEngineSpec.Default -> ChatEngineSpec.ByCapability(emptySet())
                 else -> preferred
             }
         }
@@ -102,21 +84,21 @@ class DefaultAiChat(
     }
 
     private fun resolveAttempt(
-        spec: ChatModelSpec,
+        spec: ChatEngineSpec,
         request: ChatRequest,
     ): EngineAttempt<ChatEngine, ChatEvent> = when (spec) {
-        is ChatModelSpec.Default -> {
-            val engine = selector.selectChat()
+        is ChatEngineSpec.Default -> {
+            val engine = selector.select()
             engine.toAttempt(model = request.model, request = request)
         }
 
-        is ChatModelSpec.Explicit -> {
-            val engine = selector.selectChat(preferredId = spec.engineId)
+        is ChatEngineSpec.Explicit -> {
+            val engine = selector.select(preferredId = spec.engineId)
             engine.toAttempt(model = spec.model ?: request.model, request = request)
         }
 
-        is ChatModelSpec.ByCapability -> {
-            val engine = selector.selectChat(required = spec.required)
+        is ChatEngineSpec.ByCapability -> {
+            val engine = selector.select(required = spec.required)
             engine.toAttempt(model = request.model, request = request)
         }
     }
@@ -131,7 +113,7 @@ class DefaultAiChat(
         engineId: EngineId,
         request: ChatRequest,
     ): EngineAttempt<ChatEngine, ChatEvent>? {
-        val engine = selector.allChat().firstOrNull { it.id == engineId } ?: return null
+        val engine = selector.all().firstOrNull { it.id == engineId } ?: return null
         return engine.toAttempt(model = request.model, request = request)
     }
 
@@ -152,7 +134,7 @@ class DefaultAiChat(
             tools.isNotEmpty() -> ChatCapability.ToolCalling
             messages.any { message ->
                 when (message) {
-                    is ciyin.ai.core.chat.ChatMessage.User -> message.attachments.isNotEmpty()
+                    is ChatMessage.User -> message.attachments.isNotEmpty()
                     else -> false
                 }
             } || attachments.isNotEmpty() -> ChatCapability.VisionInput
