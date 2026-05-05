@@ -13,7 +13,7 @@ kotlin {
         implementation(projects.core.uiFoundation)
         implementation(projects.feature.aiFacade)
         implementation(projects.feature.aiChatOpenaiEngine)
-        implementation(projects.feature.aiImageSdwebuiEngine)
+        implementation(projects.feature.aiIntegrate)
         implementation(projects.component.dataStore)
         implementation(projects.component.koin)
     }

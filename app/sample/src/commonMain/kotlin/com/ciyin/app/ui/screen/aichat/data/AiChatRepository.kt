@@ -3,9 +3,8 @@ package com.ciyin.app.ui.screen.aichat.data
 import ciyin.ai.chat.openai.OpenAiChatEngine
 import ciyin.ai.chat.openai.OpenAiChatEngineConfig
 import ciyin.ai.core.engine.EngineId
+import ciyin.ai.core.registry.ChatEngineSelector
 import ciyin.ai.core.registry.DefaultChatEngineRegistry
-import ciyin.ai.core.registry.DefaultImageEngineRegistry
-import ciyin.ai.core.registry.EngineSelector
 import ciyin.ai.facade.AiChat
 import ciyin.ai.facade.DefaultAiChat
 import com.ciyin.app.ui.screen.aichat.AiChatConnectionConfig
@@ -61,9 +60,8 @@ internal class AiChatRepository(
                     defaultModel = normalized.model,
                 )
             )
-            val selector = EngineSelector(
-                chatRegistry = DefaultChatEngineRegistry(listOf(engine)),
-                imageRegistry = DefaultImageEngineRegistry(emptyList()),
+            val selector = ChatEngineSelector(
+                registry = DefaultChatEngineRegistry(listOf(engine)),
             )
             DefaultAiChat(
                 selector = selector,

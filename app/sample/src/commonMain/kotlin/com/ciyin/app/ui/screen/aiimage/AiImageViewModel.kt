@@ -74,7 +74,7 @@ internal class AiImageViewModel(
                     snapshot.isLoading -> noChange()
                     trimmed.isEmpty() -> mutate { copy(errorMessage = "请输入提示词") }
                     else -> {
-                        launchDemoImageGeneration(host = snapshot.serverHost, prompt = trimmed)
+                        launchDemoImageGeneration(prompt = trimmed)
                         mutate {
                             copy(
                                 isLoading = true,
@@ -159,12 +159,12 @@ internal class AiImageViewModel(
     }
 
     /**
-     * 在后台收集 [ciyin.ai.facade.AiImage] 的 `generate` 事件流，并回灌为 [AiImageAction]。
+     * 在后台收集 [ciyin.ai.integrat.image.AiImageIntegrat] 的 `generate` 事件流，并回灌为 [AiImageAction]。
      */
-    private fun launchDemoImageGeneration(host: String, prompt: String) {
+    private fun launchDemoImageGeneration(prompt: String) {
         backgroundScope.launch(Dispatchers.IO) {
             try {
-                repository.generate(host, prompt).collect { event ->
+                repository.generate(prompt).collect { event ->
                     logger.d { "ImageEvent: $event" }
                     dispatchImageEvent(event)
                 }
