@@ -85,9 +85,9 @@ class OpenAiChatEngine internal constructor(
         )
     }
 
-    override suspend fun listModels(): Result<List<ChatModelInfo>> = runCatching {
+    override suspend fun models(): List<ChatModelInfo> = runCatching {
         client.listModels().toChatModelInfos()
-    }
+    }.getOrElse { emptyList() }
 
     override suspend fun validate(request: ChatRequest): Result<Unit> = runCatching {
         require(request.messages.isNotEmpty()) { "messages 不能为空" }

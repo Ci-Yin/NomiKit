@@ -8,7 +8,7 @@ import ciyin.ai.core.engine.EngineId
  * 聊天引擎注册表。
  *
  * 仅承担"按 ID / 按能力查找"的职责，**不**负责选择策略与降级——
- * 这些决策属于 [EngineSelector] 与 `feature/ai-facade` 的范畴。
+ * 这些决策属于 [ChatEngineSelector] / [ImageEngineSelector] 与 `feature/ai-facade` 的范畴。
  *
  * 默认实现见 [DefaultChatEngineRegistry]。
  */

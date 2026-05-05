@@ -27,9 +27,9 @@ interface ChatEngine : AiEngine {
     /**
      * 列出当前引擎可用的所有聊天模型。
      *
-     * 返回 [Result] 而非直接抛异常：调用方常用于 UI 展示的下拉列表，失败应回退到"空列表"或缓存。
+     * 拉取失败时返回空列表（例如网络错误），由上层 Facade 做跨引擎聚合与展示降级。
      */
-    suspend fun listModels(): Result<List<ChatModelInfo>>
+    suspend fun models(): List<ChatModelInfo>
 
     /**
      * 在不实际发起调用的前提下校验 [request] 是否能被本引擎执行。

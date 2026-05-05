@@ -26,9 +26,9 @@ interface ImageEngine : AiEngine {
     /**
      * 列出当前引擎可用的所有生图模型。
      *
-     * 与 [ChatEngine.listModels] 语义一致；返回 [Result] 由调用方决定如何降级。
+     * 与 [ChatEngine.models] 语义一致；拉取失败时返回空列表。
      */
-    suspend fun listModels(): Result<List<ImageModelInfo>>
+    suspend fun models(): List<ImageModelInfo>
 
     /**
      * 在不实际发起调用的前提下校验 [request] 是否能被本引擎执行。

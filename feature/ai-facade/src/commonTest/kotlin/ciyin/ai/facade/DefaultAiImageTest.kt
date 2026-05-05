@@ -5,11 +5,11 @@ import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageResult
-import ciyin.ai.core.registry.DefaultChatEngineRegistry
 import ciyin.ai.core.registry.DefaultImageEngineRegistry
-import ciyin.ai.core.registry.EngineSelector
+import ciyin.ai.core.registry.ImageEngineSelector
+import ciyin.ai.facade.impl.image.DefaultAiImage
 import ciyin.ai.facade.selection.FallbackPolicy
-import ciyin.ai.facade.selection.ImageModelSpec
+import ciyin.ai.facade.selection.ImageEngineSpec
 import ciyin.ai.facade.support.FakeEnginePreferences
 import ciyin.ai.facade.support.RecordingImageEngine
 import kotlinx.coroutines.flow.toList
@@ -47,8 +47,8 @@ class DefaultAiImageTest {
         )
 
         aiImage.generate(
-            spec = ImageModelSpec.Explicit(engine.id, model = "sdxl"),
             request = ImageRequest(prompt = "cat"),
+            spec = ImageEngineSpec.Explicit(engine.id, model = "sdxl"),
         ).toList()
 
         assertEquals(1, engine.receivedRequests.size)
@@ -60,8 +60,7 @@ class DefaultAiImageTest {
      */
     private fun selector(
         images: List<RecordingImageEngine>,
-    ): EngineSelector = EngineSelector(
-        chatRegistry = DefaultChatEngineRegistry(emptyList()),
-        imageRegistry = DefaultImageEngineRegistry(images),
+    ): ImageEngineSelector = ImageEngineSelector(
+        registry = DefaultImageEngineRegistry(images),
     )
 }

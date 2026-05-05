@@ -20,6 +20,6 @@ internal class FakeImageEngine(
     override val capabilities: Set<ImageCapability> = emptySet(),
 ) : ImageEngine {
     override fun generate(request: ImageRequest): Flow<ImageEvent> = flowOf()
-    override suspend fun listModels(): Result<List<ImageModelInfo>> = Result.success(emptyList())
+    override suspend fun models(): List<ImageModelInfo> = emptyList()
     override suspend fun validate(request: ImageRequest): Result<Unit> = Result.success(Unit)
 }

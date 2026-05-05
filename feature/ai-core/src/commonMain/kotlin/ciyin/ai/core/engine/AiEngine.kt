@@ -8,7 +8,7 @@ import ciyin.ai.core.capability.AiCapability
  * 该接口只承载"治理性"信息：[id]、[provider]、[runtime] 与 [capabilities]，
  * **不**暴露任何"调用入口"。具体调用入口由子接口（[ChatEngine] / [ImageEngine] 等）提供。
  *
- * 之所以保留共同父接口，是为了让 `Registry` / `EngineSelector` 这类治理组件能以
+ * 之所以保留共同父接口，是为了让 `Registry` / [ciyin.ai.core.registry.ChatEngineSelector] / [ciyin.ai.core.registry.ImageEngineSelector] 这类治理组件能以
  * 统一形态遍历"所有已注册引擎"，做能力筛选、ID 查找等操作。
  */
 interface AiEngine {

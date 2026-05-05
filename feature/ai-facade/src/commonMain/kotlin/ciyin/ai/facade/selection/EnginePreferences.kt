@@ -10,11 +10,11 @@ package ciyin.ai.facade.selection
  */
 interface EnginePreferences {
 
-    /** 默认聊天模型描述；返回 [ChatModelSpec.Default] 等价于“由 Facade 自行兜底”。 */
-    suspend fun defaultChatSpec(): ChatModelSpec
+    /** 默认聊天引擎路由描述；返回 [ChatEngineSpec.Default] 等价于“由 Facade 自行兜底”。 */
+    suspend fun defaultChatSpec(): ChatEngineSpec
 
-    /** 默认生图模型描述。 */
-    suspend fun defaultImageSpec(): ImageModelSpec
+    /** 默认生图引擎路由描述。 */
+    suspend fun defaultImageSpec(): ImageEngineSpec
 
     /** 聊天调用的降级策略；返回 `FallbackPolicy()` 即“重试 1 次但不降级”。 */
     suspend fun chatFallback(): FallbackPolicy

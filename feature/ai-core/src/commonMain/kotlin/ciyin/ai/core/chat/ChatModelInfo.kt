@@ -6,7 +6,7 @@ import ciyin.ai.core.engine.EngineId
 /**
  * 聊天模型描述信息。
  *
- * 由 `ChatEngine.listModels()` / `AiChat.listAvailableModels()` 返回，供 UI 展示与选择。
+ * 由 `ChatEngine.models()` / `AiChat.models()` 返回，供 UI 展示与选择。
  *
  * @property engineId 模型所在引擎的 ID；上层做"在哪家挑哪个模型"时需要这个信息。
  * @property model 模型名（如 `"gpt-4o-mini"`）。

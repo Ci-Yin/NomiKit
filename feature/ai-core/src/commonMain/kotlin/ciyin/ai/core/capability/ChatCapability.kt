@@ -3,7 +3,7 @@ package ciyin.ai.core.capability
 /**
  * 聊天引擎能力。
  *
- * 用于 `Registry.findByCapability(...)` 做能力筛选，以及上层 `EngineSelector`
+ * 用于 `Registry.findByCapability(...)` 做能力筛选，以及上层 [ciyin.ai.core.registry.ChatEngineSelector]
  * 决定"按能力挑引擎"时使用。新增能力请保持向后兼容（只追加、不删除）。
  */
 sealed interface ChatCapability : AiCapability {

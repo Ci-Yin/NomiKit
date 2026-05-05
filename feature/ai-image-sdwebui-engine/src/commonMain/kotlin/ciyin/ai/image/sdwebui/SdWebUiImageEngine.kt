@@ -136,22 +136,26 @@ class SdWebUiImageEngine(
         }
     }
 
-    override suspend fun listModels(): Result<List<ImageModelInfo>> {
+    override suspend fun models(): List<ImageModelInfo> {
         logger.d { "拉取 SD WebUI 模型列表 engineId=${id.value}" }
-        return sdWebUi.stableDiffusion.getModels().map { models ->
-            models.map { model ->
-                ImageModelInfo(
-                    engineId = id,
-                    model = model.title,
-                    displayName = model.name.takeIf { it != model.title },
-                    capabilities = capabilities.filterIsInstance<ImageCapability>().toSet(),
-                )
-            }
-        }.onSuccess { list ->
-            logger.d { "模型列表成功 engineId=${id.value} 数量=${list.size}" }
-        }.onFailure { e ->
-            logger.e(e) { "模型列表失败 engineId=${id.value} cause=${e.message}" }
-        }
+        return sdWebUi.stableDiffusion.getModels().fold(
+            onSuccess = { models ->
+                val list = models.map { model ->
+                    ImageModelInfo(
+                        engineId = id,
+                        model = model.title,
+                        displayName = model.name.takeIf { it != model.title },
+                        capabilities = capabilities.filterIsInstance<ImageCapability>().toSet(),
+                    )
+                }
+                logger.d { "模型列表成功 engineId=${id.value} 数量=${list.size}" }
+                list
+            },
+            onFailure = { e ->
+                logger.e(e) { "模型列表失败 engineId=${id.value} cause=${e.message}" }
+                emptyList()
+            },
+        )
     }
 
     override suspend fun validate(request: ImageRequest): Result<Unit> {

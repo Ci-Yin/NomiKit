@@ -92,7 +92,7 @@ class SdWebUiImageEngineTest {
             SdWebUiText2ImageExtras.serializer(),
             SdWebUiText2ImageExtras(
                 samplerName = "Euler a",
-                hiresFix = SdWebUiText2ImageHiresFix(enable = true, scale = 2),
+                hiresFix = SdWebUiText2ImageHiresFix(enable = true, scale = 2f),
             ),
         )
 
@@ -109,7 +109,7 @@ class SdWebUiImageEngineTest {
         assertEquals("Euler a", payload.samplerName)
         assertEquals("Euler a", payload.samplerIndex)
         assertEquals(true, payload.enableHr)
-        assertEquals(2, payload.hrScale)
+        assertEquals(2f, payload.hrScale)
     }
 
     /**
@@ -138,7 +138,7 @@ class SdWebUiImageEngineTest {
         )
         assertEquals("DPM++ 2M", payload.samplerName)
         assertEquals(true, payload.enableHr)
-        assertEquals(3, payload.hrScale)
+        assertEquals(3f, payload.hrScale)
     }
 
     /**
@@ -217,7 +217,7 @@ class SdWebUiImageEngineTest {
      * 模型列表应映射成带引擎 ID 的通用模型信息。
      */
     @Test
-    fun `listModels 应映射为 ImageModelInfo`() = runBlocking {
+    fun `models 应映射为 ImageModelInfo`() = runBlocking {
         val client = RecordingClient().apply {
             enqueueSuccess(
                 """
@@ -236,7 +236,7 @@ class SdWebUiImageEngineTest {
         }
         val engine = engine(client)
 
-        val models = engine.listModels().getOrThrow()
+        val models = engine.models()
 
         assertEquals(1, client.requests.size)
         assertEquals("sdapi/v1/sd-models", client.lastRequest.path)

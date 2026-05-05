@@ -3,7 +3,7 @@ package ciyin.ai.facade
 import ciyin.ai.core.chat.ChatEvent
 import ciyin.ai.core.chat.ChatModelInfo
 import ciyin.ai.core.chat.ChatRequest
-import ciyin.ai.facade.selection.ChatModelSpec
+import ciyin.ai.facade.selection.ChatEngineSpec
 import ciyin.ai.facade.selection.EnginePreferences
 import kotlinx.coroutines.flow.Flow
 
@@ -19,30 +19,23 @@ import kotlinx.coroutines.flow.Flow
  * - 调用过程通过 `AiInvocationListener` 暴露可观测信号；
  * - **不**自行持久化用户偏好；偏好通过 [EnginePreferences] 接口由调用方注入。
  *
- * 默认实现见 [DefaultAiChat]。
+ * 默认实现见 [ciyin.ai.facade.impl.chat.DefaultAiChat]。
  */
 interface AiChat {
 
     /**
-     * 使用 [EnginePreferences.defaultChatSpec] 指定的默认模型流式聊天。
-     *
-     * 等价于 `stream(ChatModelSpec.Default, request)`。
-     */
-    fun stream(request: ChatRequest): Flow<ChatEvent>
-
-    /**
      * 显式指定模型流式聊天。
      *
-     * @param spec 模型选择描述，参见 [ChatModelSpec]。
+     * @param spec 引擎路由描述，参见 [ChatEngineSpec]。
      * @param request 通用聊天请求。
      */
-    fun stream(spec: ChatModelSpec, request: ChatRequest): Flow<ChatEvent>
+    fun stream(request: ChatRequest, spec: ChatEngineSpec = ChatEngineSpec.Default): Flow<ChatEvent>
 
     /**
      * 列出全部已注册引擎的可用聊天模型，供 UI 展示与选择。
      *
      * 实现应做"按引擎顺序拼接 + 去重 + 错误降级"：单家失败不应导致整体失败，
-     * 至少返回成功部分；全部失败时返回 [Result.failure]。
+     * 至少返回成功拉取到的部分；若全部引擎均失败则返回空列表。
      */
-    suspend fun listAvailableModels(): Result<List<ChatModelInfo>>
+    suspend fun models(): List<ChatModelInfo>
 }

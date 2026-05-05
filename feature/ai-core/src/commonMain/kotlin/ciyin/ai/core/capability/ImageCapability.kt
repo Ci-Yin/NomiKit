@@ -3,7 +3,7 @@ package ciyin.ai.core.capability
 /**
  * 生图引擎能力。
  *
- * 用于 `Registry.findByCapability(...)` 与 `EngineSelector.selectImage(required = ...)`。
+ * 用于 `Registry.findByCapability(...)` 与 [ciyin.ai.core.registry.ImageEngineSelector] `select(required = ...)`。
  * 新增能力请保持向后兼容（只追加、不删除）。
  */
 sealed interface ImageCapability : AiCapability {

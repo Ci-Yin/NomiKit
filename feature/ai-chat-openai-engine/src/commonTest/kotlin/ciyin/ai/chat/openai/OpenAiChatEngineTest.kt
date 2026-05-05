@@ -120,7 +120,7 @@ class OpenAiChatEngineTest {
      * `/models` 返回值应映射为通用模型列表。
      */
     @Test
-    fun `listModels 应返回通用 ChatModelInfo`() = runBlocking {
+    fun `models 应返回通用 ChatModelInfo`() = runBlocking {
         val engine = engine(
             baseUrl = "https://api.openai.com/v1",
             mockEngine = MockEngine { request ->
@@ -137,7 +137,7 @@ class OpenAiChatEngineTest {
             },
         )
 
-        val models = engine.listModels().getOrThrow()
+        val models = engine.models()
 
         assertEquals(listOf("gpt-4o-mini", "deepseek-chat"), models.map { it.model })
         assertEquals(EngineId("openai:test"), models.first().engineId)

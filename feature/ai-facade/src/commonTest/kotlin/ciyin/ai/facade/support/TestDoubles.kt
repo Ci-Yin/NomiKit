@@ -15,10 +15,10 @@ import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.facade.observability.AiInvocationListener
 import ciyin.ai.facade.observability.InvocationMetadata
-import ciyin.ai.facade.selection.ChatModelSpec
+import ciyin.ai.facade.selection.ChatEngineSpec
 import ciyin.ai.facade.selection.EnginePreferences
 import ciyin.ai.facade.selection.FallbackPolicy
-import ciyin.ai.facade.selection.ImageModelSpec
+import ciyin.ai.facade.selection.ImageEngineSpec
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -34,7 +34,7 @@ internal class RecordingChatEngine(
     override val runtime: EngineRuntime = EngineRuntime.RemoteCloud,
     override val capabilities: Set<ChatCapability> = emptySet(),
     private val plannedEvents: ArrayDeque<List<ChatEvent>> = ArrayDeque(),
-    private val modelsResult: Result<List<ChatModelInfo>> = Result.success(emptyList()),
+    private val models: List<ChatModelInfo> = emptyList(),
 ) : ChatEngine {
 
     /** 按调用顺序记录收到的请求。 */
@@ -46,7 +46,7 @@ internal class RecordingChatEngine(
         events.forEach { emit(it) }
     }
 
-    override suspend fun listModels(): Result<List<ChatModelInfo>> = modelsResult
+    override suspend fun models(): List<ChatModelInfo> = models
 
     override suspend fun validate(request: ChatRequest): Result<Unit> = Result.success(Unit)
 }
@@ -60,7 +60,7 @@ internal class RecordingImageEngine(
     override val runtime: EngineRuntime = EngineRuntime.RemoteSelfHosted,
     override val capabilities: Set<ImageCapability> = emptySet(),
     private val plannedEvents: ArrayDeque<List<ImageEvent>> = ArrayDeque(),
-    private val modelsResult: Result<List<ImageModelInfo>> = Result.success(emptyList()),
+    private val models: List<ImageModelInfo> = emptyList(),
 ) : ImageEngine {
 
     /** 按调用顺序记录收到的请求。 */
@@ -72,7 +72,7 @@ internal class RecordingImageEngine(
         events.forEach { emit(it) }
     }
 
-    override suspend fun listModels(): Result<List<ImageModelInfo>> = modelsResult
+    override suspend fun models(): List<ImageModelInfo> = models
 
     override suspend fun validate(request: ImageRequest): Result<Unit> = Result.success(Unit)
 }
@@ -81,15 +81,15 @@ internal class RecordingImageEngine(
  * 测试用的偏好实现，允许按需注入默认模型与 fallback 策略。
  */
 internal class FakeEnginePreferences(
-    private val chatSpec: ChatModelSpec = ChatModelSpec.Default,
-    private val imageSpec: ImageModelSpec = ImageModelSpec.Default,
+    private val chatSpec: ChatEngineSpec = ChatEngineSpec.Default,
+    private val imageSpec: ImageEngineSpec = ImageEngineSpec.Default,
     private val chatFallbackPolicy: FallbackPolicy = FallbackPolicy(),
     private val imageFallbackPolicy: FallbackPolicy = FallbackPolicy(),
 ) : EnginePreferences {
 
-    override suspend fun defaultChatSpec(): ChatModelSpec = chatSpec
+    override suspend fun defaultChatSpec(): ChatEngineSpec = chatSpec
 
-    override suspend fun defaultImageSpec(): ImageModelSpec = imageSpec
+    override suspend fun defaultImageSpec(): ImageEngineSpec = imageSpec
 
     override suspend fun chatFallback(): FallbackPolicy = chatFallbackPolicy
 

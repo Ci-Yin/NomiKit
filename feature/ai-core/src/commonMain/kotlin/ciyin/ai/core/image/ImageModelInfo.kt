@@ -6,7 +6,7 @@ import ciyin.ai.core.engine.EngineId
 /**
  * 生图模型描述信息。
  *
- * 由 `ImageEngine.listModels()` / `AiImage.listAvailableModels()` 返回，供 UI 展示与选择。
+ * 由 `ImageEngine.models()` / `AiImage.models()` 返回，供 UI 展示与选择。
  *
  * @property engineId 模型所在引擎的 ID。
  * @property model 模型名（如 `"sd_xl_base_1.0"`）。

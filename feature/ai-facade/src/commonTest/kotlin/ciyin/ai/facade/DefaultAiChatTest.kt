@@ -6,10 +6,10 @@ import ciyin.ai.core.chat.ChatRequest
 import ciyin.ai.core.chat.ChatResponse
 import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.error.AiEngineError
+import ciyin.ai.core.registry.ChatEngineSelector
 import ciyin.ai.core.registry.DefaultChatEngineRegistry
-import ciyin.ai.core.registry.DefaultImageEngineRegistry
-import ciyin.ai.core.registry.EngineSelector
-import ciyin.ai.facade.selection.ChatModelSpec
+import ciyin.ai.facade.impl.chat.DefaultAiChat
+import ciyin.ai.facade.selection.ChatEngineSpec
 import ciyin.ai.facade.selection.FallbackPolicy
 import ciyin.ai.facade.support.FakeEnginePreferences
 import ciyin.ai.facade.support.RecordingChatEngine
@@ -60,8 +60,8 @@ class DefaultAiChatTest {
         )
 
         aiChat.stream(
-            spec = ChatModelSpec.ByCapability(setOf(ChatCapability.ToolCalling)),
             request = request(),
+            spec = ChatEngineSpec.ByCapability(setOf(ChatCapability.ToolCalling)),
         ).toList()
 
         assertEquals(0, streamingOnly.receivedRequests.size)
@@ -190,13 +190,12 @@ class DefaultAiChatTest {
     }
 
     /**
-     * 构造一套最小可用的 [EngineSelector]，便于聚焦测试 Facade 的编排逻辑。
+     * 构造一套最小可用的 [ChatEngineSelector]，便于聚焦测试 Facade 的编排逻辑。
      */
     private fun selector(
         chats: List<RecordingChatEngine>,
-    ): EngineSelector = EngineSelector(
-        chatRegistry = DefaultChatEngineRegistry(chats),
-        imageRegistry = DefaultImageEngineRegistry(emptyList()),
+    ): ChatEngineSelector = ChatEngineSelector(
+        registry = DefaultChatEngineRegistry(chats),
     )
 
     /**

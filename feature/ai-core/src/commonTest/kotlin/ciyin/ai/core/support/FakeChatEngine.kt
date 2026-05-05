@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.flowOf
  * 测试用的最小 [ChatEngine] 实现。
  *
  * 仅承载 [id] / [provider] / [runtime] / [capabilities] 等治理信息，
- * `stream` / `listModels` / `validate` 在 ai-core 单元测试中均不会被调用，
+ * `stream` / `models` / `validate` 在 ai-core 单元测试中均不会被调用，
  * 因此用最简单的占位实现。
  */
 internal class FakeChatEngine(
@@ -24,6 +24,6 @@ internal class FakeChatEngine(
     override val capabilities: Set<ChatCapability> = emptySet(),
 ) : ChatEngine {
     override fun stream(request: ChatRequest): Flow<ChatEvent> = flowOf()
-    override suspend fun listModels(): Result<List<ChatModelInfo>> = Result.success(emptyList())
+    override suspend fun models(): List<ChatModelInfo> = emptyList()
     override suspend fun validate(request: ChatRequest): Result<Unit> = Result.success(Unit)
 }
