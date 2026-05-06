@@ -4,39 +4,45 @@ import ciyin.ai.core.capability.ImageCapability
 import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.engine.EngineRuntime
 import ciyin.ai.core.engine.ImageEngine
-import ciyin.ai.core.error.AiEngineError
+import ciyin.ai.core.error.UnsupportedCapabilityException
 import ciyin.ai.core.image.GeneratedImage
 import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageResult
+import ciyin.ai.facade.selection.ChatEngineSpec
+import ciyin.ai.facade.selection.EnginePreferences
+import ciyin.ai.facade.selection.FallbackPolicy
+import ciyin.ai.facade.selection.ImageEngineSpec
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class AiImageIntegrateTest {
 
     @Test
-    fun generate_without_engines_emits_failed() = runTest {
-        val integrate = AiImageIntegrate(
+    fun generate_without_engines_throws_unsupported_capability() = runTest {
+        val integrate = testAiImageIntegrate(
             defaultEngineConfigs = emptyList(),
+            preferences = NeutralEnginePreferences(),
             buildImageEngine = { unusedStubEngine() },
         )
-        val events = integrate.generate(ImageRequest(prompt = "test")).toList()
-        assertEquals(1, events.size)
-        val failed = assertIs<ImageEvent.Failed>(events.single())
-        assertIs<AiEngineError.Unsupported>(failed.error)
+        val ex = assertFailsWith<UnsupportedCapabilityException> {
+            integrate.generate(ImageRequest(prompt = "test")).toList()
+        }
+        assertTrue(ex.message.orEmpty().isNotEmpty())
     }
 
     @Test
     fun models_without_registered_runtime_returns_empty() = runTest {
-        val integrate = AiImageIntegrate(
+        val integrate = testAiImageIntegrate(
             defaultEngineConfigs = emptyList(),
+            preferences = NeutralEnginePreferences(),
             buildImageEngine = { unusedStubEngine() },
         )
         assertContentEquals(emptyList(), integrate.models())
@@ -45,7 +51,9 @@ class AiImageIntegrateTest {
     @Test
     fun merges_default_model_before_delegate_when_request_model_null() = runTest {
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
-        val integrate = AiImageIntegrate { stub }
+        val integrate = testAiImageIntegrate(
+            buildImageEngine = { stub },
+        )
         integrate.engines(
             listOf(
                 ImageEngineConfig.SdWebUi(
@@ -62,10 +70,13 @@ class AiImageIntegrateTest {
     @Test
     fun same_sealed_config_type_latter_entry_wins() = runTest {
         val builtConfigs = mutableListOf<ImageEngineConfig>()
-        val integrate = AiImageIntegrate { cfg ->
-            builtConfigs += cfg
-            recordingStubEngine(cfg.engineId)
-        }
+        val integrate = testAiImageIntegrate(
+            defaultEngineConfigs = emptyList(),
+            buildImageEngine = { cfg ->
+                builtConfigs += cfg
+                recordingStubEngine(cfg.engineId)
+            },
+        )
         val first = ImageEngineConfig.SdWebUi(
             baseUrl = "http://127.0.0.1:1111",
             apiKey = "",
@@ -93,7 +104,9 @@ class AiImageIntegrateTest {
             id = IntegrateImageEngineIds.sdWebUi,
             modelsResult = expected,
         )
-        val integrate = AiImageIntegrate { stub }
+        val integrate = testAiImageIntegrate(
+            buildImageEngine = { stub },
+        )
         integrate.engines(
             listOf(
                 ImageEngineConfig.SdWebUi(
@@ -104,12 +117,18 @@ class AiImageIntegrateTest {
             ),
         )
         assertEquals(expected, integrate.models())
+        assertEquals(
+            expected,
+            integrate.models(
+                spec = ImageEngineSpec.Explicit(engineId = IntegrateImageEngineIds.sdWebUi),
+            ),
+        )
     }
 
     @Test
     fun generate_collects_facade_stream_without_network() = runTest {
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
-        val integrate = AiImageIntegrate(
+        val integrate = testAiImageIntegrate(
             buildImageEngine = { cfg ->
                 assertEquals(IntegrateImageEngineIds.sdWebUi, cfg.engineId)
                 stub
@@ -132,7 +151,7 @@ class AiImageIntegrateTest {
     @Test
     fun engines_empty_list_uses_builtin_defaults() = runTest {
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
-        val integrate = AiImageIntegrate(
+        val integrate = testAiImageIntegrate(
             buildImageEngine = { cfg ->
                 assertEquals("http://127.0.0.1:7860", cfg.baseUrl)
                 stub
@@ -147,7 +166,8 @@ class AiImageIntegrateTest {
     fun engines_overrides_builtin_sd_web_ui_base_url() = runTest {
         val builtUrls = mutableListOf<String>()
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
-        val integrate = AiImageIntegrate(
+        val integrate = testAiImageIntegrate(
+            defaultEngineConfigs = emptyList(),
             buildImageEngine = { cfg ->
                 builtUrls += (cfg as ImageEngineConfig.SdWebUi).baseUrl
                 stub
@@ -167,6 +187,30 @@ class AiImageIntegrateTest {
             builtUrls,
         )
     }
+}
+
+private fun testAiImageIntegrate(
+    defaultEngineConfigs: List<ImageEngineConfig> = IntegrateImageDefaults.sdWebUiLocalhost(),
+    preferences: EnginePreferences = IntegrateEnginePreferences(),
+    buildImageEngine: (ImageEngineConfig) -> ImageEngine,
+): AiImageIntegrate = AiImageIntegrate(
+    defaultEngineConfigs = defaultEngineConfigs,
+    preferences = preferences,
+    buildImageEngine = buildImageEngine,
+)
+
+/**
+ * 默认生图路由保持 [ImageEngineSpec.Default]，避免在「零引擎」快照下解析为固定 [EngineId] 导致 [models] 或路由抛错。
+ */
+private class NeutralEnginePreferences : EnginePreferences {
+
+    override suspend fun defaultChatSpec(): ChatEngineSpec = ChatEngineSpec.Default
+
+    override suspend fun defaultImageSpec(): ImageEngineSpec = ImageEngineSpec.Default
+
+    override suspend fun chatFallback(): FallbackPolicy = FallbackPolicy()
+
+    override suspend fun imageFallback(): FallbackPolicy = FallbackPolicy()
 }
 
 private fun unusedStubEngine(): ImageEngine =

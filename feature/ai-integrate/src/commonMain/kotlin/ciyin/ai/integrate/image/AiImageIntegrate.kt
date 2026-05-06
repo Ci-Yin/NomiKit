@@ -81,12 +81,14 @@ class AiImageIntegrate internal constructor(
     }
 
     /**
-     * 列出当前已注册引擎的可用模型（与 [DefaultAiImage.models] 一致：跨引擎、按模型名去重）。
+     * 列出当前已注册引擎的可用模型（与 [DefaultAiImage.models] 一致：按 [spec] 限定引擎后拉取并跨引擎按模型名去重）。
      *
+     * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时与 [generate] 使用同一套默认偏好解析。
      * @return 供 UI 展示与选择的 [ImageModelInfo] 列表。
      */
-    suspend fun models(): List<ImageModelInfo> {
-        return mutex.withLock { runtime }.delegate.models()
+    suspend fun models(spec: ImageEngineSpec = ImageEngineSpec.Default): List<ImageModelInfo> {
+        val snap = mutex.withLock { runtime }
+        return snap.delegate.models(spec)
     }
 
     /**
@@ -108,26 +110,6 @@ class AiImageIntegrate internal constructor(
             selector = selector,
             configsByEngineId = unique.associateBy { it.engineId },
         )
-    }
-
-    /**
-     * 按 [ImageEngineConfig] 的 sealed 子类类型合并：键为 [KClass]，先写入 [defaults]（列表中同类后者覆盖前者），
-     * 再写入 [overrides] 覆盖同类槽位；仅出现在 [defaults] 的类型得以保留。
-     *
-     * @return 合并结果的稳定迭代顺序：先按 [defaults] 首次出现的类型顺序，再纳入仅在 [overrides] 中出现的类型（替换时值更新）。
-     */
-    private fun mergeEngineConfigsWithDefaults(
-        defaults: List<ImageEngineConfig>,
-        overrides: List<ImageEngineConfig>,
-    ): List<ImageEngineConfig> {
-        val byKind = LinkedHashMap<KClass<out ImageEngineConfig>, ImageEngineConfig>()
-        for (cfg in defaults) {
-            byKind[cfg::class] = cfg
-        }
-        for (cfg in overrides) {
-            byKind[cfg::class] = cfg
-        }
-        return byKind.values.toList()
     }
 
     /**
@@ -185,4 +167,24 @@ class AiImageIntegrate internal constructor(
         val configsByEngineId: Map<EngineId, ImageEngineConfig>,
     )
 
+}
+
+/**
+ * 按 [ImageEngineConfig] 的 sealed 子类类型合并：键为 [KClass]，先写入 [defaults]（列表中同类后者覆盖前者），
+ * 再写入 [overrides] 覆盖同类槽位；仅出现在 [defaults] 的类型得以保留。
+ *
+ * @return 合并结果的稳定迭代顺序：先按 [defaults] 首次出现的类型顺序，再纳入仅在 [overrides] 中出现的类型（替换时值更新）。
+ */
+internal fun mergeEngineConfigsWithDefaults(
+    defaults: List<ImageEngineConfig>,
+    overrides: List<ImageEngineConfig>,
+): List<ImageEngineConfig> {
+    val byKind = LinkedHashMap<KClass<out ImageEngineConfig>, ImageEngineConfig>()
+    for (cfg in defaults) {
+        byKind[cfg::class] = cfg
+    }
+    for (cfg in overrides) {
+        byKind[cfg::class] = cfg
+    }
+    return byKind.values.toList()
 }

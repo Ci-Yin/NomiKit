@@ -60,15 +60,38 @@ class DefaultAiImage(
         )
     }
 
-    override suspend fun models(): List<ImageModelInfo> {
+    override suspend fun models(spec: ImageEngineSpec): List<ImageModelInfo> {
+        val resolved = resolveRequestedSpec(spec)
         val deduped = LinkedHashMap<String, ImageModelInfo>()
-        selector.all().forEach { engine ->
+        enginesForModelListing(resolved).forEach { engine ->
             engine.models().forEach { model ->
                 deduped.getOrPut(model.model.lowercase()) { model }
             }
         }
         return deduped.values.toList()
     }
+
+    private fun enginesForModelListing(resolved: ImageEngineSpec): List<ImageEngine> =
+        when (resolved) {
+            ImageEngineSpec.Default -> selector.all()
+            is ImageEngineSpec.Explicit -> {
+                listOf(
+                    selector.select(
+                        preferredId = resolved.engineId,
+                    ),
+                )
+            }
+
+            is ImageEngineSpec.ByCapability -> {
+                if (resolved.required.isEmpty()) {
+                    selector.all()
+                } else {
+                    selector.all().filter { engine ->
+                        engine.capabilities.containsAll(resolved.required)
+                    }
+                }
+            }
+        }
 
     private suspend fun resolveRequestedSpec(spec: ImageEngineSpec): ImageEngineSpec = when (spec) {
         ImageEngineSpec.Default -> {

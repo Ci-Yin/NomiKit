@@ -24,6 +24,11 @@ interface AiImage {
         spec: ImageEngineSpec = ImageEngineSpec.Default
     ): Flow<ImageEvent>
 
-    /** 列出全部已注册引擎的可用生图模型。语义见 [AiChat.models]。 */
-    suspend fun models(): List<ImageModelInfo>
+    /**
+     * 列出可用生图模型。
+     *
+     * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时与 [generate] 一致先解析默认偏好，
+     *   再按解析结果限定参与枚举的引擎（显式单引擎 / 按能力过滤 / 未限定则遍历全部已注册引擎）。
+     */
+    suspend fun models(spec: ImageEngineSpec = ImageEngineSpec.Default): List<ImageModelInfo>
 }
