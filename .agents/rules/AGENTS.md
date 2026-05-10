@@ -11,10 +11,51 @@ apply: always
 
 - **必须使用中文**回复我任何问题。
 - **生成/修改 Kotlin 代码时**：除非我单独声明，否则新增的 `class/interface/object/enum`
-  、公开/内部函数、扩展函数等，必须补充**标准中文 KDoc 文档注释**。
+  、公开/内部/私有函数/属性、扩展函数/属性等，必须补充**标准中文 KDoc 文档注释**。
 - **按项目既定架构做事**：优先从“问题产生的源头”修正，避免临时补丁式改动（见第十节《问题解决原则》）。
 - **不要修改生成物**：禁止手改 `build/`、`generated/`、`*.xcworkspace/` 等构建/生成目录内的文件。
 - **遇到第三节《何时优先查 skill》中列出的场景**：必须先用 Read 工具读取对应 `SKILL.md` 后再动手，不要凭记忆直接编码。
+- **保护用户改动**：开始改文件前先查看工作树状态；禁止回滚、覆盖、格式化或移动与当前任务无关的用户改动。
+- **修改后要验证**：代码变更后必须尽量运行最小相关 Gradle task 或测试；若无法验证，必须在回复中说明原因。
+
+## 规则执行协议（必须遵守）
+
+本文件中的硬性约束均为任务执行的一部分，而不是最终回复前才检查的建议。Agent 必须按以下流程执行：
+
+### 开始任务前
+
+- 必须先读取本文件。
+- 必须根据用户请求、本次将修改的文件类型和涉及模块，从本文件中提取“本次相关规则”。
+- 如果涉及第三节列出的场景，必须先读取对应 `SKILL.md`。
+- 如果工作区已有未提交改动，必须区分本次任务相关改动与用户已有改动，不得回滚或覆盖无关改动。
+
+### 修改过程中
+
+- 必须边实现边遵守本文件规则，不得以“最小改动”“保持原样”“只是迁移”为理由跳过规则。
+- 当实现方式与本文件规则冲突时，必须调整实现方式。
+- 只有系统、开发者或安全策略与本文件冲突时，才允许不执行本文件规则，并必须说明原因。
+
+### 收尾前
+
+最终回复前，必须对本次新增或修改的文件执行一次规则回扫。
+
+规则回扫不是重新列出规则，而是逐项核对“开始任务前提取的本次相关规则”是否已经满足。
+
+编译、测试或 Gradle task 通过，只能证明基础正确性，不能替代规则回扫。
+
+### 发现违规时
+
+如果回扫发现违反本文件规则，必须先修复违规，再重新执行必要验证。
+
+不得用解释替代修复，除非用户明确要求只解释、不修改。
+
+### 最终回复
+
+最终回复必须说明：
+
+- 完成的关键改动。
+- 已运行的验证命令。
+- 是否存在无法验证项或明确的规则例外。
 
 ## 二、权威文档入口（按需用 Read 工具读取，不要全部预读）
 
@@ -80,13 +121,17 @@ apply: always
 
 - 依赖与版本优先通过 `gradle/libs.versions.toml` 维护，代码中使用 `libs.*`（Version Catalog）。
 - 工程开启 `TYPESAFE_PROJECT_ACCESSORS`，模块引用优先使用类型安全访问器（若工程内已采用该写法）。
+- `build.gradle.kts` 中引用项目模块时，仅允许使用 `projects.xxx.xxx`，禁止使用 `project(":...")`。
+- 新增第三方依赖时先查 `gradle/libs.versions.toml`，不要在 build 脚本中直接写裸版本号。
 - KMP 源集结构遵循 `commonMain/commonTest` + 平台 `androidMain/desktopMain/iosMain`。
+- KMP 平台差异优先使用 `expect/actual` 或项目已有 platform abstraction，不要在 `commonMain` 中硬塞平台判断。
 
 ## 七、分层与错误处理（关键规则）
 
 - **Data 层**：只产出通用错误 `DataError`（不产出 UI/场景错误）。
 - **Domain 层**：将 `DataError` 映射为场景错误 `XxxError`，用 `UseCase/Validator` 编排业务流程。
 - **UI 层**：只消费场景错误，驱动 UI（配合 MVI/状态机），不要把技术错误直接透传到 UI。
+- 新增业务逻辑、映射器、状态机、Repository、UseCase 时，优先补对应单测；纯 UI 微调可不强制。
 
 细节以 `.docs/contributing/layered.md` 为准。
 
@@ -95,6 +140,10 @@ apply: always
 - 简单页面可用 MVVM；复杂状态管理使用 MVI + FlowRedux2 状态机。
 - ViewModel 基类选择与接口边界以 `.docs/contributing/mvi.md` 为准。
 - FlowRedux2 的 DSL 规范以 `.docs/guides/flow-redux.md` 为准。
+- Compose 状态与模型数据类必须添加 `@Immutable` 注解。
+- `UiState`、`Model`、`Action`、`Effect` 等 Compose/MVI 数据模型优先使用 `val` 与不可变集合。
+- 禁止在业务逻辑中裸用 `GlobalScope` 或随意 `launch`；协程生命周期应由 ViewModel、状态机、UseCase
+  或既有作用域管理。
 
 ## 九、常用命令（给出建议时优先引用）
 
@@ -108,7 +157,17 @@ apply: always
 - 生成 Compose 资源 Res：`./gradlew generateComposeResClass`
 - 测试：`./gradlew check`（更全量可用 `./gradlew clean check`）
 
-## 十、问题解决原则（禁止亡羊补牢）
+## 十、编码风格与依赖注入
+
+- 默认使用最小可见性；能用 `private` 就不要暴露为 `internal` 或 `public`。
+- 函数参数数量大于等于 3 时，调用处使用命名参数并换行对齐书写。
+- 函数参数中的复杂构造默认先提取为局部变量；但短小、单行且不超过项目行宽的简单包装/事件转发可以内联，例如
+  `onCategorySelect = { onAction(PromptTagPickerAction.CategoryChange(it)) }`。
+- 定义 Koin 依赖时，默认使用 `xxxOf(::XXX)`，避免手写 lambda（如 `single { XXX(get()) }`）。
+- 新增依赖必须挂到对应模块的 Koin module，避免在调用处手动 new 依赖。
+- 面向用户的 UI 文案优先使用项目既有资源/多语言机制，不要在 Compose 中随手硬编码大量文案，除非当前模块已明确采用该方式。
+
+## 十一、问题解决原则（禁止亡羊补牢）
 
 解决问题必须从根本上消除问题，而不是用 hack 掩盖症状。
 
@@ -124,6 +183,7 @@ apply: always
 - 用 `delay` 解决时序问题。
 - 用 `try-catch` 吞异常（允许把异常转换为明确的错误模型并上抛/返回，但禁止静默忽略）。
 - 用 if/null 检查“过滤脏数据”来掩盖上游数据错误。
+- 用 Flow 中的 `delay` 拼时序或等待状态变化。
 
 ### 正确做法
 

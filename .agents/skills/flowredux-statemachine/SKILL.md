@@ -171,50 +171,65 @@ initialState: () -> S
 
 ### 3.1 全部 DSL 构件（按 `BaseBuilder` 源码）
 
+`inState<XXX> { ... }` 内的每个 DSL 函数调用前必须加一行 `//` 单行注释，说明这段状态机逻辑在做什么。
+适用的 DSL 函数包括 `onEnter`、`onEnterEffect`、`on<Action>`、`onActionEffect<Action>`、
+`collectWhileInState`、`collectWhileInStateEffect`、`condition`、`untilIdentityChanges`、
+`onEnterStartStateMachine`、`onActionStartStateMachine` 等。注释要描述业务意图，而不是复述 API 名称。
+
 ```kotlin
 spec {
     // ═══════════════════ 状态入口 ═══════════════════
     inState<SubState> {                              // 匹配状态类型（KClass.isInstance）
 
         // ─── 进入状态触发 ───
+        // 进入页面后加载首屏数据。
         onEnter { ... }                              // suspend ChangeableState<SubState>.() -> ChangedState<S>
+        // 进入页面后上报曝光事件。
         onEnterEffect { ... }                        // suspend State<SubState>.() -> Unit（不改变状态）
 
         // ─── Action 处理 ───
+        // 用户提交表单时发起保存流程。
         on<SubAction>(                               // suspend ChangeableState<SubState>.(SubAction) -> ChangedState<S>
             executionPolicy = ExecutionPolicy.CancelPrevious
         ) { action -> ... }
 
+        // 用户点击返回时发送导航副作用。
         onActionEffect<SubAction>(                   // suspend State<SubState>.(SubAction) -> Unit
             executionPolicy = ExecutionPolicy.CancelPrevious
         ) { action -> ... }
 
         // ─── Flow 订阅 ───
+        // 监听外部网络状态并同步到页面状态。
         collectWhileInState(                         // 直接传 Flow
             flow = someFlow,
             executionPolicy = ExecutionPolicy.Ordered
         ) { item -> ... }                            // suspend ChangeableState<SubState>.(T) -> ChangedState<S>
 
+        // 根据进入状态时的参数启动倒计时流。
         collectWhileInState(                         // 基于初始状态创建 Flow
             flowBuilder = { inputState -> flow { ... } },
             executionPolicy = ExecutionPolicy.Ordered
         ) { item -> ... }
 
+        // 监听一次性提示事件并转发为副作用。
         collectWhileInStateEffect(flow) { item ->    // Effect 版本（不改变状态）
             // suspend State<SubState>.(T) -> Unit
         }
 
         // ─── 条件块（仅 InStateBuilder 可用） ───
+        // 仅在提交中状态下处理提交结果。
         condition({ it.someProperty }) {             // 额外条件谓词
             // ConditionBuilder 内部，可用所有 BaseBuilder 方法 + untilIdentityChanges
         }
 
         // ─── 身份监控（InStateBuilder / ConditionBuilder 可用） ───
+        // 选中条目变化时重启详情加载流程。
         untilIdentityChanges({ it.selectedId }) {    // 选择器值变化时取消并重启内部操作
             // IdentityBuilder 内部，可用所有 BaseBuilder 方法
         }
 
         // ─── 子状态机（进入状态时启动） ───
+        // 进入编辑状态时启动标签选择子状态机。
         onEnterStartStateMachine(
             stateMachineFactoryBuilder = { /* State<InputState>.() -> Factory */ },
             actionMapper = { parentAction -> childAction? },  // 可选：省略则不转发 Action
@@ -223,6 +238,7 @@ spec {
         )
 
         // ─── 子状态机（Action 触发启动） ───
+        // 用户点击开始下载后启动下载子流程。
         onActionStartStateMachine<TriggerAction, ChildState>(
             stateMachineFactoryBuilder = { action -> /* State<InputState>.(TriggerAction) -> Factory */ },
             actionMapper = { parentAction -> childAction? },
@@ -378,6 +394,28 @@ on<Action.Load> {
 - `poseEffect` 是 `suspend`，下游 buffer 满会被挂起；适合**保证一定送达**的场景。
 - `tryPoseEffect` 非挂起，buffer 满会**直接丢弃并返回 `false`**；适合**高频但允许丢失**的场景（如进度上报）。
 - 切勿在 spec 中 `viewModelScope.launch { poseEffect(...) }` —— 已经在 `viewModelScope` 内。
+
+### 约束 9：inState 内 DSL 调用必须写业务注释
+
+`inState<XXX> { ... }` 内的每个 DSL 函数调用前必须有一行 `//` 单行注释，说明这段逻辑的业务目的。
+注释应像 `// 切换当前查看的历史条目索引。`、`// 生成中状态下监听图片生成进度。` 这样描述意图；
+不要写成 `// 处理 PageChange`、`// 调用 onEnter` 这类只复述代码结构的注释。
+
+```kotlin
+inState<PageUiState> {
+    // 切换当前查看的历史条目索引。
+    on<PageAction.PageChange> { action ->
+        mutate { copy(currentIndex = action.index) }
+    }
+
+    // 生成中状态下监听图片生成进度。
+    condition({ state -> state.isGenerating }) {
+        collectWhileInState(progressFlow) { progress ->
+            mutate { copy(progress = progress) }
+        }
+    }
+}
+```
 
 ---
 
@@ -974,6 +1012,7 @@ assertEquals(MyState(count = 1), actual)
 - [ ] `handler` 中如需跳过更新，使用 `noChange()` 而非省略
 - [ ] 不在 spec 内使用 `state.value`，应使用 `snapshot`
 - [ ] `onEnterEffect` / `onActionEffect` 用于纯副作用（不改变状态的操作）
+- [ ] `inState<XXX> { ... }` 内每个 DSL 函数调用前都有 `//` 单行注释说明业务意图
 - [ ] 新增的 `class/interface/object/enum` 有中文 KDoc 注释
 - [ ] `LazyListState` / `PagerState` 等 Compose 运行时状态不在 `UiState` 中（详见
   `.docs/contributing/mvi.md`）
