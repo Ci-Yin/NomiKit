@@ -64,6 +64,7 @@ directories = "26"
 jsoup = "1.22.1" # https://jsoup.org/
 ksoup = "0.2.6" # https://github.com/fleeksoft/ksoup
 xmlutil = "1.0.0-rc2" # https://github.com/pdvrieze/xmlutil
+yamlkt = "0.13.0" # https://github.com/Him188/yamlkt
 
 [libraries]
 
@@ -233,6 +234,9 @@ compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources",
 
 # XmlUtil
 xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+
+# YamlKt
+yamlkt = { module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt" }
 
 # Directories
 directories = { module = "dev.dirs:directories", version.ref = "directories" }

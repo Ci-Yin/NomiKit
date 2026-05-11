@@ -59,6 +59,7 @@ include(":core:ui-foundation")
 
 include(":feature")
 include(":feature:kotlin-script")
+include(":feature:serialization")
 include(":feature:parser")
 include(":feature:parser-site")
 include(":feature:sample")
