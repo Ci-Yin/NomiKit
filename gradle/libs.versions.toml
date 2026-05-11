@@ -1,106 +1,131 @@
 [versions]
-kotlin = "2.3.0"
-ksp = "2.3.3"
-android-gradle-plugin = "9.1.0"
-compose-multiplatform = "1.10.0"
 
-multiplatform-material3 = "1.9.0"
-multiplatform-adaptive = "1.3.0-alpha02"
-multiplatform-lifecycle = "2.10.0-alpha05"
-multiplatform-nav3-ui = "1.0.0-alpha05"
-multiplatform-savedstate = "1.4.0"
-multiplatform-window = "1.5.1"
+# 核心构建链：升级时优先一起核对 Kotlin / AGP / Compose Multiplatform / KSP 兼容性。
+kotlin = "2.3.0" # https://kotlinlang.org/docs/releases.html
+android-gradle-plugin = "9.1.0" # https://developer.android.com/build/releases/gradle-plugin
+compose-multiplatform = "1.10.0" # https://github.com/JetBrains/compose-multiplatform/releases
+ksp = "2.3.3" # https://github.com/google/ksp/releases
 
-androidx-activity-compose = "1.10.0"
-androidx-appcompat = "1.7.0"
-androidx-core-ktx = "1.13.1"
-androidx-espresso-core = "3.6.1"
-androidx-lifecycle = "2.9.6"
-androidx-material = "1.12.0"
-androidx-test-junit = "1.2.1"
-androidx-navigation = "2.9.0"
+# Compose Multiplatform 与 JetBrains AndroidX：多平台 UI 主版本入口。
+multiplatform-material3 = "1.9.0" # https://github.com/JetBrains/compose-multiplatform/releases
+multiplatform-adaptive = "1.3.0-alpha02" # https://developer.android.com/jetpack/androidx/releases/compose-material3-adaptive
+multiplatform-lifecycle = "2.10.0-alpha05" # https://github.com/JetBrains/androidx/releases
+multiplatform-nav3-ui = "1.0.0-alpha05" # https://github.com/JetBrains/androidx/releases
+multiplatform-savedstate = "1.4.0" # https://github.com/JetBrains/androidx/releases
+multiplatform-window = "1.5.1" # https://github.com/JetBrains/androidx/releases
+materialIcons = "1.7.0" # https://github.com/JetBrains/compose-multiplatform/releases
 
+# AndroidX / Android UI：Android 平台壳、测试与导航相关版本。
+androidx-activity-compose = "1.10.0" # https://developer.android.com/jetpack/androidx/releases/activity
+androidx-appcompat = "1.7.0" # https://developer.android.com/jetpack/androidx/releases/appcompat
+androidx-core-ktx = "1.13.1" # https://developer.android.com/jetpack/androidx/releases/core
+androidx-espresso-core = "3.6.1" # https://developer.android.com/jetpack/androidx/releases/test
+androidx-lifecycle = "2.9.6" # https://developer.android.com/jetpack/androidx/releases/lifecycle
+androidx-material = "1.12.0" # https://github.com/material-components/material-components-android/releases
+androidx-navigation = "2.9.0" # https://developer.android.com/jetpack/androidx/releases/navigation
+androidx-test-junit = "1.2.1" # https://developer.android.com/jetpack/androidx/releases/test
+material3-adaptive-navigation-suite = "1.4.0-beta01" # https://developer.android.com/jetpack/androidx/releases/compose-material3-adaptive
+uiToolingPreviewDesktop = "1.7.0" # https://developer.android.com/jetpack/androidx/releases/compose-ui
+window = "1.5.0" # https://developer.android.com/jetpack/androidx/releases/window
 
-room = "2.8.4" # https://developer.android.com/jetpack/androidx/releases/room#declaring_dependencies
+# 持久化与文件 IO：Room / SQLite / Paging / DataStore / Okio。
+room = "2.8.4" # https://developer.android.com/jetpack/androidx/releases/room
+sqlite = "2.6.2" # https://developer.android.com/jetpack/androidx/releases/sqlite
 paging = "3.3.6" # https://developer.android.com/jetpack/androidx/releases/paging
-sqlite = "2.6.2"
 datastore = "1.2.0" # https://developer.android.com/jetpack/androidx/releases/datastore
-okio = "3.16.4" # https://github.com/square/okio/
-jetbrains-annotations = "26.0.2-1"
-kotlinxDatetime = "0.7.0"
-materialIcons = "1.7.0"
-coilVersion = "3.0.0"
-zoomimage = "1.4.0" # https://github.com/panpf/zoomimage
-gson = "2.11.0"
-jna = "5.18.0"
-ivy = "2.5.2"
-jnaPlatform = "5.18.0"
-serialization = "1.10.0"
-ktor-client = "3.4.0"
+okio = "3.16.4" # https://github.com/square/okio/releases
+
+# Kotlinx / 网络 / DI / 日志：跨平台运行时基础能力。
+kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
+kotlinxDatetime = "0.7.0" # https://github.com/Kotlin/kotlinx-datetime/releases
+serialization = "1.10.0" # https://github.com/Kotlin/kotlinx.serialization/releases
+ktor-client = "3.4.0" # https://ktor.io/docs/releases.html
+ktorNetwork = "2.3.12" # https://ktor.io/docs/releases.html
 koin = "4.1.1" # https://github.com/InsertKoinIO/koin/releases
-koin-annotations = "2.3.1"  # Stable version
-junit = "4.13.2"
-kotlinx-coroutines = "1.10.2"
-ktorNetwork = "2.3.12"
-moshiKotlin = "1.15.2"
-mpfilepicker = "3.1.0"
-nettyAll = "4.1.101.Final"
-uiToolingPreviewDesktop = "1.7.0"
-material3-adaptive-navigation-suite = "1.4.0-beta01"
-kermit = "2.0.8"
-filekit = "0.12.0"
-compottie = "2.0.2" # https://github.com/alexzhirkevich/compottie
+koin-annotations = "2.3.1" # https://github.com/InsertKoinIO/koin-annotations/releases
+kermit = "2.0.8" # https://github.com/touchlab/Kermit/releases
 
-rxjava = "3.1.9"
-rxkotlin = "3.0.1"
-window = "1.5.0"
+# 图片、媒体与桌面 UI 辅助库。
+coilVersion = "3.0.0" # https://github.com/coil-kt/coil/releases
+zoomimage = "1.4.0" # https://github.com/panpf/zoomimage/releases
+filekit = "0.12.0" # https://github.com/vinceglb/FileKit/releases
+compottie = "2.0.2" # https://github.com/alexzhirkevich/compottie/releases
+mpfilepicker = "3.1.0" # https://github.com/Wavesonics/compose-multiplatform-file-picker/releases
 
-flowredux2 = "2.0.1"
+# 序列化、解析与数据格式工具。
+gson = "2.11.0" # https://github.com/google/gson/releases
+moshiKotlin = "1.15.2" # https://github.com/square/moshi/releases
+jsoup = "1.22.1" # https://jsoup.org/news/
+ksoup = "0.2.6" # https://github.com/fleeksoft/ksoup/releases
+xmlutil = "1.0.0-rc2" # https://github.com/pdvrieze/xmlutil/releases
+yamlkt = "0.13.0" # https://github.com/Him188/yamlkt/releases
 
-arrow = "2.1.2"
+# 桌面、脚本与 Gradle 辅助工具。
+directories = "26" # https://github.com/dirs-dev/directories-jvm
+ivy = "2.5.2" # https://ant.apache.org/ivy/history/latest-milestone/release-notes.html
+jetbrains-annotations = "26.0.2-1" # https://github.com/JetBrains/java-annotations/releases
+jna = "5.18.0" # https://github.com/java-native-access/jna/releases
+jnaPlatform = "5.18.0" # https://github.com/java-native-access/jna/releases
+nettyAll = "4.1.101.Final" # https://netty.io/news/
+shadow = "8.1.1" # https://github.com/GradleUp/shadow/releases
 
-shadow = "8.1.1"
-directories = "26"
-jsoup = "1.22.1" # https://jsoup.org/
-ksoup = "0.2.6" # https://github.com/fleeksoft/ksoup
-xmlutil = "1.0.0-rc2" # https://github.com/pdvrieze/xmlutil
-yamlkt = "0.13.0" # https://github.com/Him188/yamlkt
+# 状态管理、函数式与测试。
+arrow = "2.1.2" # https://github.com/arrow-kt/arrow/releases
+flowredux2 = "2.0.1" # https://github.com/freeletics/FlowRedux/releases
+junit = "4.13.2" # https://github.com/junit-team/junit4/releases
+rxjava = "3.1.9" # https://github.com/ReactiveX/RxJava/releases
+rxkotlin = "3.0.1" # https://github.com/ReactiveX/RxKotlin/releases
 
 [libraries]
 
-# Gradle plugins
+# Gradle 插件 artifact：供 buildSrc / 预编译脚本以依赖方式使用；声明式插件 alias 见 [plugins]。
+# https://docs.gradle.org/current/userguide/plugins.html
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "android-gradle-plugin" }
-android-library-gradle-plugin = { module = "com.android.library:com.android.library.gradle.plugin", version.ref = "android-gradle-plugin" }
 android-application-gradle-plugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "android-gradle-plugin" }
+android-library-gradle-plugin = { module = "com.android.library:com.android.library.gradle.plugin", version.ref = "android-gradle-plugin" }
 android-kotlin-multiplatform-library-gradle-plugin = { module = "com.android.kotlin.multiplatform.library:com.android.kotlin.multiplatform.library.gradle.plugin", version.ref = "android-gradle-plugin" }
-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-native-cocoapods-gradle-plugin = { module = "org.jetbrains.kotlin.native.cocoapods:org.jetbrains.kotlin.native.cocoapods.gradle.plugin", version.ref = "kotlin" }
 
-# Compose
+# Kotlin 基础库、测试与脚本宿主。
+# https://kotlinlang.org/docs/gradle-configure-project.html
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlin-scripting-common = { module = "org.jetbrains.kotlin:kotlin-scripting-common" }
+kotlin-scripting-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223" }
+kotlin-scripting-dependencies-maven = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies-maven" }
+kotlin-scripting-dependencies = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies" }
+kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
+kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
+
+# Compose Multiplatform：多平台 UI runtime、基础组件、资源与自适应布局。
+# https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform.html
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "multiplatform-material3" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
 compose-ui-util = { module = "org.jetbrains.compose.ui:ui-util", version.ref = "compose-multiplatform" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
 compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "multiplatform-material3" }
 compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "multiplatform-adaptive" }
 compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive-layout:adaptive", version.ref = "multiplatform-adaptive" }
 compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "multiplatform-adaptive" }
 
+# JetBrains AndroidX：KMP 版 Lifecycle / Navigation / SavedState / Window。
+# https://github.com/JetBrains/androidx
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
-jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "multiplatform-nav3-ui" }
 jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "multiplatform-lifecycle" }
+jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "multiplatform-nav3-ui" }
 jetbrains-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "multiplatform-savedstate" }
 jetbrains-window = { module = "org.jetbrains.androidx.window:window-core", version.ref = "multiplatform-window" }
 
-junit = { group = "junit", name = "junit", version.ref = "junit" }
+# AndroidX / Android Compose：Android 平台能力、调试预览、导航与图标。
+# https://developer.android.com/jetpack/androidx/releases
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
-androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -119,7 +144,14 @@ androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navi
 androidx-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
 androidx-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons" }
 
-# Room, SQLite, and Paging
+# Android / JVM 测试依赖。
+# https://developer.android.com/training/testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
+
+# Room / SQLite / Paging：数据库、查询与分页。
+# https://developer.android.com/jetpack/androidx/releases/room
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
@@ -129,29 +161,18 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
-# DataStore
+# DataStore：KMP 持久化配置与 Okio 后端。
+# https://developer.android.com/jetpack/androidx/releases/datastore
 datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "datastore" }
 datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "datastore" }
 
-# Okio
+# Okio：跨平台 IO 与测试文件系统。
+# https://square.github.io/okio/
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 
-
-ivy = { module = "org.apache.ivy:ivy", version.ref = "ivy" }
-jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jnaPlatform" }
-
-kotlin-scripting-common = { module = "org.jetbrains.kotlin:kotlin-scripting-common" }
-kotlin-scripting-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223" }
-kotlin-scripting-dependencies-maven = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies-maven" }
-kotlin-scripting-dependencies = { module = "org.jetbrains.kotlin:kotlin-scripting-dependencies" }
-kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
-kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-
+# Kotlinx：协程、时间与序列化。
+# https://github.com/Kotlin/kotlinx.coroutines
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
@@ -162,40 +183,8 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
-# State Management
-freeletics-flowredux2 = { module = "com.freeletics.flowredux2:flowredux", version.ref = "flowredux2" }
-
-# Logging
-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
-
-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
-
-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilVersion" }
-coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilVersion" }
-coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilVersion" }
-coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coilVersion" }
-
-# ZoomImage (https://github.com/panpf/zoomimage)
-zoomimage-compose-sketch4 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4", version.ref = "zoomimage" }
-zoomimage-compose-sketch4-koin = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-koin", version.ref = "zoomimage" }
-zoomimage-compose-sketch4-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-core", version.ref = "zoomimage" }
-zoomimage-compose-sketch3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3", version.ref = "zoomimage" }
-zoomimage-compose-sketch3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3-core", version.ref = "zoomimage" }
-zoomimage-compose-coil3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoomimage" }
-zoomimage-compose-coil3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3-core", version.ref = "zoomimage" }
-zoomimage-compose-coil2 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2", version.ref = "zoomimage" }
-zoomimage-compose-coil2-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2-core", version.ref = "zoomimage" }
-zoomimage-compose = { module = "io.github.panpf.zoomimage:zoomimage-compose", version.ref = "zoomimage" }
-zoomimage-compose-resources = { module = "io.github.panpf.zoomimage:zoomimage-compose-resources", version.ref = "zoomimage" }
-
-ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin" }
-mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
-netty-all = { module = "io.netty:netty-all", version.ref = "nettyAll" }
-rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
-rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
-
-# ktor
+# Ktor：HTTP client、序列化、日志、Mock 与平台引擎。
+# https://ktor.io/docs/client-create-new-application.html
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-client" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-client" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor-client" }
@@ -205,71 +194,96 @@ ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor-cl
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor-client" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor-client" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor-client" }
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktorNetwork" }
+netty-all = { module = "io.netty:netty-all", version.ref = "nettyAll" }
 
-# Koin
+# Koin：依赖注入 runtime、Android 适配、测试与注解处理。
+# https://insert-koin.io/
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
 koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-annotations" }
 
-# FileKit
+# 日志。
+# https://github.com/touchlab/Kermit
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
+# 图片加载与媒体解码。
+# https://coil-kt.github.io/coil/
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilVersion" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilVersion" }
+coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilVersion" }
+coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coilVersion" }
+
+# FileKit：跨平台文件选择与 Compose 对话框。
+# https://github.com/vinceglb/FileKit
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekit" }
 
-# Arrow (函数式编程)
-arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
-arrow-functions = { module = "io.arrow-kt:arrow-functions", version.ref = "arrow" }
-arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
-arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
-
-# Compottie
+# Compottie：Lottie 动画解析与资源加载。
+# https://github.com/alexzhirkevich/compottie
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 compottie-lite = { module = "io.github.alexzhirkevich:compottie-lite", version.ref = "compottie" }
 compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
 compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
 compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
 
-# XmlUtil
-xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+# ZoomImage：Compose 多后端图片缩放组件。
+# https://github.com/panpf/zoomimage
+zoomimage-compose = { module = "io.github.panpf.zoomimage:zoomimage-compose", version.ref = "zoomimage" }
+zoomimage-compose-resources = { module = "io.github.panpf.zoomimage:zoomimage-compose-resources", version.ref = "zoomimage" }
+zoomimage-compose-coil3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoomimage" }
+zoomimage-compose-coil3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3-core", version.ref = "zoomimage" }
+zoomimage-compose-coil2 = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2", version.ref = "zoomimage" }
+zoomimage-compose-coil2-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil2-core", version.ref = "zoomimage" }
+zoomimage-compose-sketch4 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4", version.ref = "zoomimage" }
+zoomimage-compose-sketch4-koin = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-koin", version.ref = "zoomimage" }
+zoomimage-compose-sketch4-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch4-core", version.ref = "zoomimage" }
+zoomimage-compose-sketch3 = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3", version.ref = "zoomimage" }
+zoomimage-compose-sketch3-core = { module = "io.github.panpf.zoomimage:zoomimage-compose-sketch3-core", version.ref = "zoomimage" }
 
-# YamlKt
-yamlkt = { module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt" }
-
-# Directories
+# 文件选择与桌面/平台辅助。
+# https://github.com/Wavesonics/compose-multiplatform-file-picker
+mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
 directories = { module = "dev.dirs:directories", version.ref = "directories" }
+ivy = { module = "org.apache.ivy:ivy", version.ref = "ivy" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jnaPlatform" }
 
-# Jsoup
+# JSON / XML / YAML 与 HTML 解析。
+# https://kotlinlang.org/docs/serialization.html
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin" }
+xmlutil-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+yamlkt = { module = "net.mamoe.yamlkt:yamlkt", version.ref = "yamlkt" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-
-# Ksoup
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+
+# 状态管理、函数式编程与响应式扩展。
+# https://github.com/freeletics/FlowRedux
+freeletics-flowredux2 = { module = "com.freeletics.flowredux2:flowredux", version.ref = "flowredux2" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrow-functions = { module = "io.arrow-kt:arrow-functions", version.ref = "arrow" }
+arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
+arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
+rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
+rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
 
 [bundles]
 
-arrow = [
-    "arrow-core",
-    "arrow-functions",
-    "arrow-optics",
-    #    "arrow-optics-ksp"
-]
-
-filekit = [
-    "filekit-core",
-    "filekit-dialogs",
-    "filekit-dialogs-compose",
-    #    "filekit-coil"
-]
-
-rxjava = [
-    "rxjava",
-    "rxkotlin"
-]
-
+# UI 常用组合：按页面能力选择引入。
 compose = [
     "compose-ui-backhandler",
+]
+
+material3 = [
+    # "androidx-compose-material3-adaptive-navigation-suite",
+    # "androidx-compose-material3-window-size-class2",
+    "androidx-compose-material-icons-core",
+    "androidx-compose-material-icons-extended"
 ]
 
 navigation = [
@@ -278,19 +292,35 @@ navigation = [
     "jetbrains-lifecycle-viewmodelNavigation3"
 ]
 
-material3 = [
-    #"androidx-compose-material3-adaptive-navigation-suite",
-    #"androidx-compose-material3-window-size-class2",
-    "androidx-compose-material-icons-core",
-    "androidx-compose-material-icons-extended"
-]
-
-
 coil = [
     "coil-compose",
     "coil-network-ktor",
-    #"coil-gif",
-    #"coil-video"
+    # "coil-gif",
+    # "coil-video"
+]
+
+compottie = [
+    "compottie"
+]
+
+# 文件与图片查看组合。
+filekit = [
+    "filekit-core",
+    "filekit-dialogs",
+    "filekit-dialogs-compose",
+    # "filekit-coil"
+]
+
+zoomimage = [
+    "zoomimage-compose",
+    "zoomimage-compose-coil3",
+    "zoomimage-compose-coil3-core",
+]
+
+# 数据与脚本组合。
+room = [
+    "androidx-room-runtime",
+    "androidx-room-ktx",
 ]
 
 kotlin-scripting = [
@@ -302,28 +332,34 @@ kotlin-scripting = [
     "kotlin-scripting-jvm"
 ]
 
-compottie = [
-    "compottie"
+# 函数式与响应式组合。
+arrow = [
+    "arrow-core",
+    "arrow-functions",
+    "arrow-optics",
+    # "arrow-optics-ksp"
 ]
 
-room = [
-    "androidx-room-runtime",
-    "androidx-room-ktx",
-]
-
-zoomimage = [
-    "zoomimage-compose",
-    "zoomimage-compose-coil3",
-    "zoomimage-compose-coil3-core",
+rxjava = [
+    "rxjava",
+    "rxkotlin"
 ]
 
 [plugins]
+
+# Android / Compose 插件。
+# https://developer.android.com/build/releases/gradle-plugin
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+# Kotlin / KSP 插件。
+# https://kotlinlang.org/docs/gradle-configure-project.html
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+# 数据库与打包插件。
 room = { id = "androidx.room" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
