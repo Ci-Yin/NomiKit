@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Serialization"
+  short_description: "Use NomiKit non-official serialization format helpers"
+  default_prompt: "Use $feature-serialization to work with YAML or future non-official serialization format helpers in NomiKit."

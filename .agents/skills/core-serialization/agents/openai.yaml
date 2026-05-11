@@ -1,0 +1,4 @@
+interface:
+  display_name: "Core Serialization"
+  short_description: "Use NomiKit JSON helper APIs"
+  default_prompt: "Use $core-serialization to serialize data, build JsonElement values, or read JSON fields with NomiKit helpers."
