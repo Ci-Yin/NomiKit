@@ -1,7 +1,7 @@
 package ciyin.koin
 
-import ciyin.serialization.convertMapToJsonElement
-import ciyin.serialization.convertToFinalJsonElement
+import ciyin.serialization.json.convertMapToJsonElement
+import ciyin.serialization.json.convertToFinalJsonElement
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.descriptors.elementNames

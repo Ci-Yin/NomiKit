@@ -106,7 +106,9 @@ class DataStore<D : Any>(
         data = onBeforeWrite(this.data)
         data = context(data)
         return try {
-            file.writeJson(serializer, data, true)
+            file.writeJson(serializer, data) {
+                prettyPrint = true
+            }
             true
         } catch (e: Exception) {
             Log.error("DataStore", e)

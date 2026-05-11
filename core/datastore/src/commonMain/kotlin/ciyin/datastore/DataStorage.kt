@@ -144,7 +144,9 @@ open class DataStorage<D : Any>(
      */
     private fun persistUnsafe(): Result<Unit> = runCatching {
         val dataToWrite = onBeforePersist(snapshot)
-        file.writeJson(serializer, dataToWrite, true)
+        file.writeJson(serializer, dataToWrite) {
+            prettyPrint = true
+        }
         lastOperationFailed = false
         logger.i { "数据持久化成功" }
     }.onFailure { error ->

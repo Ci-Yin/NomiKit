@@ -1,4 +1,4 @@
-package ciyin.serialization
+package ciyin.serialization.json
 
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject

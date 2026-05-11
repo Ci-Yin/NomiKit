@@ -9,6 +9,7 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -25,76 +26,92 @@ import kotlinx.serialization.json.encodeToJsonElement
 
 
 /**
- * 把JSON映射成对象
- * 可用注解：[Serializable]
+ * 将 JSON 字符串反序列化为指定对象。
  *
- * @param T      对象的数据类型
-</T> */
-inline fun <reified T> String.fromJson(): T {
-    return JsonProvider.fromJson(this)
-}
-
-/**
- * 把任意对象映射成JSON
- * 可用注解：[Serializable]
+ * 可通过 [builderAction] 调整本次解析使用的 JSON 配置。
  *
- * @param isFormat 是否格式化
+ * @param T 目标对象的数据类型。
+ * @param builderAction JSON 配置构建回调。
+ * @return 解析后的对象。
  */
-inline fun <reified T : Any> T.toJsonStr(isFormat: Boolean = false): String {
-    return JsonProvider {
-        prettyPrint = isFormat
-    }.toJson(this)
+inline fun <reified T : Any> String.fromJson(
+    noinline builderAction: JsonBuilder.() -> Unit = {}
+): T {
+    val json = Json(builderAction = builderAction)
+    return json.decodeFromString(this)
 }
 
 /**
- * 写入文件JSON
+ * 将当前对象序列化为 JSON 字符串。
  *
- * @param src      对象
- * @param isFormat 是否格式化
- * @return 是否写入成功
+ * @param T 当前对象的数据类型。
+ * @param builderAction JSON 配置构建回调。
+ * @return 序列化后的 JSON 字符串。
  */
-inline fun <reified T : Any> File.writeJson(src: T, isFormat: Boolean = false) {
-    return writeText(src.toJsonStr(isFormat))
+inline fun <reified T : Any> T.toJsonStr(
+    noinline builderAction: JsonBuilder.() -> Unit = {}
+): String {
+    val json = Json(builderAction = builderAction)
+    return json.encodeToString(this)
 }
 
 /**
- * 读取文件内容转化成对象
- * 不存在时创建新对象
+ * 将对象序列化为 JSON 并写入当前文件。
  *
- * @param T
- * @return Bean对象
+ * @param T 写入对象的数据类型。
+ * @param src 要写入的对象。
+ * @param builderAction JSON 配置构建回调。
  */
-inline fun <reified T : Any> File.readJson(): T {
-    return readText().fromJson()
+inline fun <reified T : Any> File.writeJson(
+    src: T,
+    noinline builderAction: JsonBuilder.() -> Unit = {}
+) {
+    return writeText(src.toJsonStr(builderAction = builderAction))
+}
+
+/**
+ * 读取当前文件内容并反序列化为指定对象。
+ *
+ * @param T 目标对象的数据类型。
+ * @param builderAction JSON 配置构建回调。
+ * @return 解析后的对象。
+ */
+inline fun <reified T : Any> File.readJson(
+    noinline builderAction: JsonBuilder.() -> Unit = {}
+): T {
+    return readText().fromJson(builderAction = builderAction)
 }
 
 
 /**
- * 写入文件JSON
+ * 使用指定序列化器将对象序列化为 JSON 并写入当前文件。
  *
- * @param src      对象
- * @param isFormat 是否格式化
- * @return 是否写入成功
+ * @param serializer 对象序列化器。
+ * @param src 要写入的对象。
+ * @param builderAction JSON 配置构建回调。
  */
 @Suppress("JSON_FORMAT_REDUNDANT")
 fun <T : Any> File.writeJson(
     serializer: SerializationStrategy<T>,
     src: T,
-    isFormat: Boolean = false
+    builderAction: JsonBuilder.() -> Unit = {}
 ) {
-    val json = Json { prettyPrint = isFormat }.encodeToString(serializer, src)
+    val json = Json(builderAction = builderAction).encodeToString(serializer, src)
     return writeText(json)
 }
 
 /**
- * 读取文件内容转化成对象
- * 不存在时创建新对象
+ * 使用指定反序列化器读取当前文件内容并反序列化为对象。
  *
- * @param T
- * @return Bean对象
+ * @param deserializer 对象反序列化器。
+ * @param builderAction JSON 配置构建回调。
+ * @return 解析后的对象。
  */
-fun <T : Any> File.readJson(deserializer: DeserializationStrategy<T>): T {
-    return Json.decodeFromString(deserializer, readText())
+fun <T : Any> File.readJson(
+    deserializer: DeserializationStrategy<T>,
+    builderAction: JsonBuilder.() -> Unit = {}
+): T {
+    return Json(builderAction = builderAction).decodeFromString(deserializer, readText())
 }
 
 /**
@@ -193,4 +210,3 @@ fun <T> T.modifyJson(
     // 反序列化为目标类型
     return json.decodeFromJsonElement(serializer, updated)
 }
-
