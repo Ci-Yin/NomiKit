@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core UI Foundation"
+  short_description: "Use NomiKit Compose Multiplatform UI foundation, ViewModel bases, effects, layouts, and widgets"

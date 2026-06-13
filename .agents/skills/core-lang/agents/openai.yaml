@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Lang"
+  short_description: "Use NomiKit small Kotlin language extension helpers"

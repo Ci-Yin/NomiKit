@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core System"
+  short_description: "Use NomiKit system utilities, MIME helpers, image utilities, and app folder resolution"

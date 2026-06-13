@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core UI Preview"
+  short_description: "Use NomiKit commonMain Compose Preview and multi-preview annotations"

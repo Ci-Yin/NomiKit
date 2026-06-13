@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Application"
+  short_description: "Help with NomiKit core/application startup, MultiplatformApplication, runApplication, and platform Context wiring"

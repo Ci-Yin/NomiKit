@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core IO"
+  short_description: "Use NomiKit Okio-based multiplatform File and file helpers"

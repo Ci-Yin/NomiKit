@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Testing"
+  short_description: "Use NomiKit KMP testing helpers, dynamic tests, resources, and platform annotations"

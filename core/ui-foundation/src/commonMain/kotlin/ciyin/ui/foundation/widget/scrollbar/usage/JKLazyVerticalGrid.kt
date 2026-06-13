@@ -1,4 +1,4 @@
-package lcpp.github.scrollbar.usage
+package ciyin.ui.foundation.widget.scrollbar.usage
 
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation

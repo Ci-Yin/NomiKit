@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Platform"
+  short_description: "Use NomiKit platform Context, platform detection, logging, and time abstractions"

@@ -44,6 +44,9 @@ import androidx.compose.ui.unit.dp
 import ciyin.ui.foundation.widget.scrollbar.ThumbStateType.Dormant
 import ciyin.ui.foundation.widget.scrollbar.ThumbStateType.Dragging
 import ciyin.ui.foundation.widget.scrollbar.ThumbStateType.Scrolling
+import ciyin.ui.foundation.widget.scrollbar.usage.draggingColor
+import ciyin.ui.foundation.widget.scrollbar.usage.thumbScrollingColor
+import ciyin.ui.foundation.widget.scrollbar.usage.thumbShape
 import kotlinx.coroutines.delay
 
 // 可拖动的滚动条
@@ -194,8 +197,8 @@ fun scrollbarThumbColorOffsetX(
     val color = animateColorAsState(
         targetValue = when (state) {
             // 休眠——————手指按下拖动的颜色
-            Dragging -> _root_ide_package_.lcpp.github.scrollbar.usage.draggingColor()
-            else -> _root_ide_package_.lcpp.github.scrollbar.usage.thumbScrollingColor
+            Dragging -> draggingColor()
+            else -> thumbScrollingColor
         },
         animationSpec = SpringSpec(stiffness = Spring.StiffnessLow),
         label = "",
@@ -251,7 +254,7 @@ private class ScrollThumbNode(
                 lastOutline!!
             } else {
                 // 否则，就绘制圆角形状
-                _root_ide_package_.lcpp.github.scrollbar.usage.thumbShape.createOutline(
+                thumbShape.createOutline(
                     size,
                     layoutDirection,
                     this

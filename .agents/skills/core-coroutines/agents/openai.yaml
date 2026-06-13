@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Coroutines"
+  short_description: "Use NomiKit coroutine scope and Flow helpers"
