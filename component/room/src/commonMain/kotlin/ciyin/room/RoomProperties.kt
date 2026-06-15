@@ -30,10 +30,16 @@ data class RoomProperties(
 
     }
 
+    /**
+     * Room 迁移策略配置。
+     *
+     * @property fallbackToDestructive 是否在缺少升级迁移时允许破坏性迁移，默认关闭，必须由调用方显式开启。
+     * @property fallbackToDestructiveOnDowngrade 是否在缺少降级迁移时允许破坏性迁移，默认关闭，必须由调用方显式开启。
+     */
     @KoinPropInstance("room.migration")
     data class Migration(
-        val fallbackToDestructive: Boolean = true,
-        val fallbackToDestructiveOnDowngrade: Boolean = true
+        val fallbackToDestructive: Boolean = false,
+        val fallbackToDestructiveOnDowngrade: Boolean = false
     )
 
     enum class CoroutineContextType {

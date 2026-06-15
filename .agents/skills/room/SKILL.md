@@ -25,8 +25,11 @@ disable-model-invocation: true
 ## Koin 装配要点
 
 - 入口：`RoomBootInitializer` 注册 `RoomAutoConfiguration`。
-- `RoomProperties`：库名、后缀、journal、查询协程上下文、**破坏性迁移兜底**等（`@KoinPropInstance("room")`
-  ）；默认倾向 `fallbackToDestructiveMigration`，与「不做数据迁移」策略一致。
+- `RoomProperties`：库名、后缀、journal、查询协程上下文、迁移策略等（`@KoinPropInstance("room")`
+  ）；默认不启用破坏性迁移，必须由调用方显式开启。
+- 迁移配置互斥：启用全量 `fallbackToDestructiveMigration` 时，不再叠加
+  `fallbackToDestructiveMigrationOnDowngrade`；Room 2.8.x 的 downgrade-only 调用会重新要求普通升级必须有
+  Migration，叠加会导致 3→4 等升级仍崩溃。
 - `RoomDatabase.Builder<*>`：默认用 `BundledSQLiteDriver()`，并套用上述配置与查询上下文。
 - **按 DAO 注册**：`Module.singleDao(AppDatabase::xxxDao)`，通过 `RoomDatabaseScope` +
   `R::class.qualifiedName` 分库。
@@ -68,9 +71,9 @@ data class ExampleEntity(
 - **不要**新增或扩展 `@Database(autoMigrations = …)` / `AutoMigration`；
 - **不要**为旧数据做额外兼容分支、双写、渐进式读旧表等方案。
 
-允许且默认期望的做法：按需提高 `@Database.version`、改实体/索引；依赖 `RoomProperties` 与 Builder 上已配置的
-**破坏性迁移**（清空重建）接受数据丢失。若用户随后明确要求迁移，再单独设计 `Migration` / `AutoMigration`
-与测试。
+允许且默认期望的做法：按需提高 `@Database.version`、改实体/索引；如果没有迁移，Room 应抛出缺少
+Migration 的错误，直到调用方显式配置 `room.migration.fallbackToDestructive=true` 或补充 `Migration` /
+`AutoMigration` 与测试。
 
 ## 储存 `List<*>` 或复杂字段时的 TypeConverter 策略
 

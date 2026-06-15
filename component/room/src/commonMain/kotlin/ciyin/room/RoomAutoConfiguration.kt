@@ -78,19 +78,32 @@ val RoomAutoConfiguration = koinAutoConfiguration {
 
 
 /**
- * 应用迁移配置
+ * 应用迁移配置。
+ *
+ * [fallbackToDestructiveMigrationOnDowngrade] 会把 Room 的普通升级迁移要求重新打开；
+ * 因此全量破坏性迁移已启用时，不能再叠加 downgrade-only 配置。
+ *
+ * @param migration Room 迁移策略配置。
+ * @return 已应用迁移策略的 Builder。
  */
 private fun RoomDatabase.Builder<*>.applyMigrationConfig(
     migration: RoomProperties.Migration
 ): RoomDatabase.Builder<*> {
-    // 回退到破坏性迁移
-    return fallbackToDestructiveMigration(migration.fallbackToDestructive)
-        // 降级时回退到破坏性迁移
-        .fallbackToDestructiveMigrationOnDowngrade(migration.fallbackToDestructiveOnDowngrade)
+    return when {
+        migration.fallbackToDestructive -> fallbackToDestructiveMigration(dropAllTables = true)
+        migration.fallbackToDestructiveOnDowngrade -> fallbackToDestructiveMigrationOnDowngrade(
+            dropAllTables = true
+        )
+
+        else -> this
+    }
 }
 
 /**
- * 应用查询配置
+ * 应用查询配置。
+ *
+ * @param queryCoroutineContext 查询协程上下文类型。
+ * @return 已应用查询配置的 Builder。
  */
 private fun RoomDatabase.Builder<*>.applyQueryConfig(
     queryCoroutineContext: RoomProperties.CoroutineContextType
