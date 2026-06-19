@@ -10,10 +10,6 @@ import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageResult
-import ciyin.ai.facade.selection.ChatEngineSpec
-import ciyin.ai.facade.selection.EnginePreferences
-import ciyin.ai.facade.selection.FallbackPolicy
-import ciyin.ai.facade.selection.ImageEngineSpec
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -29,7 +25,6 @@ class AiImageIntegrateTest {
     fun generate_without_engines_throws_unsupported_capability() = runTest {
         val integrate = testAiImageIntegrate(
             defaultEngineConfigs = emptyList(),
-            preferences = NeutralEnginePreferences(),
             buildImageEngine = { unusedStubEngine() },
         )
         val ex = assertFailsWith<UnsupportedCapabilityException> {
@@ -42,7 +37,6 @@ class AiImageIntegrateTest {
     fun models_without_registered_runtime_returns_empty() = runTest {
         val integrate = testAiImageIntegrate(
             defaultEngineConfigs = emptyList(),
-            preferences = NeutralEnginePreferences(),
             buildImageEngine = { unusedStubEngine() },
         )
         assertContentEquals(emptyList(), integrate.models())
@@ -65,6 +59,32 @@ class AiImageIntegrateTest {
         )
         integrate.generate(ImageRequest(prompt = "p", model = null)).toList()
         assertEquals("from-config", stub.receivedRequests.single().model)
+    }
+
+    /** 验证显式规格模型会覆盖配置中的默认模型。 */
+    @Test
+    fun explicit_spec_model_overrides_config_default_model() = runTest {
+        val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
+        val integrate = testAiImageIntegrate(
+            buildImageEngine = { stub },
+        )
+        integrate.engines(
+            listOf(
+                ImageEngineConfig.SdWebUi(
+                    baseUrl = "http://127.0.0.1:7860",
+                    apiKey = "",
+                    defaultModel = "from-config",
+                ),
+            ),
+        )
+        integrate.generate(
+            request = ImageRequest(prompt = "p", model = null),
+            spec = ImageEngineSpec.Explicit(
+                engineId = IntegrateImageEngineIds.sdWebUi,
+                model = "from-spec",
+            ),
+        ).toList()
+        assertEquals("from-spec", stub.receivedRequests.single().model)
     }
 
     @Test
@@ -126,7 +146,7 @@ class AiImageIntegrateTest {
     }
 
     @Test
-    fun generate_collects_facade_stream_without_network() = runTest {
+    fun generate_collects_engine_stream_without_network() = runTest {
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
         val integrate = testAiImageIntegrate(
             buildImageEngine = { cfg ->
@@ -191,27 +211,13 @@ class AiImageIntegrateTest {
 
 private fun testAiImageIntegrate(
     defaultEngineConfigs: List<ImageEngineConfig> = IntegrateImageDefaults.sdWebUiLocalhost(),
-    preferences: EnginePreferences = IntegrateEnginePreferences(),
+    preferences: IntegrateEnginePreferences = IntegrateEnginePreferences(),
     buildImageEngine: (ImageEngineConfig) -> ImageEngine,
 ): AiImageIntegrate = AiImageIntegrate(
     defaultEngineConfigs = defaultEngineConfigs,
     preferences = preferences,
     buildImageEngine = buildImageEngine,
 )
-
-/**
- * 默认生图路由保持 [ImageEngineSpec.Default]，避免在「零引擎」快照下解析为固定 [EngineId] 导致 [models] 或路由抛错。
- */
-private class NeutralEnginePreferences : EnginePreferences {
-
-    override suspend fun defaultChatSpec(): ChatEngineSpec = ChatEngineSpec.Default
-
-    override suspend fun defaultImageSpec(): ImageEngineSpec = ImageEngineSpec.Default
-
-    override suspend fun chatFallback(): FallbackPolicy = FallbackPolicy()
-
-    override suspend fun imageFallback(): FallbackPolicy = FallbackPolicy()
-}
 
 private fun unusedStubEngine(): ImageEngine =
     recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
@@ -225,7 +231,7 @@ private fun recordingStubEngine(
 )
 
 /**
- * 不发起真实 HTTP：记录 [ImageRequest]，并产出符合 Facade 调度契约的终结事件。
+ * 不发起真实 HTTP：记录 [ImageRequest]，并产出符合生图事件契约的终结事件。
  */
 private class RecordingStubImageEngine(
     override val id: EngineId,

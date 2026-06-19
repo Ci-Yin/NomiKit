@@ -6,7 +6,7 @@ kotlin {
 
     sourceSets.commonMain.dependencies {
         api(projects.feature.aiCore)
-        implementation(projects.feature.aiFacade)
+        implementation(projects.feature.aiChatOpenaiEngine)
         implementation(projects.feature.aiImageSdwebuiEngine)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.koin.core)

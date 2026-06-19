@@ -88,7 +88,8 @@ apply: always
   `DataStoreBootInitializer`、
   Koin `dataStore(...)` / `DataStorePath` → `data-store`
 - 涉及 AI 抽象层（`AiEngine` / `ChatEngine` / `ImageEngine` / `Registry` / 通用错误模型）→ `ai-core`
-- 业务侧调用 AI（`AiChat` / `AiImage` / `EnginePreferences` / `FallbackPolicy` / 埋点）→ `ai-facade`
+- 业务侧调用 AI（`AiChatIntegrate` / `AiImageIntegrate` / `ChatEngineConfig` / `ImageEngineConfig` /
+  `ChatEngineSpec` / `ImageEngineSpec`）→ `ai-integrate`
 - 接入 OpenAI 兼容协议引擎（OpenAI / OpenRouter / DeepSeek / Ollama / vLLM 等）→
   `ai-chat-openai-engine`
 - 接入 SD WebUI 图像引擎（作为 ai-core `ImageEngine`）→ `ai-image-sdwebui-engine`

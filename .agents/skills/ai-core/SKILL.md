@@ -24,7 +24,7 @@ description: Use the feature/ai-core Kotlin Multiplatform module (package ciyin.
 - 用户提到 `AiEngineError` / `AiEngineException` / `UnsupportedCapabilityException`
 - 用户提到 `ChatEngineRegistry` / `ImageEngineRegistry` / `EngineSelector`
 - 用户要在 `ai-core` 内新增 capability、新增字段、新增错误分支
-- 在新增 `ai-xxx-engine` 或调整 `ai-facade` 时需要确认 `ai-core` 接口契约
+- 在新增 `ai-xxx-engine` 或调整 `ai-integrate` 时需要确认 `ai-core` 接口契约
 - 修改 `feature/ai-core/build.gradle.kts` 或 `settings.gradle.kts` 中 `:feature:ai-core` 的依赖
 
 第三节。
@@ -142,7 +142,7 @@ class EngineSelector(chatRegistry, imageRegistry) {
 
 选择策略（Chat / Image 完全同构）：**先看 preferredId** → **否则按 required 过滤后取注册顺序首个** → *
 *找不到抛 UnsupportedCapabilityException**。`Registry` 不负责降级、重试、观测——这些归
-`feature/ai-facade`。
+上层聚合或业务模块。
 
 ## 工作流
 
@@ -184,7 +184,7 @@ class EngineSelector(chatRegistry, imageRegistry) {
     - 参数 / capability / 模型不在线 → `Unsupported`（业务侧应改请求）
     - 网络 / IO / DNS / SSL → `Network`（fallback 默认会触发）
     - 其余兜底 → `Unknown`
-2. 新分支记得在 `FallbackPolicy.triggerOn` 默认值里思考是否要加（在 `feature/ai-facade`）。
+2. 新分支记得在上层聚合的降级策略默认值里思考是否要加。
 3. 通知所有 `ai-xxx-engine` 的 `ErrorMapper` 把对应异常映射到新分支。
 
 ### 工作流：写单元测试
@@ -211,7 +211,7 @@ class EngineSelector(chatRegistry, imageRegistry) {
 - 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补**中文 KDoc**。
 - **禁止**在 `ai-core` 出现 `OpenAi` / `SdWebUi` / `ControlNet`（作为厂商命名）/ `Anthropic` /`Ollama`
   等任何厂商命名（`ImageCapability.ControlNet` 是已抽象的通用能力命名，不算厂商命名，但新增此类命名要谨慎）。
-- **禁止**依赖 `feature/sdwebui` / `ai-xxx-engine` / `ai-facade` / 任何 `app:*` / `business:*`：
+- **禁止**依赖 `feature/sdwebui` / `ai-xxx-engine` / `ai-integrate` / 任何 `app:*` / `business:*`：
   `ai-core` 是依赖图的最底层。
 - **禁止**依赖任何 DI 框架（Koin 等）。引擎实例的装配在 `app:shared` 完成。
 - **禁止**用 `Throwable` / `Exception` 作为通用错误传输模型；只用 `AiEngineError` + `Result` +
@@ -224,12 +224,12 @@ class EngineSelector(chatRegistry, imageRegistry) {
 
 | 下游模块                              | 它能依赖 ai-core 的什么                                                                        | 它**不能**做什么                                                 |
 |-----------------------------------|-----------------------------------------------------------------------------------------|------------------------------------------------------------|
-| `ai-facade`                       | 所有 public 抽象，尤其 `EngineSelector` / `Registry` / `ChatEvent` / `ImageEvent`              | 反向依赖任何 `ai-xxx-engine`                                     |
+| `ai-integrate`                    | 所有 public 抽象，尤其 `EngineSelector` / `Registry` / `ChatEvent` / `ImageEvent`              | 反向依赖任何 `app:*`                                             |
 | `ai-xxx-engine`（聊天 / 生图 / 未来 ASR） | 实现对应 `ChatEngine` / `ImageEngine`；用 `AiEngineError` 折叠错误                                | 直接 import 其他 `ai-xxx-engine`；引入 DI 框架                      |
-| `app:shared`                      | 仅作为传递依赖（通过 `ai-facade` 的 `api(project(":feature:ai-core"))`），**业务代码也不应直接 import 引擎实现类** | 跳过 Facade 直接持有 `ChatEngine` / `ImageEngine`；自己写 `Registry` |
+| `app:shared`                      | 可通过 `ai-integrate` 的 `api(projects.feature.aiCore)` 获得公共模型                             | 默认不要散落具体引擎实现类构造                                      |
 
 ## 附加资源
 
 - 分层错误流转：[`.docs/contributing/layered.md`](../../../.docs/contributing/layered.md)
-- 相关 skill：`.agents/skills/ai-facade/SKILL.md`、`.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
+- 相关 skill：`.agents/skills/ai-integrate/SKILL.md`、`.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
   `.agents/skills/ai-chat-openai-engine/SKILL.md`

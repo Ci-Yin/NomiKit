@@ -11,8 +11,7 @@ description: Use the feature/ai-chat-openai-engine Kotlin Multiplatform module (
 
 它的角色：把 `ai-core.ChatRequest` 映射成 `/v1/chat/completions` 请求体，处理流式（SSE）与非流式两种返回方式，把响应折叠为
 `ai-core.ChatEvent`。覆盖任何"声称兼容 OpenAI"的端点：OpenAI
-官方、OpenRouter、DeepSeek、Together、vLLM、Ollama 等。**不**做降级、观测、业务策略——那是
-`feature/ai-facade` 的事。
+官方、OpenRouter、DeepSeek、Together、vLLM、Ollama 等。**不**做降级、观测、业务策略——这些由上层聚合或业务模块负责。
 
 ## 触发场景
 
@@ -117,8 +116,8 @@ val ollama = OpenAiChatEngine(
 val registry = DefaultChatEngineRegistry(listOf(openai, router, ollama))
 ```
 
-业务侧**不直接**持有 `OpenAiChatEngine`：装配点把它丢给 `Registry` 与 `EngineSelector`，后续通过
-`AiChat` 间接使用。
+业务侧**不直接**持有 `OpenAiChatEngine`：通常通过 `feature/ai-integrate` 的 `AiChatIntegrate`
+由 `ChatEngineConfig.OpenAiCompatible` 统一装配。
 
 ### 步骤 3：能力声明
 
@@ -303,8 +302,7 @@ private fun engine(baseUrl: String, mockEngine: MockEngine): OpenAiChatEngine {
 ## 硬性约束
 
 - 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补**中文 KDoc**。
-- **本模块只能依赖 `:feature:ai-core` + Ktor**；**禁止**反向依赖 `:feature:ai-facade`、任何 `app:*`
-  、任何其他 `ai-xxx-engine`。
+- **本模块只能依赖 `:feature:ai-core` + Ktor**；**禁止**反向依赖任何 `app:*`、聚合模块或其他 `ai-xxx-engine`。
 - **禁止**引入 DI 框架（Koin / Dagger 等）。`OpenAiChatEngine` 通过普通构造函数装配。
 - **禁止**直接 `throw RuntimeException`：错误必须走 `AiEngineError` 经 `Failed` 事件流回上层；mapper
   内部短路用 `OpenAiMappingException` 包装。
@@ -321,10 +319,10 @@ private fun engine(baseUrl: String, mockEngine: MockEngine): OpenAiChatEngine {
 |---------------------|---------------------------------------------------------------------|---------------------------------------------------|
 | `feature/ai-core`   | 提供 `ChatEngine` 接口、`ChatRequest`、`ChatEvent`、`AiEngineError`        | `api` 依赖，可暴露在公共签名                                 |
 | Ktor                | 通过 `expect/actual` 各平台引擎 + `ContentNegotiation` + `Logging` 调用上游    | `implementation` 依赖，**不要**出现在公共签名                 |
-| `feature/ai-facade` | 通过 `Registry` + `Selector` 间接调用本模块                                  | **绝不**反向依赖 facade                                 |
-| `app:shared`        | 在装配点 `new OpenAiChatEngine(config)` 并丢给 `DefaultChatEngineRegistry` | 业务代码**不直接** import `OpenAiChatEngine`，只用 `AiChat` |
+| `feature/ai-integrate` | 通过配置装配本模块并向上提供聊天聚合入口                                  | **绝不**反向依赖 integrate                                 |
+| `app:shared`        | 可在装配点通过 `ai-integrate` 使用本模块 | 业务代码默认不要散落 `OpenAiChatEngine` 构造 |
 
 ## 附加资源
 
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
-- 上层 Facade：`.agents/skills/ai-facade/SKILL.md`
+- 上层聚合：`.agents/skills/ai-integrate/SKILL.md`

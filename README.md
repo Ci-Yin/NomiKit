@@ -93,10 +93,9 @@ app -> business / feature / component -> core
 - `feature:kotlin-script`：Kotlin 脚本能力。
 - `feature:sdwebui`：AUTOMATIC1111 Stable Diffusion WebUI REST API 客户端。
 - `feature:ai-core`：AI 引擎无关抽象层。
-- `feature:ai-facade`：业务侧 AI 调用统一入口。
 - `feature:ai-image-sdwebui-engine`：SD WebUI ImageEngine 实现。
 - `feature:ai-chat-openai-engine`：OpenAI 兼容 ChatEngine 实现。
-- `feature:ai-integrate`：AI 引擎聚合与装配层。
+- `feature:ai-integrate`：AI 聊天与生图引擎聚合装配入口。
 
 ## 环境准备
 

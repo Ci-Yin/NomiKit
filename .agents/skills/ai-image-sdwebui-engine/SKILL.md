@@ -1,6 +1,6 @@
 ---
 name: ai-image-sdwebui-engine
-description: Use the feature/ai-image-sdwebui-engine Kotlin Multiplatform module (package ciyin.ai.image.sdwebui) to expose AUTOMATIC1111 SD WebUI as an ai-core ImageEngine。Covers SdWebUiImageEngine 与 SdWebUiImageEngineConfig 的构造、ImageRequestToSdWebUiMapper / ControlMapper / PostProcessorMapper / ErrorMapper 四个映射器、生成后处理（RemBG / Upscale）的串行调用、`vendorOptions["sdwebui.alwaysonScripts"]` 透传、单测使用的 RecordingClient 模式。Use when 用户提到 ai-image-sdwebui-engine、SdWebUiImageEngine、SdWebUiImageEngineConfig、把 sdwebui 接入 ai-core / ai-facade、给 ai-core ImageRequest 增加新的 control / postProcessor 并需要 SD WebUI 适配，或排查该模块的构建/测试错误。
+description: Use the feature/ai-image-sdwebui-engine Kotlin Multiplatform module (package ciyin.ai.image.sdwebui) to expose AUTOMATIC1111 SD WebUI as an ai-core ImageEngine。Covers SdWebUiImageEngine 与 SdWebUiImageEngineConfig 的构造、ImageRequestToSdWebUiMapper / ControlMapper / PostProcessorMapper / ErrorMapper 四个映射器、生成后处理（RemBG / Upscale）的串行调用、`vendorOptions["sdwebui.alwaysonScripts"]` 透传、单测使用的 RecordingClient 模式。Use when 用户提到 ai-image-sdwebui-engine、SdWebUiImageEngine、SdWebUiImageEngineConfig、把 sdwebui 接入 ai-core / ai-integrate、给 ai-core ImageRequest 增加新的 control / postProcessor 并需要 SD WebUI 适配，或排查该模块的构建/测试错误。
 ---
 
 # feature/ai-image-sdwebui-engine 模块协作指南
@@ -10,15 +10,14 @@ description: Use the feature/ai-image-sdwebui-engine Kotlin Multiplatform module
 `feature/sdwebui` 解决）。
 
 它的角色：把 `ai-core.ImageRequest` 翻译成 `feature/sdwebui` 的 Process DSL，把 SD WebUI 响应折叠回
-`ai-core.ImageEvent` / `ImageResult`，把异常折叠回 `AiEngineError`。**不**承担降级、观测、业务策略——那是
-`feature/ai-facade` 的事。
+`ai-core.ImageEvent` / `ImageResult`，把异常折叠回 `AiEngineError`。**不**承担降级、观测、业务策略——这些由上层聚合或业务模块负责。
 
 ## 触发场景
 
 任意一项命中即按本 skill 处理：
 
 - 用户提到 `ai-image-sdwebui-engine`、`SdWebUiImageEngine`、`SdWebUiImageEngineConfig`
-- 用户希望把 `feature/sdwebui` 接入 `ai-core` / `ai-facade` 框架（而非直接调用 SD WebUI）
+- 用户希望把 `feature/sdwebui` 接入 `ai-core` / `ai-integrate` 框架（而非直接调用 SD WebUI）
 - 用户给 `ai-core.ImageControl` / `ImagePostProcessor` 增加了新分支，需要在本模块补 SD WebUI 适配
 - 用户希望透传新的 `alwayson script` 给 SD WebUI，或者使用 `vendorOptions["sdwebui.alwaysonScripts"]`
 - 用户想新增对应单测（用 `support/RecordingClient`）
@@ -87,8 +86,8 @@ val engine = SdWebUiImageEngine(EngineId("sdwebui:custom"), sdWebUi)
 val registry = DefaultImageEngineRegistry(listOf(engine /* , otherImageEngine */))
 ```
 
-业务侧**不直接**持有 `SdWebUiImageEngine`：装配点把它丢进 `Registry`，后续通过 `EngineSelector` /
-`AiImage` 间接使用。
+业务侧**不直接**持有 `SdWebUiImageEngine`：通常通过 `feature/ai-integrate` 的 `AiImageIntegrate`
+由 `ImageEngineConfig.SdWebUi` 统一装配。
 
 ### 步骤 3：能力声明
 
@@ -239,7 +238,7 @@ private fun engine(client: RecordingClient) = SdWebUiImageEngine(
 ## 硬性约束
 
 - 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补**中文 KDoc**。
-- **本模块只能依赖 `:feature:ai-core` 与 `:feature:sdwebui`**；**禁止**反向依赖 `:feature:ai-facade`
+- **本模块只能依赖 `:feature:ai-core` 与 `:feature:sdwebui`**；**禁止**反向依赖上层聚合模块
   、任何 `app:*`、任何其他 `ai-xxx-engine`。
 - **禁止**引入 DI 框架（Koin / Dagger 等）。`SdWebUiImageEngine` 只通过普通构造函数装配。
 - **禁止**直接 `throw RuntimeException`：错误必须走 `AiEngineError` 经 `Failed` 事件流回上层；mapper
@@ -256,11 +255,11 @@ private fun engine(client: RecordingClient) = SdWebUiImageEngine(
 |---------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
 | `feature/ai-core`   | 提供 `ImageEngine` 接口、`ImageRequest`、`ImageEvent`、`AiEngineError`        | `api` 依赖，可暴露在公共签名                                                       |
 | `feature/sdwebui`   | 提供底层 `SdWebUi` + Process DSL + 各类 alwayson script payload              | `implementation` 依赖，**不应**出现在公共签名。新增 endpoint 走 `feature/sdwebui` skill |
-| `feature/ai-facade` | 通过 `Registry` + `Selector` 间接调用本模块                                     | **绝不**反向依赖 facade                                                       |
-| `app:shared`        | 在装配点 `new SdWebUiImageEngine(config)` 并丢给 `DefaultImageEngineRegistry` | 业务代码**不直接** import `SdWebUiImageEngine`，只用 `AiImage`                    |
+| `feature/ai-integrate` | 通过配置装配本模块并向上提供生图聚合入口                                     | **绝不**反向依赖 integrate                                                       |
+| `app:shared`        | 可通过 `ai-integrate` 使用本模块 | 业务代码默认不要散落 `SdWebUiImageEngine` 构造                    |
 
 ## 附加资源
 
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
 - 底层 SDK：`.agents/skills/sdwebui/SKILL.md`
-- 上层 Facade：`.agents/skills/ai-facade/SKILL.md`
+- 上层聚合：`.agents/skills/ai-integrate/SKILL.md`

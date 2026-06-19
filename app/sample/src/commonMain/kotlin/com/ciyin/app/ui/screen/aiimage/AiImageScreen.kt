@@ -56,7 +56,7 @@ private val AiImageDemoBodyMediumStyle = TextStyle(
 private val AiImageDemoErrorColor = Color(0xFFB3261E)
 
 /**
- * 文生图最小示例（经 [ciyin.ai.facade.AiImage]）。
+ * 文生图最小示例（经 [ciyin.ai.integrate.image.AiImageIntegrate]）。
  *
  * **使用前**：请在运行设备可访问的地址启动 [AUTOMATIC1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)，
  * 默认监听 `7860`；「主机 / IP」可在界面填写（例如 Android 模拟器访宿主机常用 `10.0.2.2`）。

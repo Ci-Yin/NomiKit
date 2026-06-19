@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 /**
  * 文生图演示的数据与远程访问入口。
  *
- * 通过 [AiImageIntegrat] 注册 SD WebUI 并发起 [ImageRequest]；[com.ciyin.app.ui.screen.aiimage.AiImageViewModel] 只通过本类访问外部 API 与持久化。
+ * 通过 [AiImageIntegrate] 注册 SD WebUI 并发起 [ImageRequest]；[com.ciyin.app.ui.screen.aiimage.AiImageViewModel] 只通过本类访问外部 API 与持久化。
  */
 internal class AiImageRepository(
     private val aiImageIntegrate: AiImageIntegrate = AiImageIntegrate(),

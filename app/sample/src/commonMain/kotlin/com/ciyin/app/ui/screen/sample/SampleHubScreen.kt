@@ -78,12 +78,12 @@ private data class SampleHubEntry(
 private fun rememberSampleHubEntries() = remember {
     listOf(
         SampleHubEntry(
-            title = "文生图（AiImage + SD WebUI）",
-            description = "feature/ai-facade 最小示例，需本地 WebUI --api",
+            title = "文生图（AiImageIntegrate + SD WebUI）",
+            description = "feature/ai-integrate 最小示例，需本地 WebUI --api",
             navRouter = AiImageDemoRouter,
         ),
         SampleHubEntry(
-            title = "AI 聊天（AiChat + OpenAI 兼容）",
+            title = "AI 聊天（AiChatIntegrate + OpenAI 兼容）",
             description = "类 ChatGPT 最小流式聊天示例，支持本地 Ollama 或云端兼容端点。",
             navRouter = AiChatRouter,
         ),

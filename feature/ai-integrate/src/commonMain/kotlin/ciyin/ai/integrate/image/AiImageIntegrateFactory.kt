@@ -5,10 +5,10 @@ import ciyin.ai.image.sdwebui.SdWebUiImageEngine
 import ciyin.ai.image.sdwebui.SdWebUiImageEngineConfig
 
 /**
- * 面向调用方的默认装配入口：内置本机 SD WebUI 基线、[IntegrateEnginePreferences] 路由偏好，
+ * 面向调用方的默认装配入口：内置本机 SD WebUI 基线、[IntegrateEnginePreferences] 默认偏好，
  * 以及生产环境使用的 [defaultSdWebUiImageEngine]。
  *
- * 需要自定义默认引擎表、偏好实现或装配逻辑时，请改用 [AiImageIntegrate] 的 internal 构造（测试或应用 DI 中按需暴露）。
+ * 需要自定义默认引擎表、偏好或装配逻辑时，请改用 [AiImageIntegrate] 的 internal 构造（测试或应用 DI 中按需暴露）。
  */
 fun AiImageIntegrate(): AiImageIntegrate = AiImageIntegrate(
     defaultEngineConfigs = IntegrateImageDefaults.sdWebUiLocalhost(),

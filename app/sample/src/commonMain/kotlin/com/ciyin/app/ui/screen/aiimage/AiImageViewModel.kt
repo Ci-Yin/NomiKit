@@ -159,7 +159,7 @@ internal class AiImageViewModel(
     }
 
     /**
-     * 在后台收集 [ciyin.ai.integrat.image.AiImageIntegrat] 的 `generate` 事件流，并回灌为 [AiImageAction]。
+     * 在后台收集 [ciyin.ai.integrate.image.AiImageIntegrate] 的 `generate` 事件流，并回灌为 [AiImageAction]。
      */
     private fun launchDemoImageGeneration(prompt: String) {
         backgroundScope.launch(Dispatchers.IO) {
