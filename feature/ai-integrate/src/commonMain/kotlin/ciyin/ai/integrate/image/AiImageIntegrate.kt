@@ -3,6 +3,7 @@ package ciyin.ai.integrate.image
 import ciyin.ai.core.capability.ImageCapability
 import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.engine.ImageEngine
+import ciyin.ai.core.error.UnsupportedCapabilityException
 import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImageModelInfo
 import ciyin.ai.core.image.ImagePostProcessor
@@ -21,7 +22,56 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.reflect.KClass
 
 /**
- * 生图聚合入口：在 [engines] 注册的后端之上完成路由、默认模型合并、重试与降级调度。
+ * 生图聚合入口契约：在 [engines] 注册的后端之上完成路由、默认模型合并、重试与降级调度。
+ */
+interface AiImageIntegrate {
+
+    /**
+     * 按业务侧最新意图重建引擎实例。
+     *
+     * @param configs 覆盖项；未出现的 sealed 子类仍沿用实现构造时传入的内置基线。
+     */
+    suspend fun engines(configs: List<ImageEngineConfig>)
+
+    /**
+     * 生成图像。
+     *
+     * @param request 通用生图请求。
+     * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时与实现默认偏好解析路径一致。
+     * @return 符合 [ImageEvent] 契约的事件流。
+     */
+    fun generate(
+        request: ImageRequest,
+        spec: ImageEngineSpec = ImageEngineSpec.Default,
+    ): Flow<ImageEvent>
+
+    /**
+     * 列出当前已注册引擎的可用模型。
+     *
+     * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时由实现决定默认枚举范围。
+     * @return 供 UI 展示与选择的 [ImageModelInfo] 列表。
+     */
+    suspend fun models(spec: ImageEngineSpec = ImageEngineSpec.Default): List<ImageModelInfo>
+
+    /**
+     * 按具体引擎类型获取当前已注册的第一个匹配实例。
+     *
+     * @param type 目标 [ImageEngine] 实现类型。
+     * @throws UnsupportedCapabilityException 当前运行时没有匹配类型的引擎。
+     */
+    suspend fun engine(type: KClass<out ImageEngine>): ImageEngine
+}
+
+/**
+ * 按泛型类型获取当前已注册的具体生图引擎。
+ *
+ * @throws UnsupportedCapabilityException 当前运行时没有匹配类型的引擎。
+ */
+suspend inline fun <reified T : ImageEngine> AiImageIntegrate.engine(): T =
+    engine(T::class) as? T ?: throw UnsupportedCapabilityException(emptySet())
+
+/**
+ * 默认生图聚合实现：在 [engines] 注册的后端之上完成路由、默认模型合并、重试与降级调度。
  *
  * 对外请优先使用同包中的无参工厂函数（定义见 `AiImageIntegrateFactory.kt`），以注入默认 SD WebUI 与本模块默认偏好；
  * [internal] 构造便于单测替换 [buildImageEngine] / [preferences]。
@@ -32,12 +82,12 @@ import kotlin.reflect.KClass
  * @param buildImageEngine 将 [ImageEngineConfig] 装配为 [ImageEngine]；生产环境为 SD WebUI 适配，单测可替换为 Stub。
  * @param listeners 生图调用观测监听器；当前默认工厂不注入监听器。
  */
-class AiImageIntegrate internal constructor(
+internal class DefaultAiImageIntegrate(
     private val defaultEngineConfigs: List<ImageEngineConfig>,
     private val preferences: IntegrateEnginePreferences,
     private val buildImageEngine: (ImageEngineConfig) -> ImageEngine,
     private val listeners: List<AiInvocationListener> = emptyList(),
-) {
+) : AiImageIntegrate {
 
     /** 保护 [runtime] 的读写及与 [generate]/[models] 收集路径的并发安全。 */
     private val mutex = Mutex()
@@ -53,7 +103,7 @@ class AiImageIntegrate internal constructor(
      *
      * @param configs 覆盖项；未出现的 sealed 子类仍沿用构造时传入的内置基线。传 [emptyList] 表示仅保留内置基线（若 [defaultEngineConfigs] 非空）。
      */
-    suspend fun engines(configs: List<ImageEngineConfig>) = mutex.withLock {
+    override suspend fun engines(configs: List<ImageEngineConfig>) = mutex.withLock {
         val unique = mergeEngineConfigsWithDefaults(
             defaults = defaultEngineConfigs,
             overrides = configs,
@@ -70,9 +120,9 @@ class AiImageIntegrate internal constructor(
      * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时与 [preferences] 解析路径一致。
      * @return 符合 [ImageEvent] 契约的事件流。
      */
-    fun generate(
+    override fun generate(
         request: ImageRequest,
-        spec: ImageEngineSpec = ImageEngineSpec.Default,
+        spec: ImageEngineSpec,
     ): Flow<ImageEvent> = flow {
         val snap = mutex.withLock { runtime }
         val resolvedSpec = resolveRequestedSpec(spec)
@@ -120,7 +170,7 @@ class AiImageIntegrate internal constructor(
      * @param spec 引擎路由描述；[ImageEngineSpec.Default] 时与 [generate] 使用同一套默认偏好解析。
      * @return 供 UI 展示与选择的 [ImageModelInfo] 列表。
      */
-    suspend fun models(spec: ImageEngineSpec = ImageEngineSpec.Default): List<ImageModelInfo> {
+    override suspend fun models(spec: ImageEngineSpec): List<ImageModelInfo> {
         val snap = mutex.withLock { runtime }
         if (snap.selector.all().isEmpty()) return emptyList()
         val resolved = resolveRequestedSpec(spec)
@@ -134,6 +184,18 @@ class AiImageIntegrate internal constructor(
             }
         }
         return deduped.values.toList()
+    }
+
+    /**
+     * 按具体引擎类型从当前运行时快照中获取第一个匹配实例。
+     *
+     * @param type 目标 [ImageEngine] 实现类型。
+     * @throws UnsupportedCapabilityException 当前运行时没有匹配类型的引擎。
+     */
+    override suspend fun engine(type: KClass<out ImageEngine>): ImageEngine {
+        val snap = mutex.withLock { runtime }
+        return snap.selector.all().firstOrNull { engine -> type.isInstance(engine) }
+            ?: throw UnsupportedCapabilityException(emptySet())
     }
 
     /**

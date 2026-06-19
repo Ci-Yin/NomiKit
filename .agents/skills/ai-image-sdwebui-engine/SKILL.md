@@ -36,8 +36,9 @@ feature/ai-image-sdwebui-engine/
 │                                          # implementation(project(":feature:sdwebui"))
 └── src/
     ├── commonMain/kotlin/ciyin/ai/image/sdwebui/
-    │   ├── SdWebUiImageEngine.kt          # ImageEngine 实现（薄适配 + 主流程）
+    │   ├── SdWebUiImageEngine.kt          # ImageEngine 实现（薄适配 + 主流程 + LoRA 查询）
     │   ├── SdWebUiImageEngineConfig.kt    # 便利构造配置（host / port / useHttps）
+    │   ├── SdWebUiLoraInfo.kt             # 引擎层 LoRA 条目模型
     │   └── mapper/
     │       ├── ImageRequestToSdWebUiMapper.kt   # 主映射器：txt2img / img2img / inpainting + alwaysonScripts 透传
     │       ├── ControlMapper.kt                 # ImageControl → ControlNet alwayson script
@@ -86,8 +87,8 @@ val engine = SdWebUiImageEngine(EngineId("sdwebui:custom"), sdWebUi)
 val registry = DefaultImageEngineRegistry(listOf(engine /* , otherImageEngine */))
 ```
 
-业务侧**不直接**持有 `SdWebUiImageEngine`：通常通过 `feature/ai-integrate` 的 `AiImageIntegrate`
-由 `ImageEngineConfig.SdWebUi` 统一装配。
+业务侧通常通过 `feature/ai-integrate` 的 `AiImageIntegrate` 由 `ImageEngineConfig.SdWebUi` 统一装配；
+需要 SD WebUI 专属能力时，可用 `AiImageIntegrate.engine<SdWebUiImageEngine>()` 获取具体引擎。
 
 ### 步骤 3：能力声明
 
@@ -223,6 +224,13 @@ private fun engine(client: RecordingClient) = SdWebUiImageEngine(
     id = EngineId("sdwebui:test"),
     sdWebUi = SdWebUi.Builder().client(client).build(),
 )
+```
+
+SD WebUI 专属能力（如 LoRA 列表）通过具体引擎调用；LoRA 的 `metadata` 以紧凑 JSON 字符串保留，不在本层继续拆模型：
+
+```kotlin
+val sdEngine = aiImageIntegrate.engine<SdWebUiImageEngine>()
+val loras: List<SdWebUiLoraInfo> = sdEngine.loras()
 ```
 
 5. 验证命令：

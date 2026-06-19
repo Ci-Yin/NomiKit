@@ -17,7 +17,6 @@ import ciyin.ai.image.sdwebui.mapper.toAiEngineError
 import ciyin.platform.logger
 import ciyin.sdwebui.SdWebUi
 import ciyin.sdwebui.response.ProgressResponse
-import co.touchlab.kermit.Logger.Companion.e
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -158,6 +157,28 @@ class SdWebUiImageEngine(
         )
     }
 
+    /**
+     * 拉取 SD WebUI 当前可用的 LoRA 列表。
+     *
+     * 底层请求失败时直接抛出原始异常，调用方可在业务层按需要转译为场景错误。
+     */
+    suspend fun loras(): List<SdWebUiLoraInfo> {
+        logger.d { "拉取 SD WebUI LoRA 列表 engineId=${id.value}" }
+        return sdWebUi.stableDiffusion.getLoras()
+            .getOrThrow()
+            .map { lora ->
+                SdWebUiLoraInfo(
+                    name = lora.name,
+                    alias = lora.alias,
+                    path = lora.path,
+                    metadata = lora.metadata,
+                )
+            }
+            .also { loras ->
+                logger.d { "LoRA 列表成功 engineId=${id.value} 数量=${loras.size}" }
+            }
+    }
+
     override suspend fun validate(request: ImageRequest): Result<Unit> {
         logger.d { "校验生图请求 engineId=${id.value} ${request.toSdWebUiImageEngineLogSummary()}" }
         return runCatching {
@@ -191,54 +212,54 @@ class SdWebUiImageEngine(
         }
     }
 
+    /**
+     * 单行摘要：便于排查；不输出完整图像字节，提示词截断并压成一行。
+     */
+    private fun ImageRequest.toSdWebUiImageEngineLogSummary(): String {
+        val mode = when (val src = source) {
+            ImageSource.TextToImage -> "文生图"
+            is ImageSource.ImageToImage ->
+                "图生图 src=${src.sourceImage.size}B denoise=${src.denoisingStrength}"
+
+            is ImageSource.Inpainting ->
+                "局部重绘 src=${src.sourceImage.size}B mask=${src.mask.size}B denoise=${src.denoisingStrength}"
+        }
+        val promptOneLine = prompt.replace("\r\n", " ").replace('\n', ' ').replace('\r', ' ')
+        val promptTail =
+            if (promptOneLine.length > 120) promptOneLine.take(120) + "…" else promptOneLine
+        val vendorKeys = vendorOptions.keys.takeIf { it.isNotEmpty() }?.joinToString(",") ?: "无"
+        return "model=${model ?: "默认"} mode=$mode " +
+                "${size.width}×${size.height} batch=$batch " +
+                "steps=${steps ?: "默认"} cfg=${cfgScale ?: "默认"} seed=${seed ?: "随机"} " +
+                "controls=${controls.size} postProcessors=${postProcessors.size} " +
+                "vendorKeys=[$vendorKeys] " +
+                "negLen=${negativePrompt?.length ?: 0} prompt(${prompt.length})=$promptTail"
+    }
+
+    private fun formatProgressMessage(prog: ProgressResponse): String? {
+        val st = prog.state
+        val stepPart =
+            if (st.samplingSteps > 0) "采样 ${st.samplingStep}/${st.samplingSteps}" else null
+        val info = prog.textInfo?.takeIf { it.isNotBlank() }
+        return when {
+            stepPart != null && info != null -> "$stepPart · $info"
+            stepPart != null -> stepPart
+            else -> info
+        }
+    }
+
+    /**
+     * SD WebUI 实时预览多为 JPEG，成品图多为 PNG；按魔数区分 MIME，便于上层解码。
+     */
+    private fun mimeTypeForDecodedPreview(bytes: ByteArray): String =
+        if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte()) {
+            "image/jpeg"
+        } else {
+            "image/png"
+        }
+
     private companion object {
         /** 与 WebUI 轮询 `sdapi/v1/progress` 相近的间隔（毫秒）。 */
         private const val ProgressPollIntervalMs = 1000L
     }
 }
-
-/**
- * 单行摘要：便于排查；不输出完整图像字节，提示词截断并压成一行。
- */
-private fun ImageRequest.toSdWebUiImageEngineLogSummary(): String {
-    val mode = when (val src = source) {
-        ImageSource.TextToImage -> "文生图"
-        is ImageSource.ImageToImage ->
-            "图生图 src=${src.sourceImage.size}B denoise=${src.denoisingStrength}"
-
-        is ImageSource.Inpainting ->
-            "局部重绘 src=${src.sourceImage.size}B mask=${src.mask.size}B denoise=${src.denoisingStrength}"
-    }
-    val promptOneLine = prompt.replace("\r\n", " ").replace('\n', ' ').replace('\r', ' ')
-    val promptTail =
-        if (promptOneLine.length > 120) promptOneLine.take(120) + "…" else promptOneLine
-    val vendorKeys = vendorOptions.keys.takeIf { it.isNotEmpty() }?.joinToString(",") ?: "无"
-    return "model=${model ?: "默认"} mode=$mode " +
-            "${size.width}×${size.height} batch=$batch " +
-            "steps=${steps ?: "默认"} cfg=${cfgScale ?: "默认"} seed=${seed ?: "随机"} " +
-            "controls=${controls.size} postProcessors=${postProcessors.size} " +
-            "vendorKeys=[$vendorKeys] " +
-            "negLen=${negativePrompt?.length ?: 0} prompt(${prompt.length})=$promptTail"
-}
-
-private fun formatProgressMessage(prog: ProgressResponse): String? {
-    val st = prog.state
-    val stepPart =
-        if (st.samplingSteps > 0) "采样 ${st.samplingStep}/${st.samplingSteps}" else null
-    val info = prog.textInfo?.takeIf { it.isNotBlank() }
-    return when {
-        stepPart != null && info != null -> "$stepPart · $info"
-        stepPart != null -> stepPart
-        else -> info
-    }
-}
-
-/**
- * SD WebUI 实时预览多为 JPEG，成品图多为 PNG；按魔数区分 MIME，便于上层解码。
- */
-private fun mimeTypeForDecodedPreview(bytes: ByteArray): String =
-    if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte()) {
-        "image/jpeg"
-    } else {
-        "image/png"
-    }

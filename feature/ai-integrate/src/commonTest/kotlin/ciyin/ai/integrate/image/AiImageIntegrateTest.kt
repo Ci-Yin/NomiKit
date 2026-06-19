@@ -145,6 +145,43 @@ class AiImageIntegrateTest {
         )
     }
 
+    /** 验证可通过泛型类型获取当前已注册的具体生图引擎实例。 */
+    @Test
+    fun engine_returns_first_registered_engine_by_type() = runTest {
+        val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
+        val integrate = testAiImageIntegrate(
+            buildImageEngine = { stub },
+        )
+        integrate.engines(
+            listOf(
+                ImageEngineConfig.SdWebUi(
+                    baseUrl = "http://127.0.0.1:7860",
+                    apiKey = "",
+                    defaultModel = null,
+                ),
+            ),
+        )
+
+        val engine = integrate.engine<RecordingStubImageEngine>()
+
+        assertEquals(stub, engine)
+    }
+
+    /** 验证没有匹配泛型类型的生图引擎时会抛出不支持能力异常。 */
+    @Test
+    fun engine_without_matching_type_throws_unsupported_capability() = runTest {
+        val integrate = testAiImageIntegrate(
+            defaultEngineConfigs = emptyList(),
+            buildImageEngine = { unusedStubEngine() },
+        )
+
+        val ex = assertFailsWith<UnsupportedCapabilityException> {
+            integrate.engine<RecordingStubImageEngine>()
+        }
+
+        assertTrue(ex.message.orEmpty().isNotEmpty())
+    }
+
     @Test
     fun generate_collects_engine_stream_without_network() = runTest {
         val stub = recordingStubEngine(IntegrateImageEngineIds.sdWebUi)
@@ -213,7 +250,7 @@ private fun testAiImageIntegrate(
     defaultEngineConfigs: List<ImageEngineConfig> = IntegrateImageDefaults.sdWebUiLocalhost(),
     preferences: IntegrateEnginePreferences = IntegrateEnginePreferences(),
     buildImageEngine: (ImageEngineConfig) -> ImageEngine,
-): AiImageIntegrate = AiImageIntegrate(
+): AiImageIntegrate = DefaultAiImageIntegrate(
     defaultEngineConfigs = defaultEngineConfigs,
     preferences = preferences,
     buildImageEngine = buildImageEngine,

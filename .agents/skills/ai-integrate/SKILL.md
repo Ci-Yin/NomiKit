@@ -67,8 +67,8 @@ feature/ai-integrate/
 
 `implementation(projects.feature.aiChatOpenaiEngine)`：对内装配 OpenAI 兼容聊天引擎。
 
-`implementation(projects.feature.aiImageSdwebuiEngine)`：对内装配默认 SD WebUI 引擎，**不**要求业务模块再依赖具体
-engine——业务只需依赖 `ai-integrate`（若仅走聚合入口）。
+`api(projects.feature.aiImageSdwebuiEngine)`：对内装配默认 SD WebUI 引擎，同时让业务只依赖
+`ai-integrate` 即可通过 `AiImageIntegrate.engine<SdWebUiImageEngine>()` 使用厂商专属能力。
 
 在 `build.gradle.kts` 中引用模块时仅使用 `projects.feature.aiIntegrate`（或各子项目约定名），禁止
 `project(":...")` 字符串形式。
@@ -89,12 +89,14 @@ engine——业务只需依赖 `ai-integrate`（若仅走聚合入口）。
 
 ### 生图入口
 
-调用方优先使用 `ciyin.ai.integrate.image.AiImageIntegrate()`：
+调用方优先使用 `ciyin.ai.integrate.image.AiImageIntegrate()` 工厂获取 `AiImageIntegrate` 接口；模块内默认实现为
+`DefaultAiImageIntegrate`：
 
 - 内置 `IntegrateImageDefaults.sdWebUiLocalhost()` 作为本机 SD WebUI 基线。
 - `suspend fun engines(configs: List<ImageEngineConfig>)`：按 `ImageEngineConfig` sealed 子类类型合并默认配置与覆盖配置。
 - `fun generate(request, spec)`：解析 `ImageEngineSpec`，`Explicit.model` 优先；没有显式模型时请求模型优先，再补齐配置默认模型，并通过 `collectWithFallback` 执行重试 / 降级。
 - `suspend fun models(spec)`：按 spec 限定引擎后拉取模型，并按模型名小写去重。
+- `suspend fun <T : ImageEngine> engine()`：按具体引擎类型获取当前已注册的第一个匹配实例；没有匹配时抛出不支持能力异常。
 
 ### 配置与 EngineId
 

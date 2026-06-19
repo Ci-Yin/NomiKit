@@ -16,6 +16,7 @@ import ciyin.sdwebui.response.ExtraSingleImageResponse
 import ciyin.sdwebui.response.FaceRestorerResponse
 import ciyin.sdwebui.response.GenerateProcessResponse
 import ciyin.sdwebui.response.LatentUpscaleModeResponse
+import ciyin.sdwebui.response.LoraResponse
 import ciyin.sdwebui.response.MemoryResponse
 import ciyin.sdwebui.response.ModelResponse
 import ciyin.sdwebui.response.ProgressResponse
@@ -98,7 +99,8 @@ class StableDiffusionServiceImpl(
         return client.get(json, baseUrl, "sdapi/v1/sd-vae")
     }
 
-    override suspend fun getLoras(): Result<String> {
+    /** 查询 LoRA 列表，并把 metadata 对象保留为响应模型中的 JSON 字符串。 */
+    override suspend fun getLoras(): Result<List<LoraResponse>> {
         return client.get(json, baseUrl, "sdapi/v1/loras")
     }
 

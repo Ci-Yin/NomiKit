@@ -11,6 +11,7 @@ import ciyin.sdwebui.response.ExtraSingleImageResponse
 import ciyin.sdwebui.response.FaceRestorerResponse
 import ciyin.sdwebui.response.GenerateProcessResponse
 import ciyin.sdwebui.response.LatentUpscaleModeResponse
+import ciyin.sdwebui.response.LoraResponse
 import ciyin.sdwebui.response.MemoryResponse
 import ciyin.sdwebui.response.ModelResponse
 import ciyin.sdwebui.response.ProgressResponse
@@ -50,7 +51,7 @@ interface StableDiffusionService {
     suspend fun getVae(): Result<List<VaeResponse>>
 
     /** 查询 LoRA：`sdapi/v1/loras`。 */
-    suspend fun getLoras(): Result<String>
+    suspend fun getLoras(): Result<List<LoraResponse>>
 
     /** 查询全局选项 JSON：`sdapi/v1/options`。 */
     suspend fun getOptions(): Result<String>

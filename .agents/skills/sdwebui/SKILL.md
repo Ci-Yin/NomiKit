@@ -55,7 +55,7 @@ val sdWebUi = SdWebUi.Builder()
     .build()
 ```
 
-2. 直接调 Service（细粒度）：`sdWebUi.core` / `sdWebUi.stableDiffusion` / `sdWebUi.controlNet` / `sdWebUi.reActor`，所有方法都是 `suspend fun ...: Result<T>`。
+2. 直接调 Service（细粒度）：`sdWebUi.core` / `sdWebUi.stableDiffusion` / `sdWebUi.controlNet` / `sdWebUi.reActor`，所有方法都是 `suspend fun ...: Result<T>`；例如 `stableDiffusion.getLoras()` 返回 `Result<List<LoraResponse>>`，其中 `metadata` 保留为紧凑 JSON 字符串。
 
 3. 推荐用 `Process` 高级 DSL（来自 `ciyin.sdwebui.process.Process.Companion`）：
 

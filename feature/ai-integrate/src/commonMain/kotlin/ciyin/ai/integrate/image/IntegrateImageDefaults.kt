@@ -1,7 +1,7 @@
 package ciyin.ai.integrate.image
 
 /**
- * 聚合模块内置的引擎配置基线；可在构造 [AiImageIntegrate] 时替换整表，
+ * 聚合模块内置的引擎配置基线；可在模块内构造 [DefaultAiImageIntegrate] 时替换整表，
  * 或在 [AiImageIntegrate.engines] 中按 [ImageEngineConfig] 子类类型覆盖。
  */
 internal object IntegrateImageDefaults {

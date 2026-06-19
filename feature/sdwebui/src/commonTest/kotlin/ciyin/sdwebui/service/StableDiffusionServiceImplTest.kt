@@ -5,6 +5,8 @@ import ciyin.sdwebui.payload.Text2ImagePayload
 import ciyin.sdwebui.support.RecordingClient
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -84,6 +86,35 @@ class StableDiffusionServiceImplTest {
         assertEquals("v1-5-pruned", models.single().name)
     }
 
+    /** 验证 LoRA 查询会访问 `sdapi/v1/loras` 并把 metadata 保留为 JSON 字符串。 */
+    @Test
+    fun get_loras_should_issue_get_to_loras_endpoint() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(loraResponseJson())
+        }
+        val service = newService(client)
+
+        val result = service.getLoras()
+
+        val request = client.requests.single()
+        assertEquals("sdapi/v1/loras", request.path)
+        assertEquals(Client.Method.GET, request.method)
+        assertNull(request.body)
+
+        val lora = assertNotNull(result.getOrNull()).single()
+        assertEquals("anima_kazutake_epoch70", lora.name)
+        assertEquals("anima_kazutake_epoch70", lora.alias)
+        assertEquals(
+            "F:\\LiblibAI-workspace\\Models\\loras\\anima_kazutake_epoch70.safetensors",
+            lora.path
+        )
+
+        val metadata = Json.parseToJsonElement(lora.metadata).jsonObject
+        assertEquals("64", metadata.getValue("ss_network_alpha").jsonPrimitive.content)
+        val args = metadata.getValue("ss_network_args").jsonObject
+        assertEquals("4", args.getValue("factor").jsonPrimitive.content)
+    }
+
     @Test
     fun set_model_should_post_options_endpoint_with_checkpoint_map() = runTest {
         val client = RecordingClient().apply {
@@ -97,7 +128,8 @@ class StableDiffusionServiceImplTest {
         assertEquals("sdapi/v1/options", request.path)
         assertEquals(Client.Method.POST, request.method)
 
-        val body = assertIs<Map<*, *>>(request.body, "setModel 应以 Map 形式传递 sd_model_checkpoint")
+        val body =
+            assertIs<Map<*, *>>(request.body, "setModel 应以 Map 形式传递 sd_model_checkpoint")
         assertEquals("v1-5-pruned", body["sd_model_checkpoint"])
 
         assertTrue(result.isSuccess)
@@ -136,6 +168,27 @@ class StableDiffusionServiceImplTest {
         )
     }
 
+    /** 构造 LoRA 列表接口的代表性响应。 */
+    private fun loraResponseJson(): String = """
+        [
+            {
+                "name": "anima_kazutake_epoch70",
+                "alias": "anima_kazutake_epoch70",
+                "path": "F:\\LiblibAI-workspace\\Models\\loras\\anima_kazutake_epoch70.safetensors",
+                "metadata": {
+                    "ss_network_alpha": "64",
+                    "ss_network_module": "lycoris.kohya",
+                    "ss_network_args": {
+                        "algo": "lokr",
+                        "factor": 4
+                    },
+                    "ss_network_dim": "64"
+                }
+            }
+        ]
+    """.trimIndent()
+
+    /** 构造代表性的文生图请求体，供 Service 请求契约测试复用。 */
     private fun samplePayload(prompt: String): Text2ImagePayload = Text2ImagePayload(
         prompt = prompt,
         negativePrompt = "",
@@ -168,7 +221,7 @@ class StableDiffusionServiceImplTest {
         enableHr = false,
         firstphaseWidth = 0,
         firstphaseHeight = 0,
-        hrScale = 1,
+        hrScale = 1f,
         hrUpscaler = "",
         hrSecondPassSteps = 0,
         hrResizeX = 0,

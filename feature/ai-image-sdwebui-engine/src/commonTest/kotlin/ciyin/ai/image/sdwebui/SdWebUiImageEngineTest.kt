@@ -17,10 +17,13 @@ import ciyin.sdwebui.payload.script.ScriptPayload
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -247,6 +250,47 @@ class SdWebUiImageEngineTest {
     }
 
     /**
+     * LoRA 列表应直接映射为 SD WebUI 引擎专属模型。
+     */
+    @Test
+    fun `loras 应返回 LoRA 列表`() = runBlocking {
+        val client = RecordingClient().apply {
+            enqueueSuccess(loraResponseJson())
+        }
+        val engine = engine(client)
+
+        val loras = engine.loras()
+
+        assertEquals("sdapi/v1/loras", client.lastRequest.path)
+        val lora = loras.single()
+        assertEquals("anima_kazutake_epoch70", lora.name)
+        assertEquals("anima_kazutake_epoch70", lora.alias)
+        assertEquals(
+            "F:\\LiblibAI-workspace\\Models\\loras\\anima_kazutake_epoch70.safetensors",
+            lora.path
+        )
+        val metadata = Json.parseToJsonElement(lora.metadata).jsonObject
+        assertEquals("64", metadata.getValue("ss_network_dim").jsonPrimitive.content)
+        val args = metadata.getValue("ss_network_args").jsonObject
+        assertEquals("4", args.getValue("factor").jsonPrimitive.content)
+    }
+
+    /**
+     * LoRA 请求失败时应把底层异常抛给调用方。
+     */
+    @Test
+    fun `loras 失败时应抛出异常`() = runBlocking {
+        val client = RecordingClient().apply {
+            enqueueFailure("boom")
+        }
+        val engine = engine(client)
+
+        assertFailsWith<Client.Error> {
+            engine.loras()
+        }
+    }
+
+    /**
      * 不支持的 control 应在 validate 阶段被提前拒绝。
      */
     @Test
@@ -277,6 +321,26 @@ class SdWebUiImageEngineTest {
             .build(),
     )
 }
+
+/** 构造 LoRA 列表接口的代表性响应。 */
+private fun loraResponseJson(): String = """
+    [
+      {
+        "name": "anima_kazutake_epoch70",
+        "alias": "anima_kazutake_epoch70",
+        "path": "F:\\LiblibAI-workspace\\Models\\loras\\anima_kazutake_epoch70.safetensors",
+        "metadata": {
+          "ss_network_alpha": "64",
+          "ss_network_module": "lycoris.kohya",
+          "ss_network_args": {
+            "algo": "lokr",
+            "factor": 4
+          },
+          "ss_network_dim": "64"
+        }
+      }
+    ]
+""".trimIndent()
 
 @OptIn(ExperimentalEncodingApi::class)
 private fun png(text: String): String = Base64.Default.encode(text.encodeToByteArray())
