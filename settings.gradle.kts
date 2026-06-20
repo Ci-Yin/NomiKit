@@ -56,6 +56,7 @@ include(":core:system")
 include(":core:testing")
 include(":core:ui-preview")
 include(":core:ui-foundation")
+include(":core:material")
 
 include(":feature")
 include(":feature:kotlin-script")

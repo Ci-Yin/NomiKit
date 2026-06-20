@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme
+package ciyin.material.theme
 
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,16 +7,37 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
-// 定义不同圆角大小
-private val Shape2 = RoundedCornerShape(2.dp)
-private val Shape4 = RoundedCornerShape(4.dp)
-private val Shape8 = RoundedCornerShape(8.dp)
-private val Shape12 = RoundedCornerShape(12.dp)
-private val Shape16 = RoundedCornerShape(16.dp)
-private val Shape20 = RoundedCornerShape(20.dp)
-private val Shape24 = RoundedCornerShape(24.dp)
-private val Shape32 = RoundedCornerShape(32.dp)
-private val Shape48 = RoundedCornerShape(48.dp)
+/**
+ * 默认圆角令牌。
+ */
+private object DefaultShapeTokens {
+    /** 2dp 圆角。 */
+    val shape2: RoundedCornerShape = RoundedCornerShape(2.dp)
+
+    /** 4dp 圆角。 */
+    val shape4: RoundedCornerShape = RoundedCornerShape(4.dp)
+
+    /** 8dp 圆角。 */
+    val shape8: RoundedCornerShape = RoundedCornerShape(8.dp)
+
+    /** 12dp 圆角。 */
+    val shape12: RoundedCornerShape = RoundedCornerShape(12.dp)
+
+    /** 16dp 圆角。 */
+    val shape16: RoundedCornerShape = RoundedCornerShape(16.dp)
+
+    /** 20dp 圆角。 */
+    val shape20: RoundedCornerShape = RoundedCornerShape(20.dp)
+
+    /** 24dp 圆角。 */
+    val shape24: RoundedCornerShape = RoundedCornerShape(24.dp)
+
+    /** 32dp 圆角。 */
+    val shape32: RoundedCornerShape = RoundedCornerShape(32.dp)
+
+    /** 48dp 圆角。 */
+    val shape48: RoundedCornerShape = RoundedCornerShape(48.dp)
+}
 
 /**
  * 定义应用全局统一使用的圆角形状（Shapes Scale）。
@@ -78,15 +99,15 @@ private val Shape48 = RoundedCornerShape(48.dp)
 @Immutable
 @ConsistentCopyVisibility
 data class AppShapes internal constructor(
-    val tiny: RoundedCornerShape = Shape2,
-    val extraSmall: RoundedCornerShape = Shape4,
-    val small: RoundedCornerShape = Shape8,
-    val medium: RoundedCornerShape = Shape12,
-    val large: RoundedCornerShape = Shape16,
-    val extraLarge: RoundedCornerShape = Shape20,
-    val huge: RoundedCornerShape = Shape24,
-    val massive: RoundedCornerShape = Shape32,
-    val colossal: RoundedCornerShape = Shape48,
+    val tiny: RoundedCornerShape = DefaultShapeTokens.shape2,
+    val extraSmall: RoundedCornerShape = DefaultShapeTokens.shape4,
+    val small: RoundedCornerShape = DefaultShapeTokens.shape8,
+    val medium: RoundedCornerShape = DefaultShapeTokens.shape12,
+    val large: RoundedCornerShape = DefaultShapeTokens.shape16,
+    val extraLarge: RoundedCornerShape = DefaultShapeTokens.shape20,
+    val huge: RoundedCornerShape = DefaultShapeTokens.shape24,
+    val massive: RoundedCornerShape = DefaultShapeTokens.shape32,
+    val colossal: RoundedCornerShape = DefaultShapeTokens.shape48,
 )
 
 /**

@@ -1,20 +1,41 @@
-package com.ciyin.app.ui.theme
+package ciyin.material.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// ========== Spacing 默认取值，基于 4dp 倍数体系（Material Design 规范） ==========
-private val Spacing2 = 2.dp      // 2dp 超小间距，用于极紧凑元素间隔
-private val Spacing4 = 4.dp      // 4dp 极小间距，用于紧凑元素间隔
-private val Spacing8 = 8.dp      // 8dp 小间距，用于一般控件内边距（常用）
-private val Spacing12 = 12.dp    // 12dp 中等间距，用于列表项、卡片内容间隔
-private val Spacing16 = 16.dp    // 16dp 中大间距，常用的基础间距（常用）
-private val Spacing20 = 20.dp    // 20dp 大间距，用于区块之间的分隔
-private val Spacing24 = 24.dp    // 24dp 特大间距，用于页面主要分区（常用）
-private val Spacing32 = 32.dp    // 32dp 超大间距，用于页面级别的留白
-private val Spacing48 = 48.dp    // 48dp 特大间距，用于全屏段落或横向间隔
+/**
+ * 默认间距令牌。
+ */
+private object DefaultSpacingTokens {
+    /** 2dp 超小间距，用于极紧凑元素间隔。 */
+    val spacing2: Dp = 2.dp
+
+    /** 4dp 极小间距，用于紧凑元素间隔。 */
+    val spacing4: Dp = 4.dp
+
+    /** 8dp 小间距，用于一般控件内边距。 */
+    val spacing8: Dp = 8.dp
+
+    /** 12dp 中等间距，用于列表项、卡片内容间隔。 */
+    val spacing12: Dp = 12.dp
+
+    /** 16dp 中大间距，常用的基础间距。 */
+    val spacing16: Dp = 16.dp
+
+    /** 20dp 大间距，用于区块之间的分隔。 */
+    val spacing20: Dp = 20.dp
+
+    /** 24dp 特大间距，用于页面主要分区。 */
+    val spacing24: Dp = 24.dp
+
+    /** 32dp 超大间距，用于页面级别的留白。 */
+    val spacing32: Dp = 32.dp
+
+    /** 48dp 极大间距，用于全屏段落或横向间隔。 */
+    val spacing48: Dp = 48.dp
+}
 
 /**
  * 定义应用全局统一使用的间距体系（Spacing Scale）。
@@ -64,17 +85,16 @@ private val Spacing48 = 48.dp    // 48dp 特大间距，用于全屏段落或横
 @Immutable
 @ConsistentCopyVisibility
 data class Spacings internal constructor(
-    val tiny: Dp = Spacing2,
-    val extraSmall: Dp = Spacing4,
-    val small: Dp = Spacing8,
-    val medium: Dp = Spacing12,
-    val large: Dp = Spacing16,
-    val extraLarge: Dp = Spacing20,
-    val huge: Dp = Spacing24,
-    val massive: Dp = Spacing32,
-    val colossal: Dp = Spacing48,
+    val tiny: Dp = DefaultSpacingTokens.spacing2,
+    val extraSmall: Dp = DefaultSpacingTokens.spacing4,
+    val small: Dp = DefaultSpacingTokens.spacing8,
+    val medium: Dp = DefaultSpacingTokens.spacing12,
+    val large: Dp = DefaultSpacingTokens.spacing16,
+    val extraLarge: Dp = DefaultSpacingTokens.spacing20,
+    val huge: Dp = DefaultSpacingTokens.spacing24,
+    val massive: Dp = DefaultSpacingTokens.spacing32,
+    val colossal: Dp = DefaultSpacingTokens.spacing48,
 )
 
 /** CompositionLocal：用于在树中提供/覆盖 Spacings。 */
 internal val LocalSpacings = staticCompositionLocalOf { Spacings() }
-

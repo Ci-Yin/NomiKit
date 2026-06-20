@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme.iconpack
+package ciyin.material.theme.iconpack
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -6,6 +6,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
+/**
+ * 向右箭头图标。
+ */
 val IconPack.ArrowRight: ImageVector
     get() {
         if (_ArrowRight != null) {
@@ -50,5 +53,6 @@ val IconPack.ArrowRight: ImageVector
         return _ArrowRight!!
     }
 
+/** 缓存已构建的向右箭头图标。 */
 @Suppress("ObjectPropertyName")
 private var _ArrowRight: ImageVector? = null

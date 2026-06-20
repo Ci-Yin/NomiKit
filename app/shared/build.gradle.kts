@@ -34,6 +34,7 @@ kotlin {
         api(projects.core.system)
         api(projects.core.uiPreview)
         api(projects.core.uiFoundation)
+        api(projects.core.material)
         api(projects.core.coroutines)
         api(projects.core.application)
         api(projects.core.serialization)

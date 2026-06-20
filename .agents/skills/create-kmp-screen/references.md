@@ -27,7 +27,7 @@
 | 顶层容器                                                        | `ScreenScaffold(title, topBar, content)`                                     | `com.ciyin.app.ui.component.ScreenScaffold`                      |
 | Preview 注解                                                  | `@AppPreview`                                                                | `org.jetbrains.compose.ui.tooling.preview.AppPreview`            |
 | Preview 容器                                                  | `AppPreview { ... }`                                                         | `com.ciyin.app.ui.component.AppPreview`                          |
-| 主题对象                                                        | `AppTheme.spacings / typography / colorScheme / sizes / shapes`              | `com.ciyin.app.ui.theme.AppTheme`                                |
+| 主题对象                                                        | `AppTheme.spacings / typography / colorScheme / sizes / shapes`              | `ciyin.material.theme.AppTheme`                                  |
 | Toast / Dialog（接口存在但实现尚未完成）                                 | `UiEffectHandler` 接口，仅 `toast(text)` / `toast(resource, vararg)`             | `com.ciyin.app.ui.util.UiEffectHandler`                          |
 | FlowRedux2 DSL（`mutate / override / noChange / poseEffect`） | `FlowReduxBuilder<S, A>`                                                     | `com.freeletics.flowredux2.FlowReduxBuilder`                     |
 | FlowRedux2 工厂（`initializeWith`）                             | `FlowReduxStateMachineFactory<S, A>`                                         | `com.freeletics.flowredux2.FlowReduxStateMachineFactory`         |

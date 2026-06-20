@@ -1,50 +1,64 @@
-package com.ciyin.app.ui.theme
+package ciyin.material.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// ========== 图标尺寸 ==========
-private val Icon14 = 14.dp
-private val Icon16 = 16.dp
-private val Icon18 = 18.dp
-private val Icon20 = 20.dp
-private val Icon24 = 24.dp
-private val Icon32 = 32.dp
-private val Icon40 = 40.dp
-private val Icon48 = 48.dp
-private val Icon56 = 56.dp
-private val Icon64 = 64.dp
+/**
+ * 默认尺寸令牌。
+ */
+private object DefaultSizeTokens {
+    /** 图标尺寸等级。 */
+    val icon: SizeScale = SizeScale(
+        tiny = 14.dp,
+        extraSmall = 16.dp,
+        small = 18.dp,
+        medium = 20.dp,
+        large = 24.dp,
+        extraLarge = 32.dp,
+        huge = 40.dp,
+        massive = 48.dp,
+        colossal = 56.dp,
+    )
 
-// ========== 头像尺寸 ==========
-private val Avatar18 = 18.dp
-private val Avatar24 = 24.dp
-private val Avatar32 = 32.dp
-private val Avatar40 = 40.dp
-private val Avatar48 = 48.dp
-private val Avatar56 = 56.dp
-private val Avatar64 = 64.dp
-private val Avatar72 = 72.dp
-private val Avatar96 = 96.dp
+    /** 头像尺寸等级。 */
+    val avatar: SizeScale = SizeScale(
+        tiny = 18.dp,
+        extraSmall = 24.dp,
+        small = 32.dp,
+        medium = 40.dp,
+        large = 48.dp,
+        extraLarge = 56.dp,
+        huge = 64.dp,
+        massive = 72.dp,
+        colossal = 96.dp,
+    )
 
-// ========== Strokes 默认值 ==========
-private val StrokeThin = 1.dp
-private val StrokeMedium = 2.dp
-private val StrokeThick = 3.dp
+    /** 线条宽度等级。 */
+    val strokes: Strokes = Strokes(
+        thin = 1.dp,
+        medium = 2.dp,
+        thick = 3.dp,
+    )
 
-// ========== ComponentHeights 默认值 ==========
-private val ComponentHeightAppBar = 56.dp
-private val ComponentHeightBottomBar = 56.dp
-private val ComponentHeightTab = 48.dp
-private val ComponentHeightChip = 32.dp
-private val ComponentHeightBadge = 16.dp
+    /** 常用组件高度。 */
+    val componentHeights: ComponentHeights = ComponentHeights(
+        appBar = 56.dp,
+        bottomBar = 56.dp,
+        tab = 48.dp,
+        chip = 32.dp,
+        badge = 16.dp,
+    )
 
-// ========== LayoutConstraints 默认值 ==========
-private val LayoutConstraintCardMinWidth = 280.dp
-private val LayoutConstraintDialogMinWidth = 280.dp
-private val LayoutConstraintDialogMaxWidth = 560.dp
-private val LayoutConstraintSheetMinWidth = 360.dp
+    /** 常用布局宽度约束。 */
+    val layoutConstraints: LayoutConstraints = LayoutConstraints(
+        cardMinWidth = 280.dp,
+        dialogMinWidth = 280.dp,
+        dialogMaxWidth = 560.dp,
+        sheetMinWidth = 360.dp,
+    )
+}
 
 /**
  * 定义应用全局使用的尺寸（Dp）。
@@ -61,50 +75,11 @@ private val LayoutConstraintSheetMinWidth = 360.dp
 @Immutable
 @ConsistentCopyVisibility
 data class AppSizes internal constructor(
-    val icon: SizeScale = SizeScale(
-        tiny = Icon14,
-        extraSmall = Icon16,
-        small = Icon18,
-        medium = Icon20,
-        large = Icon24,
-        extraLarge = Icon32,
-        huge = Icon40,
-        massive = Icon48,
-        colossal = Icon56,
-    ),
-
-    val avatar: SizeScale = SizeScale(
-        tiny = Avatar18,
-        extraSmall = Avatar24,
-        small = Avatar32,
-        medium = Avatar40,
-        large = Avatar48,
-        extraLarge = Avatar56,
-        huge = Avatar64,
-        massive = Avatar72,
-        colossal = Avatar96,
-    ),
-
-    val strokes: Strokes = Strokes(
-        thin = StrokeThin,       // 1dp
-        medium = StrokeMedium,   // 2dp
-        thick = StrokeThick,     // 3dp
-    ),
-
-    val componentHeights: ComponentHeights = ComponentHeights(
-        appBar = ComponentHeightAppBar,           // 56dp
-        bottomBar = ComponentHeightBottomBar,     // 56dp
-        tab = ComponentHeightTab,                 // 48dp
-        chip = ComponentHeightChip,               // 32dp
-        badge = ComponentHeightBadge,             // 16dp
-    ),
-
-    val layoutConstraints: LayoutConstraints = LayoutConstraints(
-        cardMinWidth = LayoutConstraintCardMinWidth,       // 280dp
-        dialogMinWidth = LayoutConstraintDialogMinWidth,   // 280dp
-        dialogMaxWidth = LayoutConstraintDialogMaxWidth,   // 560dp
-        sheetMinWidth = LayoutConstraintSheetMinWidth,     // 360dp
-    ),
+    val icon: SizeScale = DefaultSizeTokens.icon,
+    val avatar: SizeScale = DefaultSizeTokens.avatar,
+    val strokes: Strokes = DefaultSizeTokens.strokes,
+    val componentHeights: ComponentHeights = DefaultSizeTokens.componentHeights,
+    val layoutConstraints: LayoutConstraints = DefaultSizeTokens.layoutConstraints,
 )
 
 /**
@@ -152,9 +127,9 @@ data class SizeScale internal constructor(
 @Immutable
 @ConsistentCopyVisibility
 data class Strokes internal constructor(
-    val thin: Dp,       // 1dp
-    val medium: Dp,     // 2dp
-    val thick: Dp,      // 3dp
+    val thin: Dp,
+    val medium: Dp,
+    val thick: Dp,
 )
 
 /**

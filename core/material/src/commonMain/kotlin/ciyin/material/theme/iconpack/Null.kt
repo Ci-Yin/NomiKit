@@ -1,8 +1,11 @@
-package com.ciyin.app.ui.theme.iconpack
+package ciyin.material.theme.iconpack
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+/**
+ * 空图标占位。
+ */
 val IconPack.Null: ImageVector by lazy {
     ImageVector.Builder(
         name = "Null",

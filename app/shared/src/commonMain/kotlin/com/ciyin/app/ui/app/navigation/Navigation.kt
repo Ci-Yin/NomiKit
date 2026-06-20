@@ -29,12 +29,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
+import ciyin.material.theme.AppTheme
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationBar
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationDrawer
 import com.ciyin.app.ui.app.navigation.NavigationSuiteType.NavigationRail
 import com.ciyin.app.ui.component.WindowType
 import com.ciyin.app.ui.component.windowAdaptive
-import com.ciyin.app.ui.theme.AppTheme
 
 
 /**
@@ -60,6 +60,15 @@ val NavigationRailWidth = 60.dp
  */
 val BottomNavigationHeight = 50.dp
 
+/**
+ * 根据窗口类型显示底部导航或侧边导航的应用导航容器。
+ *
+ * @param selection 当前选中的导航项索引
+ * @param navList 导航项列表
+ * @param onNavigateItemClick 导航项点击回调
+ * @param modifier 容器修饰符
+ * @param content 被导航容器包裹的页面内容
+ */
 @Composable
 fun NavigationBar(
     selection: Int,
@@ -104,6 +113,13 @@ fun NavigationBar(
 
 }
 
+/**
+ * 按导航布局类型排列导航组件与页面内容。
+ *
+ * @param layoutType 当前导航布局类型
+ * @param navigationSuite 导航组件内容
+ * @param content 页面内容
+ */
 @Composable
 private fun NavigationSuiteScaffoldLayout(
     layoutType: NavigationSuiteType,
@@ -131,6 +147,15 @@ private fun NavigationSuiteScaffoldLayout(
 }
 
 
+/**
+ * 侧边导航栏。
+ *
+ * @param selection 当前选中的导航项索引
+ * @param navList 导航项列表
+ * @param onNavigateItemClick 导航项点击回调
+ * @param modifier 列表修饰符
+ * @param visible 是否显示导航栏
+ */
 @Composable
 private fun NavigationRail(
     selection: Int,
@@ -169,6 +194,15 @@ private fun NavigationRail(
     }
 }
 
+/**
+ * 底部导航栏。
+ *
+ * @param selection 当前选中的导航项索引
+ * @param navList 导航项列表
+ * @param onNavigateItemClick 导航项点击回调
+ * @param modifier 导航栏修饰符
+ * @param visible 是否显示导航栏
+ */
 @Composable
 private fun BottomNavigationBar(
     selection: Int,
@@ -199,6 +233,17 @@ private fun BottomNavigationBar(
     }
 }
 
+/**
+ * 底部导航栏中的单个导航项。
+ *
+ * @param icon 导航图标
+ * @param label 导航文案
+ * @param selected 是否处于选中状态
+ * @param onClick 点击回调
+ * @param modifier 导航项修饰符
+ * @param enabled 是否可点击
+ * @param colors 导航项颜色配置
+ */
 @Composable
 private fun NavigationBarItem(
     icon: Painter,
@@ -245,6 +290,16 @@ private fun NavigationBarItem(
     }
 }
 
+/**
+ * 侧边导航栏中的单个导航项。
+ *
+ * @param selected 是否处于选中状态
+ * @param icon 导航图标
+ * @param onClick 点击回调
+ * @param modifier 导航项修饰符
+ * @param enabled 是否可点击
+ * @param colors 导航项颜色配置
+ */
 @Composable
 private fun NavigationRailItem(
     selected: Boolean,

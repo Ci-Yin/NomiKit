@@ -1,6 +1,11 @@
 package com.ciyin.app.ui.app
 
 import androidx.lifecycle.SavedStateHandle
+import ciyin.material.theme.iconpack.Home
+import ciyin.material.theme.iconpack.IconPack
+import ciyin.material.theme.iconpack.LightMode
+import ciyin.material.theme.iconpack.Null
+import ciyin.material.theme.iconpack.Settings
 import ciyin.ui.foundation.viewmodel.AbsMviViewModel
 import ciyin.ui.foundation.viewmodel.SingleStateMachine
 import com.ciyin.app.shared.Res
@@ -14,11 +19,6 @@ import com.ciyin.app.ui.app.navigation.NavId.Null
 import com.ciyin.app.ui.app.navigation.NavId.Settings
 import com.ciyin.app.ui.app.navigation.NavId.Theme
 import com.ciyin.app.ui.app.navigation.NavUiItem
-import com.ciyin.app.ui.theme.iconpack.Home
-import com.ciyin.app.ui.theme.iconpack.IconPack
-import com.ciyin.app.ui.theme.iconpack.LightMode
-import com.ciyin.app.ui.theme.iconpack.Null
-import com.ciyin.app.ui.theme.iconpack.Settings
 import com.ciyin.app.util.value
 import org.koin.core.component.KoinComponent
 
@@ -33,6 +33,9 @@ import org.koin.core.component.KoinComponent
 class AppViewModel(savedStateHandle: SavedStateHandle) :
     AbsMviViewModel<AppUiState, AppAction, AppEffect>(savedStateHandle), KoinComponent {
 
+    /**
+     * 应用主导航项列表。
+     */
     private val navList = listOf(
         NavUiItem(Main, IconPack.Home, Res.string.nav_home.value, true),
         NavUiItem(Null, IconPack.Null, ""),

@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme.iconpack
+package ciyin.material.theme.iconpack
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -12,6 +12,9 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * 设置图标。
+ */
 val IconPack.Settings: ImageVector
     get() {
         if (_Settings2 != null) {
@@ -512,9 +515,13 @@ val IconPack.Settings: ImageVector
         return _Settings2!!
     }
 
+/** 缓存已构建的设置图标。 */
 @Suppress("ObjectPropertyName")
 private var _Settings2: ImageVector? = null
 
+/**
+ * 设置图标预览。
+ */
 @Preview
 @Composable
 private fun Settings2Preview() {

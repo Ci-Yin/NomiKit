@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Material"
+  short_description: "Use NomiKit AppTheme, Design System tokens, Material 3 theme bridge, and built-in IconPack icons"

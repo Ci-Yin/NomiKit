@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import ciyin.material.theme.AppTheme
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.ui.app.navigation.MainRouter
 import com.ciyin.app.ui.app.navigation.NavId.Main
@@ -20,7 +21,6 @@ import com.ciyin.app.ui.app.navigation.back
 import com.ciyin.app.ui.app.navigation.navigateWithSingleTop
 import com.ciyin.app.ui.screen.main.MainScreen
 import com.ciyin.app.ui.screen.setting.SettingScreen
-import com.ciyin.app.ui.theme.AppTheme
 
 
 /**
@@ -31,6 +31,9 @@ import com.ciyin.app.ui.theme.AppTheme
  * @since 2024/10/23 下午5:52
  */
 
+/**
+ * 应用根入口。
+ */
 @Composable
 fun App() {
     val viewModel = viewModel(::AppViewModel)
@@ -38,6 +41,12 @@ fun App() {
     AppContent(state, viewModel.dispatchAction)
 }
 
+/**
+ * 应用根内容，负责主题包裹与导航树装配。
+ *
+ * @param state 应用 UI 状态
+ * @param onAction 应用动作分发回调
+ */
 @Composable
 private fun AppContent(
     state: AppUiState,

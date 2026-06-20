@@ -13,17 +13,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.material.theme.AppTheme
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.shared.Res
 import com.ciyin.app.shared.nav_home
 import com.ciyin.app.ui.component.AppPreview
 import com.ciyin.app.ui.component.ScreenScaffold
 import com.ciyin.app.ui.screen.sample.SampleModuleRoot
-import com.ciyin.app.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 
+/**
+ * 首页入口。
+ *
+ * @param vm 首页 ViewModel
+ */
 @Composable
 fun MainScreen(vm: MainViewModel = viewModel(::MainViewModel)) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -34,6 +39,12 @@ fun MainScreen(vm: MainViewModel = viewModel(::MainViewModel)) {
     SampleModuleRoot()
 }
 
+/**
+ * 首页内容。
+ *
+ * @param state 首页状态
+ * @param onAction 首页动作分发回调
+ */
 @Composable
 private fun MainContent(
     state: MainUiState,
@@ -61,6 +72,9 @@ private fun MainContent(
     }
 }
 
+/**
+ * 首页预览。
+ */
 @AppPreview
 @Composable
 private fun MainScreenPreview() = AppPreview {

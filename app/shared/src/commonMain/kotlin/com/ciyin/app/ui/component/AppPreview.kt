@@ -8,9 +8,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import ciyin.material.theme.AppTheme
+import ciyin.material.theme.DarkMode
 import ciyin.ui.foundation.extension.thenIf
-import com.ciyin.app.ui.theme.AppTheme
-import com.ciyin.app.ui.theme.DarkMode
 
 
 /**
@@ -21,6 +21,14 @@ import com.ciyin.app.ui.theme.DarkMode
  * @since 2025/10/26 17:37
  */
 
+/**
+ * 应用通用预览容器。
+ *
+ * @param maxSize 是否填满可用预览尺寸
+ * @param darkMode 预览使用的深色模式
+ * @param backgroundColor 预览背景色
+ * @param content 预览内容
+ */
 @Composable
 fun AppPreview(
     maxSize: Boolean = true,

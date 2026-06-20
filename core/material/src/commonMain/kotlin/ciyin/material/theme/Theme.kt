@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme
+package ciyin.material.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -6,9 +6,9 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
-import com.ciyin.app.ui.theme.DarkMode.Dark
-import com.ciyin.app.ui.theme.DarkMode.Light
-import com.ciyin.app.ui.theme.DarkMode.System
+import ciyin.material.theme.DarkMode.Dark
+import ciyin.material.theme.DarkMode.Light
+import ciyin.material.theme.DarkMode.System
 
 
 /**

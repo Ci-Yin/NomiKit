@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme
+package ciyin.material.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import com.ciyin.app.ui.theme.DarkMode.Dark
-import com.ciyin.app.ui.theme.DarkMode.Light
-import com.ciyin.app.ui.theme.DarkMode.System
+import ciyin.material.theme.DarkMode.Dark
+import ciyin.material.theme.DarkMode.Light
+import ciyin.material.theme.DarkMode.System
 
 
 /**
@@ -92,42 +92,42 @@ data class AppColorScheme internal constructor(
  */
 fun lightColorScheme(): AppColorScheme = AppColorScheme(
     // 主色
-    primary = LightPrimary,
-    onPrimary = LightOnPrimary,
+    primary = LightThemeColors.primary,
+    onPrimary = LightThemeColors.onPrimary,
 
-    secondary = LightSecondary,
-    onSecondary = LightOnSecondary,
+    secondary = LightThemeColors.secondary,
+    onSecondary = LightThemeColors.onSecondary,
 
     // 表面色
-    background = LightBackground,
-    onBackground = LightOnBackground,
+    background = LightThemeColors.background,
+    onBackground = LightThemeColors.onBackground,
 
-    surface = LightSurface,
-    onSurface = LightOnSurface,
+    surface = LightThemeColors.surface,
+    onSurface = LightThemeColors.onSurface,
 
     // 语义色
-    error = LightError,
-    onError = LightOnError,
+    error = LightThemeColors.error,
+    onError = LightThemeColors.onError,
 
-    warning = LightWarning,
-    onWarning = LightOnWarning,
+    warning = LightThemeColors.warning,
+    onWarning = LightThemeColors.onWarning,
 
-    success = LightSuccess,
-    onSuccess = LightOnSuccess,
+    success = LightThemeColors.success,
+    onSuccess = LightThemeColors.onSuccess,
 
-    info = LightInfo,
-    onInfo = LightOnInfo,
+    info = LightThemeColors.info,
+    onInfo = LightThemeColors.onInfo,
 
     // 文本色
-    textPrimary = LightTextPrimary,
-    textSecondary = LightTextSecondary,
-    textHint = LightTextHint,
-    textCaption = LightTextCaption,
-    textDisabled = LightTextDisabled,
+    textPrimary = LightThemeColors.textPrimary,
+    textSecondary = LightThemeColors.textSecondary,
+    textHint = LightThemeColors.textHint,
+    textCaption = LightThemeColors.textCaption,
+    textDisabled = LightThemeColors.textDisabled,
 
     // 中性色
-    outline = LightOutline,
-    divider = LightDivider,
+    outline = LightThemeColors.outline,
+    divider = LightThemeColors.divider,
 )
 
 /**
@@ -135,42 +135,42 @@ fun lightColorScheme(): AppColorScheme = AppColorScheme(
  */
 fun darkColorScheme(): AppColorScheme = AppColorScheme(
     // 主色
-    primary = DarkPrimary,
-    onPrimary = DarkOnPrimary,
+    primary = DarkThemeColors.primary,
+    onPrimary = DarkThemeColors.onPrimary,
 
-    secondary = DarkSecondary,
-    onSecondary = DarkOnSecondary,
+    secondary = DarkThemeColors.secondary,
+    onSecondary = DarkThemeColors.onSecondary,
 
     // 表面色
-    background = DarkBackground,
-    onBackground = DarkOnBackground,
+    background = DarkThemeColors.background,
+    onBackground = DarkThemeColors.onBackground,
 
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
+    surface = DarkThemeColors.surface,
+    onSurface = DarkThemeColors.onSurface,
 
     // 语义色
-    error = DarkError,
-    onError = DarkOnError,
+    error = DarkThemeColors.error,
+    onError = DarkThemeColors.onError,
 
-    warning = DarkWarning,
-    onWarning = DarkOnWarning,
+    warning = DarkThemeColors.warning,
+    onWarning = DarkThemeColors.onWarning,
 
-    success = DarkSuccess,
-    onSuccess = DarkOnSuccess,
+    success = DarkThemeColors.success,
+    onSuccess = DarkThemeColors.onSuccess,
 
-    info = DarkInfo,
-    onInfo = DarkOnInfo,
+    info = DarkThemeColors.info,
+    onInfo = DarkThemeColors.onInfo,
 
     // 文本色
-    textPrimary = DarkTextPrimary,
-    textSecondary = DarkTextSecondary,
-    textHint = DarkTextHint,
-    textCaption = DarkTextCaption,
-    textDisabled = DarkTextDisabled,
+    textPrimary = DarkThemeColors.textPrimary,
+    textSecondary = DarkThemeColors.textSecondary,
+    textHint = DarkThemeColors.textHint,
+    textCaption = DarkThemeColors.textCaption,
+    textDisabled = DarkThemeColors.textDisabled,
 
     // 中性色
-    outline = DarkOutline,
-    divider = DarkDivider,
+    outline = DarkThemeColors.outline,
+    divider = DarkThemeColors.divider,
 )
 
 /**

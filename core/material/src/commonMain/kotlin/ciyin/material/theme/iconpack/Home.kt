@@ -1,4 +1,4 @@
-package com.ciyin.app.ui.theme.iconpack
+package ciyin.material.theme.iconpack
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -6,6 +6,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
+/**
+ * 首页图标。
+ */
 val IconPack.Home: ImageVector
     get() {
         if (_Home != null) {
@@ -70,5 +73,6 @@ val IconPack.Home: ImageVector
         return _Home!!
     }
 
+/** 缓存已构建的首页图标。 */
 @Suppress("ObjectPropertyName")
 private var _Home: ImageVector? = null
