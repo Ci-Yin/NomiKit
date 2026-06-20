@@ -20,6 +20,10 @@ internal object AiImageDemoRouter : NavRouter
 @Serializable
 internal object AiChatRouter : NavRouter
 
+/** 运行环境信息示例页。 */
+@Serializable
+internal object RuntimeInfoRouter : NavRouter
+
 /** 占位样例子页 A。 */
 @Serializable
 internal object SampleExamplePlaceholderARouter : NavRouter
@@ -30,6 +34,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(SampleHubRouter::class, SampleHubRouter.serializer())
             subclass(AiImageDemoRouter::class, AiImageDemoRouter.serializer())
             subclass(AiChatRouter::class, AiChatRouter.serializer())
+            subclass(RuntimeInfoRouter::class, RuntimeInfoRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
                 SampleExamplePlaceholderARouter.serializer()

@@ -10,6 +10,8 @@ kotlin {
         implementation(libs.bundles.navigation)
         implementation(libs.bundles.compose)
         implementation(libs.bundles.material3)
+        implementation(projects.core.application)
+        implementation(projects.core.platform)
         implementation(projects.core.uiFoundation)
         implementation(projects.feature.aiIntegrate)
         implementation(projects.component.dataStore)

@@ -9,6 +9,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
+import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
 
 /**
  * 样例模块根 Composable：独立子导航栈
@@ -40,6 +41,11 @@ fun SampleModuleRoot() {
             }
             entry<AiChatRouter> {
                 AiChatScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<RuntimeInfoRouter> {
+                RuntimeInfoScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

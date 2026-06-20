@@ -88,6 +88,11 @@ private fun rememberSampleHubEntries() = remember {
             navRouter = AiChatRouter,
         ),
         SampleHubEntry(
+            title = "运行环境信息",
+            description = "展示当前平台、构建配置、应用目录与时间参数。",
+            navRouter = RuntimeInfoRouter,
+        ),
+        SampleHubEntry(
             title = "占位示例 A",
             description = "第二个占位入口。",
             navRouter = SampleExamplePlaceholderARouter,
