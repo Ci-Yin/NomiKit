@@ -345,7 +345,6 @@ suspend fun toast(resource: StringResource, vararg args: Any)
 - 不要用 `// region/endregion` 折叠区块
 - 不要在 `XxxAction` / `XxxEffect` 上加任何子 Composable 依赖；只有 `XxxScreen` 与 `XxxContent` 才能
   `import` 它们
-- 不要直接 `import` `MyukoTheme.*` 之类的旧名字；本项目就是 `AppTheme`
 
 ## 十、附加资源
 

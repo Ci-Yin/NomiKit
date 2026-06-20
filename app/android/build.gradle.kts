@@ -16,11 +16,11 @@ android {
     namespace = getProperty("android.namespace")
 
     defaultConfig {
-        applicationId = getProperty("android.applicationid")
+        applicationId = getProperty("app.id")
         minSdk = getIntProperty("android.min.sdk")
         compileSdk = getIntProperty("android.compile.sdk")
         versionCode = getIntProperty("android.version.code")
-        versionName = getProperty("android.version.name")
+        versionName = getProperty("app.version.name")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
     }

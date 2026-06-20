@@ -5,8 +5,8 @@ import ciyin.RoomBootInitializer
 import ciyin.core.platform.Context
 import ciyin.core.platform.DesktopContext
 import ciyin.core.platform.MyukoBuildConfig
-import ciyin.core.system.storage.AppFolderResolver
-import ciyin.core.system.storage.AppInfo
+import ciyin.system.storage.AppFolderResolver
+import ciyin.system.storage.AppInfo
 import ciyin.koin.runKoinBoot
 import ciyin.room.createInMemoryDatabaseBuilder
 import ciyin.room.singleDao
@@ -137,11 +137,11 @@ class RoomTest {
     }
 
     fun creatDesktopContext(): DesktopContext {
-        val projectDirectories = AppFolderResolver.INSTANCE.resolve(
-            AppInfo(
-                "com",
-                "yy",
-                if (MyukoBuildConfig.isDebug) "Myuko-debug" else "Myuko",
+        val projectDirectories = AppFolderResolver.resolve(
+            AppInfo.OrganizationName(
+                qualifier = "com",
+                organization = "yy",
+                name = if (MyukoBuildConfig.isDebug) "Myuko-debug" else "Myuko",
             ),
         )
         val dataDir = projectDirectories.data

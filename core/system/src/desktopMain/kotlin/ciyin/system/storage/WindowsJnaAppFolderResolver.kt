@@ -42,8 +42,7 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
      * 4) Retrieve the Roaming AppData folder and append subdirectories.
      */
     private fun getRoamingAppDataDirectory(
-        organizationName: String,
-        applicationName: String
+        appInfo: AppInfo,
     ): Path {
         val pathBuffer = CharArray(MAX_PATH)
         val result = Shell32.INSTANCE.SHGetFolderPathW(null, CSIDL_APPDATA, null, 0, pathBuffer)
@@ -57,7 +56,7 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
                 ?: throw RuntimeException("Failed to retrieve APPDATA. SHGetFolderPath error code: $result")
         }
 
-        val targetDir = Paths.get(appDataPath, organizationName, applicationName)
+        val targetDir = appInfo.resolveWindowsAppDirectory(Paths.get(appDataPath))
         ensureDirectoriesExist(targetDir)
         return targetDir
     }
@@ -66,8 +65,7 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
      * 5) Retrieve the Local AppData folder and append subdirectories.
      */
     private fun getLocalAppDataDirectory(
-        organizationName: String,
-        applicationName: String
+        appInfo: AppInfo,
     ): Path {
         val pathBuffer = CharArray(MAX_PATH)
         val result =
@@ -82,7 +80,7 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
                 ?: throw RuntimeException("Failed to retrieve LOCALAPPDATA. SHGetFolderPath error code: $result")
         }
 
-        val targetDir = Paths.get(localAppDataPath, organizationName, applicationName)
+        val targetDir = appInfo.resolveWindowsAppDirectory(Paths.get(localAppDataPath))
         ensureDirectoriesExist(targetDir)
         return targetDir
     }
@@ -92,11 +90,10 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
      */
     @JvmStatic
     fun getAppDataDirectories(
-        organizationName: String,
-        applicationName: String
+        appInfo: AppInfo,
     ): AppDataDirectories {
-        val roamingDir = getRoamingAppDataDirectory(organizationName, applicationName)
-        val localDir = getLocalAppDataDirectory(organizationName, applicationName)
+        val roamingDir = getRoamingAppDataDirectory(appInfo)
+        val localDir = getLocalAppDataDirectory(appInfo)
         return AppDataDirectories(roamingDir.resolve("data"), localDir.resolve("cache"))
     }
 
@@ -114,5 +111,14 @@ internal object WindowsJnaAppFolderResolver : AppFolderResolver {
     }
 
     override fun resolve(appInfo: AppInfo): AppDataDirectories =
-        getAppDataDirectories(appInfo.organization, appInfo.name)
+        getAppDataDirectories(appInfo)
 }
+
+/**
+ * 根据应用身份拼出 Windows 下的应用根目录。
+ */
+internal fun AppInfo.resolveWindowsAppDirectory(baseDir: Path): Path =
+    when (this) {
+        is AppInfo.ApplicationId -> baseDir.resolve(id)
+        is AppInfo.OrganizationName -> baseDir.resolve(organization).resolve(name)
+    }

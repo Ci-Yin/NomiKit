@@ -59,13 +59,24 @@ val charset = Charsets.UTF_8
 val stopwatch = Stopwatch()
 val elapsed = stopwatch.elapsed()
 
-val dirs = AppFolderResolver.resolve(AppInfo("com", "ciyin", "NomiKit"))
+val dirs = AppFolderResolver.resolve(AppInfo.ApplicationId("com.ciyin.nomikit"))
+val brandedDirs = AppFolderResolver.resolve(
+    AppInfo.OrganizationName(
+        qualifier = "com",
+        organization = "CiYin",
+        name = "NomiKit",
+    )
+)
 ```
 
 注意事项：
 
 - `Charset` / `Charsets` 是项目自己的轻量兼容类型，不等同于 JVM `java.nio.charset.Charset`。
 - `Stopwatch` 基于 `TimeSource.Monotonic`，适合统计耗时，不适合作为墙钟时间。
+- `AppInfo.ApplicationId` 使用完整应用 ID 作为应用目录名；Windows 下会得到类似
+  `%APPDATA%/com.ciyin.nomikit/data` 的路径。
+- `AppInfo.OrganizationName` 使用组织名 + 应用名两级目录；Windows 下会得到类似
+  `%APPDATA%/CiYin/NomiKit/data` 的路径。
 - `AppFolderResolver` 在 desktop 源集下：Windows 通过 JNA 解析 Roaming/Local AppData，Unix 通过 `dev.dirs.ProjectDirectories`。
 - `AppFolderResolver.resolve` 会创建或访问目录；在启动路径使用时要处理可能的环境异常。
 

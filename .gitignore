@@ -18,3 +18,5 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 /app/output.log
 /hs_err_pid*.log
+/.plan/
+/.codex/

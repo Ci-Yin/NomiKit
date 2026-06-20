@@ -37,8 +37,8 @@ compose.desktop {
         mainClass = "com.ciyin.app.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = getProperty("android.applicationid")
-            packageVersion = getProperty("android.version.name")
+            packageName = getProperty("app.id")
+            packageVersion = getProperty("app.version.name")
         }
     }
 

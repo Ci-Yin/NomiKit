@@ -4,7 +4,9 @@ import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
-
+/**
+ * 将生成目录加入指定平台的 Kotlin 源集。
+ */
 fun Project.configureKotlinSourceSets(
     platformName: String,
     outputDir: org.gradle.api.provider.Provider<org.gradle.api.file.Directory>
@@ -26,6 +28,9 @@ fun Project.configureKotlinSourceSets(
     }
 }
 
+/**
+ * 让指定平台的 Kotlin 编译任务依赖源码生成任务。
+ */
 fun Project.configurePlatformTaskDependencies(platformName: String, generateTaskName: String) {
     // Configure dependencies using task name patterns and types
     tasks.configureEach {
@@ -41,7 +46,9 @@ fun Project.configurePlatformTaskDependencies(platformName: String, generateTask
             // Android compilation tasks
             platformName.lowercase() == "android" && (
                     name.contains("compileKotlinAndroid") ||
-                            name.contains("KotlinAndroid")
+                            name.contains("KotlinAndroid") ||
+                            name == "compileAndroidMain" ||
+                            name.contains("compileAndroidMain")
                     ) -> {
                 dependsOn(generateTaskName)
             }
