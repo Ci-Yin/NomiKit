@@ -31,7 +31,7 @@ AppTheme(darkMode = DarkMode.System) {
 - `AppTheme.shapes`：项目圆角令牌，类型为 `AppShapes`。
 - `AppTheme.spacings`：项目间距令牌，类型为 `Spacings`。
 - `AppTheme.sizes`：项目尺寸令牌，类型为 `AppSizes`。
-- `lightColorScheme()` / `darkColorScheme()`：默认亮色/暗色配色。
+- `lightColorScheme(...)` / `darkColorScheme(...)`：默认亮色/暗色配色，所有颜色参数都可用命名参数局部覆盖。
 
 注意事项：
 
