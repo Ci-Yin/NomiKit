@@ -27,7 +27,11 @@ import ciyin.material.theme.DarkMode.System
  * @property onSecondary 次要色上的内容颜色
  * @property background 主背景色，用于整个应用背景
  * @property onBackground 背景上的内容颜色（通常是文字）
- * @property surface 表面色，用于卡片、对话框等表面元素
+ * @property surface 中层容器表面色，用于卡片、对话框等标准容器
+ * @property surfaceHigh 更高层级的表面色，用于比基础表面更突出的容器
+ * @property surfaceHigher 最高层级的表面色，用于最突出的容器
+ * @property surfaceLow 较低层级的表面色，用于轻量容器
+ * @property surfaceLower 最低层级的表面色，用于最贴近背景的容器
  * @property onSurface 表面上的内容颜色
  * @property error 错误状态颜色
  * @property onError 错误色上的内容颜色
@@ -60,6 +64,10 @@ data class AppColorScheme internal constructor(
     val onBackground: Color,
 
     val surface: Color,
+    val surfaceHigh: Color,
+    val surfaceHigher: Color,
+    val surfaceLow: Color,
+    val surfaceLower: Color,
     val onSurface: Color,
 
     // ========== 语义色 ==========
@@ -103,6 +111,10 @@ fun lightColorScheme(): AppColorScheme = AppColorScheme(
     onBackground = LightThemeColors.onBackground,
 
     surface = LightThemeColors.surface,
+    surfaceHigh = LightThemeColors.surfaceHigh,
+    surfaceHigher = LightThemeColors.surfaceHigher,
+    surfaceLow = LightThemeColors.surfaceLow,
+    surfaceLower = LightThemeColors.surfaceLower,
     onSurface = LightThemeColors.onSurface,
 
     // 语义色
@@ -146,6 +158,10 @@ fun darkColorScheme(): AppColorScheme = AppColorScheme(
     onBackground = DarkThemeColors.onBackground,
 
     surface = DarkThemeColors.surface,
+    surfaceHigh = DarkThemeColors.surfaceHigh,
+    surfaceHigher = DarkThemeColors.surfaceHigher,
+    surfaceLow = DarkThemeColors.surfaceLow,
+    surfaceLower = DarkThemeColors.surfaceLower,
     onSurface = DarkThemeColors.onSurface,
 
     // 语义色
@@ -197,6 +213,11 @@ internal fun AppColorScheme.toMaterialColorScheme(darkMode: DarkMode): ColorSche
         background = background,
         onBackground = onBackground,
         surface = surface,
+        surfaceContainer = surface,
+        surfaceContainerHigh = surfaceHigh,
+        surfaceContainerHighest = surfaceHigher,
+        surfaceContainerLow = surfaceLow,
+        surfaceContainerLowest = surfaceLower,
         onSurface = onSurface,
         outline = outline,
     )

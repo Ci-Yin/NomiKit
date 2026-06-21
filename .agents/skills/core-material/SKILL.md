@@ -26,6 +26,7 @@ AppTheme(darkMode = DarkMode.System) {
 
 - `AppTheme(...)`：根主题包装器，内部桥接 Material 3 `MaterialTheme`。
 - `AppTheme.colorScheme`：项目颜色令牌，类型为 `AppColorScheme`。
+- `AppTheme.colorScheme.surfaceLower` / `surfaceLow` / `surface` / `surfaceHigh` / `surfaceHigher`：五级表面层级色，用于区分不同高度或突出程度的容器。
 - `AppTheme.typography`：Material 3 `Typography`。
 - `AppTheme.shapes`：项目圆角令牌，类型为 `AppShapes`。
 - `AppTheme.spacings`：项目间距令牌，类型为 `Spacings`。

@@ -24,8 +24,20 @@ internal object LightThemeColors {
     /** 根背景上的内容颜色。 */
     val onBackground: Color = Color(0xFF1C1B1F)
 
-    /** 卡片、对话框等表面色。 */
-    val surface: Color = Color.White
+    /** 中层容器表面色，用于卡片、对话框等标准容器。 */
+    val surface: Color = Color(0xFFF3EDF7)
+
+    /** 更高层级的表面色，用于比基础表面更突出的容器。 */
+    val surfaceHigh: Color = Color(0xFFECE6F0)
+
+    /** 最高层级的表面色，用于最突出的容器。 */
+    val surfaceHigher: Color = Color(0xFFE6E0E9)
+
+    /** 较低层级的表面色，用于轻量容器。 */
+    val surfaceLow: Color = Color(0xFFF7F2FA)
+
+    /** 最低层级的表面色，用于最贴近背景的容器。 */
+    val surfaceLower: Color = Color.White
 
     /** 表面上的内容颜色。 */
     val onSurface: Color = Color(0xFF1C1B1F)
@@ -98,8 +110,20 @@ internal object DarkThemeColors {
     /** 根背景上的内容颜色。 */
     val onBackground: Color = Color(0xFFE6E1E5)
 
-    /** 卡片、对话框等表面色。 */
-    val surface: Color = Color(0xFF25232A)
+    /** 中层容器表面色，用于卡片、对话框等标准容器。 */
+    val surface: Color = Color(0xFF211F26)
+
+    /** 更高层级的表面色，用于比基础表面更突出的容器。 */
+    val surfaceHigh: Color = Color(0xFF2B2930)
+
+    /** 最高层级的表面色，用于最突出的容器。 */
+    val surfaceHigher: Color = Color(0xFF36343B)
+
+    /** 较低层级的表面色，用于轻量容器。 */
+    val surfaceLow: Color = Color(0xFF1D1B20)
+
+    /** 最低层级的表面色，用于最贴近背景的容器。 */
+    val surfaceLower: Color = Color(0xFF0F0D13)
 
     /** 表面上的内容颜色。 */
     val onSurface: Color = Color(0xFFE6E1E5)
