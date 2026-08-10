@@ -164,6 +164,8 @@ apply: always
 ## 十、编码风格与依赖注入
 
 - 默认使用最小可见性；能用 `private` 就不要暴露为 `internal` 或 `public`。
+- Kotlin 枚举类的类型名称和枚举项名称都必须以大写字母开头，例如
+  `enum class AppMode { Normal, Compact }`；禁止使用 `appMode`、`normal` 等小写开头的名称。
 - 函数参数数量大于等于 3 时，调用处使用命名参数并换行对齐书写。
 - 函数参数中的复杂构造默认先提取为局部变量；但短小、单行且不超过项目行宽的简单包装/事件转发可以内联，例如
   `onCategorySelect = { onAction(PromptTagPickerAction.CategoryChange(it)) }`。
@@ -196,3 +198,37 @@ apply: always
 - 数据问题 → 在源头保证数据正确性（校验、映射、类型建模）。
 
 **自检**：如果删掉你的“修复”问题会重现，或在另一个场景下重现，说明这是 hack，需要重新思考。
+
+## 十二、UI 设计令牌使用细则（必须遵守）
+
+项目统一设计令牌集中在 `core/material/src/commonMain/kotlin/ciyin/material/theme/`，全部通过
+`AppTheme` 访问（见 `Theme.kt`），不要各自为政：
+
+- `AppTheme.spacings`：间距令牌（`tiny`→`colossal` 9 级，组件级/区块级/页面级语义）
+- `AppTheme.sizes`：图标/头像尺寸等级、`strokes` 线条宽度、`componentHeights` 组件高度、
+  `layoutConstraints` 布局约束
+- `AppTheme.shapes`：圆角令牌（`tiny`→`colossal` 9 级，区分组件级/容器级/页面覆盖级）
+- `AppTheme.colorScheme`：颜色令牌（主色/表面色/语义色/文本五级色/outline/divider）
+- `AppTheme.typography`：排版（字号、行高、字重，已内置 `TextStyle.lineHeight`）
+- `AppTheme.darkMode`：深浅色模式判断
+
+### 必须遵守
+
+- 业务页面、Screen、ViewModel、UI model 中禁止直接新增裸 `N.dp` 魔法值；新增尺寸、间距、圆角、
+  图标尺寸应优先复用 `AppTheme.spacings`、`AppTheme.sizes`、`AppTheme.shapes`；颜色一律取自
+  `AppTheme.colorScheme`，文本样式一律取自 `AppTheme.typography`，禁止在业务代码中硬编码
+  `Color(0x...)`、`FontSize`/`lineHeight` 数值。
+- 若确实存在当前页面独有的设计度量，必须提取为具名 `private val`，补充中文
+  KDoc，并说明它不是用于修正布局错位或固定高度；后续若可复用，应沉淀到主题 token（`core/material` 模块）。
+- 禁止在承载文字、按钮、列表项、卡片、弹窗内容的容器上使用 `.height(N.dp)`、`.requiredHeight(N.dp)`
+  或 `.size(N.dp)` 间接固定高度。
+- 按钮、输入框、菜单项、卡片等组件的高度必须由 `AppTheme.typography` 中 `TextStyle.lineHeight`
+  、图标固有尺寸（可取自 `AppTheme.sizes.icon`）、`PaddingValues`、`Arrangement.spacedBy` 和内容本身共同决定。
+- 禁止用固定 `top/bottom padding`、`Spacer(Modifier.height(N.dp))`、`Spacer(Modifier.size(N.dp))` 或
+  `offset(y = N.dp)` 修 UI 对齐、避让系统栏、撑空态位置；应使用布局约束、`WindowInsets`、`weight`、
+  `Arrangement` 或内容分组解决。
+- 允许在以下场景使用明确 `dp`：主题 token 定义文件（`core/material`）、矢量图标
+  `defaultWidth/defaultHeight`、
+  发丝线/描边（优先取 `AppTheme.sizes.strokes`）、设计系统圆角/阴影/图标固有尺寸、弹窗最大宽度等稳定
+  设计规格（优先取 `AppTheme.sizes.layoutConstraints`）。
+- `0.dp` 可作为边界值使用；非零裸 `N.dp` 出现在业务 UI 文件时，必须能解释其语义，否则视为需要整改。

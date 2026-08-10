@@ -1,7 +1,9 @@
 package ciyin.ui.foundation.widget
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import java.awt.MenuItem
@@ -24,11 +26,15 @@ import java.awt.TrayIcon
  *
  * @param onShowWindows 显示窗口的回调
  * @param exitApplication 退出程序回调
+ * @param openWindowLabel 打开窗口菜单文案
+ * @param exitLabel 退出菜单文案
  */
 @Composable
 fun SystemTray(
     icon: ImageBitmap,
     name: String,
+    openWindowLabel: String = "Open Window",
+    exitLabel: String = "Exit",
     onMenu: PopupMenu.() -> Unit = {},
     onShowWindows: () -> Unit,
     exitApplication: () -> Unit
@@ -38,37 +44,34 @@ fun SystemTray(
         return
     }
 
-    val tray = SystemTray.getSystemTray()
-//    val icon = imageResource(Res.drawable.ic_launcher).toAwtImage()
-
-    // 创建菜单
-    val popupMenu = PopupMenu().apply {
-
-        // 打开窗口
-        menuItem("Open Window") {
-            onShowWindows()
-        }
-        onMenu()
-        // 退出程序
-        menuItem("Exit") {
-            //trayIcon?.let { tray.remove(it) }  // 安全移除托盘图标
-            exitApplication()
-        }
-
-    }
-
-    // 托盘图标
     val image = remember(icon) { icon.toAwtImage() }
-    val trayIcon = TrayIcon(image, name, popupMenu).apply {
-        isImageAutoSize = true
-        addActionListener {
-            // 双击托盘图标 -> 打开窗口
-            onShowWindows()
+    val currentOnMenu = rememberUpdatedState(onMenu)
+    val currentOnShowWindows = rememberUpdatedState(onShowWindows)
+    val currentExitApplication = rememberUpdatedState(exitApplication)
+
+    DisposableEffect(image, name, openWindowLabel, exitLabel) {
+        val tray = SystemTray.getSystemTray()
+        val popupMenu = PopupMenu().apply {
+            menuItem(openWindowLabel) { currentOnShowWindows.value() }
+            currentOnMenu.value(this)
+            menuItem(exitLabel) { currentExitApplication.value() }
+        }
+        val trayIcon = TrayIcon(image, name, popupMenu).apply {
+            isImageAutoSize = true
+            addActionListener { currentOnShowWindows.value() }
+        }
+        val registered = runCatching { tray.add(trayIcon) }
+            .onFailure { error ->
+                System.err.println("System tray registration failed: ${error.message}")
+            }
+            .isSuccess
+
+        onDispose {
+            if (registered) {
+                tray.remove(trayIcon)
+            }
         }
     }
-
-    // 添加到系统托盘
-    tray.add(trayIcon)
 }
 
 fun PopupMenu.menuItem(label: String, action: () -> Unit) {

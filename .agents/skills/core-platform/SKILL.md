@@ -53,6 +53,25 @@ val appData = provider.getAppDataDir()
 - 部分能力只在特定平台有真实实现，跨平台调用前先确认 actual 行为。
 - `packageName` 有默认值，不要把它当成业务应用 ID 的权威来源。
 
+### Windows exe 图标提取
+
+```kotlin
+val outputPng = java.io.File(cacheDirectory, "application.png")
+ExeIconExtractor.extractExeIcon(
+    executablePath = executablePath,
+    outputFile = outputPng,
+    size = 256,
+)
+```
+
+注意事项：
+
+- `ExeIconExtractor` 的输出格式是 PNG；`outputFile` 必须是目标文件路径，不是目录路径。
+- 提取器优先通过 `SHDefExtractIconW` 读取最匹配请求尺寸的原始图标，失败时才回退系统大图标，避免先取低分辨率图标再放大。
+- 提取器会创建目标文件的父目录，并在调用结束前释放 `HICON`、`HBITMAP` 和设备上下文句柄。
+- 文件没有图标、目标尺寸非法或 PNG 写入失败时会抛出异常；上层必须转换成自己的错误模型，不要把失败当成成功缓存。
+- 批量尺寸使用 `extractAndSaveExeIcons(...)`，输出文件名为 `<exe-name>_icon_<size>.png`。
+
 ## 日志与时间
 
 ```kotlin

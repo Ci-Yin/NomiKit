@@ -29,15 +29,25 @@ description: Use the core/ui-foundation Compose Multiplatform UI foundation modu
 
 常用入口：
 
-- `Window(...)`：跨平台窗口 expect。
+- `Window(...)`：跨平台普通窗口 expect。
+- `DialogWindow(icon = ..., config = DialogWindowConfig(...), ...)`：跨平台模态窗口；Desktop 创建系统装饰的 document-modal 原生对话框，Android/iOS/Web 回退 `CommonWindow`。
+- `ComposeWindow.prepareWindowsSystemBackdrop()`：在 `SwingWindow.init` 中预安装可回滚的透明客户区宿主。
+- `FrameWindowScope.WindowsSystemBackdropEffect(type, darkTitleBar, onApplied)`：Desktop 主窗口系统背景材质效果；`WindowsSystemBackdrop` 提供 `Mica`、`DesktopAcrylic` 与 `MicaAlt`。
 - `FloatWindow` / `FloatWindow2`：Popup / DropdownMenu 浮窗。
 - `rememberSystemUiController()` 与 `SystemUiControllerEffect(...)`：系统栏颜色、可见性与深色图标。
 - `currentWindowWidth()` / `currentWindowHeight()` / `currentWindowSize()` / `currentWindowDpSize()`：窗口尺寸分级。
+- `classifyWindowWidth(width)`：按布局实时可用宽度复用项目的 Compact / Medium / Expanded 断点，适合窗口组件基于 `BoxWithConstraints.maxWidth` 自适应。
 - `KeepScreenOnEffect`、`ScreenRotationEffect`、`DarkStatusBarAppearance`、`cursorVisibility`、`blurEffect`、`OnLifecycleEvent`。
 
 注意事项：
 
 - `SystemUiController` 在非 Android 平台可能是简化或空操作实现，不要把业务正确性建立在系统栏必然可控上。
+- `DialogWindowConfig.size` 必须由业务调用方明确传入，不要在基建内写死业务尺寸；`resizable`、`dismissOnEscape` 分别控制用户缩放与 Esc 关闭行为；`darkTitleBar` 只影响 Windows DWM 系统标题栏。
+- Desktop `DialogWindow` 按 `dismissOnEscape` 决定是否消费 Esc 关闭请求，并使用 DWM 深色标题栏属性 20、失败时回退属性 19；DWM 调用失败只记录警告，不要在业务层重复操作原生窗口句柄。
+- Desktop 系统背景材质使用 DWM 属性 38；Windows 11 24H2 会同时尝试属性 39 的重定向位图 Alpha。`onApplied` 只有在 DWM 与 Compose/Skia 客户区透明化均成功时才返回 `true`，调用方必须据此决定是否移除实色根背景。
+- Desktop 系统背景材质生效期间会同时拦截顶层窗口与 Skia 硬件子窗口的 `WM_ERASEBKGND`，避免交互式缩放先用默认实色擦除透明客户区；释放材质时必须恢复各自的原始窗口过程，不要改用影响所有窗口的 AWT 全局背景擦除开关。
+- `WindowsSystemBackdropEffect` 保留系统装饰窗口，不应与 Compose Desktop 仅支持无装饰窗口的 `transparent = true` 混用；主窗口必须使用 `SwingWindow`，并在 `init` 中先调用 `prepareWindowsSystemBackdrop()`，确保在窗口可显示前安全安装客户区宿主；离开组合时会恢复 DWM 与渲染层原状态。
+- `SystemTray(...)` 通过 `DisposableEffect` 注册并释放原生托盘图标；注册失败只记录错误，不得阻断主窗口创建。业务调用方应传入资源化的 `openWindowLabel` 与 `exitLabel`。
 - 平台差异能力通过 expect/actual 维护，避免在 common UI 中写平台判断。
 
 ## 布局与滚动

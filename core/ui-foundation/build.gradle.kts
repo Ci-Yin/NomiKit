@@ -31,4 +31,9 @@ kotlin {
         api(libs.androidx.window)
     }
 
+    sourceSets.desktopMain.dependencies {
+        implementation(libs.jna)
+        implementation(libs.jna.platform)
+    }
+
 }

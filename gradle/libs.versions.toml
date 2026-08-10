@@ -14,6 +14,7 @@ multiplatform-nav3-ui = "1.0.0-alpha05" # https://github.com/JetBrains/androidx/
 multiplatform-savedstate = "1.4.0" # https://github.com/JetBrains/androidx/releases
 multiplatform-window = "1.5.1" # https://github.com/JetBrains/androidx/releases
 materialIcons = "1.7.0" # https://github.com/JetBrains/compose-multiplatform/releases
+composeFluent = "v0.1.0" # https://github.com/compose-fluent/compose-fluent-ui
 
 # AndroidX / Android UI：Android 平台壳、测试与导航相关版本。
 androidx-activity-compose = "1.10.0" # https://developer.android.com/jetpack/androidx/releases/activity
@@ -143,6 +144,8 @@ androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navi
 androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "androidx-navigation" }
 androidx-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
 androidx-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons" }
+compose-fluent = { module = "io.github.compose-fluent:fluent", version.ref = "composeFluent" }
+compose-fluent-icons-extended = { module = "io.github.compose-fluent:fluent-icons-extended", version.ref = "composeFluent" }
 
 # Android / JVM 测试依赖。
 # https://developer.android.com/training/testing
