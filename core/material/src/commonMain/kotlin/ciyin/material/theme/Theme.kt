@@ -59,7 +59,7 @@ object AppTheme {
  */
 @Composable
 fun AppTheme(
-    darkMode: DarkMode = System,
+    darkMode: DarkMode = AppTheme.darkMode,
     colorScheme: AppColorScheme = when (darkMode) {
         System -> if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
         Light -> lightColorScheme()
