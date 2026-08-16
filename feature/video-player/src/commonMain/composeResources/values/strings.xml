@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_player_back">返回</string>
+    <string name="video_player_settings">设置</string>
+    <string name="video_player_title_placeholder">视频标题</string>
+    <string name="video_player_screenshot">截图</string>
+    <string name="video_player_play">播放</string>
+    <string name="video_player_pause">暂停</string>
+    <string name="video_player_enable_danmaku">启用弹幕</string>
+    <string name="video_player_disable_danmaku">禁用弹幕</string>
+    <string name="video_player_mute">静音</string>
+    <string name="video_player_volume">音量</string>
+    <string name="video_player_next_episode">下一集</string>
+    <string name="video_player_select_episode">选集</string>
+    <string name="video_player_send">发送</string>
+    <string name="video_player_enter_fullscreen">进入全屏</string>
+    <string name="video_player_exit_fullscreen">退出全屏</string>
+    <string name="video_player_speed">倍速</string>
+    <string name="video_player_auto_audio">自动</string>
+    <string name="video_player_audio_track">音轨</string>
+    <string name="video_player_danmaku_placeholder">发送一条弹幕</string>
+    <string name="video_player_skip_opening_or_ending">即将跳过片头或片尾</string>
+    <string name="video_player_cancel">取消</string>
+</resources>

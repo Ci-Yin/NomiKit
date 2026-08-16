@@ -53,4 +53,26 @@
     <string name="permissions_permission_sms">发送短信</string>
     <string name="permissions_permission_read_phone_state">读取电话状态</string>
     <string name="permissions_permission_internet">网络访问</string>
+
+    <string name="video_player_demo_auto_pip">离开应用时自动进入画中画</string>
+    <string name="video_player_demo_back">返回</string>
+    <string name="video_player_demo_buffering">正在缓冲视频…</string>
+    <string name="video_player_demo_close_settings">关闭播放器设置</string>
+    <string name="video_player_demo_description">播放可编辑的网络媒体 URL，并展示跨平台 Mediamp 控制器。</string>
+    <string name="video_player_demo_empty_url">请输入要播放的视频 URL。</string>
+    <string name="video_player_demo_enter_pip">进入画中画</string>
+    <string name="video_player_demo_exit_pip">退出画中画</string>
+    <string name="video_player_demo_gesture_lock">锁定播放手势</string>
+    <string name="video_player_demo_load_error">播放器无法加载该媒体。</string>
+    <string name="video_player_demo_lock">锁定播放手势</string>
+    <string name="video_player_demo_no_media">提交 URL 后，视频画面将在此处显示。</string>
+    <string name="video_player_demo_play">加载并播放</string>
+    <string name="video_player_demo_screenshot_error">截图失败：%1$s</string>
+    <string name="video_player_demo_screenshot_saved">截图已保存到 %1$s</string>
+    <string name="video_player_demo_settings">播放器设置</string>
+    <string name="video_player_demo_state">播放状态：%1$s</string>
+    <string name="video_player_demo_title">视频播放器示例</string>
+    <string name="video_player_demo_unlock">解除播放手势锁定</string>
+    <string name="video_player_demo_url_label">视频 URL</string>
+    <string name="video_player_demo_vlc_unavailable">未找到 VLC 运行库。请安装与当前架构匹配的 VLC，或为应用配置 libvlc 所在目录。</string>
 </resources>

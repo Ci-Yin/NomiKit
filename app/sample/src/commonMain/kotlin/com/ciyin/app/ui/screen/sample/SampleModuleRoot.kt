@@ -12,6 +12,7 @@ import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
 import com.ciyin.app.ui.screen.permissions.PermissionsScreen
 import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
+import com.ciyin.app.ui.screen.videoplayer.VideoPlayerDemoScreen
 
 /**
  * 样例模块根 Composable：独立子导航栈
@@ -58,6 +59,11 @@ fun SampleModuleRoot() {
             }
             entry<PermissionsRouter> {
                 PermissionsScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<VideoPlayerDemoRouter> {
+                VideoPlayerDemoScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

@@ -18,6 +18,7 @@ kotlin {
         implementation(projects.feature.fileDownloader)
         implementation(projects.feature.aiIntegrate)
         implementation(projects.feature.permissions)
+        implementation(projects.feature.videoPlayer)
         implementation(projects.component.dataStore)
         implementation(projects.component.koin)
     }

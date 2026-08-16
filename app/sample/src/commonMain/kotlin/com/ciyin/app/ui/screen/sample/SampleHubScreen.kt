@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.permissions_hub_description
 import com.ciyin.app.sample.permissions_title
+import com.ciyin.app.sample.video_player_demo_description
+import com.ciyin.app.sample.video_player_demo_title
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +84,14 @@ private data class SampleHubEntry(
 private fun rememberSampleHubEntries(): List<SampleHubEntry> {
     val permissionsTitle = stringResource(Res.string.permissions_title)
     val permissionsDescription = stringResource(Res.string.permissions_hub_description)
-    return remember(permissionsTitle, permissionsDescription) {
+    val videoPlayerTitle = stringResource(Res.string.video_player_demo_title)
+    val videoPlayerDescription = stringResource(Res.string.video_player_demo_description)
+    return remember(
+        permissionsTitle,
+        permissionsDescription,
+        videoPlayerTitle,
+        videoPlayerDescription,
+    ) {
         listOf(
             SampleHubEntry(
                 title = "文生图（AiImageIntegrate + SD WebUI）",
@@ -103,6 +112,11 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
                 title = permissionsTitle,
                 description = permissionsDescription,
                 navRouter = PermissionsRouter,
+            ),
+            SampleHubEntry(
+                title = videoPlayerTitle,
+                description = videoPlayerDescription,
+                navRouter = VideoPlayerDemoRouter,
             ),
             SampleHubEntry(
                 title = "运行环境信息",

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Player"
+  short_description: "Use NomiKit cross-platform video playback and PiP"
+  default_prompt: "Use $video-player to integrate or maintain NomiKit cross-platform video playback."

@@ -23,6 +23,7 @@ androidx-core-ktx = "1.13.1" # https://developer.android.com/jetpack/androidx/re
 androidx-espresso-core = "3.6.1" # https://developer.android.com/jetpack/androidx/releases/test
 androidx-lifecycle = "2.9.6" # https://developer.android.com/jetpack/androidx/releases/lifecycle
 androidx-material = "1.12.0" # https://github.com/material-components/material-components-android/releases
+androidx-media3 = "1.9.0" # https://developer.android.com/jetpack/androidx/releases/media3
 androidx-navigation = "2.9.0" # https://developer.android.com/jetpack/androidx/releases/navigation
 androidx-test-junit = "1.2.1" # https://developer.android.com/jetpack/androidx/releases/test
 material3-adaptive-navigation-suite = "1.4.0-beta01" # https://developer.android.com/jetpack/androidx/releases/compose-material3-adaptive
@@ -69,6 +70,7 @@ jna = "5.18.0" # https://github.com/java-native-access/jna/releases
 jnaPlatform = "5.18.0" # https://github.com/java-native-access/jna/releases
 nettyAll = "4.1.101.Final" # https://netty.io/news/
 shadow = "8.1.1" # https://github.com/GradleUp/shadow/releases
+vlcj = "4.8.2" # https://github.com/caprica/vlcj/releases
 
 # 状态管理、函数式与测试。
 arrow = "2.1.2" # https://github.com/arrow-kt/arrow/releases
@@ -220,6 +222,13 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coilVersion" }
 coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coilVersion" }
 
+# Media3（ExoPlayer）：Android 视频播放与 Compose UI。
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "androidx-media3" }
+androidx-media3-ui-compose = { module = "androidx.media3:media3-ui-compose", version.ref = "androidx-media3" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "androidx-media3" }
+androidx-media3-exoplayer-dash = { module = "androidx.media3:media3-exoplayer-dash", version.ref = "androidx-media3" }
+androidx-media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "androidx-media3" }
+
 # FileKit：跨平台文件选择与 Compose 对话框。
 # https://github.com/vinceglb/FileKit
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
@@ -256,6 +265,7 @@ directories = { module = "dev.dirs:directories", version.ref = "directories" }
 ivy = { module = "org.apache.ivy:ivy", version.ref = "ivy" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jnaPlatform" }
+vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 
 # JSON / XML / YAML 与 HTML 解析。
 # https://kotlinlang.org/docs/serialization.html

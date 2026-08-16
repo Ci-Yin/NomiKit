@@ -31,6 +31,11 @@ dependencyResolutionManagement {
             }
         }
     }
+    versionCatalogs {
+        create("mediampLibs") {
+            from("org.openani.mediamp:catalog:0.0.30")
+        }
+    }
 }
 
 include(":app")
@@ -69,6 +74,7 @@ include(":feature:serialization")
 include(":feature:parser")
 include(":feature:parser-site")
 include(":feature:permissions")
+include(":feature:video-player")
 include(":feature:sample")
 include(":feature:sdwebui")
 include(":feature:ai-core")
