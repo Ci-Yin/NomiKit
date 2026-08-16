@@ -1,0 +1,4 @@
+interface:
+  display_name: "File Downloader"
+  short_description: "Use NomiKit cross-platform file downloading APIs"
+  default_prompt: "Use $file-downloader to add or maintain cross-platform file downloads in NomiKit."

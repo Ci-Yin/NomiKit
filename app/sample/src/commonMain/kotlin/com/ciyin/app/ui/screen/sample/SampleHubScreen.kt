@@ -88,6 +88,11 @@ private fun rememberSampleHubEntries() = remember {
             navRouter = AiChatRouter,
         ),
         SampleHubEntry(
+            title = "文件下载",
+            description = "断点续传、分块下载、覆盖策略与任务控制示例。",
+            navRouter = FileDownloaderDemoRouter,
+        ),
+        SampleHubEntry(
             title = "运行环境信息",
             description = "展示当前平台、构建配置、应用目录与时间参数。",
             navRouter = RuntimeInfoRouter,

@@ -9,6 +9,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
+import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
 import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
 
 /**
@@ -41,6 +42,11 @@ fun SampleModuleRoot() {
             }
             entry<AiChatRouter> {
                 AiChatScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<FileDownloaderDemoRouter> {
+                FileDownloaderDemoScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }
