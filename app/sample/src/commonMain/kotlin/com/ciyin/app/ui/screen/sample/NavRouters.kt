@@ -20,6 +20,10 @@ internal object AiImageDemoRouter : NavRouter
 @Serializable
 internal object AiChatRouter : NavRouter
 
+/** 文件下载能力完整示例页。 */
+@Serializable
+internal object FileDownloaderDemoRouter : NavRouter
+
 /** 运行环境信息示例页。 */
 @Serializable
 internal object RuntimeInfoRouter : NavRouter
@@ -34,6 +38,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(SampleHubRouter::class, SampleHubRouter.serializer())
             subclass(AiImageDemoRouter::class, AiImageDemoRouter.serializer())
             subclass(AiChatRouter::class, AiChatRouter.serializer())
+            subclass(FileDownloaderDemoRouter::class, FileDownloaderDemoRouter.serializer())
             subclass(RuntimeInfoRouter::class, RuntimeInfoRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
