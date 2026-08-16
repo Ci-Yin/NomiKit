@@ -36,4 +36,14 @@ kotlin {
         implementation(libs.jna.platform)
     }
 
+    sourceSets.commonTest.dependencies {
+        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+        implementation(compose.uiTest)
+    }
+
+    sourceSets.desktopTest.dependencies {
+        implementation(compose.desktop.currentOs)
+        implementation(compose.desktop.uiTestJUnit4)
+    }
+
 }

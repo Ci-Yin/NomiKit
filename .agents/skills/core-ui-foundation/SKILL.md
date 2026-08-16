@@ -57,6 +57,7 @@ description: Use the core/ui-foundation Compose Multiplatform UI foundation modu
 - `RefreshLayout`、`PullToRefresh`、`RefreshLayoutState`、`rememberRefreshLayoutState`。
 - `HorizontalGrid` / `VerticalGrid` 与 `SimpleGridCells`。
 - `JKLazyColumn`、`JKLazyGrid`、`JKLazyVerticalStaggeredGrid` 以及 scrollbar state/helper。
+- `Modifier.onScrollStateChanged(...)`：统一监听触摸拖拽与桌面鼠标滚轮，`Top` 表示向内容末端、`Bottom` 表示向内容起点；普通按下/点击不会产生滚动方向。
 - `TwoPane` / `TwoPaneMode`。
 
 注意事项：
@@ -64,6 +65,8 @@ description: Use the core/ui-foundation Compose Multiplatform UI foundation modu
 - `RefreshLayoutState.setRefreshState(...)` 需要在 `RefreshLayout` 至少组合初始化后调用；过早调用会抛未初始化异常。
 - `VerticalGrid` 需要有限宽度，`HorizontalGrid` 需要有限高度；不要放在无约束方向的无限布局里。
 - `JKLazyGrid` / `JKLazyVerticalStaggeredGrid` 位于 `ciyin.ui.foundation.widget.scrollbar.usage`，不要再引入历史遗留的 `lcpp.github.scrollbar.usage` 包名。
+- `Scrollbar(isSupperSmall = ...)` 的紧凑外观与交互能力相互独立；默认仍可拖动，需要只读装饰时显式设置 `isInteractive = false`。运行时修改 `isInteractive` 或 `orientation` 会重建手势监听，拖动取消与正常结束都会调用 `onDragEnd`，调用方应在此清理拖动态。
+- 横向 `Scrollbar` 按指针 `x` 坐标推进，竖向按 `y` 坐标推进；`JKLazyGrid` 与 `JKLazyVerticalStaggeredGrid` 的 full-height 滚动条固定使用竖直轴。
 
 ## 基础组件
 

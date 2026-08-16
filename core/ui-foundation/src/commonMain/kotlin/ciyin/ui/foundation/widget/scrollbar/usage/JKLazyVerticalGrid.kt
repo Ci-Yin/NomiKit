@@ -20,7 +20,21 @@ import ciyin.ui.foundation.widget.scrollbar.DraggableScrollbar
 import ciyin.ui.foundation.widget.scrollbar.lazystate.rememberDraggableScroller
 import ciyin.ui.foundation.widget.scrollbar.lazystate.scrollbarState
 
-// 带滚动的 LazyColumn
+/**
+ * 渲染带 full-height 可拖动滚动条的竖向懒加载网格。
+ *
+ * @param modifier 网格根修饰符
+ * @param itemSize 条目总数
+ * @param columns 网格列策略
+ * @param state 懒网格状态
+ * @param contentPadding 内容边距
+ * @param reverseLayout 是否反向布局
+ * @param verticalArrangement 纵向排列
+ * @param horizontalArrangement 横向排列
+ * @param flingBehavior 惯性滚动行为
+ * @param userScrollEnabled 是否允许用户滚动
+ * @param content 网格内容
+ */
 @Composable
 fun JKLazyGrid(
     modifier: Modifier = Modifier,
@@ -62,8 +76,8 @@ fun JKLazyGrid(
             state = state.scrollbarState(
                 itemsAvailable = itemSize,// 传入大小
             ),
-            orientation = Orientation.Horizontal,
-            isSupperSmall = itemSize < 100,// 默认数量小于50就启用超小模式———— 大小减少一半、不可点击、拖动
+            orientation = fullHeightGridScrollbarOrientation,
+            isSupperSmall = itemSize < 100, // 小列表使用紧凑拇指，仍保留拖动能力。
             // 拇指移动，带动屏幕同步滚动...
             onThumbMoved = state.rememberDraggableScroller(
                 itemsAvailable = itemSize,// 传入项目数量
@@ -71,3 +85,6 @@ fun JKLazyGrid(
         )
     }
 }
+
+/** Full-height 竖向网格滚动条使用的滚动轴方向。 */
+internal val fullHeightGridScrollbarOrientation: Orientation = Orientation.Vertical

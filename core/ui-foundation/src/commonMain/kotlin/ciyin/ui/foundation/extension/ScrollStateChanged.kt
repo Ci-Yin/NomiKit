@@ -17,6 +17,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.math.abs
 
 /**
  * 滚动状态枚举
@@ -33,30 +34,15 @@ enum class ScrollStatus {
 }
 
 /**
- * 多平台滚动状态监听器
+ * 监听触摸拖拽与桌面鼠标滚轮产生的多平台滚动状态。
  *
- * 监听滚动状态变化并通过回调通知:
- * - Idle: 静止状态
- * - Dragging: 用户拖拽中
- * - Settling: 惯性滚动中
+ * 单独按下或普通点击保持 [ScrollStatus.Idle]；真实拖动和滚轮事件报告
+ * [ScrollStatus.Dragging]，滚动完全停止后报告 [ScrollStatus.Idle]。
+ * [Direction.Top] 表示向内容末端浏览，[Direction.Bottom] 表示向内容起点浏览。
  *
- * @param scrollState 可滚动状态对象
- * @param onStateChanged 状态变化回调 (state, direction, scrollState)
- *
- * 使用示例:
- * ```
- * val listState = rememberLazyListState()
- * LazyColumn(
- *     state = listState,
- *     modifier = Modifier.onScrollStateChanged(listState) { state, direction, _ ->
- *         when (state) {
- *             ScrollState.Idle -> println("滚动停止")
- *             ScrollState.Dragging -> println("用户拖拽: ${direction.name}")
- *             ScrollState.Settling -> println("惯性滚动: ${direction.name}")
- *         }
- *     }
- * )
- * ```
+ * @param scrollState 被监听的可滚动状态
+ * @param onStateChanged 滚动状态、方向与原状态对象回调
+ * @return 附加多平台指针监听能力的修饰符
  */
 @Composable
 fun <S : ScrollableState> Modifier.onScrollStateChanged(
@@ -71,16 +57,18 @@ fun <S : ScrollableState> Modifier.onScrollStateChanged(
     val gestureModifier = pointerInput(scrollState) {
         awaitPointerEventScope {
             while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
+                val event = awaitPointerEvent(PointerEventPass.Final)
 
                 when (event.type) {
                     PointerEventType.Press -> {
                         logger.d { "手势按下" }
-                        currentState = ScrollStatus.Dragging
-                        onStateChanged(currentState, Direction.Top, scrollState)
                     }
 
                     PointerEventType.Move -> {
+                        val isPressedMove = event.changes.any { change ->
+                            change.pressed && change.position != change.previousPosition
+                        }
+                        if (!isPressedMove) continue
                         if (currentState != ScrollStatus.Dragging) {
                             logger.d { "手势移动" }
                             currentState = ScrollStatus.Dragging
@@ -93,10 +81,28 @@ fun <S : ScrollableState> Modifier.onScrollStateChanged(
                         onStateChanged(currentState, direction, scrollState)
                     }
 
+                    PointerEventType.Scroll -> {
+                        val delta = event.changes.firstOrNull()?.scrollDelta ?: continue
+                        val axisDelta = if (abs(delta.y) >= abs(delta.x)) delta.y else delta.x
+                        if (axisDelta == 0f) continue
+                        currentState = ScrollStatus.Dragging
+                        val direction = if (axisDelta > 0f) Direction.Top else Direction.Bottom
+                        logger.d { "滚轮滚动: $direction" }
+                        onStateChanged(currentState, direction, scrollState)
+                    }
+
                     PointerEventType.Release -> {
                         logger.d { "手势释放" }
-                        if (scrollState.isScrollInProgress) {
+                        if (currentState == ScrollStatus.Dragging && scrollState.isScrollInProgress) {
                             currentState = ScrollStatus.Settling
+                            val direction = if (scrollState.lastScrolledForward) {
+                                Direction.Top
+                            } else {
+                                Direction.Bottom
+                            }
+                            onStateChanged(currentState, direction, scrollState)
+                        } else if (currentState != ScrollStatus.Idle) {
+                            currentState = ScrollStatus.Idle
                             val direction = if (scrollState.lastScrolledForward) {
                                 Direction.Top
                             } else {

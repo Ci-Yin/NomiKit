@@ -74,7 +74,7 @@ fun JKLazyColumn(
             ),
             currentIsFlingEnd = currentIsFlingEnd,
             orientation = Orientation.Vertical,
-            isSupperSmall = isSmallScrollbar,// 默认数量小于100就启用超小模式———— 大小减少一半、不可点击、拖动?
+            isSupperSmall = isSmallScrollbar, // 紧凑外观仍保留拖动能力。
             // 拇指移动，带动屏幕同步滚动...
             onThumbMoved = state.rememberDraggableScroller(
                 itemsAvailable = itemSize,// 传入项目数量

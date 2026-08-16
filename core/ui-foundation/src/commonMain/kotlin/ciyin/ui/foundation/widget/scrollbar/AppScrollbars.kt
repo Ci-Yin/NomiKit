@@ -57,7 +57,7 @@ fun ScrollableState.DraggableScrollbar(
     orientation: Orientation = Vertical,
     currentIsFlingEnd: Boolean = true,
     isShowTrack: Boolean = true,
-    isSupperSmall: Boolean = false,// 是否超小模式，通常用于内容较少的时候，表示装饰型不可拖动的滚动条
+    isSupperSmall: Boolean = false, // 内容较少时使用紧凑拇指，交互能力不受影响。
     thumbSize: Dp = if (isSupperSmall) 3.dp else 8.dp,// 拇指宽度
 
     onThumbMoved: (Float, Float) -> Unit,

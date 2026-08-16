@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -38,20 +39,30 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- *一个用于绘制滚动条的compose控件
- * @param orientation 滚动条的滚动方向
- * @param state 描述滚动条位置的状态
- * @param minThumbSize 滚动条拇指的最小尺寸
- * @param interactionSource 允许观察滚动条的状态
- * @param thumb 一个用于绘制滚动条thumb的组合组件
- * @param onThumbMoved 一个函数，用于响应由direct引起的滚动条位移
- *用户对滚动条拇指的交互，例如实现快速滚动
+ * 绘制可配置外观与交互能力的通用滚动条。
+ *
+ * 紧凑外观只影响拇指尺寸，不再隐式禁用点击和拖动；只读场景应显式传入
+ * [isInteractive] 为 `false`。
+ *
+ * @param modifier 滚动条修饰符
+ * @param isShowTrack 是否显示轨道
+ * @param isSupperSmall 是否使用按内容比例计算的紧凑拇指
+ * @param isInteractive 是否接受轨道与拇指手势
+ * @param orientation 滚动方向
+ * @param state 滚动条位置状态
+ * @param interactionSource 交互状态源
+ * @param minThumbSize 紧凑拇指的最小尺寸
+ * @param onThumbMoved 拇指位置变化回调
+ * @param onDragStart 开始拖动回调
+ * @param onDragEnd 结束拖动回调
+ * @param thumb 拇指内容
  */
 @Composable
 fun Scrollbar(
     modifier: Modifier = Modifier,
     isShowTrack: Boolean,
     isSupperSmall: Boolean,
+    isInteractive: Boolean = true,
     //itemSize: Int,
     orientation: Orientation,
     state: ciyin.ui.foundation.widget.scrollbar.ScrollbarState,
@@ -67,6 +78,8 @@ fun Scrollbar(
     var pressedOffset by remember { mutableStateOf(Offset.Unspecified) }
     var longPressedOffset by remember { mutableStateOf(Offset.Unspecified) }
     var draggedOffset by remember { mutableStateOf(Offset.Unspecified) }
+    val latestOnDragStart by rememberUpdatedState(onDragStart)
+    val latestOnDragEnd by rememberUpdatedState(onDragEnd)
 
     // 用于在滚动实现跟上时立即在UI中显示拖动反馈
     var interactionThumbTravelPercent by remember { mutableFloatStateOf(Float.NaN) }
@@ -102,59 +115,50 @@ fun Scrollbar(
                     min = scrollbarStartCoordinate + orientation.valueOf(coordinates.size),
                 )
             }
-            // Process scrollbar presses
-            /*---------------------按下（点击），-------------------------*/
-            .pointerInput(Unit) {
-                // 如果是超小模式，则不可以点击、拖动滚动条（应该只是作为装饰使用的！）
-                if (isSupperSmall) return@pointerInput
-                /*------------------------------点击（长按）-----------------------------------------*/
-                // 说明：未来防止点击误触，所以点击轨道，并不会定位。只有点击并长按之后才会进行定位。
-                // 点击只是点击
-                /*detectTapGestures(
-                    onPress = { offset ->
-                        // 点击方式
-                        val initialPress = PressInteraction.Press(offset)
-                        interactionSource?.tryEmit(initialPress)// 将这个点击的交互，发送给交互源 interactionSource
-                        pressedOffset = offset
-                        interactionSource?.tryEmit(
-                            when {
-                                tryAwaitRelease() -> PressInteraction.Release(initialPress)
-                                else -> PressInteraction.Cancel(initialPress)
-                            },
-                        )
-                        // 停止按下
-                        pressedOffset = Offset.Unspecified
-
-                    },
-                )*/
-            }
             // Process scrollbar drags
             /*---------------------拖动，-------------------------*/
-            .pointerInput(Unit) {
-                if (isSupperSmall) return@pointerInput
+            .pointerInput(isInteractive, orientation, interactionSource) {
+                if (!isInteractive) return@pointerInput
 
                 // 定义拖动交互对象，用于存储拖动交互信息
                 var dragInteraction: DragInteraction.Start? = null
+                var isDragActive = false
+
+                val finishDrag: (Boolean) -> Unit = finishDrag@{ isCancelled ->
+                    if (!isDragActive) return@finishDrag
+                    val finalOffset = draggedOffset
+                    dragInteraction?.let { start ->
+                        interactionSource?.tryEmit(
+                            if (isCancelled) {
+                                DragInteraction.Cancel(start)
+                            } else {
+                                DragInteraction.Stop(start)
+                            }
+                        )
+                    }
+                    isDragActive = false
+                    dragInteraction = null
+                    draggedOffset = Offset.Unspecified
+                    latestOnDragEnd(finalOffset)
+                }
 
                 // ——————拖动交互开始的回调
                 val onDragStart: (Offset) -> Unit = { offset ->
                     val start = DragInteraction.Start()// 拖动交互开始对象
                     dragInteraction = start
+                    isDragActive = true
                     interactionSource?.tryEmit(start)// 将这个对象传给【交互源】
                     draggedOffset =
                         offset //+ Offset(-thumbSizePxHalf,-thumbSizePxHalf)// 将拖动偏移量存到这个
-                    onDragStart(draggedOffset)
+                    latestOnDragStart(draggedOffset)
                 }
                 // ——————拖动结束
                 val onDragEnd: () -> Unit = {
-                    dragInteraction?.let { interactionSource?.tryEmit(DragInteraction.Stop(it)) }
-                    draggedOffset = Offset.Unspecified
-                    onDragEnd(draggedOffset)
+                    finishDrag(false)
                 }
                 // ——————拖动取消
                 val onDragCancel: () -> Unit = {
-                    dragInteraction?.let { interactionSource?.tryEmit(DragInteraction.Cancel(it)) }
-                    draggedOffset = Offset.Unspecified
+                    finishDrag(true)
                 }
                 // ——————正在拖动...
                 val onDrag: (change: PointerInputChange, dragAmount: Float) -> Unit =
@@ -167,25 +171,29 @@ fun Scrollbar(
                             )
 
                             Horizontal -> draggedOffset.copy(
-                                x = change.position.y//draggedOffset.x + delta,
+                                x = change.position.x//draggedOffset.x + delta,
                             )
                         }
                     }
 
-                when (orientation) {
-                    Horizontal -> detectHorizontalDragGestures(
-                        onDragStart = onDragStart,
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragCancel,
-                        onHorizontalDrag = onDrag,
-                    )
+                try {
+                    when (orientation) {
+                        Horizontal -> detectHorizontalDragGestures(
+                            onDragStart = onDragStart,
+                            onDragEnd = onDragEnd,
+                            onDragCancel = onDragCancel,
+                            onHorizontalDrag = onDrag,
+                        )
 
-                    Vertical -> detectVerticalDragGestures(
-                        onDragStart = onDragStart,
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragCancel,
-                        onVerticalDrag = onDrag,
-                    )
+                        Vertical -> detectVerticalDragGestures(
+                            onDragStart = onDragStart,
+                            onDragEnd = onDragEnd,
+                            onDragCancel = onDragCancel,
+                            onVerticalDrag = onDrag,
+                        )
+                    }
+                } finally {
+                    finishDrag(true)
                 }
             },
     ) {
