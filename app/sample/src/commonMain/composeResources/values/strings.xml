@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permissions_title">权限管理示例</string>
+    <string name="permissions_hub_description">查看 14 个跨平台权限组并逐组查询、申请或打开设置。</string>
+    <string name="permissions_back">返回</string>
+    <string name="permissions_refresh">刷新全部状态</string>
+    <string name="permissions_request">申请</string>
+    <string name="permissions_settings">设置</string>
+    <string name="permissions_operation_failed">操作失败：%1$s</string>
+    <string name="permissions_unknown_error">未知错误</string>
+    <string name="permissions_status_unknown">未查询</string>
+    <string name="permissions_status_not_determined">未请求</string>
+    <string name="permissions_status_granted">已授权</string>
+    <string name="permissions_status_denied">已拒绝</string>
+    <string name="permissions_status_permanently_denied">永久拒绝</string>
+    <string name="permissions_status_restricted">受限制</string>
+    <string name="permissions_status_unsupported">不支持</string>
+    <string name="permissions_permission_status">%1$s：%2$s</string>
+
+    <string name="permissions_group_camera">相机</string>
+    <string name="permissions_group_phone">电话</string>
+    <string name="permissions_group_microphone">麦克风</string>
+    <string name="permissions_group_sms">短信</string>
+    <string name="permissions_group_location">定位</string>
+    <string name="permissions_group_media">媒体</string>
+    <string name="permissions_group_sensors">传感器</string>
+    <string name="permissions_group_storage">存储</string>
+    <string name="permissions_group_contacts">通讯录</string>
+    <string name="permissions_group_calendar">日历</string>
+    <string name="permissions_group_notifications">通知</string>
+    <string name="permissions_group_bluetooth">蓝牙</string>
+    <string name="permissions_group_wifi">附近 Wi-Fi</string>
+    <string name="permissions_group_internet">网络</string>
+
+    <string name="permissions_permission_camera">相机</string>
+    <string name="permissions_permission_microphone">麦克风</string>
+    <string name="permissions_permission_storage">存储管理</string>
+    <string name="permissions_permission_media_audio">音频媒体</string>
+    <string name="permissions_permission_media_video">视频媒体</string>
+    <string name="permissions_permission_media_images">图片媒体</string>
+    <string name="permissions_permission_location_coarse">粗略定位</string>
+    <string name="permissions_permission_location_fine">精确定位</string>
+    <string name="permissions_permission_bluetooth_connect">蓝牙连接</string>
+    <string name="permissions_permission_bluetooth_scan">蓝牙扫描</string>
+    <string name="permissions_permission_bluetooth_advertise">蓝牙广播</string>
+    <string name="permissions_permission_nearby_wifi">附近 Wi-Fi 设备</string>
+    <string name="permissions_permission_sensors">心率传感器</string>
+    <string name="permissions_permission_motion">运动识别</string>
+    <string name="permissions_permission_notifications">通知</string>
+    <string name="permissions_permission_contacts">通讯录</string>
+    <string name="permissions_permission_calendar">日历</string>
+    <string name="permissions_permission_phone">拨打电话</string>
+    <string name="permissions_permission_sms">发送短信</string>
+    <string name="permissions_permission_read_phone_state">读取电话状态</string>
+    <string name="permissions_permission_internet">网络访问</string>
+</resources>

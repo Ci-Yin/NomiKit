@@ -10,21 +10,29 @@ kotlin {
         implementation(libs.bundles.navigation)
         implementation(libs.bundles.compose)
         implementation(libs.bundles.material3)
+        implementation(libs.compose.components.resources)
         implementation(projects.core.application)
         implementation(projects.core.material)
         implementation(projects.core.platform)
         implementation(projects.core.uiFoundation)
         implementation(projects.feature.fileDownloader)
         implementation(projects.feature.aiIntegrate)
+        implementation(projects.feature.permissions)
         implementation(projects.component.dataStore)
         implementation(projects.component.koin)
     }
 
     sourceSets.androidMain.dependencies {
+        implementation(libs.androidx.activity.compose)
         implementation(libs.compose.ui.tooling.preview)
     }
 
     sourceSets.desktopMain.dependencies {
         implementation(libs.kotlinx.coroutines.swing)
     }
+}
+
+compose.resources {
+    publicResClass = false
+    packageOfResClass = getProperty("android.namespace") + ".sample"
 }

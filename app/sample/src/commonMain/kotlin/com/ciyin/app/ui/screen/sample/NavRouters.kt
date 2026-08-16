@@ -28,6 +28,10 @@ internal object FileDownloaderDemoRouter : NavRouter
 @Serializable
 internal object RuntimeInfoRouter : NavRouter
 
+/** 权限管理示例页。 */
+@Serializable
+internal object PermissionsRouter : NavRouter
+
 /** 占位样例子页 A。 */
 @Serializable
 internal object SampleExamplePlaceholderARouter : NavRouter
@@ -40,6 +44,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(AiChatRouter::class, AiChatRouter.serializer())
             subclass(FileDownloaderDemoRouter::class, FileDownloaderDemoRouter.serializer())
             subclass(RuntimeInfoRouter::class, RuntimeInfoRouter.serializer())
+            subclass(PermissionsRouter::class, PermissionsRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
                 SampleExamplePlaceholderARouter.serializer()

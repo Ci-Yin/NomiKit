@@ -10,6 +10,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
+import com.ciyin.app.ui.screen.permissions.PermissionsScreen
 import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
 
 /**
@@ -52,6 +53,11 @@ fun SampleModuleRoot() {
             }
             entry<RuntimeInfoRouter> {
                 RuntimeInfoScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<PermissionsRouter> {
+                PermissionsScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

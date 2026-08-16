@@ -21,6 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ciyin.app.sample.Res
+import com.ciyin.app.sample.permissions_hub_description
+import com.ciyin.app.sample.permissions_title
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,32 +79,41 @@ private data class SampleHubEntry(
 )
 
 @Composable
-private fun rememberSampleHubEntries() = remember {
-    listOf(
-        SampleHubEntry(
-            title = "文生图（AiImageIntegrate + SD WebUI）",
-            description = "feature/ai-integrate 最小示例，需本地 WebUI --api",
-            navRouter = AiImageDemoRouter,
-        ),
-        SampleHubEntry(
-            title = "AI 聊天（AiChatIntegrate + OpenAI 兼容）",
-            description = "类 ChatGPT 最小流式聊天示例，支持本地 Ollama 或云端兼容端点。",
-            navRouter = AiChatRouter,
-        ),
-        SampleHubEntry(
-            title = "文件下载",
-            description = "断点续传、分块下载、覆盖策略与任务控制示例。",
-            navRouter = FileDownloaderDemoRouter,
-        ),
-        SampleHubEntry(
-            title = "运行环境信息",
-            description = "展示当前平台、构建配置、应用目录与时间参数。",
-            navRouter = RuntimeInfoRouter,
-        ),
-        SampleHubEntry(
-            title = "占位示例 A",
-            description = "第二个占位入口。",
-            navRouter = SampleExamplePlaceholderARouter,
-        ),
-    )
+private fun rememberSampleHubEntries(): List<SampleHubEntry> {
+    val permissionsTitle = stringResource(Res.string.permissions_title)
+    val permissionsDescription = stringResource(Res.string.permissions_hub_description)
+    return remember(permissionsTitle, permissionsDescription) {
+        listOf(
+            SampleHubEntry(
+                title = "文生图（AiImageIntegrate + SD WebUI）",
+                description = "feature/ai-integrate 最小示例，需本地 WebUI --api",
+                navRouter = AiImageDemoRouter,
+            ),
+            SampleHubEntry(
+                title = "AI 聊天（AiChatIntegrate + OpenAI 兼容）",
+                description = "类 ChatGPT 最小流式聊天示例，支持本地 Ollama 或云端兼容端点。",
+                navRouter = AiChatRouter,
+            ),
+            SampleHubEntry(
+                title = "文件下载",
+                description = "断点续传、分块下载、覆盖策略与任务控制示例。",
+                navRouter = FileDownloaderDemoRouter,
+            ),
+            SampleHubEntry(
+                title = permissionsTitle,
+                description = permissionsDescription,
+                navRouter = PermissionsRouter,
+            ),
+            SampleHubEntry(
+                title = "运行环境信息",
+                description = "展示当前平台、构建配置、应用目录与时间参数。",
+                navRouter = RuntimeInfoRouter,
+            ),
+            SampleHubEntry(
+                title = "占位示例 A",
+                description = "第二个占位入口。",
+                navRouter = SampleExamplePlaceholderARouter,
+            ),
+        )
+    }
 }
