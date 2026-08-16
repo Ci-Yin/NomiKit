@@ -1,6 +1,7 @@
 package ciyin.parser.core.picture
 
 import ciyin.parser.core.MultiParser
+import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureParserId
 import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
@@ -32,7 +33,7 @@ class PictureMultiParser(
      * 在多个站点的图站解析结果基础上，构造聚合后的 [PictureResult]。
      *
      * - 分页信息与标签来自框架归并后的 [multiResult]；
-     * - 内容列表为所有站点返回内容的去重并集（按 `md5` 去重）。
+     * - 画集列表按“站点 + pool ID”去重；其他图片列表继续按 `md5` 去重。
      */
     override suspend fun onMerge(
         request: PictureRequest,
@@ -42,7 +43,12 @@ class PictureMultiParser(
         return PictureResult(
             totalPages = multiResult.totalPages,
             tags = multiResult.tags,
-            contents = results.flatMap { it.contents }.distinctBy { it.md5 },
+            contents = results.flatMap { it.contents }.let { contents ->
+                when (request.type) {
+                    PictureParserType.Pools -> contents.distinctBy(Picture::requirePoolMergeIdentity)
+                    else -> contents.distinctBy(Picture::md5)
+                }
+            },
         )
     }
 
@@ -52,5 +58,23 @@ class PictureMultiParser(
     override fun onFallback(): PictureResult {
         return PictureResult()
     }
+}
+
+/**
+ * 返回画集聚合使用的稳定业务身份。
+ *
+ * Pools 响应必须同时提供站点和正数 pool ID；缺失时直接失败，避免回退空 md5 后静默丢条目。
+ *
+ * @return 规范化站点与 pool ID 组成的身份
+ */
+private fun Picture.requirePoolMergeIdentity(): String {
+    val normalizedSite = site.trim().lowercase()
+    val poolId = requireNotNull(poolSummary) {
+        "画集聚合条目缺少 PoolSummary：$this"
+    }.poolId
+    require(normalizedSite.isNotEmpty() && poolId > 0) {
+        "画集聚合条目缺少合法站点或 pool ID：$this"
+    }
+    return "$normalizedSite:$poolId"
 }
 

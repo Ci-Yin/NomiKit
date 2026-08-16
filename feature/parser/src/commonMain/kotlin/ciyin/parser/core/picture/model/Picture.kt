@@ -28,6 +28,7 @@ import ciyin.parser.model.Tag
  * @property postUrl 图片帖子页面 URL
  * @property poolUrl 图片池页面 URL
  * @property poolId 图片池 ID
+ * @property poolSummary 画集列表条目的权威摘要；普通图片为 `null`
  *
  * @property fileExt 文件扩展名
  * @property fileSize 文件大小（字节）
@@ -60,6 +61,7 @@ data class Picture(
     val postUrl: String = "",
     val poolUrl: String = "",
     val poolId: Int = 0,
+    val poolSummary: PoolSummary? = null,
     val fileExt: String = "",
     val fileSize: Long = 0L,
     val md5: String = "",
@@ -70,4 +72,19 @@ data class Picture(
     val children: List<String> = emptyList(),
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
+)
+
+/**
+ * 画集列表条目的不可变业务摘要。
+ *
+ * @property poolId 站点内画集唯一标识
+ * @property title 画集标题
+ * @property postCount 画集图片数量；站点未提供时为 `null`
+ * @property url 画集详情页地址
+ */
+data class PoolSummary(
+    val poolId: Int,
+    val title: String,
+    val postCount: Int?,
+    val url: String,
 )

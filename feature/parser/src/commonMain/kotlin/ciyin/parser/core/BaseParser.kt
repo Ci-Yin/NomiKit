@@ -36,11 +36,14 @@ import kotlinx.coroutines.flow.callbackFlow
  * 2. 在 [setup] 中设置 `id`、`baseUrl`，并用 `on(SomeType) { request { ... }; response { ... } }` 注册各类型（[SomeType] 为 [TType] 的单例）。
  * 3. 调用 [request] 传入 [TRequest]，收集 [ParserEvent.Success] 或 [ParserEvent.Failure] 得到结果。
  *
+ * @param baseUrlOverride 可选的站点基础地址覆盖值，供镜像端点与离线契约测试使用。
  * @param TType 解析类型，需实现 [ParserType]，用于区分漫画/图片/电影等不同解析流程。
  * @param TRequest 解析请求类型，需实现 [ParserRequest]；[ParserRequest.type] 决定使用的 [TypeScope]。
  * @param TResult 解析结果类型，需实现 [ParserResult]；由各类型的 response DSL 构建并可通过 [ParserScope.onResultRevise] 修订。
  */
-abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult : ParserResult> {
+abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult : ParserResult>(
+    private val baseUrlOverride: String? = null,
+) {
 
     /** 当前解析器使用的日志实例，供子类记录请求/响应或错误。 */
     protected val logger by lazy { thisLogger() }
@@ -60,6 +63,7 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
      */
     var configure: ParserConfigure<TRequest, TResult> = parserScope.run {
         setup()
+        baseUrlOverride?.let { baseUrl = it }
         require(id != EmptyParserId) {
             "站点未设置 ID，在 ParserScope<*, *, *>.setup() {...} 里调用 id = \"...\""
         }

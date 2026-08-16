@@ -1,10 +1,6 @@
 ﻿package ciyin.parser.site
 
-import ciyin.parser.core.ParserEvent
-import ciyin.parser.core.picture.PictureParserType
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.site.picture.DanbooruParser
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -34,30 +30,6 @@ class DanbooruParserTest {
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
         assertEquals(0, configure.result.totalPages)
-    }
-
-    @Test
-    fun danbooru() = runTest {
-        val parser = DanbooruParser()
-
-        parser.request(
-            PictureRequest(
-                type = PictureParserType.Posts,
-                page = 1,
-                tags = listOf("qys3"),
-            )
-        ).collect {
-            when (it) {
-                is ParserEvent.Failure -> error(it.errors)
-                is ParserEvent.Success -> {
-                    val result = it.result
-                    assertTrue(result.contents.isNotEmpty())
-                    println(result)
-                }
-            }
-        }
-
-
     }
 
 }

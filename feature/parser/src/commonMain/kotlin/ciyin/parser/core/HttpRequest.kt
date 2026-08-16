@@ -38,7 +38,7 @@ class HttpRequestBuilder(
     /**
      * 使用 [URLBuilder] DSL 设置请求 URL。
      *
-     * 会继承 [baseUrl] 的 protocol 与 host，在 [block] 中可修改 path、pathSegments、parameters 等。
+     * 会继承 [baseUrl] 的 protocol、host 与 port，在 [block] 中可修改 path、pathSegments、parameters 等。
      *
      * @param block 在 [URLBuilder] 上配置 path、query 等的 DSL。
      */
@@ -47,6 +47,7 @@ class HttpRequestBuilder(
             val urlBuilder = takeFrom(baseUrl)
             protocol = urlBuilder.protocol
             host = urlBuilder.host
+            port = urlBuilder.port
             block()
         }
     }
@@ -76,6 +77,7 @@ class HttpRequestBuilder(
         url = URLBuilder(
             protocol = urlBuilder.protocol,
             host = urlBuilder.host,
+            port = urlBuilder.port,
             pathSegments = pathSegments,
             parameters = parametersOf(
                 parameters.mapValues { entry ->

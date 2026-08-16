@@ -4,7 +4,6 @@ import ciyin.io.extension
 import ciyin.io.nameWithoutExtension
 import ciyin.io.toFile
 import ciyin.lang.match
-import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
 import ciyin.parser.core.picture.PictureParserType.Pool
 import ciyin.parser.core.picture.PictureParserType.Pools
@@ -23,15 +22,10 @@ import ciyin.parser.site.util.toTimestamp
 import ciyin.parser.util.PictureParserScope
 import io.ktor.http.URLBuilder
 import io.ktor.http.encodedPath
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 /**
  * Yande 解析器（新 DSL 版）。
@@ -44,9 +38,6 @@ class YandeParser : PictureParser() {
     private companion object {
         private const val PostsScriptIndex = 5
         private const val PostScriptIndex = 3
-        private const val PoolsScriptIndex = 4
-        private const val MillisPerDay = 86_400_000L
-
         private val ExcludedTags = setOf("video", "animated", "animated_gif")
 
     }
@@ -88,11 +79,8 @@ class YandeParser : PictureParser() {
 
         on(Posts) {
             request { req ->
-                val parameters = parametersOf(
-                    "page" to req.page,
-                    "tags" to req.tags.joinToString(" "),
-                )
-                html { url("/post", parameters) }
+                val plan = yandePictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -112,12 +100,9 @@ class YandeParser : PictureParser() {
 
         on(Pools) {
             request { req ->
-                val parameters = parametersOf(
-                    "page" to req.page,
-                    "query" to req.search,
-                )
-                html { url("/pool", parameters) }
-                json { url("/pool.json", parameters) }
+                val plan = yandePictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
+                json { url(requireNotNull(plan.jsonPath), plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -137,16 +122,9 @@ class YandeParser : PictureParser() {
 
         on(Popular) {
             request { req ->
-                val targetDateTime = Instant.fromEpochMilliseconds(
-                    Clock.System.now().toEpochMilliseconds() - req.page.toLong() * MillisPerDay
-                ).toLocalDateTime(TimeZone.currentSystemDefault())
-                val parameters = parametersOf(
-                    "year" to targetDateTime.year,
-                    "month" to targetDateTime.month.number,
-                    "day" to targetDateTime.day,
-                )
-                html { url("/post/popular_by_${req.scale}", parameters) }
-                json { url("/post/popular_by_${req.scale}.json", parameters) }
+                val plan = yandePictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
+                json { url(requireNotNull(plan.jsonPath), plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -206,27 +184,12 @@ class YandeParser : PictureParser() {
      * 解析画集列表页面。
      */
     private fun ResponseScope.parsePoolsResult(result: PictureResult): PictureResult {
-        val contents = parseRegisteredPosts(PoolsScriptIndex).toSupportedPictures()
-        val pools = if (bodyForJson().isBlank()) {
-            emptyList()
-        } else {
-            bodyForJson<List<YandePool>>()
-        }
-
-        val revisedContents = if (pools.size == contents.size) {
-            contents.zip(pools).map { (picture, pool) ->
-                picture.copy(
-                    poolId = pool.id,
-                    name = pool.name,
-                    poolUrl = pool.poolUrl(configure.baseUrl),
-                )
-            }
-        } else {
-            contents
-        }
-
         return result.copy(
-            contents = revisedContents,
+            contents = parseYandePools(
+                html = bodyForHtml(),
+                json = bodyForJson(),
+                baseUrl = configure.baseUrl,
+            ),
             totalPages = totalPagesFromHtml(),
         )
     }

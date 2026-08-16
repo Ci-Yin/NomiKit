@@ -14,8 +14,12 @@ import ciyin.parser.util.buildFileName
 
 /**
  * 图站解析父类骨架。
+ *
+ * @param baseUrlOverride 可选的站点基础地址覆盖值。
  */
-abstract class PictureParser : BaseParser<PictureParserType, PictureRequest, PictureResult>() {
+abstract class PictureParser(
+    baseUrlOverride: String? = null,
+) : BaseParser<PictureParserType, PictureRequest, PictureResult>(baseUrlOverride) {
 
     override val defTResult: PictureResult get() = PictureResult()
 

@@ -97,6 +97,12 @@ class ExamplePictureParser : PictureParser() {
 - `Picture` 映射要尽量补齐 `id`、`site`、`originalUrl/sampleUrl/thumbnailUrl`、`postUrl`、`md5`、`fileExt`、`width/height`、`rating`、`tags`、时间戳。
 - 图片结果修订优先放在 `onItemRevise`，让文件名、站点、URL 补全规则集中处理。
 - 过滤不支持媒体类型时要在站点解析层明确处理，例如 Yande 当前过滤 `video`、`animated`、`animated_gif`。
+- Danbooru/Yande 的 `Pools` 列表以 JSON 摘要作为画集集合、ID、标题和可空数量的权威来源，再合并 HTML/内嵌脚本首图；无封面条目仍须保留，`post_count` 缺失保持 `null`。
+- Danbooru 通过 HTML 详情链接中的 pool ID 合并封面；Yande 列表 HTML 未提供 pool ID 时按 JSON 权威顺序关联首图。单个 `Pool` 详情继续解析帖子列表，不复用摘要数组解析器。
+- Danbooru 的真实 DSL 注册必须保持 `Pools -> parsePoolsResult`、`Pool -> parsePoolResult`；离线测试要穿过 `request()` 的注册、请求与响应全链，不能只调用解析 helper。
+- Danbooru 画集搜索参数使用原始 key `search[name_matches]` 交给 URLBuilder 编码；不要预编码为 `%5B/%5D`，否则最终 URL 会出现 `%255B/%255D`。
+- Danbooru/Yande 热门榜单仅支持 `day`、`week`、`month`，路径和参数必须按站点显式映射；未知范围应明确失败，不能静默落到其他页面。
+- Yande 热门 page 1 的 `day` 使用当天；后续页中 `day` 用 `DatePeriod(days = page - 1)`、`week` 用 `DatePeriod(days = 7 * (page - 1))`、`month` 用 `DatePeriod(months = page - 1)` 向前推进。测试通过显式 `LocalDate` 固定今天，生产入口再注入当前本地日期，避免时钟脆弱。
 
 ## 新增漫画或影视站点
 

@@ -5,7 +5,6 @@ import ciyin.io.nameWithoutExtension
 import ciyin.io.replaceName
 import ciyin.io.toFile
 import ciyin.lang.match
-import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
 import ciyin.parser.core.picture.PictureParserType.Pool
 import ciyin.parser.core.picture.PictureParserType.Pools
@@ -31,8 +30,12 @@ import kotlinx.serialization.Serializable
 
 /**
  * Danbooru 解析器（新 DSL 版）。
+ *
+ * @param siteBaseUrl 可选的站点基础地址，默认使用 Danbooru 官网。
  */
-class DanbooruParser : PictureParser() {
+class DanbooruParser(
+    siteBaseUrl: String? = null,
+) : PictureParser(siteBaseUrl) {
 
     /**
      * Danbooru 站点的 DSL 配置入口。
@@ -55,7 +58,10 @@ class DanbooruParser : PictureParser() {
                 fileExt = if (isZip) "zip" else fileExt,
                 md5 = md5.ifBlank { originalUrl.toFile().nameWithoutExtension },
             ).run {
-                if (thumbnailUrl.isNotEmpty() && sampleUrl.isNotEmpty() && originalUrl.isNotEmpty()) {
+                if (
+                    poolSummary != null ||
+                    (thumbnailUrl.isNotEmpty() && sampleUrl.isNotEmpty() && originalUrl.isNotEmpty())
+                ) {
                     this
                 } else {
                     logger.w { "图片信息不完整，已忽略：$this" }
@@ -68,12 +74,9 @@ class DanbooruParser : PictureParser() {
         on(Posts) {
 
             request { req ->
-                val parameters = parametersOf(
-                    "page" to req.page,
-                    "tags" to req.tags.joinToString(",")
-                )
-                html { url("/posts", parameters) }
-                json { url("/posts.json", parameters) }
+                val plan = danbooruPictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
+                json { url(requireNotNull(plan.jsonPath), plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -102,12 +105,9 @@ class DanbooruParser : PictureParser() {
         on(Pools) {
 
             request { req ->
-                val parameters = parametersOf(
-                    "page" to req.page,
-                    "search%5Bname_matches%5D" to req.search
-                )
-                html { url("/pools/gallery", parameters) }
-                json { url("/pools/gallery.json", parameters) }
+                val plan = danbooruPictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
+                json { url(requireNotNull(plan.jsonPath), plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -124,7 +124,7 @@ class DanbooruParser : PictureParser() {
             }
 
             response { result ->
-                parsePoolsResult(result)
+                parsePoolResult(result)
             }
 
         }
@@ -132,12 +132,9 @@ class DanbooruParser : PictureParser() {
         on(Popular) {
 
             request { req ->
-                val parameters = parametersOf(
-                    "page" to req.page,
-                    "scale" to req.scale
-                )
-                html { url("/explore/posts/popular", parameters) }
-                json { url("/explore/posts/popular.json", parameters) }
+                val plan = danbooruPictureRequestPlan(req)
+                html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
+                json { url(requireNotNull(plan.jsonPath), plan.parameters.toMutableMap()) }
             }
 
             response { result ->
@@ -161,10 +158,20 @@ class DanbooruParser : PictureParser() {
 
     private fun ResponseScope.parsePoolsResult(result: PictureResult): PictureResult {
         return result.copy(
-            contents = document.pictures(),
+            contents = parseDanbooruPools(
+                html = bodyForHtml(),
+                json = bodyForJson(),
+                baseUrl = configure.baseUrl,
+            ),
             totalPages = document.talPages(),
         )
     }
+
+    /** 解析单个画集详情中的帖子列表。 */
+    private fun ResponseScope.parsePoolResult(result: PictureResult): PictureResult = result.copy(
+        contents = document.pictures(),
+        totalPages = document.talPages(),
+    )
 
     /** 从 HTML 中提取图片信息。*/
     private fun Element.pictures(

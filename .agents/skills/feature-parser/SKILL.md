@@ -14,6 +14,7 @@ description: Use the feature/parser Kotlin Multiplatform parser DSL library (pac
 - 通用抽象：`BaseParser<TType, TRequest, TResult>`、`ParserType`、`ParserRequest`、`ParserResult`、`ParserId`。
 - 类型 DSL：`ParserScope` 配站点，`TypeScope` 配某个解析类型，`RequestScope` 配 `html/json/xml` 请求，`ResponseScope` 读取响应并解析结果。
 - 领域骨架：`PictureParser`、`ComicParser`、`MovieParser` 以及对应的 `PictureRequest`、`ComicRequest`、`MovieRequest`、`PictureResult`、`ComicResult`、`MovieResult`。
+- 图片画集摘要：`Picture.poolSummary` 使用可空不可变 `PoolSummary(poolId, title, postCount, url)`；普通帖子保持 `null`，远端未返回数量时 `postCount` 必须保持 `null`，不得伪造为 `0`。
 - 聚合器：`MultiParser` 负责并发执行启用的解析器，具体使用 `PictureMultiParser`、`ComicMultiParser`、`MovieMultiParser`。
 - 站点实现不属于本模块；新增 Danbooru/Yande/Hanime 等具体站点时看 `feature-parser-site` skill。
 
@@ -58,6 +59,7 @@ class ExamplePictureParser : PictureParser() {
 注意事项：
 
 - `id` 不能是 `EmptyParserId`，`baseUrl` 不能为空；否则解析器初始化会失败。
+- 需要离线契约测试、镜像站点或显式替代端点时，让具体解析器构造参数传入 `PictureParser(baseUrlOverride)`；`BaseParser` 会在 `setup` 执行前保存该值，避免子类属性尚未初始化的时序问题。
 - `on(type)` 中至少注册一个 `html`、`json` 或 `xml` 请求；否则 `request(...)` 时会报“未注册任何请求”。
 - `html/json/xml` 默认 key 分别是 `ResultType.Html/Json/Xml`；同一 key 重复注册会覆盖前一次。
 - `response { result -> ... }` 必须返回新的或修订后的 `TResult`，不要只修改临时变量。
@@ -84,6 +86,7 @@ html {
 
 - 单值参数用 `parametersOf("page" to req.page)`；多值参数用 `url(path, mapOf("tag" to listOf("a", "b")))`。
 - 需要自定义 pathSegments、encodedPath 或复杂 query 时，使用 `url { ... }` 的 `URLBuilder` DSL。
+- `HttpRequestBuilder.url` 会保留 `baseUrl` 的非默认端口；本地离线服务和镜像端点不得另行手拼端口。
 - 请求头用 `header(name, value)` 或 `headers(...)`，不要在响应解析阶段补请求信息。
 
 ## 调用解析器
@@ -124,7 +127,8 @@ val multiParser = PictureMultiParser(
 
 注意事项：
 
-- 图片聚合按 `md5` 去重；漫画/影视聚合以对应 `MultiParser` 实现为准。
+- 普通图片聚合按 `md5` 去重；`PictureParserType.Pools` 按规范化站点 + 正数 `poolId` 去重，使同站点同画集合并、跨站点相同 ID 共存，空封面的多个画集也不会互相吞掉。画集缺少站点、摘要或正数 `poolId` 时应明确失败，不能伪造 `md5`。
+- 漫画/影视聚合以对应 `MultiParser` 实现为准。
 - 全部失败或无启用 parser 时返回 `onFallback()` 的默认结果。
 - `MultiParserEvent.Failure` 的 key 是失败站点的 `ParserId`，适合向上层做明确错误提示或降级。
 
@@ -147,5 +151,6 @@ val name = FileNameInfo("danbooru", 123, "abcd", "jpg").buildFileName()
 
 - 新增 Kotlin API 遵守项目规则补中文 KDoc。
 - 公共模型保持不可变 `data class` + 默认值，避免把网络 DTO 泄露到通用模型。
+- 画集列表可用 `Picture` 承载首图与 `PoolSummary`，但摘要 ID、标题、数量和详情 URL 必须来自站点权威数据；封面缺失不能导致摘要条目丢失。
 - 错误要转成明确事件或向上抛出，不要用空列表、空字符串掩盖上游解析问题。
 - 修改本模块后优先运行 `.\gradlew.bat :feature:parser:compileCommonMainKotlinMetadata --console=plain`。
