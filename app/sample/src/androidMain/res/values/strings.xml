@@ -1,0 +1,7 @@
+<resources>
+    <string name="health_permissions_rationale_title">健康权限说明</string>
+    <string name="health_permissions_rationale_back">返回</string>
+    <string name="health_permissions_rationale_summary">此页面说明权限管理示例如何处理心率权限。</string>
+    <string name="health_permissions_rationale_data_title">数据处理</string>
+    <string name="health_permissions_rationale_data_body">权限管理示例只查询和申请系统权限，不读取、保存、上传或分享任何心率与健康数据。</string>
+</resources>

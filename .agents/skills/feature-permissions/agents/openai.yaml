@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Permissions"
+  short_description: "Integrate NomiKit cross-platform permissions"
+  default_prompt: "Use $feature-permissions to integrate and validate cross-platform runtime permissions."

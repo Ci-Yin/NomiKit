@@ -73,6 +73,7 @@ shadow = "8.1.1" # https://github.com/GradleUp/shadow/releases
 # 状态管理、函数式与测试。
 arrow = "2.1.2" # https://github.com/arrow-kt/arrow/releases
 flowredux2 = "2.0.1" # https://github.com/freeletics/FlowRedux/releases
+xxpermissions = "26.5" # https://github.com/getActivity/XXPermissions/releases
 junit = "4.13.2" # https://github.com/junit-team/junit4/releases
 rxjava = "3.1.9" # https://github.com/ReactiveX/RxJava/releases
 rxkotlin = "3.0.1" # https://github.com/ReactiveX/RxKotlin/releases
@@ -274,6 +275,7 @@ arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
 arrow-optics-ksp = { module = "io.arrow-kt:arrow-optics-ksp-plugin", version.ref = "arrow" }
 rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
 rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
+xxpermissions = { module = "com.github.getActivity:XXPermissions", version.ref = "xxpermissions" }
 
 [bundles]
 
@@ -361,6 +363,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 # 数据库与打包插件。

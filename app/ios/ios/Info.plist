@@ -4,5 +4,25 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>权限示例需要访问相机以演示相机授权流程。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>权限示例需要访问麦克风以演示录音授权流程。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>权限示例需要读取照片与视频以演示媒体授权流程。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>权限示例需要在使用期间访问位置以演示定位授权流程。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>权限示例需要演示后台定位授权状态。</string>
+	<key>NSContactsUsageDescription</key>
+	<string>权限示例需要读取通讯录以演示联系人授权流程。</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>权限示例需要读取日历以演示日历授权流程。</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>权限示例需要完整访问日历以演示日历授权流程。</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>权限示例需要使用蓝牙以演示蓝牙授权流程。</string>
+	<key>NSMotionUsageDescription</key>
+	<string>权限示例需要读取运动数据以演示传感器授权流程。</string>
 </dict>
 </plist>

@@ -25,6 +25,11 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://jitpack.io") {
+            content {
+                includeGroup("com.github.getActivity")
+            }
+        }
     }
 }
 
@@ -63,6 +68,7 @@ include(":feature:kotlin-script")
 include(":feature:serialization")
 include(":feature:parser")
 include(":feature:parser-site")
+include(":feature:permissions")
 include(":feature:sample")
 include(":feature:sdwebui")
 include(":feature:ai-core")
