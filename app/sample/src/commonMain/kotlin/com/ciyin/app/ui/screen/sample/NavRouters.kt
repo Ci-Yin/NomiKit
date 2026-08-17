@@ -40,6 +40,10 @@ internal object PlatformShareDemoRouter : NavRouter
 @Serializable
 internal object VideoPlayerDemoRouter : NavRouter
 
+/** 系统媒体库示例页。 */
+@Serializable
+internal object MediaLibraryDemoRouter : NavRouter
+
 /** 占位样例子页 A。 */
 @Serializable
 internal object SampleExamplePlaceholderARouter : NavRouter
@@ -55,6 +59,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(PermissionsRouter::class, PermissionsRouter.serializer())
             subclass(PlatformShareDemoRouter::class, PlatformShareDemoRouter.serializer())
             subclass(VideoPlayerDemoRouter::class, VideoPlayerDemoRouter.serializer())
+            subclass(MediaLibraryDemoRouter::class, MediaLibraryDemoRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
                 SampleExamplePlaceholderARouter.serializer()

@@ -11,6 +11,7 @@ plugins {
 val componentDependencies = listOf<Dependency>(
     projects.component.room,
     projects.component.dataStore,
+    projects.component.mediaLibrary,
 )
 
 kotlin {
