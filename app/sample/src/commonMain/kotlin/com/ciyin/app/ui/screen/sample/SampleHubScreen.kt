@@ -22,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ciyin.app.sample.Res
+import com.ciyin.app.sample.media_library_demo_hub_description
+import com.ciyin.app.sample.media_library_demo_hub_title
 import com.ciyin.app.sample.permissions_hub_description
 import com.ciyin.app.sample.permissions_title
 import com.ciyin.app.sample.platform_share_demo_hub_description
@@ -90,6 +92,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
     val platformShareDescription = stringResource(Res.string.platform_share_demo_hub_description)
     val videoPlayerTitle = stringResource(Res.string.video_player_demo_title)
     val videoPlayerDescription = stringResource(Res.string.video_player_demo_description)
+    val mediaLibraryTitle = stringResource(Res.string.media_library_demo_hub_title)
+    val mediaLibraryDescription = stringResource(Res.string.media_library_demo_hub_description)
     return remember(
         permissionsTitle,
         permissionsDescription,
@@ -97,6 +101,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
         platformShareDescription,
         videoPlayerTitle,
         videoPlayerDescription,
+        mediaLibraryTitle,
+        mediaLibraryDescription,
     ) {
         listOf(
             SampleHubEntry(
@@ -128,6 +134,11 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
                 title = videoPlayerTitle,
                 description = videoPlayerDescription,
                 navRouter = VideoPlayerDemoRouter,
+            ),
+            SampleHubEntry(
+                title = mediaLibraryTitle,
+                description = mediaLibraryDescription,
+                navRouter = MediaLibraryDemoRouter,
             ),
             SampleHubEntry(
                 title = "运行环境信息",

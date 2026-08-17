@@ -10,6 +10,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
+import com.ciyin.app.ui.screen.medialibrary.MediaLibraryDemoScreen
 import com.ciyin.app.ui.screen.permissions.PermissionsScreen
 import com.ciyin.app.ui.screen.platformshare.PlatformShareDemoScreen
 import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
@@ -70,6 +71,11 @@ fun SampleModuleRoot() {
             }
             entry<VideoPlayerDemoRouter> {
                 VideoPlayerDemoScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<MediaLibraryDemoRouter> {
+                MediaLibraryDemoScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

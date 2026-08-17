@@ -1,0 +1,4 @@
+interface:
+  display_name: "Media Library"
+  short_description: "Integrate cross-platform system media publishing"
+  default_prompt: "Use $media-library to integrate and validate cross-platform system media publishing."
