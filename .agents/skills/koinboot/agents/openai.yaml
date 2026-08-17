@@ -1,0 +1,4 @@
+interface:
+  display_name: "KoinBoot"
+  short_description: "Configure KoinBoot and adapt KMP libraries"
+  default_prompt: "Use $koinboot to add KoinBoot auto-configuration to this KMP module."
