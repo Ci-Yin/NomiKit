@@ -1,6 +1,6 @@
 ---
 name: core-platform
-description: Use the core/platform Kotlin Multiplatform platform abstraction module (package ciyin.platform). Covers Context/LocalContext/Context.files, ContextFiles/CommonContextFiles, Platform/currentPlatform/currentPlatformDesktop, Arch/PlatformType/SystemProvider/getPlatform, logger/thisLogger/Log, DateTime helpers, TaskSchedule, and URI-to-temp-file platform IO. Use when 用户要在 NomiKit 中获取平台上下文、判断平台、记录日志、使用平台目录抽象，或维护 core/platform expect/actual。
+description: Use the core/platform Kotlin Multiplatform platform abstraction module (package ciyin.platform). Covers Context/LocalContext/Context.files, ContextFiles/CommonContextFiles, Platform/currentPlatform/currentPlatformDesktop, Arch/PlatformType/SystemProvider/getPlatform, logger/thisLogger/Log, DateTime helpers, TaskSchedule, URI-to-temp-file platform IO, and text/single-file/multi-file system sharing. Use when 用户要在 NomiKit 中获取平台上下文、判断平台、记录日志、使用平台目录抽象、调用系统分享，或维护 core/platform expect/actual。
 ---
 
 # core/platform 使用指南
@@ -85,6 +85,38 @@ Log.debug("Tag", "message")
 - `logger()` / `thisLogger()` 返回 Kermit `Logger.withTag(...)`。
 - `Log` 是项目自带的简单打印与 `StateFlow` 日志流，适合轻量调试；结构化日志优先用 Kermit。
 - 时间 helper 在 `ciyin.platform.time` 下，提供 `currentTimeMillis()`、`currentTimeSecond()`、`LocalDateTime.format(...)`、`Clock.nowLocal()` 等。
+
+## 系统分享
+
+```kotlin
+val result = sharePlatformContent(
+    context = context,
+    payload = PlatformSharePayload.File(
+        value = PlatformShareFile(
+            source = PlatformShareFileSource.LocalFile(file),
+            mimeType = "image/png",
+            displayName = file.name,
+        ),
+        title = "分享图片",
+    ),
+)
+```
+
+注意事项：
+
+- API 位于 `ciyin.platform.share`，支持 `Text`、单个 `File` 和非空 `Files`。
+- `Text`、`File`、`Files` 均可通过 `title` 提供内容标题；显式空白标题和空白文本会报告 `InvalidPayload`。
+- 本地文件使用 `ciyin.io.File`；已有平台 URI 使用 `PlatformShareFileSource.Uri`，调用方必须先取得读取权限。
+- Android 本地文件必须位于应用 `cache`、`files` 或 `external-files` 目录，模块 FileProvider 不开放外部存储根目录。
+- Android 使用 `ACTION_SEND` / `ACTION_SEND_MULTIPLE`、`ClipData` 和临时 URI 读取授权；混合 MIME 会收敛为同主类型通配符或 `*/*`。
+- iOS 使用前台 `UIWindowScene` 的活动 window 展示 `UIActivityViewController`，并为 iPad 配置 popover anchor。
+- Windows Desktop 使用当前活动 AWT/Compose 窗口的 HWND，通过 `IDataTransferManagerInterop` 打开系统 Share Sheet；同一 HWND 在窗口生命周期内复用唯一的 `DataTransferManager`，每次分享只持有自己的事件 token 和载荷。
+- Windows 文件使用 `StorageFile` 和 `DataPackage.SetStorageItems` 保序提交；窗口关闭时才释放 manager、interop 和对应的 WinRT apartment 引用。
+- Windows 的 `Uri` 文件来源只支持 `file:` URI；`LocalFile` 和 URI 都会在打开面板前校验为存在、可读的普通文件。
+- Windows 未提供 Share Contract，以及 macOS、Linux Desktop 时返回 `PlatformShareResult.Unsupported`；不会用复制路径、剪贴板或文件管理器代替分享。
+- 文件、URI、权限或展示控制器异常会抛出 `PlatformShareException`；Data 层应根据 `reason` 映射通用错误，UI 不应直接消费技术异常。
+- 模块不显示 Toast、不包含用户文案，也不改变页面导航状态。
+- 可运行示例位于 `app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/platformshare`，覆盖文本、缓存目录单文件和缓存目录多文件分享，并在 Sample Hub 注册入口。
 
 ## 修改注意
 
