@@ -11,6 +11,7 @@ import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
 import com.ciyin.app.ui.screen.permissions.PermissionsScreen
+import com.ciyin.app.ui.screen.platformshare.PlatformShareDemoScreen
 import com.ciyin.app.ui.screen.runtimeinfo.RuntimeInfoScreen
 import com.ciyin.app.ui.screen.videoplayer.VideoPlayerDemoScreen
 
@@ -60,6 +61,11 @@ fun SampleModuleRoot() {
             entry<PermissionsRouter> {
                 PermissionsScreen(
                     onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<PlatformShareDemoRouter> {
+                PlatformShareDemoScreen(
+                    onBackRequest = { sampleBackStack.back() },
                 )
             }
             entry<VideoPlayerDemoRouter> {

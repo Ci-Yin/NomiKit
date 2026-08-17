@@ -16,9 +16,15 @@ kotlin {
         api(projects.core.io)
     }
 
+    sourceSets.androidMain.dependencies {
+        implementation(libs.androidx.core.ktx)
+        implementation(libs.kotlinx.coroutines.android)
+    }
+
     sourceSets.desktopMain.dependencies {
         api(libs.jna)
         api(libs.jna.platform)
+        implementation(libs.kotlinx.coroutines.swing)
     }
 
 }

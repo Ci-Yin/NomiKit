@@ -32,6 +32,10 @@ internal object RuntimeInfoRouter : NavRouter
 @Serializable
 internal object PermissionsRouter : NavRouter
 
+/** 系统分享示例页。 */
+@Serializable
+internal object PlatformShareDemoRouter : NavRouter
+
 /** 视频播放器示例页。 */
 @Serializable
 internal object VideoPlayerDemoRouter : NavRouter
@@ -49,6 +53,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(FileDownloaderDemoRouter::class, FileDownloaderDemoRouter.serializer())
             subclass(RuntimeInfoRouter::class, RuntimeInfoRouter.serializer())
             subclass(PermissionsRouter::class, PermissionsRouter.serializer())
+            subclass(PlatformShareDemoRouter::class, PlatformShareDemoRouter.serializer())
             subclass(VideoPlayerDemoRouter::class, VideoPlayerDemoRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
