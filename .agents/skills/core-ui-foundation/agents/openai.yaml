@@ -1,3 +1,4 @@
 interface:
   display_name: "Core UI Foundation"
-  short_description: "Use NomiKit Compose Multiplatform UI foundation, ViewModel bases, effects, layouts, and widgets"
+  short_description: "Use NomiKit Compose UI foundation and avoid duplicate public components"
+  default_prompt: "使用 $core-ui-foundation 检索 NomiKit 现有通用 UI 基建，并在新增公共组件前确认复用或扩展边界。"

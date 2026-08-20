@@ -1,11 +1,37 @@
 ---
 name: core-ui-foundation
-description: Use the core/ui-foundation Compose Multiplatform UI foundation module (package ciyin.ui.foundation.*). Covers ViewModel/MVVM/MVI bases, StateMachineMviViewModel/SingleStateMachine, HasBackgroundScope, saved state helpers, Window/FloatWindow, SystemUiController, window size, effects, dialogs, refresh/grid layouts, scrollbars, Text/Button/FlexButton/SettingItem/TwoPane/progress/menu widgets, and color/unit/modifier helpers. Use when 用户要在 NomiKit 中使用或维护 UI 基建、ViewModel 基类、Compose 通用组件、窗口/系统栏/刷新布局，或排查 core/ui-foundation。
+description: Use and maintain NomiKit's core/ui-foundation Compose Multiplatform UI foundation module (package ciyin.ui.foundation.*). Covers ViewModel/MVVM/MVI bases, Window/FloatWindow, SystemUiController, window size, effects, dialogs, refresh/grid layouts, scrollbars, common widgets, and color/unit/modifier helpers. Use when adding generic Compose UI, modifying public UI foundation, or checking for duplicate implementations.
 ---
 
 # core/ui-foundation 使用指南
 
 `core/ui-foundation` 是 NomiKit 的 Compose Multiplatform UI 基建层，包名为 `ciyin.ui.foundation.*`。优先复用这里的 ViewModel 基类、效果、布局和组件，再考虑新增项目内重复封装。
+
+## 公共 UI 复用流程
+
+完整的公共组件目录见 [references/component-catalog.md](references/component-catalog.md)。新增或修改通用 UI 前，按以下顺序执行：
+
+1. 阅读 `.agents/rules/AGENTS.md` 和本 skill。
+2. 按需求语义检索 `core/ui-foundation/src/commonMain/kotlin/ciyin/ui/foundation`，不要只搜索预计的函数名：
+   `rg -n "Scaffold|Button|Chip|Dialog|Refresh|Grid|Scrollbar|Window|Modifier" core/ui-foundation/src/commonMain/kotlin/ciyin/ui/foundation -g "*.kt"`。
+3. 打开候选实现和至少一个真实调用方，确认参数、状态归属、主题令牌、平台限制和生命周期要求。
+4. 优先直接复用现有 API；视觉差异优先通过 `Modifier`、style、颜色、内容 slot 或回调表达；只有能力确实属于公共基建时才扩展本模块。
+5. 不复制已有布局、手势、状态机、滚动或窗口生命周期实现。若候选 API 不适用，必须在实现说明中写明原因和替代方案。
+6. 新增或重命名公共 API 时同步更新组件目录、相关示例和本 skill，并运行最窄相关验证。
+
+## 公共组件选择边界
+
+- `widget.TitleScaffold` 负责通用标题行和内容布局，不包含产品主题或业务状态。
+- `widget.MenuChip` 是输入字符串菜单项的基础 FilterChip 选择器；泛型或产品语义选择器应由上层适配，不要在 foundation 中引入业务模型。
+- `layout.refresh.RefreshLayout`、`PullToRefresh`、`VerticalRefreshableLayout` 只提供通用拖动刷新容器；文案、资源和产品刷新状态留在调用方。
+- `currentWindowWidth`、`currentWindowSize`、`classifyWindowWidth` 提供窗口事实和断点分类；设备或产品语义由上层映射。
+
+## 新增公共 API 要求
+
+- 保持参数稳定、状态外置、`Modifier` 优先，并使用现有主题令牌。
+- Compose 状态模型保持不可变；公共函数、属性和类型补充标准中文 KDoc。
+- 不新增只包裹 Material3 组件且没有跨平台、主题或通用状态价值的 API。
+- 出现同一布局在多个模块复制时，先回收为公共 API 或明确保留为产品适配。
 
 ## ViewModel 与状态
 

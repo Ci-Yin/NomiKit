@@ -94,8 +94,16 @@ apply: always
   `ai-chat-openai-engine`
 - 接入 SD WebUI 图像引擎（作为 ai-core `ImageEngine`）→ `ai-image-sdwebui-engine`
 - 直接调 AUTOMATIC1111 SD WebUI REST API（`feature/sdwebui` 模块本身）→ `sdwebui`
+- 新增或修改通用 Compose 组件、Modifier、布局、窗口、刷新、网格、滚动或 UI 基建 →
+  `core-ui-foundation`
 
 **自检**：如果不确定某改动属于哪一层 / 哪个模块，先看 skill 描述再决定是否读全文，不要直接编码。
+
+### 公共 UI 组件复用
+
+- 编写通用 Compose 实现前，必须先读取 `core-ui-foundation` skill，并在
+  `core/ui-foundation/src/commonMain/kotlin/ciyin/ui/foundation` 中按语义检索，打开候选实现和一个真实调用方。
+- 找到近似能力时，优先直接复用或扩展现有 API；不得复制布局、手势、状态机或滚动实现。若必须新增公共能力，应在最终说明中写明现有候选为何不适用。
 
 ## 四、项目模块地图（从上到下单向依赖）
 
