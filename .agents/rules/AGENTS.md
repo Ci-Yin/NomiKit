@@ -174,6 +174,9 @@ apply: always
 - 默认使用最小可见性；能用 `private` 就不要暴露为 `internal` 或 `public`。
 - Kotlin 枚举类的类型名称和枚举项名称都必须以大写字母开头，例如
   `enum class AppMode { Normal, Compact }`；禁止使用 `appMode`、`normal` 等小写开头的名称。
+- Kotlin 源码的类型声明、函数签名和表达式中禁止直接使用全限定类名；必须通过 `import` 后使用短类名。若存在同名类型冲突，
+  必须使用语义明确的 `import ... as ...` 别名，不得通过反复书写全限定名规避冲突。生成代码、反射字符串等无法使用
+  `import` 的场景除外。
 - 函数参数数量大于等于 3 时，调用处使用命名参数并换行对齐书写。
 - 函数参数中的复杂构造默认先提取为局部变量；但短小、单行且不超过项目行宽的简单包装/事件转发可以内联，例如
   `onCategorySelect = { onAction(PromptTagPickerAction.CategoryChange(it)) }`。

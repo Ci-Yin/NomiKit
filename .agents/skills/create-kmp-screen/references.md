@@ -7,10 +7,10 @@
 
 | 你想做的事                                                   | 照抄哪里                                                                              | 为什么                                                                                                                     |
 |---------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| 一个"列表 + 点击跳转"的页面                                        | `app/shared/.../ui/screen/main/`                                                  | 完整 MVI 五件套（Action / Effect / UiState / Model / ViewModel / Screen），还演示了 `XxxScreen` + `XxxContent` + `@AppPreview` 标准结构 |
+| 一个"列表 + 点击跳转"的页面                                        | `app/shared/.../ui/screen/main/`                                                  | 完整 MVI 五件套（Action / Effect / UiState / Model / ViewModel / Screen），还演示了 `XxxScreen` + `XxxContent` + 同文件 `@AppPreview` 标准结构 |
 | 真正基于 FlowRedux2 状态机的 ViewModel                          | `app/shared/.../ui/app/AppViewModel.kt`                                           | 项目里目前最贴近"状态机思维"的活实例，包含 `KoinComponent` + `SingleStateMachine.spec()` 写法。**注意**：它继承的是 `AbsMviViewModel`，不是本 skill 的目标基类  |
 | 异步调用 AI 能力 / 流式收集 / 结果渲染                                | `app/shared/.../ui/screen/aiimagedemo/`                                           | 演示了 `AiImage.generate(...).collect { ... }`、`ScreenScaffold + topBar`、`OutlinedTextField` 输入态。**只**作 UI 模板，不做 MVI 模板    |
-| `ScreenScaffold` 容器、`@AppPreview` 注解 + `AppPreview { }` | `app/shared/.../ui/screen/main/MainScreen.kt`                                     | 唯一一个把 `@AppPreview`（注解）+ `AppPreview { }`（容器）都正确 import 的实例                                                             |
+| `ScreenScaffold` 容器、`@AppPreview` 注解 + `AppPreview { }` | `app/shared/.../ui/screen/main/MainScreen.kt`                                     | 同一个 Compose 文件同时提供入口、纯 Content 和 Preview；两个同名 `AppPreview` 的 import 分别来自注解与项目主题容器 |
 | 最简版"占位"页面，几乎没逻辑                                         | `app/shared/.../ui/screen/setting/SettingScreen.kt`                               | 仅一个 `Box + Text`，可作"先占位、后续再补 ViewModel"的临时方案；**不**作 MVI 模板                                                              |
 | 把新页面接入导航                                                | `app/shared/.../ui/app/navigation/NavRouters.kt` + `app/shared/.../ui/app/App.kt` | 新增 `XxxRouter`、在 `polymorphic` 里登记，再到 `entryProvider` 里加 `entry<XxxRouter> { ... }`                                     |
 | 让首页能发现新 demo                                            | `app/shared/.../ui/screen/main/MainModel.kt` + `MainViewModel.kt`                 | `MainDemoDestination` 加分支、`initState.demos` 加一项，`App.kt` 里 `MainScreen.onOpenDemo` 的 `when` 加映射                         |
@@ -46,13 +46,23 @@
   app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/search/SearchScreen.kt
   （可选）app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/search/SearchModel.kt
   （可选）app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/search/SearchMapper.kt
+  （可选）app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/search/SearchExt.kt
+    - 仅放 internal/public 的非 Compose 扩展函数和扩展属性；private 与 @Composable 扩展留在原文件
+  （可选）app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/search/component/*.kt
+    - 只放 UI model + callbacks 驱动的独立视觉单元；每个含 @Composable 的文件都要有同文件 Preview
 
 需要用户手工接入（本 skill 不替用户改）：
   app/shared/src/commonMain/kotlin/com/ciyin/app/ui/app/navigation/NavRouters.kt
     - 增加 @Serializable object SearchRouter : NavRouter
     - 在 polymorphic(NavKey::class) { ... } 里 subclass(SearchRouter::class, SearchRouter.serializer())
   app/shared/src/commonMain/kotlin/com/ciyin/app/ui/app/App.kt
-    - entryProvider 里增加 entry<SearchRouter> { SearchScreen(onBack = { navBackStack.back() }) }
+    - entryProvider 里增加 entry<SearchRouter> {
+        SearchScreen(
+            title = stringResource(Res.string.search_title),
+            backContentDescription = stringResource(Res.string.action_back),
+            onBack = { navBackStack.back() },
+        )
+      }
 
 可选（让首页 demo 列表能跳进来）：
   app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/main/MainModel.kt
@@ -71,3 +81,5 @@
 - 任何把 `LazyListState` / `PagerState` 直接放进 `UiState` 的写法 —— 详见
   `.docs/contributing/mvi.md` 第四节第三点。
 - 任何在 `Screen` 顶层之外（例如子 Composable / `component/` 下）`import XxxAction / XxxEffect` 的写法。
+- 任何名为 `XxxPreview.kt` 的独立预览文件；Preview 必须和被预览的 Compose 实现处于同一 Kotlin 文件。
+- 将 `@Composable` 扩展函数、private 扩展函数或页面状态机放进 `XxxExt.kt`。

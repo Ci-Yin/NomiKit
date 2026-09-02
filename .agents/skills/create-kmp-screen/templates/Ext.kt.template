@@ -1,0 +1,7 @@
+package {{PACKAGE}}
+
+/**
+ * {{中文名}} 页面范围内的非私有、非 Compose 扩展函数和扩展属性。
+ *
+ * 没有符合条件的扩展时不要生成本文件。private 扩展留在原文件，Composable 扩展留在对应 Compose 文件。
+ */
