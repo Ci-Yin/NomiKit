@@ -1,0 +1,4 @@
+interface:
+  display_name: "File Picker"
+  short_description: "Use NomiKit cross-platform file/gallery pickers, directory picker, file saver, and mobile camera capture"
+  default_prompt: "Use $file-picker to add or maintain cross-platform file picking, gallery picking, directory picking, file saving, and mobile camera capture in NomiKit."

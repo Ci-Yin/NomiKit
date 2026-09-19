@@ -178,4 +178,23 @@
     <string name="media_library_demo_error_no_space">系统媒体库空间不足。</string>
     <string name="media_library_demo_error_unsupported">当前平台不支持此操作。</string>
     <string name="media_library_demo_error_io">系统媒体库读写失败。</string>
+
+    <string name="file_picker_demo_hub_title">文件选择器</string>
+    <string name="file_picker_demo_hub_description">演示基于 FileKit 的文件/相册选择、目录选择、文件保存与移动端拍照。</string>
+    <string name="file_picker_demo_title">文件选择器示例</string>
+    <string name="file_picker_demo_back">返回</string>
+    <string name="file_picker_demo_description">通过 feature/file-picker 调用系统文件选择、相册选择、目录选择、保存与拍照，回调统一返回 ciyin.io.File。</string>
+    <string name="file_picker_demo_single_action">选择单个文件</string>
+    <string name="file_picker_demo_multiple_action">选择多张图片</string>
+    <string name="file_picker_demo_gallery_video_action">选择视频</string>
+    <string name="file_picker_demo_gallery_image_video_action">选择图片和视频</string>
+    <string name="file_picker_demo_directory_action">选择目录</string>
+    <string name="file_picker_demo_save_action">保存示例文件</string>
+    <string name="file_picker_demo_camera_action">拍照</string>
+    <string name="file_picker_demo_result_title">选择结果</string>
+    <string name="file_picker_demo_directory_result_title">选中目录</string>
+    <string name="file_picker_demo_save_result_title">保存结果</string>
+    <string name="file_picker_demo_camera_result_title">拍摄结果</string>
+    <string name="file_picker_demo_result_empty">尚未选择文件。</string>
+    <string name="file_picker_demo_result_none">无</string>
 </resources>

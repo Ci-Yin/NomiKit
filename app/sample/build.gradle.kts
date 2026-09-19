@@ -16,6 +16,7 @@ kotlin {
         implementation(projects.core.platform)
         implementation(projects.core.uiFoundation)
         implementation(projects.feature.fileDownloader)
+        implementation(projects.feature.filePicker)
         implementation(projects.feature.aiIntegrate)
         implementation(projects.feature.permissions)
         implementation(projects.feature.videoPlayer)

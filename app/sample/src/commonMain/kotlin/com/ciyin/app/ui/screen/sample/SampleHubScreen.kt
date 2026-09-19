@@ -22,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ciyin.app.sample.Res
+import com.ciyin.app.sample.file_picker_demo_hub_description
+import com.ciyin.app.sample.file_picker_demo_hub_title
 import com.ciyin.app.sample.media_library_demo_hub_description
 import com.ciyin.app.sample.media_library_demo_hub_title
 import com.ciyin.app.sample.permissions_hub_description
@@ -94,6 +96,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
     val videoPlayerDescription = stringResource(Res.string.video_player_demo_description)
     val mediaLibraryTitle = stringResource(Res.string.media_library_demo_hub_title)
     val mediaLibraryDescription = stringResource(Res.string.media_library_demo_hub_description)
+    val filePickerTitle = stringResource(Res.string.file_picker_demo_hub_title)
+    val filePickerDescription = stringResource(Res.string.file_picker_demo_hub_description)
     return remember(
         permissionsTitle,
         permissionsDescription,
@@ -103,6 +107,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
         videoPlayerDescription,
         mediaLibraryTitle,
         mediaLibraryDescription,
+        filePickerTitle,
+        filePickerDescription,
     ) {
         listOf(
             SampleHubEntry(
@@ -139,6 +145,11 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
                 title = mediaLibraryTitle,
                 description = mediaLibraryDescription,
                 navRouter = MediaLibraryDemoRouter,
+            ),
+            SampleHubEntry(
+                title = filePickerTitle,
+                description = filePickerDescription,
+                navRouter = FilePickerDemoRouter,
             ),
             SampleHubEntry(
                 title = "运行环境信息",
