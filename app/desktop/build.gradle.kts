@@ -6,11 +6,6 @@ plugins {
     id(libs.plugins.compose.compiler)
 }
 
-
-//if (getLocalProperty("myuko.compose.hot.reload")?.toBooleanStrict() != false) {
-//    apply(plugin = libs.plugins.compose.hot.reload.get().pluginId)
-//}
-
 dependencies {
     implementation(libs.compose.components.resources)
     implementation(projects.core.platform)
