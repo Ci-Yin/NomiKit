@@ -409,7 +409,7 @@ internal interface AuthEffect {
 生成 Compose Preview 函数时，使用项目内的 `AppPreview` 注解：
 
 ```kotlin
-import com.yy.myuko.core.ui.foundation.widgets.AppPreview
+import com.ciyin.app.ui.component.AppPreview
 
 @AppPreview
 @Composable
@@ -492,7 +492,8 @@ class RegisterInputValidatorTest {
 
     @Test
     fun `validate should return success when input is valid`() = runTest {
-        val input = RegisterInput(email = "test@gmail.com", password = "123456", confirmPassword = "123456")
+        val input =
+            RegisterInput(email = "test@gmail.com", password = "123456", confirmPassword = "123456")
         val result = validator.validate(input)
 
         assertTrue(result.isRight())

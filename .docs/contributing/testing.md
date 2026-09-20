@@ -53,7 +53,7 @@ PC 版本有三种启动方式：
 只有 macOS 才能运行 iOS APP。
 
 1. 在 App Store 安装 Xcode
-2. 在 Xcode 中打开项目 `app/ios/myuko`
+2. 在 Xcode 中打开项目 `app/ios/ios`
 3. 在 Xcode 内运行
 
 在 Android Studio 中，也可以选择运行配置 `Run iOS Debug`，点击按钮运行即可。
@@ -62,7 +62,7 @@ PC 版本有三种启动方式：
 
 # 单元测试
 
-myuko 拥有多平台测试。现在，在 macOS 上会运行 11,000+ 测试。其他平台上会略少一些。
+nomikit 拥有多平台测试。现在，在 macOS 上会运行 11,000+ 测试。其他平台上会略少一些。
 我们建议你为所有新功能编写测试，不仅是为了验证功能的正确性，也是为了防止未来出现回溯问题。
 
 ## 测试源集结构
