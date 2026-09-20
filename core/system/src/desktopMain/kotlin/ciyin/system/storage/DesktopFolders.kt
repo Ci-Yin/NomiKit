@@ -75,11 +75,6 @@ object WindowsAppFolderResolver : AppFolderResolver {
         return runCatching {
             WindowsJnaAppFolderResolver.resolve(appInfo)
         }
-//            .recoverCatching {
-//            it.printStackTrace()
-//            if (System.getenv("MYUKO_DISALLOW_PROJECT_DIRECTORIES_FALLBACK") == "true") throw it
-//            ProjectDirectoriesAppFolderResolver.resolve(appInfo)
-//        }
             .getOrThrow()
     }
 }
