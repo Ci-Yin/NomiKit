@@ -1,0 +1,3 @@
+interface:
+  display_name: "应用构建配置"
+  short_description: "帮助使用 NomiKit AppBuildConfig 接口、LocalAppBuildConfig CompositionLocal、平台生成对象（Desktop/Android/iOS）与 toDesktopAppInfo() 转换"
