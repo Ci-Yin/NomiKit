@@ -1,29 +1,22 @@
-package com.yy.myuko.business.base.data.fileupload
+package ciyin.business.base.data.fileupload
 
 import ciyin.business.base.data.ApiClient
-import ciyin.business.base.data.fileupload.FileUploadEvent
-import ciyin.business.base.data.fileupload.uploadFiles
-import com.yy.myuko.core.io.SystemPath
-import com.yy.myuko.core.io.SystemPaths
-import com.yy.myuko.core.io.absolutePath
-import com.yy.myuko.core.io.bufferedSink
-import com.yy.myuko.core.io.createTempFile
-import com.yy.myuko.core.io.delete
+import ciyin.io.File
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import okio.buffer
+import okio.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -46,11 +39,10 @@ class FileUploadTest {
      */
     @Test
     fun emptyFiles_emitsFailed() = runTest {
-        val client = createMockClient(responseBody = """{"urls":[]}""")
+        val client = createMockClient(responseBody = apiResponse(data = """{"urls":[]}"""))
         val apiClient = ApiClient(client)
 
-        val events = apiClient.uploadFiles<TestResponse>(uploadUrl, emptyList())
-            .toList()
+        val events = apiClient.uploadFiles<TestResponse>(uploadUrl, emptyList()).toList()
 
         assertEquals(1, events.size)
         assertTrue(events[0] is FileUploadEvent.Failed)
@@ -62,14 +54,15 @@ class FileUploadTest {
      */
     @Test
     fun singleFileUpload_success_emitsStartedProgressSuccess() = runTest {
-        val tempFile = createTempFileWithContent("test-image.png", "fake-png-content".toByteArray())
+        val tempFile =
+            createTempFileWithContent("test-image.png", "fake-png-content".encodeToByteArray())
         val client = createMockClient(
-            responseBody = """{"urls":["https://cdn.example.com/img1.png"]}""",
+            responseBody = apiResponse(data = """{"urls":["https://cdn.example.com/img1.png"]}"""),
         )
         val apiClient = ApiClient(client)
 
-        val events = apiClient.uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
-
+        val events = apiClient
+            .uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
             .toList()
 
         assertTrue(events.isNotEmpty())
@@ -82,7 +75,7 @@ class FileUploadTest {
         val success = successEvent as FileUploadEvent.Success
         assertEquals(listOf("https://cdn.example.com/img1.png"), success.result.urls)
 
-        tempFile.delete(false)
+        tempFile.delete()
         client.close()
     }
 
@@ -91,17 +84,20 @@ class FileUploadTest {
      */
     @Test
     fun multiFileUpload_success_emitsCorrectImageUrls() = runTest {
-        val file1 = createTempFileWithContent("a.png", "content1".toByteArray())
-        val file2 = createTempFileWithContent("b.jpg", "content2".toByteArray())
+        val file1 = createTempFileWithContent("a.png", "content1".encodeToByteArray())
+        val file2 = createTempFileWithContent("b.jpg", "content2".encodeToByteArray())
         val client = createMockClient(
-            responseBody = """{"urls":["https://cdn.example.com/1.png","https://cdn.example.com/2.jpg"]}""",
+            responseBody = apiResponse(
+                data = """{"urls":["https://cdn.example.com/1.png","https://cdn.example.com/2.jpg"]}""",
+            ),
         )
         val apiClient = ApiClient(client)
 
-        val events = apiClient.uploadFiles<TestResponse>(
-            uploadUrl,
-            listOf(file1.absolutePath, file2.absolutePath),
-        )
+        val events = apiClient
+            .uploadFiles<TestResponse>(
+                uploadUrl,
+                listOf(file1.absolutePath, file2.absolutePath),
+            )
             .toList()
 
         val started =
@@ -117,8 +113,8 @@ class FileUploadTest {
             success.result.urls,
         )
 
-        file1.delete(false)
-        file2.delete(false)
+        file1.delete()
+        file2.delete()
         client.close()
     }
 
@@ -127,20 +123,21 @@ class FileUploadTest {
      */
     @Test
     fun serverError_emitsFailed() = runTest {
-        val tempFile = createTempFileWithContent("test.png", "content".toByteArray())
+        val tempFile = createTempFileWithContent("test.png", "content".encodeToByteArray())
         val client = createMockClient(
             responseBody = """{"error":"internal error"}""",
             statusCode = HttpStatusCode.InternalServerError,
         )
         val apiClient = ApiClient(client)
 
-        val events = apiClient.uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
+        val events = apiClient
+            .uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
             .toList()
 
         val failed = events.lastOrNull { it is FileUploadEvent.Failed } as? FileUploadEvent.Failed
         assertNotNull(failed)
 
-        tempFile.delete(false)
+        tempFile.delete()
         client.close()
     }
 
@@ -149,13 +146,14 @@ class FileUploadTest {
      */
     @Test
     fun block_extractsImageUrlsCorrectly() = runTest {
-        val tempFile = createTempFileWithContent("x.png", "x".toByteArray())
+        val tempFile = createTempFileWithContent("x.png", "x".encodeToByteArray())
         val client = createMockClient(
-            responseBody = """{"urls":["/path/to/a","/path/to/b"]}""",
+            responseBody = apiResponse(data = """{"urls":["/path/to/a","/path/to/b"]}"""),
         )
         val apiClient = ApiClient(client)
 
-        val success = apiClient.uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
+        val success = apiClient
+            .uploadFiles<TestResponse>(uploadUrl, listOf(tempFile.absolutePath))
             .toList()
             .filterIsInstance<FileUploadEvent.Success<TestResponse>>()
             .firstOrNull()
@@ -163,7 +161,7 @@ class FileUploadTest {
         assertNotNull(success)
         assertEquals(listOf("/path/to/a", "/path/to/b"), success.result.urls)
 
-        tempFile.delete(false)
+        tempFile.delete()
         client.close()
     }
 
@@ -174,15 +172,18 @@ class FileUploadTest {
      *
      * @param fileName 文件名（用于 suffix）
      * @param content 文件内容
-     * @return 临时文件的 [SystemPath]，[absolutePath] 供 [uploadFiles] 使用，用毕可调用 [SystemPath.delete]
+     * @return 临时文件的 [File]，[absolutePath] 供 [uploadFiles] 使用，用毕可调用 [File.delete]
      */
-    private fun createTempFileWithContent(fileName: String, content: ByteArray): SystemPath {
-        val tempPath =
-            SystemPaths.createTempFile(prefix = "fileupload-test-", suffix = "-$fileName")
-        tempPath.bufferedSink(append = false).use { sink ->
-            sink.write(content, startIndex = 0, endIndex = content.size)
+    private fun createTempFileWithContent(fileName: String, content: ByteArray): File {
+        val unique = kotlin.random.Random.nextLong().toString(radix = 36)
+        val tempFile = File.createTempFile(
+            prefix = "fileupload-test-$unique-",
+            suffix = "-$fileName",
+        )
+        ciyin.io.SystemFileSystem.sink(tempFile.toPath()).buffer().use { sink ->
+            sink.write(content)
         }
-        return tempPath
+        return tempFile
     }
 
     /**
@@ -206,85 +207,13 @@ class FileUploadTest {
         }
     }
 
+    /**
+     * 将业务 data 包装为 [ciyin.business.base.util.ApiResponse] 形态，
+     * 以满足 [ciyin.business.base.util.unwrapApiData] 的解包协议。
+     */
+    private fun apiResponse(data: String): String =
+        """{"code":0,"msg":"ok","data":$data}"""
+
     @Serializable
     private data class TestResponse(val urls: List<String>)
-}
-
-/**
- * 上传图片接口真实请求集成测试
- *
- * 调用接口：POST /v1/app/user/upload/img（见 OpenAPI 规范）
- *
- * ⚠️ 注意：
- * - 运行前需确保本地或远程 API 服务已启动
- * - 修改 [baseUrl] 指向实际服务地址
- * - 若接口需要认证，可在 [createClient] 中配置 token
- */
-class FileUploadIntegrationTest {
-
-    /** 本地开发环境地址，按需修改 */
-    private val baseUrl = "http://119.91.20.99:31651"
-
-    private fun createClient() = HttpClient {
-        defaultRequest {
-            url(baseUrl)
-        }
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
-    }
-
-    /**
-     * 真实上传单张图片
-     *
-     * 使用 tiny PNG 魔数作为测试文件内容，服务端通常能识别为图片。
-     */
-    @Test
-    fun uploadImage_realRequest() = runTest {
-        val tempFile = createTempFileWithContent(
-            "test.png",
-            byteArrayOf(
-                0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG magic
-            ) + ByteArray(64) { 0 },
-        )
-        val client = createClient()
-        val apiClient = ApiClient(client)
-        println(tempFile)
-        try {
-            val events = apiClient.uploadFiles<UploadImageApiResponseData?>(
-                url = "/v1/app/user/upload/img",
-                files = listOf(tempFile.absolutePath),
-
-                )
-                .toList()
-
-            val success =
-                events.filterIsInstance<FileUploadEvent.Success<UploadImageApiResponseData?>>()
-                    .firstOrNull()
-            assertNotNull(success, "预期收到 Success 事件，实际收到: $events")
-            assertTrue(success.result?.images?.isNotEmpty() ?: false, "预期返回至少一个图片 URL")
-        } finally {
-            tempFile.delete(false)
-            client.close()
-        }
-    }
-
-    private fun createTempFileWithContent(fileName: String, content: ByteArray): SystemPath {
-        val tempPath =
-            SystemPaths.createTempFile(prefix = "file-upload-integration-", suffix = "-$fileName")
-        tempPath.bufferedSink(append = false).use { sink ->
-            sink.write(content, startIndex = 0, endIndex = content.size)
-        }
-        return tempPath
-    }
-
-    @Serializable
-    data class UploadImageApiResponseData(
-        val images: List<UploadImageItemApiData>,
-    )
-
-    @Serializable
-    data class UploadImageItemApiData(
-        val img: String,
-    )
 }

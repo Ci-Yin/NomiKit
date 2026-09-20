@@ -1,5 +1,6 @@
 plugins {
     `multiplatform-lib-targets`
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -12,6 +13,9 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.serialization.kotlinx.json)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
