@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.file_picker_demo_hub_description
 import com.ciyin.app.sample.file_picker_demo_hub_title
+import com.ciyin.app.sample.media_directory_demo_hub_description
+import com.ciyin.app.sample.media_directory_demo_hub_title
 import com.ciyin.app.sample.media_library_demo_hub_description
 import com.ciyin.app.sample.media_library_demo_hub_title
 import com.ciyin.app.sample.permissions_hub_description
@@ -98,6 +100,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
     val mediaLibraryDescription = stringResource(Res.string.media_library_demo_hub_description)
     val filePickerTitle = stringResource(Res.string.file_picker_demo_hub_title)
     val filePickerDescription = stringResource(Res.string.file_picker_demo_hub_description)
+    val mediaDirectoryTitle = stringResource(Res.string.media_directory_demo_hub_title)
+    val mediaDirectoryDescription = stringResource(Res.string.media_directory_demo_hub_description)
     return remember(
         permissionsTitle,
         permissionsDescription,
@@ -109,6 +113,8 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
         mediaLibraryDescription,
         filePickerTitle,
         filePickerDescription,
+        mediaDirectoryTitle,
+        mediaDirectoryDescription,
     ) {
         listOf(
             SampleHubEntry(
@@ -150,6 +156,11 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
                 title = filePickerTitle,
                 description = filePickerDescription,
                 navRouter = FilePickerDemoRouter,
+            ),
+            SampleHubEntry(
+                title = mediaDirectoryTitle,
+                description = mediaDirectoryDescription,
+                navRouter = MediaDirectoryDemoRouter,
             ),
             SampleHubEntry(
                 title = "运行环境信息",

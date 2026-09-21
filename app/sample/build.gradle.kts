@@ -23,6 +23,7 @@ kotlin {
         implementation(projects.component.dataStore)
         implementation(projects.component.koin)
         implementation(projects.component.mediaLibrary)
+        implementation(projects.component.mediaDirectory)
     }
 
     sourceSets.androidMain.dependencies {

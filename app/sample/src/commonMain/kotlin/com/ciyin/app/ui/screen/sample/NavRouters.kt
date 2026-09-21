@@ -48,6 +48,10 @@ internal object MediaLibraryDemoRouter : NavRouter
 @Serializable
 internal object FilePickerDemoRouter : NavRouter
 
+/** 用户媒体目录示例页。 */
+@Serializable
+internal object MediaDirectoryDemoRouter : NavRouter
+
 /** 占位样例子页 A。 */
 @Serializable
 internal object SampleExamplePlaceholderARouter : NavRouter
@@ -65,6 +69,7 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(VideoPlayerDemoRouter::class, VideoPlayerDemoRouter.serializer())
             subclass(MediaLibraryDemoRouter::class, MediaLibraryDemoRouter.serializer())
             subclass(FilePickerDemoRouter::class, FilePickerDemoRouter.serializer())
+            subclass(MediaDirectoryDemoRouter::class, MediaDirectoryDemoRouter.serializer())
             subclass(
                 SampleExamplePlaceholderARouter::class,
                 SampleExamplePlaceholderARouter.serializer()

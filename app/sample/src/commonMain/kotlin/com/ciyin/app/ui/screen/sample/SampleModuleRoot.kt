@@ -11,6 +11,7 @@ import com.ciyin.app.ui.screen.aichat.AiChatScreen
 import com.ciyin.app.ui.screen.aiimage.AiImageDemoScreen
 import com.ciyin.app.ui.screen.filedownloader.FileDownloaderDemoScreen
 import com.ciyin.app.ui.screen.filepicker.FilePickerDemoScreen
+import com.ciyin.app.ui.screen.mediadirectory.MediaDirectoryDemoScreen
 import com.ciyin.app.ui.screen.medialibrary.MediaLibraryDemoScreen
 import com.ciyin.app.ui.screen.permissions.PermissionsScreen
 import com.ciyin.app.ui.screen.platformshare.PlatformShareDemoScreen
@@ -82,6 +83,11 @@ fun SampleModuleRoot() {
             }
             entry<FilePickerDemoRouter> {
                 FilePickerDemoScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
+            entry<MediaDirectoryDemoRouter> {
+                MediaDirectoryDemoScreen(
                     onBack = { sampleBackStack.back() },
                 )
             }

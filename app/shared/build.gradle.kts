@@ -12,6 +12,7 @@ val componentDependencies = listOf<Dependency>(
     projects.component.room,
     projects.component.dataStore,
     projects.component.mediaLibrary,
+    projects.component.mediaDirectory,
 )
 
 kotlin {
