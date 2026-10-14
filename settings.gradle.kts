@@ -33,7 +33,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("mediampLibs") {
-            from("org.openani.mediamp:catalog:0.0.30")
+            from("org.openani.mediamp:catalog:0.1.16")
         }
     }
 }

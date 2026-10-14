@@ -11,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import ciyin.video.player.ui.internal.rememberLatestTask
 import ciyin.ui.foundation.effects.OnLifecycleEvent
 import org.openani.mediamp.MediampPlayer
+import org.openani.mediamp.PlaybackState
 
 /**
  * 切后台自动暂停
@@ -23,7 +24,7 @@ fun AutoPauseEffect(player: MediampPlayer) {
     val autoPauseTasker = rememberLatestTask()
     OnLifecycleEvent {
         if (it == Lifecycle.Event.ON_STOP) {
-            if (player.playbackState.value.isPlaying) {
+            if (player.playbackState.value == PlaybackState.PLAYING) {
                 pausedVideo = true
                 autoPauseTasker.launch {
                     // #160, 切换全屏时视频会暂停半秒

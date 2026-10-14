@@ -28,7 +28,11 @@ import androidx.media3.exoplayer.trackselection.TrackSelection
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import ciyin.platform.logger
 import ciyin.video.player.data.DownloadSpeed
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -145,25 +149,11 @@ class ExoPlayerMediampPlayer @UiThread constructor(
      */
     class ExoPlayerData(
         mediaData: MediaData,
-        releaseResource: () -> Unit,
         val setMedia: suspend () -> Unit,
-    ) : Data(mediaData, releaseResource)
-
-    /**
-     * 启动播放器并开始播放指定的媒体数据。
-     *
-     * 在主线程上执行以下操作：
-     * 1. 调用 [ExoPlayerData.setMedia] 配置媒体源
-     * 2. 调用 [ExoPlayer.prepare] 准备播放
-     * 3. 调用 [ExoPlayer.play] 开始播放
-     *
-     * @param data 已准备好的 ExoPlayer 数据，包含媒体源配置
-     */
-    override suspend fun startPlayer(data: ExoPlayerData) {
-        withContext(Dispatchers.Main.immediate) {
-            data.setMedia()
-            exoPlayer.prepare()
-            exoPlayer.play()
+        private val releaseResource: () -> Unit = { mediaData.close() },
+    ) : Data(mediaData) {
+        override fun release() {
+            releaseResource()
         }
     }
 
@@ -186,7 +176,7 @@ class ExoPlayerMediampPlayer @UiThread constructor(
      * @param data 媒体数据，可以是 [UriMediaData] 或 [SeekableInputMediaData]
      * @return 封装好的 [ExoPlayerData]，包含媒体源配置和资源释放逻辑
      */
-    override suspend fun setDataImpl(data: MediaData): ExoPlayerData = when (data) {
+    override suspend fun setMediaDataImpl(data: MediaData): ExoPlayerData = when (data) {
         is UriMediaData -> {
             ExoPlayerData(
                 data,
@@ -287,6 +277,10 @@ class ExoPlayerMediampPlayer @UiThread constructor(
      * - 播放速度变化
      */
     private val bandwidthMeter = DefaultBandwidthMeter.Builder(context).build()
+
+    private val backgroundScope: CoroutineScope = CoroutineScope(
+        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job.Key]),
+    )
 
     /** 实际执行 Android 媒体播放的 ExoPlayer。 */
     private val exoPlayer: ExoPlayer = run {
@@ -692,25 +686,40 @@ class ExoPlayerMediampPlayer @UiThread constructor(
     override fun getCurrentPositionMillis(): Long = exoPlayer.currentPosition
 
     /**
-     * 暂停播放。
+     * 恢复播放。
      *
-     * 同时设置 `playWhenReady = false` 并调用 `pause()`，
-     * 确保播放器在 seek 等操作后不会自动恢复播放。
+     * READY 状态先设置媒体源并准备播放器，PAUSED 状态直接恢复播放。
      */
-    override fun pause() {
-        exoPlayer.playWhenReady = false
-        exoPlayer.pause()
+    override fun resumeImpl() {
+        when (playbackState.value) {
+            PlaybackState.READY -> {
+                val media = openResource.value ?: return
+                backgroundScope.launch {
+                    withContext(Dispatchers.Main.immediate) {
+                        media.setMedia()
+                        exoPlayer.prepare()
+                        exoPlayer.play()
+                    }
+                }
+            }
+
+            PlaybackState.PAUSED -> {
+                exoPlayer.playWhenReady = true
+                exoPlayer.play()
+            }
+
+            else -> Unit
+        }
     }
 
     /**
-     * 恢复播放。
+     * 暂停播放。
      *
-     * 同时设置 `playWhenReady = true` 并调用 `play()`，
-     * 确保播放器在缓冲完成后自动继续播放。
+     * 同时设置 `playWhenReady = false` 并调用 `pause()`，确保播放器不会自动恢复播放。
      */
-    override fun resume() {
-        exoPlayer.playWhenReady = true
-        exoPlayer.play()
+    override fun pauseImpl() {
+        exoPlayer.playWhenReady = false
+        exoPlayer.pause()
     }
 
     /**
@@ -787,6 +796,7 @@ class ExoPlayerMediampPlayer @UiThread constructor(
      * **注意**: 调用此方法后，播放器实例不可再使用。
      */
     override fun closeImpl() {
+        backgroundScope.cancel()
         exoPlayer.stop()
         exoPlayer.release()
     }

@@ -249,7 +249,7 @@ internal fun VideoPlayerDemoPlayerView(
                     onTogglePauseResume = {
                         indicatorJob?.cancel()
                         indicatorJob = scope.launch {
-                            if (state.playbackState?.isPlaying == true) {
+                            if (state.playbackState == PlaybackState.PLAYING) {
                                 indicatorState.showPausedLong()
                             } else {
                                 indicatorState.showResumedLong()
@@ -393,7 +393,7 @@ private fun VideoPlayerDemoControllerBar(
     PlayerControllerBar(
         startActions = {
             PlayerControllerDefaults.PlaybackIcon(
-                isPlaying = { state.playbackState?.isPlaying == true },
+                isPlaying = { state.playbackState == PlaybackState.PLAYING },
                 onClick = player::togglePause,
             )
             val mediampAudioController = audioController as? MediampAudioLevelController

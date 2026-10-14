@@ -6,8 +6,13 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(mediampLibs.mediamp.api)
-        api(mediampLibs.mediamp.source.ktxio)
+        // Mediamp publishes Compose UI Test as a desktop runtime dependency; it belongs only to test configurations.
+        api(mediampLibs.mediamp.api.get().toString()) {
+            exclude(group = "org.jetbrains.compose.ui", module = "ui-test-junit4")
+        }
+        api(mediampLibs.mediamp.source.ktxio.get().toString()) {
+            exclude(group = "org.jetbrains.compose.ui", module = "ui-test-junit4")
+        }
         implementation(projects.core.lang)
         implementation(projects.core.platform)
         implementation(projects.core.uiFoundation)
@@ -17,7 +22,9 @@ kotlin {
     }
 
     sourceSets.androidMain.dependencies {
-        api(mediampLibs.mediamp.exoplayer)
+        api(mediampLibs.mediamp.exoplayer.asProvider().get().toString()) {
+            exclude(group = "org.jetbrains.compose.ui", module = "ui-test-junit4")
+        }
         implementation(libs.androidx.media3.ui)
         implementation(libs.androidx.media3.ui.compose)
         implementation(libs.androidx.media3.exoplayer)
@@ -26,8 +33,15 @@ kotlin {
     }
 
     sourceSets.desktopMain.dependencies {
-        api(mediampLibs.mediamp.vlc)
-        implementation(libs.vlcj)
+        api(mediampLibs.mediamp.vlc.asProvider().get().toString()) {
+            exclude(group = "org.jetbrains.compose.ui", module = "ui-test-junit4")
+            exclude(group = "net.java.dev.jna", module = "jna-jpms")
+            exclude(group = "net.java.dev.jna", module = "jna-platform-jpms")
+        }
+        implementation(libs.vlcj.get().toString()) {
+            exclude(group = "net.java.dev.jna", module = "jna-jpms")
+            exclude(group = "net.java.dev.jna", module = "jna-platform-jpms")
+        }
     }
 
     sourceSets.iosMain.dependencies {

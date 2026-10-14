@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.openani.mediamp.MediampPlayer
+import org.openani.mediamp.PlaybackState
 import org.openani.mediamp.togglePause
 
 /** PiP 控制按钮使用的应用内广播 Action。 */
@@ -244,7 +245,7 @@ internal class AndroidPipController(
         playbackObserver?.cancel()
         playbackObserver = playbackScope.launch {
             player.playbackState
-                .map { it.isPlaying }
+                .map { it == PlaybackState.PLAYING }
                 .collect { updatePipActions() }
         }
     }
@@ -252,7 +253,7 @@ internal class AndroidPipController(
 
     /** 按当前播放状态构造 PiP 小窗操作。 */
     private fun buildRemoteActions(): List<RemoteAction> {
-        val isPlaying = player.playbackState.value.isPlaying
+        val isPlaying = player.playbackState.value == PlaybackState.PLAYING
         val resolver = PipIconResolverRegistry
         return listOf(
             createRemoteAction(

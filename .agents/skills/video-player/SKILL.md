@@ -5,7 +5,7 @@ description: Use the feature/video-player Kotlin Multiplatform module (package c
 
 # feature/video-player 使用指南
 
-`feature/video-player` 基于 Mediamp `0.0.30` 提供 Android、Desktop、iOS 的统一播放 UI 与平台适配，公共包名为
+`feature/video-player` 基于 Mediamp `0.1.16` 提供 Android、Desktop、iOS 的统一播放 UI 与平台适配，公共包名为
 `ciyin.video.player`。
 
 ## 依赖与边界
