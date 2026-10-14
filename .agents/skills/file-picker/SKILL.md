@@ -165,7 +165,7 @@ if (isCameraPickerSupported) {                 // desktop 为 false，务必门�
 ## 演示入口
 
 `app:sample` 提供无 ViewModel 的简单有状态 Composable 演示页 `FilePickerDemoScreen`（
-`app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/filepicker/`
+`app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/filepicker/`
 ），覆盖单选文件、多选图片、相册选视频、相册选图片+视频、目录选择、文件保存，以及移动端拍照（用
 `isCameraPickerSupported` 门控，desktop 隐藏），结果展示 `File.path`。文案统一走
 `app/sample/src/commonMain/composeResources/values/strings.xml` 的 `file_picker_demo_*`，不要硬编码。

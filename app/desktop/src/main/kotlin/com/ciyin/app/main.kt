@@ -14,7 +14,7 @@ import ciyin.application.runApplication
 import ciyin.ui.foundation.currentWindowDpSize
 import ciyin.ui.foundation.widget.SystemTray
 import com.ciyin.app.application.DesktopApplication
-import com.ciyin.app.ui.app.App
+import com.ciyin.app.presentation.app.App
 import nomikit.app.desktop.generated.resources.Res
 import nomikit.app.desktop.generated.resources.app_name
 import nomikit.app.desktop.generated.resources.ic_launcher

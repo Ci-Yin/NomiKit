@@ -105,18 +105,18 @@ Context，也不回退到全局静态状态。
 Android 26-28 宿主按实际需要声明：
 
 ```xml
-<uses-permission
-    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
     android:maxSdkVersion="28" />
 ```
 
 iOS 若使用发布、查询和删除，需要提供 Photos 读写用途说明：
 
 ```xml
-<key>NSPhotoLibraryUsageDescription</key>
-<string>用于发布、检查和删除应用创建的媒体。</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>用于将应用创建的媒体发布到系统照片库。</string>
+
+<key>NSPhotoLibraryUsageDescription</key><string>用于发布、检查和删除应用创建的媒体。</string><key>
+NSPhotoLibraryAddUsageDescription
+</key><string>用于将应用创建的媒体发布到系统照片库。</string>
 ```
 
 模块只检查和映射平台权限结果，不弹出权限请求。权限申请由宿主 UI 或 `feature/permissions` 负责。
@@ -141,10 +141,12 @@ iOS 等待 Photos 事务完成后才返回。任何失败都不得返回半成�
 ## Sample
 
 示例位于
-`app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/medialibrary/MediaLibraryDemoScreen.kt`，可从 sample
+`app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/medialibrary/MediaLibraryDemoScreen.kt`
+，可从 sample
 首页的“系统媒体库”入口进入。页面提供 `Images / Videos / Audio / Downloads` 四类测试矩阵，分别使用内置
 PNG、2 秒 H.264 MP4、2 秒单声道 WAV 和 UTF-8 文本。样本先通过 `ciyin.io.File` 写入
-`cache/media-library-demo/`，再以 `relativeDirectory = null` 发布，确保图片和视频请求可直接用于 iOS Photos。
+`cache/media-library-demo/`，再以 `relativeDirectory = null` 发布，确保图片和视频请求可直接用于 iOS
+Photos。
 
 每个测试独立保留阶段、`PublishedMedia` 展示模型、存在性和结构化错误，支持单项发布、检查、删除。批量命令按
 图片、视频、音频、下载顺序串行执行：`Unsupported` 和普通项目错误继续，`PermissionDenied` 与 `NoSpace`
@@ -152,7 +154,8 @@ PNG、2 秒 H.264 MP4、2 秒单声道 WAV 和 UTF-8 文本。样本先通过 `c
 发布；活动引用仍有效或尚未确认时禁止重复发布。
 
 sample 的权限 helper 位于各平台 source set；不要把这些 UI 权限逻辑移动到 feature 模块。iOS 只为
-`Images` 和 `Videos` 请求对应 Photos 权限，`Audio` 和 `Downloads` 不应先触发权限弹窗，应直接交给 feature
+`Images` 和 `Videos` 请求对应 Photos 权限，`Audio` 和 `Downloads` 不应先触发权限弹窗，应直接交给
+feature
 返回 `Unsupported`。
 
 ## 修改与验证

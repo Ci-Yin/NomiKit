@@ -409,7 +409,7 @@ internal interface AuthEffect {
 生成 Compose Preview 函数时，使用项目内的 `AppPreview` 注解：
 
 ```kotlin
-import com.ciyin.app.ui.component.AppPreview
+import com.ciyin.app.presentation.component.AppPreview
 
 @AppPreview
 @Composable

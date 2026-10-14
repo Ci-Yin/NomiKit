@@ -4,7 +4,7 @@ import ciyin.ui.foundation.viewmodel.StateMachineMviViewModel
 import com.freeletics.flowredux2.FlowReduxBuilder
 import com.freeletics.flowredux2.FlowReduxStateMachineFactory
 import org.koin.core.component.KoinComponent
-import com.ciyin.app.ui.util.UiEffectHandler
+import com.ciyin.app.presentation.util.UiEffectHandler
 
 /**
  * {{中文名}} 页面的 ViewModel。

@@ -39,7 +39,7 @@
 
     <application>
         <activity
-            android:name="com.ciyin.app.ui.screen.permissions.HealthPermissionsRationaleActivity"
+            android:name="com.ciyin.app.presentation.screen.permissions.HealthPermissionsRationaleActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />

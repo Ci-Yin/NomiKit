@@ -70,7 +70,8 @@ iOS 应用必须为实际使用的能力补齐对应 `Info.plist` 用途说明�
 ## Sample 入口
 
 示例位于
-`app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/permissions/PermissionsScreen.kt`，可从 sample
+`app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/permissions/PermissionsScreen.kt`
+，可从 sample
 首页的“权限管理示例”进入。页面支持刷新全部状态、逐组申请和逐组打开设置，不提供一次申请全部权限。
 
 ## 修改与验证

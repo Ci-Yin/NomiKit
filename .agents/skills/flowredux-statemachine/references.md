@@ -686,7 +686,7 @@ import ciyin.ui.foundation.viewmodel.viewModel
 复杂页面在 screen 目录下增加 `statemachine/`：
 
 ```text
-app/shared/src/commonMain/kotlin/com/ciyin/app/ui/screen/page/
+app/shared/src/commonMain/kotlin/com/ciyin/app/presentation/screen/page/
     PageScreen.kt
     PageViewModel.kt
     PageUiState.kt

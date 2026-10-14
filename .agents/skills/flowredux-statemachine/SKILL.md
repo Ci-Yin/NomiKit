@@ -23,11 +23,11 @@ FlowRedux2 `2.0.1`，库坐标为 `com.freeletics.flowredux2:flowredux`。
   `core/ui-foundation/src/commonMain/kotlin/ciyin/ui/foundation/viewmodel/StateMachineMviViewModel.kt`
 - 依赖版本：`gradle/libs.versions.toml`
 - `collectWhileInState` 与 `ExecutionPolicy.Ordered`：
-  `app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/filedownloader/FileDownloaderDemoViewModel.kt`
+  `app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/filedownloader/FileDownloaderDemoViewModel.kt`
 - 状态变更后启动异步任务：
-  `app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/permissions/PermissionsViewModel.kt`
+  `app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/permissions/PermissionsViewModel.kt`
 - `onEnterEffect`、Action 与流式结果回灌：
-  `app/sample/src/commonMain/kotlin/com/ciyin/app/ui/screen/aichat/AiChatViewModel.kt`
+  `app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/aichat/AiChatViewModel.kt`
 
 项目已经有多个真实 `StateMachineMviViewModel` sample；不要继续使用“项目尚无实际继承者”的旧假设。
 

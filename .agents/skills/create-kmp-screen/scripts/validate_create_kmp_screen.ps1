@@ -33,7 +33,7 @@ $templateRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'templates'
 $templateFiles = @(Get-ChildItem -LiteralPath $templateRoot -File -Filter '*.template')
 foreach ($file in $templateFiles) {
     $content = Get-Content -LiteralPath $file.FullName -Raw
-    if ($content -match 'androidx\.compose\.material\.icons|com\.ciyin\.app\.ui\.util\.AppPreview') {
+    if ($content -match 'androidx\.compose\.material\.icons|com\.ciyin\.app\.presentation\.util\.AppPreview') {
         $failures.Add("模板包含已禁止的 Material Icons 或旧 Preview import：$($file.FullName)")
     }
 }

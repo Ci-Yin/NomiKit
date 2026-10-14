@@ -15,8 +15,8 @@ import ciyin.material.theme.iconpack.IconPack
 import ciyin.material.theme.iconpack.ArrowRight
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
-import com.ciyin.app.ui.component.AppPreview
-import com.ciyin.app.ui.component.ScreenScaffold
+import com.ciyin.app.presentation.component.AppPreview
+import com.ciyin.app.presentation.component.ScreenScaffold
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 /**
