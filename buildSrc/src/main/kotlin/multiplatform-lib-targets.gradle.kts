@@ -194,12 +194,6 @@ configure<KotlinMultiplatformExtension> {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    sourceSets.commonMain.dependencies {
-        if (project.path != ":core:lang" && project.path != ":core:platform" && project.path != ":core:system" && project.path != ":core:io") {
-            implementation(project(":core:system"))
-        }
-    }
-
     sourceSets.commonTest.dependencies {
         // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html#writing-and-running-tests-with-compose-multiplatform
         if (composeExtension != null) {

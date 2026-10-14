@@ -25,6 +25,7 @@ kotlin {
 
         api(projects.core.uiPreview)
         api(projects.core.coroutines)
+        implementation(projects.core.platform)
     }
 
     sourceSets.androidMain.dependencies {

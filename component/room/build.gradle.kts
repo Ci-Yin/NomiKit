@@ -9,6 +9,8 @@ kotlin {
 
     sourceSets.commonMain.dependencies {
         implementation(projects.component.koin)
+        implementation(projects.core.io)
+        implementation(projects.core.platform)
         api(libs.androidx.room.runtime)
         api(libs.sqlite.bundled)
     }

@@ -15,6 +15,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         implementation(compose.runtime)
         implementation(projects.component.koin)
+        implementation(projects.core.system)
     }
 
 }

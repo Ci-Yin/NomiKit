@@ -7,6 +7,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.io)
+            implementation(projects.core.platform)
             implementation(libs.arrow.core)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)

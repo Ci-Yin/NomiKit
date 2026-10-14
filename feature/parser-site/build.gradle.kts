@@ -6,6 +6,8 @@ plugins {
 kotlin {
 
     sourceSets.commonMain.dependencies {
+        implementation(projects.core.io)
+        implementation(projects.core.platform)
         implementation(projects.feature.parser)
     }
     sourceSets.androidDeviceTest.dependencies {

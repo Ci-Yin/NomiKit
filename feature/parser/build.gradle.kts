@@ -6,6 +6,8 @@ plugins {
 kotlin {
 
     sourceSets.commonMain.dependencies {
+        implementation(projects.core.io)
+        implementation(projects.core.platform)
         api(projects.core.serialization)
         api(libs.ksoup)
         api(libs.ktor.client.core)

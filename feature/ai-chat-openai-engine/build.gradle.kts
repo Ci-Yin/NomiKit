@@ -7,6 +7,7 @@ kotlin {
 
     sourceSets.commonMain.dependencies {
         api(project(":feature:ai-core"))
+        implementation(projects.core.platform)
         implementation(libs.kotlinx.coroutines.core)
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.ktor.client.core)
