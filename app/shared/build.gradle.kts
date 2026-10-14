@@ -40,7 +40,6 @@ kotlin {
         api(projects.core.coroutines)
         api(projects.core.application)
         api(projects.core.serialization)
-        api(projects.core.datastore)
 
         api(projects.component.koin)
 
