@@ -2,8 +2,9 @@
 
 # 核心构建链：升级时优先一起核对 Kotlin / AGP / Compose Multiplatform / KSP 兼容性。
 kotlin = "2.3.0" # https://kotlinlang.org/docs/releases.html
-android-gradle-plugin = "9.1.0" # https://developer.android.com/build/releases/gradle-plugin
-compose-multiplatform = "1.10.0" # https://github.com/JetBrains/compose-multiplatform/releases
+android-gradle-plugin = "9.2.0" # https://developer.android.com/build/releases/gradle-plugin
+compose-multiplatform = "1.12.2" # https://github.com/JetBrains/compose-multiplatform/releases
+compose-androidx = "1.12.1" # Compose Multiplatform 1.12.2's AndroidX Compose base version
 ksp = "2.3.3" # https://github.com/google/ksp/releases
 
 # Compose Multiplatform 与 JetBrains AndroidX：多平台 UI 主版本入口。
@@ -137,8 +138,8 @@ androidx-lifecycle-android = { module = "androidx.compose.foundation:foundation-
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
-androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-androidx" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-androidx" }
 androidx-ui-tooling-preview-desktop = { group = "androidx.compose.ui", name = "ui-tooling-preview-desktop", version.ref = "uiToolingPreviewDesktop" }
 androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
 androidx-compose-material3-window-size-class2 = { group = "androidx.compose.material3", name = "material3-window-size-class" }

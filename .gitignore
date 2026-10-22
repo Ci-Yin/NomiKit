@@ -20,3 +20,4 @@ captures
 /hs_err_pid*.log
 /.plan/
 /.codex/
+.hotswan/

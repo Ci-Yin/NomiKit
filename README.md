@@ -7,8 +7,8 @@ NomiKit 是一个基于 Kotlin Multiplatform 与 Compose Multiplatform
 ## 技术栈
 
 - Kotlin Multiplatform 2.3.0
-- Compose Multiplatform 1.10.0
-- Android Gradle Plugin 9.1.0
+- Compose Multiplatform 1.12.2
+- Android Gradle Plugin 9.2.0
 - Compose Material3 / Navigation3 / Lifecycle
 - Koin 4.1.1
 - Ktor Client 3.4.0
@@ -31,7 +31,7 @@ NomiKit 是一个基于 Kotlin Multiplatform 与 Compose Multiplatform
 
 默认配置见 `gradle.properties`：
 
-- Android `compileSdk`：36
+- Android `compileSdk`：37
 - Android `minSdk`：26
 - Android `applicationId`：`com.ciyin.nomikit`
 - JDK 工具链：JetBrains Runtime with JCEF 17
