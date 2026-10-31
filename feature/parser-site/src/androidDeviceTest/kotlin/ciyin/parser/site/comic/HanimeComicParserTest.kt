@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
  *
  * 参考 `picture.DanbooruParserTest` 的风格：
  * - 校验解析器初始化时的站点配置；
- * - 运行基础的 Comics 请求流并断言结果非空。
+ * - 运行基础的 Feed 请求流并断言结果非空。
  */
 class HanimeComicParserTest {
 
@@ -36,20 +36,21 @@ class HanimeComicParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
-     * 验证漫画列表请求流（Comics）。
+     * 验证漫画 Feed 列表请求流。
      *
      * 这里沿用项目内「基础流测试」的做法，仅在有网络环境下保证
      * 能够返回至少 1 条内容。
      */
     @Test
-    fun hanime_comics_request_flow() = runTest {
+    fun hanime_feed_request_flow() = runTest {
         HanimeComicParser().requestAndLog(
             ComicRequest(
-                type = ComicParserType.Comics,
+                type = ComicParserType.Feed,
                 page = 1,
             )
         )
@@ -59,7 +60,7 @@ class HanimeComicParserTest {
     fun hanime_comic_request_flow() = runTest {
         HanimeComicParser().requestAndLog(
             ComicRequest(
-                type = ComicParserType.Comic,
+                type = ComicParserType.Detail,
                 id = "94553",
             )
         )

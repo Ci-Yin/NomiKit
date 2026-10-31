@@ -30,7 +30,8 @@ class HypnohubParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
@@ -40,7 +41,7 @@ class HypnohubParserTest {
     fun hypnohub_posts_request_flow() = runTest {
         HypnohubParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 // Hypnohub 与 Safebooru 同源，使用一个常见 tag 进行简单流测试。
                 tags = listOf("ahoge"),
@@ -55,7 +56,7 @@ class HypnohubParserTest {
     fun hypnohub_post_request_flow() = runTest {
         HypnohubParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "1",
             ),
         )

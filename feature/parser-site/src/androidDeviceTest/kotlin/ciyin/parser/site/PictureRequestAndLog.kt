@@ -19,32 +19,32 @@ internal suspend fun PictureParser.requestAndLog(
             is ParserEvent.Success -> {
                 val result = event.result
                 println(
-                    "${this::class.simpleName} type=${request.type} \n     request: $request ->\n     result: ok totalPages=${result.totalPages} tags=${result.tags.size} contents=${result.contents.size}",
+                    "${this::class.simpleName} type=${request.type} \n     request: $request ->\n     result: ok pagination=${result.pagination} tags=${result.tags.size} contents=${result.contents.size}",
                 )
                 println(result)
                 when (request.type) {
-                    PictureParserType.Posts,
-                    PictureParserType.Pools,
-                    PictureParserType.Popular,
-                        -> result.totalPages.checkBounds("PictureResult.totalPages")
+                    PictureParserType.Feed,
+                    PictureParserType.CollectionList,
+                    PictureParserType.Ranking,
+                        -> result.pagination.page.checkBounds("PictureResult.pagination.page")
 
                     else -> {}
                 }
 
-                if (request.type == PictureParserType.Posts) {
+                if (request.type == PictureParserType.Feed) {
                     result.tags.checkNotEmpty("PictureResult.tags")
                 }
                 result.contents.checkNotEmpty("PictureResult.contents")
                 result.contents.forEach {
                     block(it.apply { checkBase() })
                     when (request.type) {
-                        PictureParserType.Posts,
-                        PictureParserType.Post,
-                        PictureParserType.Popular,
+                        PictureParserType.Feed,
+                        PictureParserType.Detail,
+                        PictureParserType.Ranking,
                             -> it.postUrl.checkUrl("Picture.postUrl")
 
-                        PictureParserType.Pools,
-                        PictureParserType.Pool,
+                        PictureParserType.CollectionList,
+                        PictureParserType.Collection,
                             -> it.poolUrl.checkUrl("Picture.poolUrl")
 
                         else -> {}

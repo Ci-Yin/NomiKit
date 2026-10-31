@@ -23,10 +23,11 @@ internal interface HanimeBaseElement {
     /**
      * 提取最后一页的页码
      */
-    fun Element.totalPages(cssQuery: String = "ul.pagination li.page-item a.page-link"): Int {
+    fun Element.totalPages(cssQuery: String = "ul.pagination li.page-item a.page-link"): Int? {
         return select(cssQuery)
             .mapNotNull { it.text().toIntOrNull() }
-            .maxOrNull() ?: 1
+            .maxOrNull()
+            ?.takeIf { it >= 1 }
     }
 
     /**

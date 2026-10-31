@@ -5,8 +5,8 @@ import ciyin.io.replaceExtension
 import ciyin.lang.match
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType.Post
-import ciyin.parser.core.picture.PictureParserType.Posts
+import ciyin.parser.core.picture.PictureParserType.Detail
+import ciyin.parser.core.picture.PictureParserType.Feed
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
@@ -32,11 +32,11 @@ abstract class BaseBooruParser : PictureParser() {
      * Booru 解析器内部常量与日期辅助映射。
      */
     private companion object {
-        private const val PostsPid = 42
-        private const val PoolsPid = 24
+        /** Booru 单页帖子数量，用于把页码换算为 pid 偏移。 */
+        private const val ItemsPerPage = 42
     }
 
-    /** 配置 Booru 站点的 DSL 请求与响应逻辑。*/
+    /** 配置 Booru 站点 Feed 与 Detail 动作的 DSL 请求和响应逻辑。 */
     protected fun PictureParserScope.superSetup() {
 
         onItemRevise {
@@ -47,11 +47,11 @@ abstract class BaseBooruParser : PictureParser() {
             )
         }
 
-        on(Posts) {
+        on(Feed) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * PostsPid,
+                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "list",
                     "tags" to req.tags.joinToString(" "),
@@ -61,22 +61,22 @@ abstract class BaseBooruParser : PictureParser() {
                     this["s"] = "post"
                     this["q"] = "index"
                     this["json"] = "1"
-                    this["limit"] = PostsPid
+                    this["limit"] = ItemsPerPage
                 }
                 html { url("/index.php", htmlParameters) }
                 json { url("/index.php", jsonParameters) }
             }
 
             response { result ->
-                parsePostsResult(result)
+                parseFeedResult(result)
             }
         }
 
-        on(Post) {
+        on(Detail) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * PostsPid,
+                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "view",
                     "id" to req.id,
@@ -86,39 +86,40 @@ abstract class BaseBooruParser : PictureParser() {
                     this["s"] = "post"
                     this["q"] = "index"
                     this["json"] = "1"
-                    this["limit"] = PostsPid
+                    this["limit"] = ItemsPerPage
                 }
                 html { url("/index.php", htmlParameters) }
                 json { url("/index.php", jsonParameters) }
             }
 
             response { result ->
-                parsePostsResult(result)
+                parseDetailResult(result)
             }
         }
 
     }
 
-    /** 解析 Booru 帖子列表结果。*/
-    private fun ResponseScope.parsePostsResult(result: PictureResult): PictureResult {
+    /** 解析 Booru Feed 列表结果。 */
+    private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         return result.copy(
-            totalPages = totalPagesFromHtml(),
+            pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
             tags = tagsFromHtml(),
             contents = bodyForJson<List<BooruPost>>().map { it.toPicture() }
         )
     }
 
-    /** 从 HTML 分页组件中推断总页数。*/
-    private fun ResponseScope.totalPagesFromHtml(): Int {
-        //处理HTML数据
-        val elements = document.select("div.pagination").select("a")
-        return if (elements.isNotEmpty()) {
-            val href = elements.last()!!.attr("href")
-            val page = href.match("pid=(\\d+)")
-            (page.toIntOrNull() ?: 1) / PostsPid
-        } else {
-            0
-        }
+    /** 解析 Booru Detail 详情结果。 */
+    private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult =
+        parseFeedResult(result)
+
+    /** 从 HTML 分页组件中推断总页数。 */
+    private fun ResponseScope.totalPagesFromHtml(): Int? {
+        val maxPid = document.select("div.pagination a")
+            .mapNotNull { element ->
+                element.attr("href").match("pid=(\\d+)").toIntOrNull()
+            }
+            .maxOrNull()
+        return maxPid?.let { (it / ItemsPerPage) + 1 }
     }
 
     /** 从 HTML 中提取标签。*/

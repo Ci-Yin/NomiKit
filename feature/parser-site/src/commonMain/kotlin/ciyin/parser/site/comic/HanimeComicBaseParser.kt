@@ -3,7 +3,8 @@ package ciyin.parser.site.comic
 import ciyin.lang.match
 import ciyin.parser.core.comic.ComicParser
 import ciyin.parser.core.comic.ComicParserType
-import ciyin.parser.core.comic.ComicParserType.Comics
+import ciyin.parser.core.comic.ComicParserType.Detail
+import ciyin.parser.core.comic.ComicParserType.Feed
 import ciyin.parser.core.comic.model.Comic
 import ciyin.parser.core.comic.model.ComicRequest
 import ciyin.parser.core.comic.model.ComicResult
@@ -28,44 +29,47 @@ import com.fleeksoft.ksoup.nodes.Element
  */
 abstract class HanimeComicBaseParser : ComicParser(), HanimeBaseElement {
 
+    /** 注册 Hanime 漫画 Feed 与 Detail 的基础请求和响应流程。 */
     protected fun ComicParserScope.setup(
         block: ComicParserScope.() -> Unit,
     ) {
 
 //        httpClient(MockWeb) {}
 
-        on(Comics) {
+        on(Feed) {
             request { req ->
                 html { url("/comics/search", req.parameters()) }
             }
             response { result ->
-                onComicsParse(result)
+                onFeedParse(result)
             }
         }
 
-        on(ComicParserType.Comic) {
+        on(Detail) {
 
             request { req ->
                 html { url("/comic/${req.id}") }
             }
 
             response { result ->
-                onComicParse(result)
+                onDetailParse(result)
             }
         }
 
         block()
     }
 
-    fun ResponseScope.onComicsParse(result: ComicResult): ComicResult {
+    /** 解析漫画 Feed 列表结果。 */
+    fun ResponseScope.onFeedParse(result: ComicResult): ComicResult {
         return result.copy(
-            totalPages = document.totalPages(),
+            pagination = result.pagination.copy(totalPages = document.totalPages()),
             contents = document.comics()
         )
     }
 
 
-    fun ResponseScope.onComicParse(result: ComicResult): ComicResult {
+    /** 解析漫画 Detail 结果。 */
+    fun ResponseScope.onDetailParse(result: ComicResult): ComicResult {
 
         // 提取 JSON-LD 中的视频信息
         val hanimeContext = document.context()

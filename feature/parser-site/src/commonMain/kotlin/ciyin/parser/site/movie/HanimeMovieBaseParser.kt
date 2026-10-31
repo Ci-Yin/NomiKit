@@ -3,7 +3,8 @@ package ciyin.parser.site.movie
 import ciyin.lang.match
 import ciyin.parser.core.movie.MovieParser
 import ciyin.parser.core.movie.MovieParserType
-import ciyin.parser.core.movie.MovieParserType.Movies
+import ciyin.parser.core.movie.MovieParserType.Detail
+import ciyin.parser.core.movie.MovieParserType.Feed
 import ciyin.parser.core.movie.model.Movie
 import ciyin.parser.core.movie.model.MovieResult
 import ciyin.parser.core.movie.model.Video
@@ -27,13 +28,14 @@ import com.fleeksoft.ksoup.nodes.Element
  */
 abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement {
 
+    /** 注册 Hanime 影视 Feed 与 Detail 的基础请求和响应流程。 */
     protected fun MovieParserScope.setup(
         block: MovieParserScope.() -> Unit,
     ) {
 
 //        httpClient(MockWeb) {}
 
-        on(Movies) {
+        on(Feed) {
             request { req ->
                 val parameters = parametersOf(
                     "page" to req.page,
@@ -41,32 +43,32 @@ abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement {
                     "sort" to "popular-today",
                     "type" to "",
                     //"genre" to "泡麵番",
-                    "sort" to "",
                     "year" to "",
                     "month" to ""
                 )
                 html { url("search", parameters) }
             }
             response { result ->
-                onMoviesParse(result)
+                onFeedParse(result)
             }
         }
 
-        on(MovieParserType.Movie) {
+        on(MovieParserType.Detail) {
 
             request { req ->
                 html { url("watch", parametersOf("v" to req.id)) }
             }
 
             response { result ->
-                onMovieParse(result)
+                onDetailParse(result)
             }
         }
 
         block()
     }
 
-    fun ResponseScope.onMoviesParse(result: MovieResult): MovieResult {
+    /** 解析影视 Feed 列表结果。 */
+    fun ResponseScope.onFeedParse(result: MovieResult): MovieResult {
         val contents = mutableListOf<Movie>()
 
         document.select(
@@ -107,13 +109,14 @@ abstract class HanimeMovieBaseParser : MovieParser(), HanimeBaseElement {
         }
 
         return result.copy(
-            totalPages = document.totalPages(),
+            pagination = result.pagination.copy(totalPages = document.totalPages()),
             contents = contents
         )
     }
 
 
-    fun ResponseScope.onMovieParse(result: MovieResult): MovieResult {
+    /** 解析影视 Detail 结果。 */
+    fun ResponseScope.onDetailParse(result: MovieResult): MovieResult {
 
         // 提取 JSON-LD 中的视频信息
         val hanimeContext = document.context()

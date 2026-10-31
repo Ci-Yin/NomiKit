@@ -32,7 +32,8 @@ class XbooruParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
@@ -42,7 +43,7 @@ class XbooruParserTest {
     fun xbooru_posts_request_flow() = runTest {
         XbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 tags = listOf("ahoge"),
             ),
@@ -56,7 +57,7 @@ class XbooruParserTest {
     fun xbooru_post_request_flow() = runTest {
         XbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "1235280",
             ),
         )
@@ -74,7 +75,7 @@ class XbooruParserTest {
                     val result = it.result
                     assertTrue(result.contents.isNotEmpty())
                     println(
-                        "xbooru type=${request.type} request=$request -> ok contents=${result.contents.size} totalPages=${result.totalPages}",
+                        "xbooru type=${request.type} request=$request -> ok contents=${result.contents.size} pagination=${result.pagination}",
                     )
                     finalResult = result
                 }

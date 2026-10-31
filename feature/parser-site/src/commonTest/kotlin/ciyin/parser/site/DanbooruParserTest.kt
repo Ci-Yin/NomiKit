@@ -1,4 +1,4 @@
-﻿package ciyin.parser.site
+package ciyin.parser.site
 
 import ciyin.parser.site.picture.DanbooruParser
 import kotlin.test.Test
@@ -29,7 +29,8 @@ class DanbooruParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
 }

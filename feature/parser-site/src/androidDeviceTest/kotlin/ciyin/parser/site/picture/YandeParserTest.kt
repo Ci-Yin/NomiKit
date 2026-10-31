@@ -3,6 +3,7 @@ package ciyin.parser.site.picture
 import ciyin.parser.core.ParserEvent
 import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.model.PictureRequest
+import ciyin.parser.core.picture.model.PictureRankingScale
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.site.PictureSiteId
 import kotlinx.coroutines.test.runTest
@@ -32,7 +33,8 @@ class YandeParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
@@ -42,7 +44,7 @@ class YandeParserTest {
     fun yande_posts_request_flow() = runTest {
         YandeParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 tags = listOf("rating:s"),
             )
@@ -56,7 +58,7 @@ class YandeParserTest {
     fun yande_post_request_flow() = runTest {
         YandeParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "1256075",
             )
         )
@@ -69,7 +71,7 @@ class YandeParserTest {
     fun yande_pools_request_flow() = runTest {
         YandeParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Pools,
+                type = PictureParserType.CollectionList,
                 page = 1,
                 search = "",
             )
@@ -83,7 +85,7 @@ class YandeParserTest {
     fun yande_pool_request_flow() = runTest {
         YandeParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Pool,
+                type = PictureParserType.Collection,
                 id = "99337",
             ),
         )
@@ -96,9 +98,9 @@ class YandeParserTest {
     fun yande_popular_request_flow() = runTest {
         YandeParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Popular,
+                type = PictureParserType.Ranking,
                 page = 1,
-                scale = "day",
+                scale = PictureRankingScale.Day,
             ),
         )
     }
@@ -115,7 +117,7 @@ class YandeParserTest {
                     val result = it.result
                     assertTrue(result.contents.isNotEmpty())
                     println(
-                        "yande type=${request.type} request=$request -> ok contents=${result.contents.size} totalPages=${result.totalPages}"
+                        "yande type=${request.type} request=$request -> ok contents=${result.contents.size} pagination=${result.pagination}"
                     )
                     finalResult = result
                 }

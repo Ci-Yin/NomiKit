@@ -1,6 +1,7 @@
 package ciyin.parser.core
 
 import ciyin.parser.model.MultiParserResult
+import ciyin.parser.model.Pagination
 import ciyin.parser.model.ParserRequest
 import ciyin.parser.model.ParserResult
 import ciyin.platform.thisLogger
@@ -67,7 +68,7 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
         }
         if (enabledParsers.isEmpty()) {
             logger.w { "MultiParser: 启用的解析器列表为空，返回兜底结果。" }
-            return emptyMap<ParserId, Throwable>() to onFallback()
+            return emptyMap<ParserId, Throwable>() to fallbackForPage(request.page)
         }
 
         logger.d { "MultiParser: 开始并发执行 ${enabledParsers.size} 个解析器，启用的解析器列表：${enabledParsers.map { it.configure.id }}。" }
@@ -76,7 +77,7 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
 
         if (successResults.isEmpty()) {
             logger.e { "MultiParser: 所有解析器均执行失败（共 ${errors.size} 个），返回兜底结果。" }
-            return errors to onFallback()
+            return errors to fallbackForPage(request.page)
         }
 
         if (errors.isNotEmpty()) {
@@ -86,29 +87,60 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
         }
 
         val multiResult = MultiParserResult(
-            totalPages = successResults.maxOf { it.totalPages },
-            tags = successResults.flatMap { it.tags }.distinctBy { it.tag }
+            pagination = mergePagination(request.page, successResults.map { it.pagination }),
+            tags = successResults.flatMap { it.tags }.distinctBy { it.tag },
         )
 
         return errors to onMerge(request, successResults, multiResult)
     }
 
+    /**
+     * 执行多站点请求并发送聚合成功或失败事件。
+     *
+     * 没有可用站点时发送带请求页码的兜底成功结果；至少一个站点可用且全部失败时才发送失败事件。
+     *
+     * @param request 本次解析请求
+     * @return 多站点解析事件流
+     */
     fun request(request: TRequest): Flow<MultiParserEvent<TResult>> = flow {
         val (errors, result) = execute(request)
-        if (errors.size == enabledParserIds.size) {
+        val availableParserCount = parsers.count { enabledParserIds.contains(it.configure.id) }
+        if (availableParserCount > 0 && errors.size == availableParserCount) {
             emit(MultiParserEvent.Failure(errors))
         } else {
             emit(MultiParserEvent.Success(result))
         }
     }
 
+    /** 使用请求页码修订聚合器兜底结果。 */
+    @Suppress("UNCHECKED_CAST")
+    private fun fallbackForPage(page: Int): TResult {
+        val fallback = onFallback()
+        return fallback.withPagination(fallback.pagination.copy(page = page)) as TResult
+    }
+
     /**
-     * 对所有已启用的解析器并发执行单次请求，统计成功与失败数量。
+     * 归并多个站点的页码分页状态。
+
      *
-     * @param enabledParsers 已经过滤后的启用解析器列表。
-     * @param request        本次解析请求。
-     * @return 一个 [Pair]，其中第一个元素为所有解析器执行失败的异常列表，第二个元素为所有解析器执行成功的结果列表。
+     * 总页数只有在至少一个站点明确提供时才保留；下一页状态只要有站点明确存在
+     * 下一页就返回 true，全部站点明确没有下一页才返回 false，否则保持未知。
      */
+    private fun mergePagination(page: Int, paginations: List<Pagination>): Pagination {
+        require(paginations.isNotEmpty()) { "归并分页状态时至少需要一个解析结果" }
+        val totalPages = paginations.mapNotNull { it.totalPages }.maxOrNull()
+        val hasNext = when {
+            paginations.any { it.hasNext == true } -> true
+            paginations.all { it.hasNext == false } -> false
+            else -> null
+        }
+        return Pagination(
+            page = page,
+            totalPages = totalPages,
+            hasNext = hasNext,
+        )
+    }
+
     private suspend fun executeAll(
         enabledParsers: List<BaseParser<TType, TRequest, TResult>>,
         request: TRequest,

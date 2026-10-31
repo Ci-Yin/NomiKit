@@ -6,11 +6,11 @@ import ciyin.io.replaceName
 import ciyin.io.toFile
 import ciyin.lang.match
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType.Pool
-import ciyin.parser.core.picture.PictureParserType.Pools
-import ciyin.parser.core.picture.PictureParserType.Popular
-import ciyin.parser.core.picture.PictureParserType.Post
-import ciyin.parser.core.picture.PictureParserType.Posts
+import ciyin.parser.core.picture.PictureParserType.Collection
+import ciyin.parser.core.picture.PictureParserType.CollectionList
+import ciyin.parser.core.picture.PictureParserType.Detail
+import ciyin.parser.core.picture.PictureParserType.Feed
+import ciyin.parser.core.picture.PictureParserType.Ranking
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
@@ -71,7 +71,7 @@ class DanbooruParser(
 
         }
 
-        on(Posts) {
+        on(Feed) {
 
             request { req ->
                 val plan = danbooruPictureRequestPlan(req)
@@ -80,12 +80,12 @@ class DanbooruParser(
             }
 
             response { result ->
-                parsePictureResult(result)
+                parseFeedResult(result)
             }
 
         }
 
-        on(Post) {
+        on(Detail) {
 
             request { req ->
                 html { url("/posts/${req.id}") }
@@ -96,13 +96,12 @@ class DanbooruParser(
                 val info = bodyForJson<DanbooruPost>().toPicture()
                 result.copy(
                     contents = listOf(info),
-                    totalPages = 1,
                 )
             }
 
         }
 
-        on(Pools) {
+        on(CollectionList) {
 
             request { req ->
                 val plan = danbooruPictureRequestPlan(req)
@@ -111,12 +110,12 @@ class DanbooruParser(
             }
 
             response { result ->
-                parsePoolsResult(result)
+                parseCollectionListResult(result)
             }
 
         }
 
-        on(Pool) {
+        on(Collection) {
 
             request { req ->
                 html { url("/pools/${req.id}") }
@@ -124,12 +123,12 @@ class DanbooruParser(
             }
 
             response { result ->
-                parsePoolResult(result)
+                parseCollectionResult(result)
             }
 
         }
 
-        on(Popular) {
+        on(Ranking) {
 
             request { req ->
                 val plan = danbooruPictureRequestPlan(req)
@@ -138,40 +137,41 @@ class DanbooruParser(
             }
 
             response { result ->
-                parsePictureResult(result)
+                parseFeedResult(result)
             }
 
         }
 
     }
 
-    private fun ResponseScope.parsePictureResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         if (bodyForJson().isEmpty()) {
             return result
         }
         return result.copy(
             tags = document.tags(),
-            totalPages = document.talPages(),
+            pagination = result.pagination.copy(totalPages = document.totalPagesFromHtml()),
             contents = bodyForJson<List<DanbooruPost>>().map { it.toPicture() },
         )
     }
 
-    private fun ResponseScope.parsePoolsResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseCollectionListResult(result: PictureResult): PictureResult {
         return result.copy(
-            contents = parseDanbooruPools(
+            contents = parseDanbooruCollectionList(
                 html = bodyForHtml(),
                 json = bodyForJson(),
                 baseUrl = configure.baseUrl,
             ),
-            totalPages = document.talPages(),
+            pagination = result.pagination.copy(totalPages = document.totalPagesFromHtml()),
         )
     }
 
     /** 解析单个画集详情中的帖子列表。 */
-    private fun ResponseScope.parsePoolResult(result: PictureResult): PictureResult = result.copy(
-        contents = document.pictures(),
-        totalPages = document.talPages(),
-    )
+    private fun ResponseScope.parseCollectionResult(result: PictureResult): PictureResult =
+        result.copy(
+            contents = document.pictures(),
+            pagination = result.pagination.copy(totalPages = document.totalPagesFromHtml()),
+        )
 
     /** 从 HTML 中提取图片信息。*/
     private fun Element.pictures(
@@ -195,7 +195,7 @@ class DanbooruParser(
     }
 
     /** 从 HTML 分页组件中推断总页数。*/
-    private fun Element.talPages(): Int {
+    private fun Element.totalPagesFromHtml(): Int? {
 
         // 提取所有 <a class="paginator-page"> 的页码
         val pageLinks = select("a.paginator-page")
@@ -209,7 +209,7 @@ class DanbooruParser(
 
         // 合并并找出最大值
         val allPages = pageLinks + (currentPage ?: 0)
-        return allPages.maxOrNull() ?: 1000
+        return allPages.maxOrNull()?.takeIf { it >= 1 }
     }
 
     /** 从 HTML 中提取标签。*/

@@ -5,8 +5,8 @@ import ciyin.io.nameWithoutExtension
 import ciyin.io.toFile
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType.Post
-import ciyin.parser.core.picture.PictureParserType.Posts
+import ciyin.parser.core.picture.PictureParserType.Detail
+import ciyin.parser.core.picture.PictureParserType.Feed
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
@@ -30,7 +30,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.math.min
 
 /**
  * Gelbooru 站点解析器的新 DSL 实现。
@@ -44,8 +43,8 @@ class GelbooruParser : PictureParser() {
      * Gelbooru 解析器内部常量与日期辅助映射。
      */
     private companion object {
-        private const val PostsPid = 42
-        private const val MaxPostsPages = 476
+        /** Gelbooru 单页帖子数量，用于把页码换算为 pid 偏移。 */
+        private const val ItemsPerPage = 42
 
         private val GelbooruDateRegex =
             Regex("""^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+([+-]\d{4})\s+(\d{4})$""")
@@ -98,11 +97,11 @@ class GelbooruParser : PictureParser() {
             )
         }
 
-        on(Posts) {
+        on(Feed) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * PostsPid,
+                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "list",
                     "tags" to req.tags.joinToString(" "),
@@ -112,22 +111,22 @@ class GelbooruParser : PictureParser() {
                     this["s"] = "post"
                     this["q"] = "index"
                     this["json"] = "1"
-                    this["limit"] = PostsPid
+                    this["limit"] = ItemsPerPage
                 }
                 html { url("/index.php", htmlParameters) }
                 json { url("/index.php", jsonParameters) }
             }
 
             response { result ->
-                parsePostsResult(result)
+                parseFeedResult(result)
             }
         }
 
-        on(Post) {
+        on(Detail) {
             request { req ->
                 val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * PostsPid,
+                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "view",
                     "id" to req.id,
@@ -137,28 +136,28 @@ class GelbooruParser : PictureParser() {
                     this["s"] = "post"
                     this["q"] = "index"
                     this["json"] = "1"
-                    this["limit"] = PostsPid
+                    this["limit"] = ItemsPerPage
                 }
                 html { url("/index.php", htmlParameters) }
                 json { url("/index.php", jsonParameters) }
             }
 
             response { result ->
-                parsePostResult(result)
+                parseDetailResult(result)
             }
         }
     }
 
     /**
-     * 解析 Gelbooru 帖子列表结果。
+     * 解析 Gelbooru Feed 列表结果。
      */
-    private fun ResponseScope.parsePostsResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         val siteTags = parseHtmlTags()
         val tagIndex = siteTags.associateBy { it.tag }
-        val payload = parsePostsPayloadOrNull()
+        val payload = parsePayloadOrNull()
             ?: return result.copy(
                 tags = siteTags,
-                totalPages = totalPagesFromHtml(),
+                pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
             )
 
         val contents = payload.post.map { post ->
@@ -166,41 +165,39 @@ class GelbooruParser : PictureParser() {
         }
         val totalPages = when {
             payload.attributes.count > 0 -> totalPagesFromCount(payload.attributes.count)
-            else -> totalPagesFromHtml().takeIf { it > 0 } ?: if (contents.isEmpty()) 0 else 1
+            else -> totalPagesFromHtml()
         }
         return result.copy(
             tags = siteTags,
             contents = contents,
-            totalPages = totalPages,
+            pagination = result.pagination.copy(totalPages = totalPages),
         )
     }
 
     /**
-     * 解析 Gelbooru 单帖详情结果。
+     * 解析 Gelbooru Detail 详情结果。
      */
-    private fun ResponseScope.parsePostResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult {
         val siteTags = parseHtmlTags()
         val tagIndex = siteTags.associateBy { it.tag }
-        val picture = parsePostsPayloadOrNull()
+        val picture = parsePayloadOrNull()
             ?.post
             ?.firstOrNull()
             ?.toPictureInfo(tagIndex)
             ?: return result.copy(
                 tags = siteTags,
-                totalPages = 1,
             )
 
         return result.copy(
             tags = siteTags,
             contents = listOf(picture),
-            totalPages = 1,
         )
     }
 
     /**
      * 在 JSON 响应有效时解析 Gelbooru 的 DAPI 结果。
      */
-    private fun ResponseScope.parsePostsPayloadOrNull(): GelbooruPostsResponse? {
+    private fun ResponseScope.parsePayloadOrNull(): GelbooruPostsResponse? {
         val jsonBody = bodyForJson().trim()
         if (jsonBody.isBlank() || jsonBody == "[]" || !jsonBody.contains("\"post\"")) {
             return null
@@ -240,16 +237,17 @@ class GelbooruParser : PictureParser() {
     }
 
     /**
-     * 根据 Gelbooru 返回的总条数计算总页数，并保留旧实现的页数上限。
+     * 根据 Gelbooru 返回的总条数计算精确总页数。
      */
-    private fun totalPagesFromCount(count: Int): Int {
-        return min((count + PostsPid - 1) / PostsPid, MaxPostsPages)
+    private fun totalPagesFromCount(count: Int): Int? {
+        if (count <= 0) return null
+        return (count + ItemsPerPage - 1) / ItemsPerPage
     }
 
     /**
      * 从 HTML 分页组件推断总页数。
      */
-    private fun ResponseScope.totalPagesFromHtml(): Int {
+    private fun ResponseScope.totalPagesFromHtml(): Int? {
         val maxPid = document.select("div.pagination a[href]")
             .mapNotNull { element ->
                 Regex("""[?&]pid=(\d+)""").find(element.attr("href"))
@@ -257,8 +255,8 @@ class GelbooruParser : PictureParser() {
                     ?.getOrNull(1)
                     ?.toIntOrNull()
             }
-            .maxOrNull() ?: return 0
-        return (maxPid / PostsPid) + 1
+            .maxOrNull() ?: return null
+        return (maxPid / ItemsPerPage) + 1
     }
 
     /**

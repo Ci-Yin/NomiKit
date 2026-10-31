@@ -3,6 +3,7 @@ package ciyin.parser.site.picture
 import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureRequest
+import ciyin.parser.core.picture.model.PictureRankingScale
 import ciyin.parser.core.picture.model.PoolSummary
 import ciyin.parser.model.Rating
 import com.fleeksoft.ksoup.Ksoup
@@ -18,7 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
 /** 支持的热门榜单时间范围。 */
-private val SupportedPopularScales = setOf("day", "week", "month")
+private val SupportedRankingScales = PictureRankingScale.entries
 
 /**
  * 单个图片站点请求的路径与查询参数计划。
@@ -41,7 +42,7 @@ internal data class PictureSiteRequestPlan(
  */
 internal fun danbooruPictureRequestPlan(request: PictureRequest): PictureSiteRequestPlan =
     when (request.type) {
-        PictureParserType.Posts -> PictureSiteRequestPlan(
+        PictureParserType.Feed -> PictureSiteRequestPlan(
             htmlPath = "/posts",
             jsonPath = "/posts.json",
             parameters = mapOf(
@@ -50,16 +51,16 @@ internal fun danbooruPictureRequestPlan(request: PictureRequest): PictureSiteReq
             ),
         )
 
-        PictureParserType.Popular -> PictureSiteRequestPlan(
+        PictureParserType.Ranking -> PictureSiteRequestPlan(
             htmlPath = "/explore/posts/popular",
             jsonPath = "/explore/posts/popular.json",
             parameters = mapOf(
                 "page" to request.page,
-                "scale" to request.requireSupportedPopularScale(),
+                "scale" to request.requireSupportedRankingScale().value,
             ),
         )
 
-        PictureParserType.Pools -> PictureSiteRequestPlan(
+        PictureParserType.CollectionList -> PictureSiteRequestPlan(
             htmlPath = "/pools/gallery",
             jsonPath = "/pools/gallery.json",
             parameters = mapOf(
@@ -85,7 +86,7 @@ internal fun yandePictureRequestPlan(
         .date,
 ): PictureSiteRequestPlan =
     when (request.type) {
-        PictureParserType.Posts -> PictureSiteRequestPlan(
+        PictureParserType.Feed -> PictureSiteRequestPlan(
             htmlPath = "/post",
             jsonPath = null,
             parameters = mapOf(
@@ -94,20 +95,19 @@ internal fun yandePictureRequestPlan(
             ),
         )
 
-        PictureParserType.Popular -> {
-            val scale = request.requireSupportedPopularScale()
+        PictureParserType.Ranking -> {
+            val scale = request.requireSupportedRankingScale()
             val pageOffset = (request.page.coerceAtLeast(1) - 1)
             val targetDate = today.minus(
                 when (scale) {
-                    "day" -> DatePeriod(days = pageOffset)
-                    "week" -> DatePeriod(days = pageOffset * 7)
-                    "month" -> DatePeriod(months = pageOffset)
-                    else -> error("已校验的热门范围无法映射：$scale")
+                    PictureRankingScale.Day -> DatePeriod(days = pageOffset)
+                    PictureRankingScale.Week -> DatePeriod(days = pageOffset * 7)
+                    PictureRankingScale.Month -> DatePeriod(months = pageOffset)
                 }
             )
             PictureSiteRequestPlan(
-                htmlPath = "/post/popular_by_$scale",
-                jsonPath = "/post/popular_by_$scale.json",
+                htmlPath = "/post/popular_by_${scale.value}",
+                jsonPath = "/post/popular_by_${scale.value}.json",
                 parameters = mapOf(
                     "year" to targetDate.year,
                     "month" to targetDate.month.number,
@@ -116,7 +116,7 @@ internal fun yandePictureRequestPlan(
             )
         }
 
-        PictureParserType.Pools -> PictureSiteRequestPlan(
+        PictureParserType.CollectionList -> PictureSiteRequestPlan(
             htmlPath = "/pool",
             jsonPath = "/pool.json",
             parameters = mapOf(
@@ -129,15 +129,15 @@ internal fun yandePictureRequestPlan(
     }
 
 /** 返回经过显式支持校验的热门时间范围。 */
-private fun PictureRequest.requireSupportedPopularScale(): String =
+private fun PictureRequest.requireSupportedRankingScale(): PictureRankingScale =
     scale.also { value ->
-        require(value in SupportedPopularScales) {
-            "不支持的热门时间范围：$value"
+        require(value in SupportedRankingScales) {
+            "不支持的热门时间范围：${value.value}"
         }
     }
 
 /**
- * 解析 Danbooru 画集列表并按 pool ID 合并 HTML 封面与 JSON 摘要。
+ * 解析 Danbooru 画集列表并按画集 ID 合并 HTML 封面与 JSON 摘要。
  *
  * JSON 是条目集合和标题、数量的权威来源；HTML 只提供首图。没有首图的画集仍保留，
  * 让上层能够明确展示摘要而不是静默丢失条目。
@@ -145,9 +145,9 @@ private fun PictureRequest.requireSupportedPopularScale(): String =
  * @param html 画集页面 HTML
  * @param json 画集摘要 JSON
  * @param baseUrl 站点基础地址
- * @return 一项对应一个 pool 的图片承载模型
+ * @return 一项对应一个画集的图片承载模型
  */
-internal fun parseDanbooruPools(
+internal fun parseDanbooruCollectionList(
     html: String,
     json: String,
     baseUrl: String,
@@ -199,9 +199,9 @@ internal fun parseDanbooruPools(
  * @param html 画集页面 HTML
  * @param json 画集摘要 JSON
  * @param baseUrl 站点基础地址
- * @return 一项对应一个 pool 的图片承载模型
+ * @return 一项对应一个画集的图片承载模型
  */
-internal fun parseYandePools(
+internal fun parseYandeCollectionList(
     html: String,
     json: String,
     baseUrl: String,

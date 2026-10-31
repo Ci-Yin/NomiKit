@@ -1,23 +1,23 @@
 package ciyin.parser.site.picture
 
-import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.PictureParserType
+import ciyin.parser.core.picture.model.PictureRankingScale
+import ciyin.parser.core.picture.model.PictureRequest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
  * Danbooru 与 Yande 画集摘要及请求隔离契约测试。
  */
-class PicturePoolsContractTest {
+class PictureCollectionsContractTest {
 
-    /** Danbooru 以 JSON pool 为权威并按 pool id 合并 HTML 首图。 */
+    /** Danbooru 以 JSON 画集摘要为权威并按画集 ID 合并 HTML 首图。 */
     @Test
-    fun danbooruPoolsMergeJsonSummariesWithHtmlCoversByPoolId() {
-        val pictures = parseDanbooruPools(
+    fun danbooruCollectionListMergesJsonSummariesWithHtmlCoversByPoolId() {
+        val pictures = parseDanbooruCollectionList(
             html = """
                 <div class="posts-container">
                   <article class="post-preview" data-id="9002">
@@ -39,7 +39,9 @@ class PicturePoolsContractTest {
         )
 
         assertEquals(listOf(101, 102, 103), pictures.map { it.poolSummary?.poolId })
-        assertEquals(listOf("first_pool", "second_pool", "empty_cover"), pictures.map { it.poolSummary?.title })
+        assertEquals(
+            listOf("first_pool", "second_pool", "empty_cover"),
+            pictures.map { it.poolSummary?.title })
         assertEquals(12, pictures[0].poolSummary?.postCount)
         assertNull(pictures[1].poolSummary?.postCount)
         assertEquals("https://img/cover-101.jpg", pictures[0].thumbnailUrl)
@@ -48,10 +50,10 @@ class PicturePoolsContractTest {
         assertTrue(pictures.all { it.site == "danbooru" })
     }
 
-    /** Yande 一项对应一个 JSON pool，缺失首图和数量都保持显式未知。 */
+    /** Yande 每项对应一个 JSON 画集，缺失首图和数量都保持显式未知。 */
     @Test
-    fun yandePoolsKeepEveryJsonSummaryWhenCoverIsMissing() {
-        val pictures = parseYandePools(
+    fun yandeCollectionListKeepsEveryJsonSummaryWhenCoverIsMissing() {
+        val pictures = parseYandeCollectionList(
             html = """
                 <html><body><script>
                   Post.register({"id":7001,"preview_url":"https://img/yande-1.jpg","sample_url":"https://img/yande-1-s.jpg","file_url":"https://img/yande-1-o.jpg","width":640,"height":480,"rating":"s"});
@@ -74,68 +76,87 @@ class PicturePoolsContractTest {
         assertTrue(pictures.all { it.site == "yande" })
     }
 
-    /** 三种列表类型必须构建互不串用的请求地址。 */
+    /** Feed、Ranking、CollectionList 三种列表动作必须构建互不串用的请求地址。 */
     @Test
-    fun pictureRequestPlansKeepPostsPopularAndPoolsSeparated() {
+    fun pictureRequestPlansKeepFeedRankingAndCollectionsSeparated() {
         val requests = listOf(
-            PictureRequest(type = PictureParserType.Posts, page = 2),
-            PictureRequest(type = PictureParserType.Popular, page = 2, scale = "week"),
-            PictureRequest(type = PictureParserType.Pools, page = 2),
+            PictureRequest(type = PictureParserType.Feed, page = 2),
+            PictureRequest(
+                type = PictureParserType.Ranking,
+                page = 2,
+                scale = PictureRankingScale.Week
+            ),
+            PictureRequest(type = PictureParserType.CollectionList, page = 2),
         )
 
         val danbooru = requests.map(::danbooruPictureRequestPlan)
         val yande = requests.map(::yandePictureRequestPlan)
 
-        assertEquals(listOf("/posts", "/explore/posts/popular", "/pools/gallery"), danbooru.map { it.htmlPath })
+        assertEquals(
+            listOf("/posts", "/explore/posts/popular", "/pools/gallery"),
+            danbooru.map { it.htmlPath })
         assertEquals(listOf("/post", "/post/popular_by_week", "/pool"), yande.map { it.htmlPath })
         assertEquals("week", danbooru[1].parameters["scale"])
         assertTrue(yande[1].parameters.keys.containsAll(listOf("year", "month", "day")))
     }
 
-    /** 两站热门都只接受明确支持的日周月范围。 */
+    /** 两站 Ranking 都只接受明确支持的日周月范围。 */
     @Test
-    fun popularRangeRejectsUnsupportedScaleExplicitly() {
-        listOf("day", "week", "month").forEach { scale ->
-            val request = PictureRequest(type = PictureParserType.Popular, scale = scale)
+    fun rankingRangeUsesSupportedScalesExplicitly() {
+        PictureRankingScale.entries.forEach { scale ->
+            val request = PictureRequest(type = PictureParserType.Ranking, scale = scale)
             assertTrue(danbooruPictureRequestPlan(request).htmlPath.contains("popular"))
-            assertTrue(yandePictureRequestPlan(request).htmlPath.endsWith("popular_by_$scale"))
+            assertTrue(yandePictureRequestPlan(request).htmlPath.endsWith("popular_by_${scale.value}"))
         }
 
-        val unsupported = PictureRequest(type = PictureParserType.Popular, scale = "year")
-        assertFailsWith<IllegalArgumentException> { danbooruPictureRequestPlan(unsupported) }
-        assertFailsWith<IllegalArgumentException> { yandePictureRequestPlan(unsupported) }
     }
 
-    /** Yande 热门第一页使用今天，后续页按日周月各自周期推进。 */
+    /** Yande Ranking 第 1 页使用今天，后续页按日周月各自周期推进。 */
     @Test
-    fun yandePopularPaginationUsesRangePeriodFromToday() {
+    fun yandeRankingPaginationUsesRangePeriodFromToday() {
         val today = LocalDate(year = 2026, month = 3, day = 31)
 
         assertEquals(
             "2026-3-31",
             yandePictureRequestPlan(
-                request = PictureRequest(type = PictureParserType.Popular, page = 1, scale = "day"),
+                request = PictureRequest(
+                    type = PictureParserType.Ranking,
+                    page = 1,
+                    scale = PictureRankingScale.Day
+                ),
                 today = today,
             ).dateValue(),
         )
         assertEquals(
             "2026-3-29",
             yandePictureRequestPlan(
-                request = PictureRequest(type = PictureParserType.Popular, page = 3, scale = "day"),
+                request = PictureRequest(
+                    type = PictureParserType.Ranking,
+                    page = 3,
+                    scale = PictureRankingScale.Day
+                ),
                 today = today,
             ).dateValue(),
         )
         assertEquals(
             "2026-3-24",
             yandePictureRequestPlan(
-                request = PictureRequest(type = PictureParserType.Popular, page = 2, scale = "week"),
+                request = PictureRequest(
+                    type = PictureParserType.Ranking,
+                    page = 2,
+                    scale = PictureRankingScale.Week
+                ),
                 today = today,
             ).dateValue(),
         )
         assertEquals(
             "2026-2-28",
             yandePictureRequestPlan(
-                request = PictureRequest(type = PictureParserType.Popular, page = 2, scale = "month"),
+                request = PictureRequest(
+                    type = PictureParserType.Ranking,
+                    page = 2,
+                    scale = PictureRankingScale.Month
+                ),
                 today = today,
             ).dateValue(),
         )

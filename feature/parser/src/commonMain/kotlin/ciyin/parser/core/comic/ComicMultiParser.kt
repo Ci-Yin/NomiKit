@@ -40,7 +40,7 @@ class ComicMultiParser(
         multiResult: MultiParserResult,
     ): ComicResult {
         return ComicResult(
-            totalPages = multiResult.totalPages,
+            pagination = multiResult.pagination,
             tags = multiResult.tags,
             contents = results.flatMap { it.contents }.distinctBy { it.md5 },
         )

@@ -23,7 +23,7 @@ import io.ktor.client.engine.HttpClientEngineFactory
  *     id = SomeSiteId
  *     baseUrl = "https://example.com"
  *     onResultRevise { ... }
- *     on(ComicParserType.Home) {
+ *     on(ComicParserType.Feed) {
  *         request { ... }
  *         response { ... }
  *     }
@@ -96,7 +96,7 @@ class ParserScope<TType : ParserType, TRequest : ParserRequest, TResult : Parser
      * 在 [TypeScope] 中通过 [TypeScope.request] 与 [TypeScope.response] 分别注册该类型下的
      * 请求构建逻辑与响应解析逻辑。同一类型多次调用 [on] 会覆盖之前的注册（每种类型仅保留最后一次）。
      *
-     * @param type 解析类型单例（如 `ComicParserType.Home`、`PictureParserType.Posts`）。
+     * @param type 解析类型单例（如 `ComicParserType.Feed`、`PictureParserType.Feed`）。
      * @param block 类型作用域块，在 [TypeScope] 中配置 request/response。
      */
     fun on(type: TType, block: TypeScope<TRequest, TResult>.() -> Unit) {

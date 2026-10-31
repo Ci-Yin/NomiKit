@@ -21,25 +21,6 @@ import kotlin.jvm.JvmName
 
 
 /**
- * 站点解析器工厂与多解析器构造入口。
- *
- * 提供从站点枚举（[PictureSiteId]、[ComicSiteId]、[MovieSiteId]）到具体解析器
- * 实例（[PictureParser]、[ComicParser]、[MovieParser]）的映射，并封装各业务域下
- * 的多站点聚合解析器构造函数：
- *
- * - [PictureMultiParser]：图片站点聚合解析入口；
- * - [ComicMultiParser]：漫画站点聚合解析入口；
- * - [MovieMultiParser]：番剧 / 影视站点聚合解析入口。
- *
- * 通过这些入口，可以在应用层以站点 ID 列表为维度，快速构建对应的 `MultiParser`
- * 聚合器，而无需关心具体解析器的创建细节。
- *
- * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
- * @since 2026/3/5 22:06
- */
-private fun preview() {}
-
-/**
  * 构建图片领域的多站点聚合解析器。
  *
  * @param siteIds          所有可供选择的图片站点 ID 列表。
@@ -77,6 +58,12 @@ fun ComicMultiParser(
 ) = ComicMultiParser(siteIds.map { it.factory() }, enabledSiteIds)
 
 
+/**
+ * 从通用解析器 ID 构建漫画领域的多站点聚合解析器。
+ *
+ * @param siteIds 所有可供选择的漫画站点 ID 列表
+ * @param enabledSiteIds 本次实际启用的漫画站点 ID 列表
+ */
 @JvmName("ComicMultiParserEx")
 fun ComicMultiParser(
     siteIds: List<ParserId>,
@@ -96,6 +83,12 @@ fun MovieMultiParser(
     enabledSiteIds: List<MovieSiteId>,
 ) = MovieMultiParser(siteIds.map { it.factory() }, enabledSiteIds)
 
+/**
+ * 从通用解析器 ID 构建影视领域的多站点聚合解析器。
+ *
+ * @param siteIds 所有可供选择的影视站点 ID 列表
+ * @param enabledSiteIds 本次实际启用的影视站点 ID 列表
+ */
 @JvmName("MovieMultiParserEx")
 fun MovieMultiParser(
     siteIds: List<ParserId>,
@@ -119,32 +112,44 @@ private inline fun <reified T : ParserId> List<ParserId>.asSites(entries: List<T
 fun PictureSiteId.factory(): PictureParser = when (this) {
     PictureSiteId.Danbooru -> DanbooruParser()
     PictureSiteId.Gelbooru -> GelbooruParser()
-    PictureSiteId.Rule34 -> TODO()
+    PictureSiteId.Rule34 -> unimplementedParser()
     PictureSiteId.Yande -> YandeParser()
-    PictureSiteId.Konachan -> TODO()
+    PictureSiteId.Konachan -> unimplementedParser()
     PictureSiteId.Hypnohub -> HypnohubParser()
     PictureSiteId.Xbooru -> XbooruParser()
     PictureSiteId.Safebooru -> SafebooruParser()
     PictureSiteId.Zerochan -> ZerochanParser()
 }
 
+private fun PictureSiteId.unimplementedParser(): Nothing = error(
+    "图片站点 $site 尚未实现解析器"
+)
+
 /**
  * 将漫画站点 ID 映射为具体的 [ComicParser] 实例。
  */
 fun ComicSiteId.factory(): ComicParser = when (this) {
     ComicSiteId.Hanime -> HanimeComicParser()
-    ComicSiteId.Hentai -> TODO()
-    ComicSiteId.Nhentai -> TODO()
-    ComicSiteId.Mangacopy -> TODO()
-    ComicSiteId.Ehentai -> TODO()
+    ComicSiteId.Hentai,
+    ComicSiteId.Nhentai,
+    ComicSiteId.Mangacopy,
+    ComicSiteId.Ehentai -> unimplementedParser()
 }
+
+private fun ComicSiteId.unimplementedParser(): Nothing = error(
+    "漫画站点 $site 尚未实现解析器"
+)
 
 /**
  * 将番剧 / 影视站点 ID 映射为具体的 [MovieParser] 实例。
  */
 fun MovieSiteId.factory(): MovieParser = when (this) {
     MovieSiteId.Hanime -> HanimeMovieParser()
-    MovieSiteId.Age -> TODO()
-    MovieSiteId.HanimeJav -> TODO()
-    MovieSiteId.Qkan8 -> TODO()
+    MovieSiteId.Age,
+    MovieSiteId.HanimeJav,
+    MovieSiteId.Qkan8 -> unimplementedParser()
 }
+
+private fun MovieSiteId.unimplementedParser(): Nothing = error(
+    "影视站点 $site 尚未实现解析器"
+)

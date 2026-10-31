@@ -151,9 +151,10 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
     internal open suspend fun execute(request: TRequest): TResult {
         configure = configure.copy(request = request)
 
-        if (!enable) return defTResult
+        if (!enable) return normalizeResult(defTResult, request.page)
 
         // 1. 按当前请求类型构建需要的 HttpRequest 列表
+        responses.clear()
         buildRequests(request)
 
         // 2. 发送网络请求，填充各 HttpRequest 的 response
@@ -162,12 +163,25 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
         // 3. 在 ResponseScope 中执行响应解析 DSL
         return ResponseScope(responses).run {
             val result = request.typeScope.responseBlock(this, defTResult)
-            parserScope.resultReviseBlockList.fold(result) { acc, block ->
+            val revised = parserScope.resultReviseBlockList.fold(result) { acc, block ->
                 acc.block()
-            }.apply {
+            }
+            normalizeResult(revised, request.page).apply {
                 configure = configure.copy(result = this)
             }
         }
+    }
+
+    /** 使用请求页码统一修订解析结果的分页状态。 */
+    @Suppress("UNCHECKED_CAST")
+    private fun normalizeResult(result: TResult, page: Int): TResult {
+        val pagination = result.pagination
+        return result.withPagination(
+            pagination.copy(
+                page = page,
+                hasNext = pagination.totalPages?.let { page < it } ?: pagination.hasNext,
+            )
+        ) as TResult
     }
 
     /**

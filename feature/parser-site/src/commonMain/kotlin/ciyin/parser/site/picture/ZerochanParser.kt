@@ -3,9 +3,8 @@ package ciyin.parser.site.picture
 import ciyin.io.extension
 import ciyin.parser.core.parametersOf
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType.Home
-import ciyin.parser.core.picture.PictureParserType.Post
-import ciyin.parser.core.picture.PictureParserType.Posts
+import ciyin.parser.core.picture.PictureParserType.Feed
+import ciyin.parser.core.picture.PictureParserType.Detail
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
@@ -52,43 +51,33 @@ class ZerochanParser : PictureParser() {
             )
         }
 
-        on(Home) {
-            request {
-                html { url(parameters = parametersOf("json" to "")) }
-            }
-
-            response { result ->
-                parsePostsResult(result)
-            }
-        }
-
-        on(Posts) {
+        on(Feed) {
             request { req ->
                 html { url(buildTagPath(req.tags), parametersOf("p" to req.page)) }
                 json { url(buildTagPath(req.tags), parametersOf("p" to req.page, "json" to "")) }
             }
 
             response { result ->
-                parsePostsResult(result)
+                parseFeedResult(result)
             }
         }
 
-        on(Post) {
+        on(Detail) {
             request { req ->
                 html { url(req.id) }
                 json { url(req.id, parametersOf("json" to "")) }
             }
 
             response { result ->
-                parsePostResult(result)
+                parseDetailResult(result)
             }
         }
     }
 
     /**
-     * 解析帖子列表结果。
+     * 解析 Feed 列表结果。
      */
-    private fun ResponseScope.parsePostsResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         val jsonBody = bodyForJson().trim()
         if (jsonBody.isBlank() || !jsonBody.contains("\"items\"")) {
             return result
@@ -103,27 +92,26 @@ class ZerochanParser : PictureParser() {
         val totalPages = document.select("div.pagination a")
             .mapNotNull { element -> element.text().trim().toIntOrNull() }
             .maxOrNull()
-            ?: if (contents.isNotEmpty()) 1 else 0
+            ?.takeIf { it >= 1 }
 
         return result.copy(
             contents = contents,
             tags = tags,
-            totalPages = totalPages,
+            pagination = result.pagination.copy(totalPages = totalPages),
         )
     }
 
     /**
      * 解析单帖详情结果。
      */
-    private fun ResponseScope.parsePostResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult {
         val jsonBody = bodyForJson().trim()
         if (jsonBody.isBlank()) {
-            return result.copy(totalPages = 1)
+            return result
         }
         val contents = bodyForJson<ZerochanItem>().toPicture()
         return result.copy(
             contents = listOf(contents),
-            totalPages = 1,
         )
     }
 

@@ -5,11 +5,11 @@ import ciyin.io.nameWithoutExtension
 import ciyin.io.toFile
 import ciyin.lang.match
 import ciyin.parser.core.picture.PictureParser
-import ciyin.parser.core.picture.PictureParserType.Pool
-import ciyin.parser.core.picture.PictureParserType.Pools
-import ciyin.parser.core.picture.PictureParserType.Popular
-import ciyin.parser.core.picture.PictureParserType.Post
-import ciyin.parser.core.picture.PictureParserType.Posts
+import ciyin.parser.core.picture.PictureParserType.Collection
+import ciyin.parser.core.picture.PictureParserType.CollectionList
+import ciyin.parser.core.picture.PictureParserType.Ranking
+import ciyin.parser.core.picture.PictureParserType.Detail
+import ciyin.parser.core.picture.PictureParserType.Feed
 import ciyin.parser.core.picture.model.Picture
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.url
@@ -31,7 +31,7 @@ import kotlinx.serialization.json.jsonObject
  * Yande 解析器（新 DSL 版）。
  *
  * 该实现将旧版 `YandeParser` 的 URL 规则、脚本内联 JSON 提取和
- * `Post / Pool / Popular` 等解析逻辑迁移到多平台 DSL。
+ * 帖子、画集与榜单等解析逻辑迁移到多平台 DSL。
  */
 class YandeParser : PictureParser() {
 
@@ -77,28 +77,28 @@ class YandeParser : PictureParser() {
             )
         }
 
-        on(Posts) {
+        on(Feed) {
             request { req ->
                 val plan = yandePictureRequestPlan(req)
                 html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
             }
 
             response { result ->
-                parsePostsResult(result)
+                parseFeedResult(result)
             }
         }
 
-        on(Post) {
+        on(Detail) {
             request { req ->
                 html { url("/post/show/${req.id}") }
             }
 
             response { result ->
-                parsePostResult(result)
+                parseDetailResult(result)
             }
         }
 
-        on(Pools) {
+        on(CollectionList) {
             request { req ->
                 val plan = yandePictureRequestPlan(req)
                 html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
@@ -106,21 +106,21 @@ class YandeParser : PictureParser() {
             }
 
             response { result ->
-                parsePoolsResult(result)
+                parseCollectionListResult(result)
             }
         }
 
-        on(Pool) {
+        on(Collection) {
             request { req ->
                 json { url("/pool/show/${req.id}.json") }
             }
 
             response { result ->
-                parsePoolResult(result)
+                parseCollectionResult(result)
             }
         }
 
-        on(Popular) {
+        on(Ranking) {
             request { req ->
                 val plan = yandePictureRequestPlan(req)
                 html { url(plan.htmlPath, plan.parameters.toMutableMap()) }
@@ -128,30 +128,30 @@ class YandeParser : PictureParser() {
             }
 
             response { result ->
-                parsePopularResult(result)
+                parseRankingResult(result)
             }
         }
     }
 
     /**
-     * 解析帖子列表页面。
+     * 解析 Feed 列表页面。
      */
-    private fun ResponseScope.parsePostsResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         return result.copy(
             tags = parseRegisteredTags(PostsScriptIndex),
             contents = parseRegisteredPosts(PostsScriptIndex).toSupportedPictures(),
-            totalPages = totalPagesFromHtml(),
+            pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
         )
     }
 
     /**
-     * 解析帖子详情页面。
+     * 解析 Detail 详情页面。
      */
-    private fun ResponseScope.parsePostResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult {
         val payload = parseRegisteredResults(PostScriptIndex)
-            ?: return result.copy(totalPages = 1)
+            ?: return result
         val post = payload.posts.firstOrNull()
-            ?: return result.copy(totalPages = 1)
+            ?: return result
 
         var picture = post.toPictureInfo(payload.pools.firstOrNull())
 
@@ -176,46 +176,44 @@ class YandeParser : PictureParser() {
 
         return result.copy(
             contents = listOf(picture).filterSupportedPictures(),
-            totalPages = 1,
         )
     }
 
     /**
-     * 解析画集列表页面。
+     * 解析 CollectionList 画集列表页面。
      */
-    private fun ResponseScope.parsePoolsResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseCollectionListResult(result: PictureResult): PictureResult {
         return result.copy(
-            contents = parseYandePools(
+            contents = parseYandeCollectionList(
                 html = bodyForHtml(),
                 json = bodyForJson(),
                 baseUrl = configure.baseUrl,
             ),
-            totalPages = totalPagesFromHtml(),
+            pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
         )
     }
 
     /**
-     * 解析单个画集详情。
+     * 解析 Collection 画集详情。
      */
-    private fun ResponseScope.parsePoolResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseCollectionResult(result: PictureResult): PictureResult {
         val pool = bodyForJson<YandePool>()
         return result.copy(
             contents = pool.posts.toSupportedPictures(pool),
-            totalPages = 1,
         )
     }
 
     /**
-     * 解析热门榜单。
+     * 解析 Ranking 热门榜单。
      */
-    private fun ResponseScope.parsePopularResult(result: PictureResult): PictureResult {
+    private fun ResponseScope.parseRankingResult(result: PictureResult): PictureResult {
         val jsonBody = bodyForJson().trim()
         if (jsonBody.isEmpty() || jsonBody == "[]") {
-            return result.copy(totalPages = totalPagesFromHtml())
+            return result.copy(pagination = result.pagination.copy(totalPages = totalPagesFromHtml()))
         }
         return result.copy(
             contents = bodyForJson<List<YandePost>>().toSupportedPictures(),
-            totalPages = totalPagesFromHtml(),
+            pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
         )
     }
 
@@ -278,12 +276,13 @@ class YandeParser : PictureParser() {
     }
 
     /** 从 Yande 分页组件中提取总页数。*/
-    private fun ResponseScope.totalPagesFromHtml(): Int {
+    private fun ResponseScope.totalPagesFromHtml(): Int? {
         return document.select("div#paginator div.pagination a")
             .mapNotNull { element ->
                 element.attr("href").match("""page=(\d+)""").toIntOrNull()
             }
-            .maxOrNull() ?: 1000
+            .maxOrNull()
+            ?.takeIf { it >= 1 }
     }
 
     /** 将帖子列表转换为可用图片列表。*/

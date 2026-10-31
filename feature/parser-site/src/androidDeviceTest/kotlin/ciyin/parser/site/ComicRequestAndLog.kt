@@ -20,10 +20,10 @@ internal suspend fun ComicParser.requestAndLog(
             is ParserEvent.Success -> {
                 val result = event.result
                 println(
-                    "${this::class.simpleName} type=${request.type} \n     request: $request ->\n     result: ok totalPages=${result.totalPages} tags=${result.tags.size} contents=${result.contents.size}",
+                    "${this::class.simpleName} type=${request.type} \n     request: $request ->\n     result: ok pagination=${result.pagination} tags=${result.tags.size} contents=${result.contents.size}",
                 )
                 println(result)
-                result.totalPages.checkBounds("ComicResult.totalPages")
+                result.pagination.page.checkBounds("ComicResult.pagination.page")
                 result.contents.checkNotEmpty("ComicResult.contents")
                 result.contents.forEach { block(it.apply { checkBase() }) }
             }

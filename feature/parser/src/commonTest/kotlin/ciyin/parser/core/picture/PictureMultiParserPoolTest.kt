@@ -37,7 +37,7 @@ class PictureMultiParserPoolTest {
         val result = PictureMultiParser(
             parsers = listOf(alpha, beta),
             enabledParserIds = listOf(TestPictureSite.Alpha, TestPictureSite.Beta),
-        ).request(PictureRequest(type = PictureParserType.Pools)).first().successResult()
+        ).request(PictureRequest(type = PictureParserType.CollectionList)).first().successResult()
 
         assertEquals(
             listOf("alpha:10", "alpha:11", "beta:10"),
@@ -63,12 +63,13 @@ class PictureMultiParserPoolTest {
         val result = PictureMultiParser(
             parsers = listOf(alpha, beta),
             enabledParserIds = listOf(TestPictureSite.Alpha, TestPictureSite.Beta),
-        ).request(PictureRequest(type = PictureParserType.Posts)).first().successResult()
+        ).request(PictureRequest(type = PictureParserType.Feed, page = 2)).first().successResult()
 
+        assertEquals(2, result.pagination.page)
         assertEquals(listOf("same", "alpha-only"), result.contents.map(Picture::md5))
     }
 
-    /** Pools 缺少站点或合法 pool ID 时必须明确失败。 */
+    /** CollectionList 缺少站点或合法 pool ID 时必须明确失败。 */
     @Test
     fun poolsRejectMissingBusinessIdentity() = runTest {
         val parser = AlphaPictureParser(
@@ -92,7 +93,7 @@ class PictureMultiParserPoolTest {
         )
 
         assertFailsWith<IllegalArgumentException> {
-            multiParser.request(PictureRequest(type = PictureParserType.Pools)).first()
+            multiParser.request(PictureRequest(type = PictureParserType.CollectionList)).first()
         }
     }
 
@@ -135,7 +136,9 @@ private class AlphaPictureParser(
     }
 
     /** 返回固定结果供生产聚合器消费。 */
-    override suspend fun execute(request: PictureRequest): PictureResult = result
+    override suspend fun execute(request: PictureRequest): PictureResult = result.copy(
+        pagination = result.pagination.copy(page = request.page),
+    )
 }
 
 /** 返回 Beta 固定结果的真实图片解析器夹具。 */
@@ -150,5 +153,7 @@ private class BetaPictureParser(
     }
 
     /** 返回固定结果供生产聚合器消费。 */
-    override suspend fun execute(request: PictureRequest): PictureResult = result
+    override suspend fun execute(request: PictureRequest): PictureResult = result.copy(
+        pagination = result.pagination.copy(page = request.page),
+    )
 }

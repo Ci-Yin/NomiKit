@@ -2,6 +2,7 @@ package ciyin.parser.site.picture
 
 import ciyin.parser.core.picture.PictureParserType
 import ciyin.parser.core.picture.model.PictureRequest
+import ciyin.parser.core.picture.model.PictureRankingScale
 import ciyin.parser.site.PictureSiteId
 import ciyin.parser.site.requestAndLog
 import kotlinx.coroutines.test.runTest
@@ -32,7 +33,8 @@ class DanbooruParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /** 验证真实帖子列表请求能够返回合法内容。 */
@@ -40,7 +42,7 @@ class DanbooruParserTest {
     fun danbooru_posts_request_flow() = runTest {
         DanbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 tags = listOf("qys3"),
             ),
@@ -52,7 +54,7 @@ class DanbooruParserTest {
     fun danbooru_post_request_flow() = runTest {
         DanbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "5993705",
             )
         )
@@ -63,7 +65,7 @@ class DanbooruParserTest {
     fun danbooru_pools_request_flow() = runTest {
         DanbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Pools,
+                type = PictureParserType.CollectionList,
                 page = 1,
                 search = "",
             )
@@ -75,7 +77,7 @@ class DanbooruParserTest {
     fun danbooru_pool_request_flow() = runTest {
         DanbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Pool,
+                type = PictureParserType.Collection,
                 id = "18813",
             )
         )
@@ -86,9 +88,9 @@ class DanbooruParserTest {
     fun danbooru_popular_request_flow() = runTest {
         DanbooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Popular,
+                type = PictureParserType.Ranking,
                 page = 1,
-                scale = "month",
+                scale = PictureRankingScale.Month,
             )
         )
     }

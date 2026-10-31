@@ -41,11 +41,11 @@ class PictureMultiParser(
         multiResult: MultiParserResult,
     ): PictureResult {
         return PictureResult(
-            totalPages = multiResult.totalPages,
+            pagination = multiResult.pagination,
             tags = multiResult.tags,
             contents = results.flatMap { it.contents }.let { contents ->
                 when (request.type) {
-                    PictureParserType.Pools -> contents.distinctBy(Picture::requirePoolMergeIdentity)
+                    PictureParserType.CollectionList -> contents.distinctBy(Picture::requirePoolMergeIdentity)
                     else -> contents.distinctBy(Picture::md5)
                 }
             },
@@ -63,7 +63,7 @@ class PictureMultiParser(
 /**
  * 返回画集聚合使用的稳定业务身份。
  *
- * Pools 响应必须同时提供站点和正数 pool ID；缺失时直接失败，避免回退空 md5 后静默丢条目。
+ * CollectionList 响应必须同时提供站点和正数 pool ID；缺失时直接失败，避免回退空 md5 后静默丢条目。
  *
  * @return 规范化站点与 pool ID 组成的身份
  */

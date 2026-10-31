@@ -3,15 +3,12 @@ package ciyin.parser.core.movie
 import ciyin.parser.core.ParserType
 
 /**
- * 番剧解析类型集合。
+ * 影视解析业务动作集合。
  */
 sealed class MovieParserType(final override val id: Int) : ParserType {
-    /** 首页。 */
-    data object Home : MovieParserType(0)
+    /** 视频列表、搜索和筛选。 */
+    data object Feed : MovieParserType(1)
 
-    /** 番剧列表页。 */
-    data object Movies : MovieParserType(1)
-
-    /** 番剧详情页。 */
-    data object Movie : MovieParserType(2)
+    /** 视频详情、播放源和相关内容。 */
+    data object Detail : MovieParserType(2)
 }

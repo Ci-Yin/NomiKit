@@ -30,7 +30,8 @@ class SafebooruParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
@@ -40,7 +41,7 @@ class SafebooruParserTest {
     fun safebooru_posts_request_flow() = runTest {
         SafebooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 tags = listOf("1girl"),
             )
@@ -54,7 +55,7 @@ class SafebooruParserTest {
     fun safebooru_post_request_flow() = runTest {
         SafebooruParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "1",
             )
         )

@@ -3,24 +3,23 @@ package ciyin.parser.core.picture
 import ciyin.parser.core.ParserType
 
 /**
- * 图站解析类型集合。
+ * 图片解析业务动作集合。
+ *
+ * 类型描述稳定的业务动作，不直接对应某个站点的页面名称。
  */
 sealed class PictureParserType(final override val id: Int) : ParserType {
-    /** 首页。 */
-    data object Home : PictureParserType(0)
+    /** 帖子列表、搜索和标签筛选。 */
+    data object Feed : PictureParserType(1)
 
-    /** 列表页。 */
-    data object Posts : PictureParserType(1)
+    /** 帖子详情。 */
+    data object Detail : PictureParserType(2)
 
-    /** 详情页。 */
-    data object Post : PictureParserType(2)
+    /** 画集列表和画集搜索。 */
+    data object CollectionList : PictureParserType(3)
 
-    /** 画册列表页。 */
-    data object Pools : PictureParserType(3)
+    /** 画集详情及其中的帖子列表。 */
+    data object Collection : PictureParserType(4)
 
-    /** 画册详情页。 */
-    data object Pool : PictureParserType(4)
-
-    /** 热门页。 */
-    data object Popular : PictureParserType(5)
+    /** 热门和榜单。 */
+    data object Ranking : PictureParserType(5)
 }

@@ -35,7 +35,8 @@ class ZerochanParserTest {
         assertNull(configure.request)
         assertTrue(configure.result.tags.isEmpty())
         assertTrue(configure.result.contents.isEmpty())
-        assertEquals(0, configure.result.totalPages)
+        assertEquals(1, configure.result.pagination.page)
+        assertNull(configure.result.pagination.totalPages)
     }
 
     /**
@@ -45,7 +46,7 @@ class ZerochanParserTest {
     fun zerochan_posts_request_flow() = runTest {
         ZerochanParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Posts,
+                type = PictureParserType.Feed,
                 page = 1,
                 tags = emptyList(),
             ),
@@ -59,7 +60,7 @@ class ZerochanParserTest {
     fun zerochan_post_request_flow() = runTest {
         ZerochanParser().requestAndLog(
             PictureRequest(
-                type = PictureParserType.Post,
+                type = PictureParserType.Detail,
                 id = "4666101",
             ),
         )
