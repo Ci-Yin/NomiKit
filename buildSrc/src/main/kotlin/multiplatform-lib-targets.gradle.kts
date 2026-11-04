@@ -67,6 +67,7 @@ fun KotlinMultiplatformExtension.android(configure: Action<KotlinMultiplatformAn
  * ### 其它约定
  * - Android KMP 目标的 `namespace` 默认由 [resolveAndroidKmpLibraryNamespace] 根据模块 `path` 推导；可通过 Project 属性 `android.kmp.namespace` 或在模块 `kotlin { android { namespace = ... } }` 中覆盖。
  * - 若工程已应用 Jetpack Compose（存在 [ComposeExtension]），会为 `commonTest` / `desktopTest` 等补充 UI 测试依赖。
+ * - 启用桌面目标时会额外注册 `desktopIntegrationTest`，供真实公网或其他显式集成测试使用；默认验证链会跳过该任务。
  * - `compilerOptions` 中统一加入 `-Xexpect-actual-classes`，与项目 expect/actual 类风格一致。
  */
 fun preview() {}
@@ -119,7 +120,7 @@ configure<KotlinMultiplatformExtension> {
     }
 
     if (enableDesktop) {
-        jvm("desktop")
+        val desktopTarget = jvm("desktop")
         applyDefaultHierarchyTemplate {
             common {
                 group("jvm") {
@@ -129,6 +130,28 @@ configure<KotlinMultiplatformExtension> {
                 group("skiko") {
                     withJvm()
                     withNative()
+                }
+            }
+        }
+
+        // 保留 Kotlin testRuns 注册独立 Gradle 任务；默认验证任务跳过集成测试，显式运行该任务或传入测试筛选器时才运行。
+        val integrationCompilation = desktopTarget.compilations.create("integrationTest") {
+            associateWith(desktopTarget.compilations.getByName("main"))
+            defaultSourceSet {
+                dependencies {
+                    implementation(kotlin("test-junit5"))
+                    implementation(project(":core:testing"))
+                }
+            }
+        }
+        val integrationTestRun = desktopTarget.testRuns.create("integration") {
+            setExecutionSourceFrom(integrationCompilation)
+        }
+        integrationTestRun.executionTask.configure {
+            val integrationTaskName = name
+            onlyIf("只在显式请求桌面集成测试时执行") {
+                project.gradle.startParameter.taskNames.any { requestedTask ->
+                    requestedTask == integrationTaskName || requestedTask.endsWith(":$integrationTaskName")
                 }
             }
         }
