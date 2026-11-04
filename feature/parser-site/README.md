@@ -38,8 +38,8 @@ DSL、跨站点结果聚合规则、页面 UI 或产品层业务编排。通用�
   `HanimeMovieBaseParser.kt`](src/commonMain/kotlin/ciyin/parser/site/movie/HanimeMovieBaseParser.kt)
   ：Hanime 漫画和影视站点的共用解析骨架。
 
-当前已接入的具体实现包括 Danbooru、Gelbooru、Yande、Hypnohub、Xbooru、Safebooru、Zerochan、Hanime Comic 和
-Hanime Movie；未实现的站点 ID 仍由工厂分支显式抛出未实现错误，不使用 `TODO()` 静默占位。
+当前已接入的具体实现包括 Danbooru、Gelbooru、Yande、Hypnohub、Xbooru、Safebooru、Zerochan、Sankaku、Hanime
+Comic 和 Hanime Movie；未实现的站点 ID 仍由工厂分支显式抛出未实现错误，不使用 `TODO()` 静默占位。
 
 ## 最小接入路径
 
@@ -90,14 +90,28 @@ parser.request(request).collect { event ->
 - 漫画：`Feed`、`Detail`、`Chapter`；
 - 影视：`Feed`、`Detail`。
 
-请求模型使用从 `1` 开始的 `page`，不包含通用 `pageSize` 或 `cursor`。结果通过 `pagination.page`、可空的
-`pagination.totalPages` 和可空的 `pagination.hasNext` 表达分页状态；站点无法可靠判断总页数时必须保留
-`null`，不能填充固定值。
+请求模型以从 `1` 开始的 `page` 表达普通页码；需要 keyset/连续分页的站点使用尾部可选的 opaque `cursor`
+，不增加通用
+`pageSize`。结果通过 `pagination.page`、可空的 `pagination.totalPages`、可空的 `pagination.hasNext`
+和可空的
+`pagination.nextCursor` 表达分页状态；站点无法可靠判断总页数时必须保留 `null`，不能填充固定值。
+`nextCursor` 非空时必须同时表示 存在下一页。站点帖子 ID 统一映射到 `Picture.id` 字符串字段；不存在父图时
+`Picture.parentId` 为空字符串，不能再依赖额外的远端 ID 字段。
 
-列表解析器必须把请求页码映射到站点真实分页参数。仅 HTTP 200 或请求中出现 `page` 参数不能证明分页有效；应验证
-page 1 和 page 2 的内容非空、集合不同且没有交集。Danbooru 的离线 DSL 契约测试覆盖了这一判据，见 [
-`DanbooruParserDslContractTest.kt`](src/desktopTest/kotlin/ciyin/parser/site/picture/DanbooruParserDslContractTest.kt)
-。需要 keyset/cursor 的站点不能被当前页码模型伪装接入，应先扩展通用分页能力模型。
+列表解析器必须验证实际分页：普通页码站点要验证 page 1 与 page 2 内容非空、集合不同且没有交集；keyset
+站点要验证首批与使用
+`nextCursor` 的后续批次不同且没有交集。仅 HTTP 200、请求中出现 `page` 参数或服务端忽略的页码参数不能证明分页有效。Danbooru
+的 离线 DSL 契约测试覆盖页码判据，见 [
+`DanbooruParserDslContractTest.kt`](src/desktopTest/kotlin/ciyin/parser/site/picture/DanbooruParserDslContractTest.kt)；
+Sankaku 的 keyset 判据见 [
+`SankakuParserDslContractTest.kt`](src/desktopTest/kotlin/ciyin/parser/site/picture/SankakuParserDslContractTest.kt)。
+
+Sankaku 第一阶段只实现 `Feed` 与 `Detail`，并声明 `supportsCursorPagination = true`：Feed 请求
+`GET /v2/posts/keyset`，固定传 `limit`，首请求不传 `next`，后续请求把
+`Pagination.nextCursor` 作为 `PictureRequest.cursor` 传回 `next`；Detail 使用 `GET /v2/posts?id=...`
+。两类请求均需携带
+`Accept: application/vnd.sankaku.api+json;v=2` 与 `Origin: https://sankaku.app`，不使用普通 `page=2`
+代替 keyset 游标。
 
 ## 源码布局
 
@@ -108,7 +122,10 @@ page 1 和 page 2 的内容非空、集合不同且没有交集。Danbooru 的�
 - `src/commonMain/kotlin/ciyin/parser/site/movie`：影视站点实现和 Hanime 影视基类。
 - `src/commonMain/kotlin/ciyin/parser/site/util`：站点层复用的序列化和工具函数。
 - `src/commonTest`：不依赖网络的站点 ID、工厂和数据映射契约测试。
-- `src/desktopTest`：桌面 JVM 本地 HTTP 服务契约测试，验证真实 DSL 注册、请求和响应链路。
+- `src/desktopTest`：桌面 JVM 本地 HTTP 服务契约测试，验证真实 DSL 注册、请求和响应链路；Android Studio
+  gutter Run 优先使用此源集。
+- `src/desktopIntegrationTest`：桌面 JVM 真实网络或其他显式集成测试，由 `desktopIntegrationTest`
+  Gradle 任务运行。
 - `src/androidDeviceTest`：需要 Android 设备或真实站点环境的测试和请求日志测试。
 
 ## 平台差异与生命周期
@@ -117,7 +134,7 @@ page 1 和 page 2 的内容非空、集合不同且没有交集。Danbooru 的�
 `iosMain` 站点实现。平台测试分别位于 `desktopTest` 和 `androidDeviceTest`。
 
 解析器的请求通过 `feature/parser` 的 Ktor/DSL 抽象执行。调用方负责提供和管理解析请求所需的解析器实例及协程生命周期；本模块不创建全局作用域，也不负责
-UI 生命周期。
+UI 生命周期。`desktopIntegrationTest` 由独立的 Kotlin JVM test run 执行，不参与默认 `check`。
 
 ## 依赖与扩展边界
 

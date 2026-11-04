@@ -12,6 +12,7 @@ import ciyin.platform.thisLogger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -22,6 +23,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 通用解析器基类，提供「站点配置 + 类型注册 + 请求执行 + 响应解析」的完整骨架。
@@ -84,6 +86,13 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
 
     /** 是否启用该解析器；为 false 时 [request] 不发起请求，直接返回 [defTResult] 并发送 [ParserEvent.Success]。 */
     var enable by parserScope::enable
+
+    /**
+     * 当前解析器是否使用连续游标分页。
+     *
+     * 多站点聚合不能把游标站点与页码站点合并为同一个续页请求；使用游标分页的站点应覆盖为 `true`。
+     */
+    open val supportsCursorPagination: Boolean get() = false
 
     /**
      * 解析使用的 HTTP 客户端。
@@ -159,6 +168,10 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
 
         // 2. 发送网络请求，填充各 HttpRequest 的 response
         executeRequests()
+        val requestErrors = responses.values.mapNotNull { response -> response.error }
+        if (requestErrors.isNotEmpty()) {
+            throw ParserRequestException(requestErrors)
+        }
 
         // 3. 在 ResponseScope 中执行响应解析 DSL
         return ResponseScope(responses).run {
@@ -176,10 +189,13 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
     @Suppress("UNCHECKED_CAST")
     private fun normalizeResult(result: TResult, page: Int): TResult {
         val pagination = result.pagination
+        val hasNext = pagination.nextCursor?.let { true }
+            ?: pagination.totalPages?.let { page < it }
+            ?: pagination.hasNext
         return result.withPagination(
             pagination.copy(
                 page = page,
-                hasNext = pagination.totalPages?.let { page < it } ?: pagination.hasNext,
+                hasNext = hasNext,
             )
         ) as TResult
     }
@@ -195,11 +211,16 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
      * @throws IllegalArgumentException 若 [setup] 中未设置 id/baseUrl，或当前 [request.type] 未注册任何请求。
      */
     fun request(request: TRequest): Flow<ParserEvent<TResult>> = callbackFlow {
-        val result = execute(request)
-        val errors = responses.mapNotNull { it.value.error }
-        if (errors.isEmpty()) {
-            send(ParserEvent.Success(result))
-        } else {
+        try {
+            send(ParserEvent.Success(execute(request)))
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Throwable) {
+            val errors = if (exception is ParserRequestException) {
+                exception.errors
+            } else {
+                listOf(exception)
+            }
             send(ParserEvent.Failure(errors))
         }
         close()
@@ -269,20 +290,38 @@ abstract class BaseParser<TType : ParserType, TRequest : ParserRequest, TResult 
     private suspend fun executeSingleRequest(request: HttpRequest): HttpResponse {
         return try {
             val response = httpClient.get(request.url) {
+                expectSuccess = false
                 request.headers.forEach { (name, value) -> header(name, value) }
+            }
+            val body = response.bodyAsText()
+            val headers = response.headers.names().associateWith { name ->
+                response.headers.getAll(name).orEmpty()
             }
             HttpResponse(
                 request = request,
                 status = response.status,
-                error = null,
-                body = response.bodyAsText(),
+                error = if (response.status.value in 200..299) {
+                    null
+                } else {
+                    ParserHttpException(
+                        status = response.status,
+                        request = request,
+                        responseHeaders = headers,
+                        responseBody = body,
+                    )
+                },
+                body = body,
+                headers = headers,
             )
+        } catch (t: CancellationException) {
+            throw t
         } catch (t: Throwable) {
             HttpResponse(
                 request = request,
                 status = HttpStatusCode.InternalServerError,
                 error = t,
                 body = "",
+                headers = emptyMap(),
             )
         }
     }

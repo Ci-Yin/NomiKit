@@ -67,7 +67,7 @@ internal class PictureAssert : BaseAssert() {
 
         // ---- 基本标识 ----
         fileName.checkFileName("Picture.fileName")
-        id.checkBounds("Picture.id")
+        id.checkNotEmpty("Picture.id")
         fileExt.checkNotEmpty("Picture.fileExt")
         site.checkNotEmpty("Picture.web")
         md5.checkMd5("Picture.md5")

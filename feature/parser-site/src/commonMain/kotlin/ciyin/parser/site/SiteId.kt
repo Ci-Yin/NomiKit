@@ -23,6 +23,9 @@ enum class PictureSiteId(
     Xbooru("xbooru"),
     Safebooru("safebooru"),
     Zerochan("zerochan"),
+
+    /** Sankaku Channel 图片接口。 */
+    Sankaku("sankaku"),
 }
 
 /**

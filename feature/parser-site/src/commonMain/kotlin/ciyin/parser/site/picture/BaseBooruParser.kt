@@ -147,10 +147,10 @@ abstract class BaseBooruParser : PictureParser() {
 
     /** 将 JSON 对象转换为通用的 [Picture]。*/
     private fun BooruPost.toPicture() = Picture(
-        id = id,
+        id = id.takeIf { it > 0 }?.toString().orEmpty(),
         width = width,
         height = height,
-        parentId = parentId,
+        parentId = parentId.takeIf { it > 0 }?.toString().orEmpty(),
         originalUrl = fileUrl.ifBlank {
             "${configure.baseUrl}/images/$directory/$image"
         },

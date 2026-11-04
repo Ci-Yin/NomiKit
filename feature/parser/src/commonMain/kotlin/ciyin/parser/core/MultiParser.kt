@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 多解析器聚合执行器抽象基类。
@@ -73,7 +74,21 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
 
         logger.d { "MultiParser: 开始并发执行 ${enabledParsers.size} 个解析器，启用的解析器列表：${enabledParsers.map { it.configure.id }}。" }
 
+        if (enabledParsers.size > 1 && enabledParsers.any { it.supportsCursorPagination }) {
+            val error = IllegalArgumentException(
+                "游标分页站点不能与多个站点同时聚合；请按单站点请求继续分页。",
+            )
+            return enabledParsers.associate { it.configure.id to error } to fallbackForPage(request.page)
+        }
+
         val (errors, successResults) = executeAll(enabledParsers, request)
+
+        if (enabledParsers.size > 1 && successResults.any { it.pagination.nextCursor != null }) {
+            val error = IllegalStateException(
+                "游标分页不能与多站点聚合混用；请只启用一个支持游标的站点。",
+            )
+            return enabledParsers.associate { it.configure.id to error } to fallbackForPage(request.page)
+        }
 
         if (successResults.isEmpty()) {
             logger.e { "MultiParser: 所有解析器均执行失败（共 ${errors.size} 个），返回兜底结果。" }
@@ -120,16 +135,18 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
     }
 
     /**
-     * 归并多个站点的页码分页状态。
-
+     * 归并多个站点的分页状态。
      *
-     * 总页数只有在至少一个站点明确提供时才保留；下一页状态只要有站点明确存在
-     * 下一页就返回 true，全部站点明确没有下一页才返回 false，否则保持未知。
+     * 总页数只有在至少一个站点明确提供时才保留；游标只在归并结果中唯一时保留，
+     * 但多站点游标场景会在执行阶段提前拒绝，避免生成无法安全续接的请求。
      */
     private fun mergePagination(page: Int, paginations: List<Pagination>): Pagination {
         require(paginations.isNotEmpty()) { "归并分页状态时至少需要一个解析结果" }
         val totalPages = paginations.mapNotNull { it.totalPages }.maxOrNull()
+        val cursors = paginations.map { it.nextCursor }.distinct()
+        val nextCursor = cursors.singleOrNull()
         val hasNext = when {
+            nextCursor != null -> true
             paginations.any { it.hasNext == true } -> true
             paginations.all { it.hasNext == false } -> false
             else -> null
@@ -138,6 +155,7 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
             page = page,
             totalPages = totalPages,
             hasNext = hasNext,
+            nextCursor = nextCursor,
         )
     }
 
@@ -151,16 +169,21 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
 
         val deferred = enabledParsers.map { parser ->
             async {
-                runCatching {
+                try {
                     logger.d { "MultiParser: 开始执行解析器：${parser::class.simpleName}" }
-                    when (val event = parser.request(request).first()) {
-                        is ParserEvent.Failure -> error(event.errors)
-                        is ParserEvent.Success -> event.result
-                    }
-                }.onFailure { throwable ->
+                    Result.success(
+                        when (val event = parser.request(request).first()) {
+                            is ParserEvent.Failure -> error(event.errors)
+                            is ParserEvent.Success -> event.result
+                        },
+                    )
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (throwable: Throwable) {
                     logger.e(throwable) {
                         "MultiParser: 解析器 ${parser::class.simpleName} 执行失败：$throwable"
                     }
+                    Result.failure(throwable)
                 }
             }
         }

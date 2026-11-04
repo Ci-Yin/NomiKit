@@ -7,13 +7,14 @@ object FileNameParser {
 
     /**
      * 文件名正则表达式，用于匹配文件命名规则。
-     * 规则为：`^(\w+)_(\d+)_(\w*)\.(\w+)$`
+     * 规则为：`^(\w+?)_(\w+)_(\w*)\.(\w+)$`。
+     * ID 使用字符串类型，允许字母、数字和下划线组成的 `\w` 字符串。
      * - 第一个捕获组：[FileNameInfo.site]
      * - 第二个捕获组：[FileNameInfo.id]
      * - 第三个捕获组：[FileNameInfo.md5]
      * - 第四个捕获组：[FileNameInfo.fileExt]
      */
-    private val FILE_NAME_REGEX = Regex("""^(\w+)_(\d+)_(\w*)\.(\w+)$""")
+    private val FILE_NAME_REGEX = Regex("""^(\w+?)_(\w+)_(\w*)\.(\w+)$""")
 
     /**
      * 解析文件名为 [FileNameInfo]
@@ -26,7 +27,7 @@ object FileNameParser {
         val (web, idStr, md5, fileExt) = match.destructured
         return FileNameInfo(
             site = web.trim(),
-            id = idStr.toInt(),
+            id = idStr,
             md5 = md5.trim(),
             fileExt = fileExt.trim()
         )

@@ -12,6 +12,7 @@ import ciyin.parser.model.ParserRequest
  * @property tags 标签筛选条件
  * @property search 画集或站点搜索关键词
  * @property scale 热门榜单的时间范围
+ * @property cursor 连续分页站点使用的 opaque 游标；页码分页站点保持为空
  */
 data class PictureRequest(
     override val type: PictureParserType,
@@ -20,6 +21,7 @@ data class PictureRequest(
     val tags: List<String> = emptyList(),
     val search: String = "",
     val scale: PictureRankingScale = PictureRankingScale.Day,
+    override val cursor: String? = null,
 ) : ParserRequest {
     init {
         require(page >= 1) {

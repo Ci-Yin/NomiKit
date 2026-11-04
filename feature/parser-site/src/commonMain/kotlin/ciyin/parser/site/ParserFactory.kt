@@ -13,6 +13,7 @@ import ciyin.parser.site.picture.DanbooruParser
 import ciyin.parser.site.picture.GelbooruParser
 import ciyin.parser.site.picture.HypnohubParser
 import ciyin.parser.site.picture.SafebooruParser
+import ciyin.parser.site.picture.SankakuParser
 import ciyin.parser.site.picture.XbooruParser
 import ciyin.parser.site.picture.YandeParser
 import ciyin.parser.site.picture.ZerochanParser
@@ -119,6 +120,7 @@ fun PictureSiteId.factory(): PictureParser = when (this) {
     PictureSiteId.Xbooru -> XbooruParser()
     PictureSiteId.Safebooru -> SafebooruParser()
     PictureSiteId.Zerochan -> ZerochanParser()
+    PictureSiteId.Sankaku -> SankakuParser()
 }
 
 private fun PictureSiteId.unimplementedParser(): Nothing = error(

@@ -12,8 +12,8 @@ import ciyin.parser.model.Tag
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2023/11/16 1:48
  * @property fileName 图片文件名（唯一标识）
- * @property id 图片唯一 ID
- * @property parentId 父图片 ID（用于多页 / 关联图片）
+ * @property id 图片唯一字符串 ID；站点未返回 ID 时为空字符串
+ * @property parentId 父图片字符串 ID；不存在父图时为空字符串
  * @property pixivId Pixiv 对应作品 ID
  *
  * @property name 图片名称
@@ -47,8 +47,8 @@ import ciyin.parser.model.Tag
  */
 data class Picture(
     val fileName: String = "",
-    val id: Int = 0,
-    val parentId: Int = 0,
+    val id: String = "",
+    val parentId: String = "",
     val pixivId: Int = 0,
     val name: String = "",
     val description: String = "",

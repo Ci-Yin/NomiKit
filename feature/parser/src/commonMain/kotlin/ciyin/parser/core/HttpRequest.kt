@@ -198,10 +198,52 @@ data class HttpRequest(
  * @param error 请求或读取过程中的异常；成功时为 null。
  * @param request 对应的 [HttpRequest]。
  * @param body 响应体字符串（如 HTML、JSON、XML 原始文本）。
+ * @param headers 响应头，保留同名响应头的全部值。
  */
 data class HttpResponse(
     val status: HttpStatusCode,
     val error: Throwable?,
     val request: HttpRequest,
     val body: String,
+    val headers: Map<String, List<String>> = emptyMap(),
+)
+
+/**
+ * HTTP 请求返回非成功状态码时的解析器错误。
+ *
+ * @property status HTTP 响应状态码
+ * @property request 触发错误的请求
+ * @property responseHeaders HTTP 响应头
+ * @property responseBody HTTP 响应体，供站点错误诊断使用
+ */
+class ParserHttpException(
+    val status: HttpStatusCode,
+    val request: HttpRequest,
+    val responseHeaders: Map<String, List<String>>,
+    val responseBody: String,
+) : IllegalStateException(
+    buildString {
+        append("HTTP 请求失败：")
+        append(status.value)
+        append(' ')
+        append(status.description)
+        append("，URL=")
+        append(request.url)
+        responseHeaders.entries
+            .firstOrNull { it.key.equals("X-RateLimit-Reset", ignoreCase = true) }
+            ?.value
+            ?.firstOrNull()
+            ?.let { reset -> append("，X-RateLimit-Reset=").append(reset) }
+    }
+)
+
+/**
+ * 一轮解析中一个或多个 HTTP 请求失败时的聚合错误。
+ *
+ * @property errors 本轮请求阶段收集到的原始错误
+ */
+class ParserRequestException(
+    val errors: List<Throwable>,
+) : IllegalStateException(
+    "解析请求失败：${errors.joinToString(separator = "；") { it.message ?: it::class.simpleName.orEmpty() }}",
 )

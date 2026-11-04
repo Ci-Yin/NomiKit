@@ -43,15 +43,20 @@ abstract class PictureParser(
             }
 
             val name = fileName.ifBlank {
-                FileNameInfo(configure.id.site, id, md5, ext).buildFileName()
+                FileNameInfo(
+                    site = configure.id.site,
+                    id = id.ifBlank { "0" },
+                    md5 = md5,
+                    fileExt = ext,
+                ).buildFileName()
             }
 
             //处理图片来源链接和Pixiv id
             val source = if (sourceUrl.matchIn("i\\.pximg\\.net")) {
                 val pixivId = sourceUrl.match("(\\d+)_\\w+\\.\\w*$")
-                if (pixivId.isNotEmpty()) "https://www.pixiv.net/artworks/$pixivId" else ""
+                if (pixivId.isNotEmpty()) "https://www.pixiv.net/artworks/$pixivId" else sourceUrl
             } else {
-                ""
+                sourceUrl
             }
 
 //            val isR18 = isR18(bean)

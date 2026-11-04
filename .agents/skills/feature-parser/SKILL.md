@@ -152,13 +152,16 @@ val multiParser = PictureMultiParser(
 ```kotlin
 val info = "danbooru_123_abcd.jpg".toFileName()
 val valid = "danbooru_123_abcd.jpg".isValidFileName()
-val name = FileNameInfo("danbooru", 123, "abcd", "jpg").buildFileName()
+val name = FileNameInfo("danbooru", "123", "abcd", "jpg").buildFileName()
 ```
 
 注意事项：
 
-- 正则只接受 `\w+` 站点、数字 id、`\w*` md5 和 `\w+` 扩展名；带连字符等字符会解析失败。
-- `PictureParser.onItemRevise` 已经会按站点、id、md5、扩展名补全常见图片文件名，站点实现优先复用它。
+- 正则接受 `\w+` 站点、`\w+` 字符串 id、`\w*` md5 和 `\w+` 扩展名；带连字符等字符会解析失败。
+  `FileNameInfo.id` 使用字符串类型，允许字母、数字和下划线。
+- `Picture.id` 与 `Picture.parentId` 使用字符串保存站点原始 ID，缺失时为空字符串；
+  `PictureParser.onItemRevise` 会按站点、字符串 id、md5、扩展名补全文件名，空 ID 使用 `"0"` 兼容占位值，非空
+  ID 原样保留。
 
 ## 代码约定
 
@@ -167,10 +170,16 @@ val name = FileNameInfo("danbooru", 123, "abcd", "jpg").buildFileName()
 - 画集列表可用 `Picture` 承载首图与 `PoolSummary`，但摘要 ID、标题、数量和详情 URL
   必须来自站点权威数据；封面缺失不能导致摘要条目丢失。
 - 错误要转成明确事件或向上抛出，不要用空列表、空字符串掩盖上游解析问题。
-- 请求模型统一通过 `ParserRequest.page` 表达从 `1` 开始的页码；`PictureRequest`、`ComicRequest`、
-  `MovieRequest` 不包含 `pageSize` 或 `cursor`。
-- 结果统一通过 `ParserResult.pagination` 表达分页状态；`totalPages` 与 `hasNext` 在站点无法可靠判断时必须为
-  `null`，不得伪造固定值。
-- `BaseParser` 会将请求页码写回结果，`MultiParser` 会合并成功站点的分页状态；新增站点仍需验证不同页的实际内容集合不重叠。
+- 请求模型统一通过 `ParserRequest.page` 表达从 `1` 开始的页码；需要 keyset/连续分页的站点可使用尾部可选的
+  opaque
+  `cursor`，但不引入通用 `pageSize`；页码站点保持 `cursor = null`。
+- 结果统一通过 `ParserResult.pagination` 表达分页状态；除 `page`、`totalPages`、`hasNext` 外，可用
+  `nextCursor`
+  表达下一次连续分页请求的 opaque 游标。`totalPages`、`hasNext` 和 `nextCursor` 在站点无法可靠判断时必须为
+  `null`，不得伪造固定值；
+  `nextCursor` 非空时必须同时表示存在下一页。
+- `BaseParser` 会将请求页码写回结果，并通过 `supportsCursorPagination` 声明站点是否采用连续游标；
+  `MultiParser` 会合并成功站点的分页状态。 游标站点只允许单独启用，不能将 Sankaku 等 keyset
+  站点与页码站点混合聚合；新增站点仍需验证连续页面的实际内容集合不重叠。
 - 修改本模块后优先运行
   `.\gradlew.bat :feature:parser:compileCommonMainKotlinMetadata --console=plain`。

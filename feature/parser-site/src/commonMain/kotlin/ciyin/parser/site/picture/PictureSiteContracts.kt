@@ -172,7 +172,10 @@ internal fun parseDanbooruCollectionList(
         val cover = covers[pool.id]
         val url = "$baseUrl/pools/${pool.id}"
         Picture(
-            id = cover?.postId?.takeIf { it > 0 } ?: pool.id,
+            id = (cover?.postId?.takeIf { it > 0 } ?: pool.id)
+                .takeIf { it > 0 }
+                ?.toString()
+                .orEmpty(),
             name = pool.name,
             site = "danbooru",
             thumbnailUrl = cover?.thumbnailUrl.orEmpty(),
@@ -216,7 +219,10 @@ internal fun parseYandeCollectionList(
         val url = "$baseUrl/pool/show/${pool.id}"
         Picture(
             fileName = cover?.md5.orEmpty(),
-            id = cover?.id?.takeIf { it > 0 } ?: pool.id,
+            id = (cover?.id?.takeIf { it > 0 } ?: pool.id)
+                .takeIf { it > 0 }
+                ?.toString()
+                .orEmpty(),
             name = pool.name,
             site = "yande",
             originalUrl = cover?.fileUrl.orEmpty(),

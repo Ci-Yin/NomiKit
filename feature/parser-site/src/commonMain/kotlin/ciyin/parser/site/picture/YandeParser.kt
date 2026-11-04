@@ -155,11 +155,12 @@ class YandeParser : PictureParser() {
 
         var picture = post.toPictureInfo(payload.pools.firstOrNull())
 
-        if (picture.parentId == 0) {
+        if (picture.parentId.isEmpty()) {
             picture = picture.copy(
                 parentId = bodyForHtml()
                     .match("href=\"/post\\?tags=parent%3A(\\d+)\"")
-                    .toIntOrNull() ?: 0,
+                    .takeIf { it.isNotBlank() }
+                    .orEmpty(),
             )
         }
 
@@ -310,8 +311,8 @@ class YandeParser : PictureParser() {
         }
         return Picture(
             fileName = resolvedMd5,
-            id = id,
-            parentId = parentId,
+            id = id.takeIf { it > 0 }?.toString().orEmpty(),
+            parentId = parentId.takeIf { it > 0 }?.toString().orEmpty(),
             pixivId = 0,
             name = pool?.name.orEmpty(),
             description = "",

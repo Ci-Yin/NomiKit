@@ -126,13 +126,19 @@ Ksoup 解析，JSON 使用 kotlinx.serialization；当前泛型 `bodyForXml<T>()
 - 影视：`Feed`、`Detail`。
 
 请求统一实现 [`ParserRequest`](src/commonMain/kotlin/ciyin/parser/model/ParserRequest.kt)，通过从 `1`
-开始的 `page` 表达页码；具体请求不包含通用 `pageSize` 或 `cursor`。结果统一实现 [
-`ParserResult`](src/commonMain/kotlin/ciyin/parser/model/ParserResult.kt)，通过 [
-`Pagination.kt`](src/commonMain/kotlin/ciyin/parser/model/Pagination.kt) 表达 `page`、可空
-`totalPages` 和可空 `hasNext`。
+开始的 `page` 表达页码；需要 keyset/连续分页的站点可使用尾部可选的 opaque `cursor`，但不引入通用
+`pageSize`。结果统一实现 [`ParserResult`](src/commonMain/kotlin/ciyin/parser/model/ParserResult.kt)
+，通过
+[`Pagination.kt`](src/commonMain/kotlin/ciyin/parser/model/Pagination.kt) 表达 `page`、可空
+`totalPages`、可空 `hasNext` 和可空 `nextCursor`。`nextCursor` 非空时必须表示存在下一页；游标为空时不能伪造下一页状态。
 
-站点无法可靠判断总页数或下一页状态时必须保留 `null`，不得使用 `0`、`1`、`1000` 等固定值伪造信息。新增列表站点时必须验证
-page 1 和 page 2 的实际内容不同且无交集；只发送 `page` 参数或收到 HTTP 200 不足以证明分页有效。
+站点无法可靠判断总页数或下一页状态时必须保留 `null`，不得使用 `0`、`1`、`1000` 等固定值伪造信息。普通页码列表仍必须验证
+page 1 和 page 2 的实际内容不同且无交集；keyset 站点必须验证首批与使用 `nextCursor` 的后续批次不同且无交集，不能把
+HTTP 200 或被忽略的 `page` 参数当作分页证据。
+
+`Picture.id` 和 `Picture.parentId` 使用字符串表达站点原始 ID，缺失时为空字符串；不要再为非数字站点额外增加
+ID 字段。`FileNameInfo.id` 同样使用字符串类型，文件名中的 ID 允许 `\w` 字符；
+`PictureParser.onItemRevise` 对空 ID 使用 `"0"` 兼容占位值，非空 ID 原样保留。
 
 图片画集摘要使用 `Picture.poolSummary` 和 `PoolSummary` 表达；摘要数量缺失时保持 `null`，普通帖子不应伪造画集身份。
 

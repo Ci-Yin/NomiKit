@@ -86,7 +86,7 @@ class GelbooruParser : PictureParser() {
                 sampleUrl = resolvedSample,
                 originalUrl = resolvedOriginal,
                 postUrl = postUrl.ifBlank {
-                    if (pictureId == 0) {
+                    if (pictureId.isBlank()) {
                         ""
                     } else {
                         "${configure.baseUrl}/index.php?page=post&s=view&id=$pictureId"
@@ -275,8 +275,8 @@ class GelbooruParser : PictureParser() {
 
         return Picture(
             fileName = resolvedMd5,
-            id = id,
-            parentId = parentId,
+            id = id.takeIf { it > 0 }?.toString().orEmpty(),
+            parentId = parentId.takeIf { it > 0 }?.toString().orEmpty(),
             pixivId = 0,
             name = "",
             description = "",

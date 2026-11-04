@@ -157,8 +157,7 @@ class ZerochanParser : PictureParser() {
 
         return Picture(
             fileName = "",
-            id = id,
-            parentId = 0,
+            id = id.takeIf { it > 0 }?.toString().orEmpty(),
             pixivId = 0,
             name = "",
             description = "",

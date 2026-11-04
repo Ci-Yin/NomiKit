@@ -54,7 +54,7 @@ class DanbooruParserDslContractTest {
             .successResult()
 
         assertEquals(1, result.contents.size)
-        assertEquals(901, result.contents.single().id)
+        assertEquals("901", result.contents.single().id)
         assertNull(result.contents.single().poolSummary)
     }
 

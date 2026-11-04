@@ -98,9 +98,11 @@ class ExamplePictureParser : PictureParser() {
 注意事项：
 
 - 站点 DTO 放在 parser 类内部，默认 `private @Serializable data class`，用 `@SerialName` 对齐远端字段。
-- 远端 JSON 字段类型不稳定时，优先复用本模块已有工具，例如 `NumberAsStringSerializer`。
-- `Picture` 映射要尽量补齐 `id`、`site`、`originalUrl/sampleUrl/thumbnailUrl`、`postUrl`、`md5`、
-  `fileExt`、`width/height`、`rating`、`tags`、时间戳。
+- 远端 JSON 字段类型不稳定时，优先复用本模块已有工具，例如 `NumberAsStringSerializer`；Sankaku
+  的字符串或数字帖子 ID 必须使用该 serializer 映射到 `Picture.id`，不得再增加独立的远端 ID 字段。
+- `Picture` 映射要尽量补齐字符串 `id`、`parentId`、`site`、`originalUrl/sampleUrl/thumbnailUrl`、
+  `postUrl`、`md5`、
+  `fileExt`、`width/height`、`rating`、`tags`、时间戳；缺失的 ID 使用空字符串。
 - 图片结果修订优先放在 `onItemRevise`，让文件名、站点、URL 补全规则集中处理。
 - 过滤不支持媒体类型时要在站点解析层明确处理，例如 Yande 当前过滤 `video`、`animated`、`animated_gif`。
 - Danbooru/Yande 的 `CollectionList` 列表以 JSON 摘要作为画集集合、ID、标题和可空数量的权威来源，再合并
@@ -146,7 +148,8 @@ class ExampleComicParser : ComicParser() {
   parser。
 - `PictureParserType`、`ComicParserType`、`MovieParserType` 只表示稳定业务动作：图片使用 `Feed`、
   `Detail`、`CollectionList`、`Collection`、`Ranking`，漫画使用 `Feed`、`Detail`、`Chapter`，影视使用
-  `Feed`、`Detail`；不要为单个站点的临时页面随意新增通用类型。
+  `Feed`、`Detail`；不要为单个站点的临时页面随意新增通用类型。Sankaku 第一阶段仅以 `Feed` 和 `Detail`
+  接入， 不为 keyset 分页增加站点专属类型。
 
 ## 工厂接入清单
 
@@ -161,11 +164,17 @@ class ExampleComicParser : ComicParser() {
 ## 测试与验证
 
 - 不依赖网络的契约测试放 `feature/parser-site/src/commonTest`。
-- 依赖真实站点网络或 Android WebView 的测试放 `androidDeviceTest`，不要让普通 `commonTest` 依赖外网稳定性。
+- 依赖真实站点网络的桌面测试放 `desktopIntegrationTest`，通过
+  `.\gradlew.bat :feature:parser-site:desktopIntegrationTest --tests "包名.类名.方法名" --console=plain`
+  显式运行；不要让普通 `commonTest` 或 `desktopTest` 依赖外网稳定性。
+- 依赖 Android WebView 或真实站点环境的测试放 `androidDeviceTest`。
+- Android Studio gutter Run 对 KMP 自定义 compilation 的支持受 IDE 版本限制；需要从类/方法旁运行时，优先将
+  不依赖网络的测试放 `desktopTest`，公网集成测试使用上面的 Gradle 任务或 IDE Gradle Run
+  Configuration。
 - 调整站点实现后优先运行
   `.\gradlew.bat :feature:parser-site:compileCommonMainKotlinMetadata --console=plain`。
-- 新增或改动基础契约测试后再运行 `.\gradlew.bat :feature:parser-site:desktopTest --console=plain`
-  ，若测试包含真实网络访问，需要在回复中说明风险。
+- 新增或改动基础契约测试后再运行 `.\gradlew.bat :feature:parser-site:desktopTest --console=plain`；
+  运行 `desktopIntegrationTest` 时必须在回复中说明真实网络风险。
 
 ## 代码约定
 
@@ -174,8 +183,14 @@ class ExampleComicParser : ComicParser() {
 - URL、CSS selector、正则等站点知识尽量靠近对应 parser 私有函数，避免污染通用 DSL。
 - 复用 `ciyin.parser.core.parametersOf`、`ciyin.parser.core.url`、`ResponseScope.bodyForJson<T>()`、
   `document` 等项目封装。
-- 请求模型只包含 `page`（默认值为 `1`）及业务筛选字段，不添加通用 `pageSize` 或 `cursor` 属性；结果统一通过
-  `pagination.page`、可空 `pagination.totalPages` 和可空 `pagination.hasNext` 表达分页状态。未知总页数必须保持
-  `null`，不得填充 `0`、`1` 或 `1000`。
-- 列表分页必须把请求页码传给站点真实分页参数，并用离线契约测试验证 page 1 与 page 2 内容不同且无交集；仅
-  HTTP 200 或 page 参数存在不能证明分页有效。
+- 请求模型通过 `page`（默认值为 `1`）表达普通页码；需要 keyset/连续分页的站点可使用通用请求尾部的
+  opaque `cursor`， 不添加通用 `pageSize`。结果统一通过 `pagination.page`、可空 `totalPages`、`hasNext`
+  和 `nextCursor` 表达分页状态；未知总页数 必须保持 `null`，不得填充 `0`、`1` 或 `1000`；`nextCursor`
+  非空时必须与 `hasNext = true` 一致。
+- 普通列表分页必须把请求页码传给站点真实分页参数，并用离线契约测试验证 page 1 与 page 2
+  内容不同且无交集；keyset 站点必须 验证首批与 `nextCursor` 后续批次不同且无交集。仅 HTTP 200、page
+  参数存在或服务端忽略 page 不能证明分页有效。
+- Sankaku 必须声明 `supportsCursorPagination = true`，使用 `/v2/posts/keyset` 的 `limit + next`，首请求不传
+  `next`，后续请求使用 `meta.next`；不得用 `page=2` 代替游标。 每个请求保留
+  `Accept: application/vnd.sankaku.api+json;v=2` 与 `Origin: https://sankaku.app`，并将 HTTP
+  429/登录限制作为明确失败事件。

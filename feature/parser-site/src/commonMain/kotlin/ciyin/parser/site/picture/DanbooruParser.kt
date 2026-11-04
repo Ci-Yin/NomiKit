@@ -184,7 +184,7 @@ class DanbooruParser(
         Picture(
             thumbnailUrl = thumbnailUrl,
             poolId = poolUrl.match("\\d+").toIntOrNull() ?: 0,
-            id = element.attr("data-id").toIntOrNull() ?: 0,
+            id = element.attr("data-id").takeIf { it.isNotBlank() }.orEmpty(),
             md5 = thumbnailUrl.match("([a-f0-9]{32})(?=\\.)"),
             tags = element.attr("data-tags").split(" ").map { Tag(tag = it) },
             width = img.attr("width").toIntOrNull() ?: 0,
@@ -262,8 +262,8 @@ class DanbooruParser(
         }
 
         return Picture(
-            id = id,
-            parentId = parentId,
+            id = id.takeIf { it > 0 }?.toString().orEmpty(),
+            parentId = parentId.takeIf { it > 0 }?.toString().orEmpty(),
             pixivId = pixivId,
             name = "",
             description = "",
