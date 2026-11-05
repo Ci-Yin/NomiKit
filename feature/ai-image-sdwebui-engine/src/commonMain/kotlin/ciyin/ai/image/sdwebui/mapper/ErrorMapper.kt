@@ -1,8 +1,10 @@
 package ciyin.ai.image.sdwebui.mapper
 
 import ciyin.ai.core.error.AiEngineError
+import ciyin.ai.core.error.AiEngineException
 import ciyin.sdwebui.client.Client
 import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -11,15 +13,21 @@ import kotlin.coroutines.cancellation.CancellationException
  * 映射原则：
  * - 协程取消必须原样上抛，不能吞；
  * - IO 异常视为网络错误；
- * - SD WebUI 返回的非成功响应体统一落到协议错误；
+ * - SD WebUI 返回的非成功响应体及反序列化失败统一落到协议错误；
  * - 参数校验失败落到不支持错误；
  * - 其余未知异常统一收口到 [AiEngineError.Unknown]。
  */
 internal fun Throwable.toAiEngineError(): AiEngineError = when (this) {
     is CancellationException -> throw this
+    is AiEngineException -> error
     is AiEngineErrorException -> error
     is IOException -> AiEngineError.Network(cause = this, message = message)
     is Client.Error -> AiEngineError.Protocol(message = body, cause = this)
+    is SerializationException -> AiEngineError.Protocol(
+        message = message ?: "响应解析失败",
+        cause = this
+    )
+
     is IllegalArgumentException -> AiEngineError.Unsupported(message = message ?: "请求参数不合法")
     else -> AiEngineError.Unknown(cause = this, message = message)
 }

@@ -1,10 +1,15 @@
 package ciyin.ai.image.sdwebui
 
+import ciyin.ai.core.engine.EngineId
+import ciyin.ai.core.error.AiEngineError
+import ciyin.ai.core.error.AiEngineException
 import ciyin.ai.core.image.ImageControl
 import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImagePostProcessor
 import ciyin.ai.core.image.ImageRequest
 import ciyin.ai.core.image.ImageSource
+import ciyin.ai.image.sdwebui.mapper.AiEngineErrorException
+import ciyin.ai.image.sdwebui.mapper.toAiEngineError
 import ciyin.ai.image.sdwebui.model.SdWebUiImageVendorOptionKeys
 import ciyin.ai.image.sdwebui.model.SdWebUiText2ImageExtras
 import ciyin.ai.image.sdwebui.model.SdWebUiText2ImageHiresFix
@@ -14,8 +19,11 @@ import ciyin.sdwebui.client.Client
 import ciyin.sdwebui.payload.Image2ImagePayload
 import ciyin.sdwebui.payload.Text2ImagePayload
 import ciyin.sdwebui.payload.script.ScriptPayload
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,6 +34,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -250,6 +259,180 @@ class SdWebUiImageEngineTest {
     }
 
     /**
+     * 上游真实返回空数组时应成功返回空列表，而不是把空响应当作错误。
+     */
+    @Test
+    fun `models 成功空列表应正常返回`() = runBlocking {
+        val client = RecordingClient().apply {
+            enqueueSuccess("[]")
+        }
+
+        val models = engine(client).models()
+
+        assertTrue(models.isEmpty())
+        assertEquals(1, client.requests.size)
+        assertEquals("sdapi/v1/sd-models", client.lastRequest.path)
+    }
+
+    /**
+     * 非 2xx 响应产生的 SDK Result 失败应携带协议错误上抛，不能退化成成功空列表。
+     */
+    @Test
+    fun `models 非成功响应应抛出公共协议异常`() = runBlocking {
+        val client = RecordingClient().apply {
+            enqueueFailure("model service unavailable")
+        }
+
+        val exception = assertFailsWith<AiEngineException> {
+            engine(client).models()
+        }
+
+        val error = assertIs<AiEngineError.Protocol>(exception.error)
+        assertEquals("model service unavailable", error.message)
+        assertEquals("model service unavailable", assertIs<Client.Error>(error.cause).body)
+        assertEquals(1, client.requests.size)
+        assertEquals("sdapi/v1/sd-models", client.lastRequest.path)
+    }
+
+    /**
+     * 成功状态下的无效 JSON、错误根类型和缺字段都应保留解析异常并归为协议错误。
+     */
+    @Test
+    fun `models 无效 JSON 应抛出公共协议异常`() = runBlocking {
+        listOf("not-json", "{}", "[{}]").forEach { body ->
+            val client = RecordingClient().apply {
+                enqueueSuccess(body)
+            }
+
+            val exception = assertFailsWith<AiEngineException> {
+                engine(client).models()
+            }
+
+            val error = assertIs<AiEngineError.Protocol>(exception.error)
+            val cause = assertIs<SerializationException>(error.cause)
+            assertEquals(cause.message, error.message)
+            assertEquals(1, client.requests.size)
+            assertEquals("sdapi/v1/sd-models", client.lastRequest.path)
+        }
+    }
+
+    /**
+     * 请求直接抛出的 HTTP 错误应与 SDK Result 失败走相同协议错误映射。
+     */
+    @Test
+    fun `models 请求直接抛出 HTTP 错误应类型化`() = runBlocking {
+        val cause = Client.Error("direct HTTP failure")
+        val client = RecordingClient().apply {
+            enqueueException(cause)
+        }
+
+        val exception = assertFailsWith<AiEngineException> {
+            engine(client).models()
+        }
+
+        val error = assertIs<AiEngineError.Protocol>(exception.error)
+        assertEquals(cause.body, error.message)
+        assertSame(cause, error.cause)
+        assertEquals(cause.toAiEngineError(), error)
+    }
+
+    /**
+     * 请求阶段直接抛出的 IO 异常应转为网络错误，保留原始 cause。
+     */
+    @Test
+    fun `models 传输 IO 异常应抛出公共网络异常`() = runBlocking {
+        val cause = IOException("connection refused")
+        val client = RecordingClient().apply {
+            enqueueException(cause)
+        }
+
+        val exception = assertFailsWith<AiEngineException> {
+            engine(client).models()
+        }
+
+        val error = assertIs<AiEngineError.Network>(exception.error)
+        assertSame(cause, error.cause)
+        assertEquals(cause.message, error.message)
+    }
+
+    /**
+     * 未分类的请求异常仍须携带统一 Unknown 错误上抛，不能泄漏裸异常或返回空列表。
+     */
+    @Test
+    fun `models 未知请求异常应抛出公共未知异常`() = runBlocking {
+        val cause = IllegalStateException("transport failed")
+        val client = RecordingClient().apply {
+            enqueueException(cause)
+        }
+
+        val exception = assertFailsWith<AiEngineException> {
+            engine(client).models()
+        }
+
+        val error = assertIs<AiEngineError.Unknown>(exception.error)
+        assertSame(cause, error.cause)
+        assertEquals(cause.message, error.message)
+    }
+
+    /**
+     * 公共异常与内部 mapper 包装均须解包既有错误，不能再次映射为 Unknown。
+     */
+    @Test
+    fun `models 已类型化异常应保留原错误`() = runBlocking {
+        val error = AiEngineError.Protocol(message = "already mapped")
+        listOf(AiEngineException(error), AiEngineErrorException(error)).forEach { cause ->
+            val client = RecordingClient().apply {
+                enqueueException(cause)
+            }
+
+            val exception = assertFailsWith<AiEngineException> {
+                engine(client).models()
+            }
+
+            assertSame(error, exception.error)
+        }
+    }
+
+    /**
+     * 参数异常仍沿用 Unsupported 映射，不应被精确的 JSON 协议错误分支误分类。
+     */
+    @Test
+    fun `models 请求参数异常仍应映射为不支持错误`() = runBlocking {
+        val cause = IllegalArgumentException("invalid request")
+        val client = RecordingClient().apply {
+            enqueueException(cause)
+        }
+
+        val exception = assertFailsWith<AiEngineException> {
+            engine(client).models()
+        }
+
+        assertEquals(AiEngineError.Unsupported(message = "invalid request"), exception.error)
+    }
+
+    /**
+     * 请求取消必须传播同一个 CancellationException，不能包装或转换为普通失败。
+     */
+    @Test
+    fun `models 取消异常应原样传播`() = runBlocking {
+        val cancellation = CancellationException("cancel models")
+        val client = RecordingClient().apply {
+            enqueueException(cancellation)
+        }
+
+        val actual = assertFailsWith<CancellationException> {
+            engine(client).models()
+        }
+
+        assertSame(cancellation, actual)
+        assertSame(
+            cancellation,
+            assertFailsWith<CancellationException> { cancellation.toAiEngineError() })
+        assertEquals(1, client.requests.size)
+        assertEquals("sdapi/v1/sd-models", client.lastRequest.path)
+    }
+
+    /**
      * LoRA 列表应直接映射为 SD WebUI 引擎专属模型。
      */
     @Test
@@ -315,7 +498,7 @@ class SdWebUiImageEngineTest {
      * 构造一个绑定录制客户端的测试引擎。
      */
     private fun engine(client: RecordingClient): SdWebUiImageEngine = SdWebUiImageEngine(
-        id = ciyin.ai.core.engine.EngineId("sdwebui:test"),
+        id = EngineId("sdwebui:test"),
         sdWebUi = SdWebUi.Builder()
             .client(client)
             .build(),

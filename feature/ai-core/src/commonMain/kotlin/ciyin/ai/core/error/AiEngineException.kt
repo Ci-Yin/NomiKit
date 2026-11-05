@@ -5,6 +5,7 @@ package ciyin.ai.core.error
  *
  * 默认情况下 `ChatEngine` / `ImageEngine` 都通过 `Flow` 的 `Failed` 事件传递错误，
  * **不**应使用本异常。仅在以下场景可考虑：
+ * - 同步模型目录查询（如 [ciyin.ai.core.engine.ImageEngine.models]）失败时向调用方传递类型化错误；
  * - 同步 API（如 `validate(...)` 返回 `Result.Failure`，调用方想 `getOrThrow`）；
  * - 与必须 throw 的旧代码桥接。
  *

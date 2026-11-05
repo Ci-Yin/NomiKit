@@ -14,7 +14,8 @@ import ciyin.sdwebui.client.Client
  */
 internal class RecordingClient : Client() {
 
-    private val responses: ArrayDeque<Response> = ArrayDeque()
+    /** 按调用顺序回放的响应或请求阶段直接抛出的异常。 */
+    private val responses: ArrayDeque<Result<Response>> = ArrayDeque()
 
     private val lock = Any()
 
@@ -39,7 +40,16 @@ internal class RecordingClient : Client() {
      */
     fun enqueue(response: Response) {
         synchronized(lock) {
-            responses.addLast(response)
+            responses.addLast(Result.success(response))
+        }
+    }
+
+    /**
+     * 入队一个在请求阶段直接抛出的异常，包括原样回放的取消异常。
+     */
+    fun enqueueException(exception: Throwable) {
+        synchronized(lock) {
+            responses.addLast(Result.failure(exception))
         }
     }
 
@@ -47,20 +57,17 @@ internal class RecordingClient : Client() {
      * 入队一个成功响应。
      */
     fun enqueueSuccess(body: String = "") {
-        synchronized(lock) {
-            responses.addLast(Response(isSuccess = true, body = body))
-        }
+        enqueue(Response(isSuccess = true, body = body))
     }
 
     /**
      * 入队一个失败响应。
      */
     fun enqueueFailure(body: String = "") {
-        synchronized(lock) {
-            responses.addLast(Response(isSuccess = false, body = body))
-        }
+        enqueue(Response(isSuccess = false, body = body))
     }
 
+    /** 记录请求后回放响应或原样抛出预设异常，进度轮询仍使用独立桩。 */
     override suspend fun request(builder: RequestBuilder.() -> RequestBuilder): Response {
         val request = RequestBuilder().builder().build()
         return synchronized(lock) {
@@ -73,10 +80,11 @@ internal class RecordingClient : Client() {
                         body = """{"progress":0,"eta_relative":0,"state":{"skipped":false,"interrupted":false,"job":"","job_count":0,"job_timestamp":"0","job_no":0,"sampling_step":0,"sampling_steps":0},"current_image":null,"textinfo":null}""",
                     )
             }
-            return@synchronized if (responses.isNotEmpty()) responses.removeFirst() else Response(
-                true,
-                ""
-            )
+            return@synchronized if (responses.isNotEmpty()) {
+                responses.removeFirst().getOrThrow()
+            } else {
+                Response(isSuccess = true, body = "")
+            }
         }
     }
 }

@@ -26,7 +26,10 @@ interface ImageEngine : AiEngine {
     /**
      * 列出当前引擎可用的所有生图模型。
      *
-     * 与 [ChatEngine.models] 语义一致；拉取失败时返回空列表。
+     * 成功返回空列表表示引擎确实没有可用模型，不能用空列表掩盖请求失败。
+     *
+     * @throws ciyin.ai.core.error.AiEngineException 拉取失败时携带统一引擎错误。
+     * @throws kotlin.coroutines.cancellation.CancellationException 协程取消时原样传播。
      */
     suspend fun models(): List<ImageModelInfo>
 

@@ -4,6 +4,7 @@ import ciyin.sdwebui.client.Client
 import ciyin.sdwebui.payload.Text2ImagePayload
 import ciyin.sdwebui.support.RecordingClient
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -84,6 +85,151 @@ class StableDiffusionServiceImplTest {
         val models = assertNotNull(result.getOrNull())
         assertEquals(1, models.size)
         assertEquals("v1-5-pruned", models.single().name)
+    }
+
+    /** 验证未计算哈希的模型与普通模型混合时，整份目录及其顺序均被保留。 */
+    @Test
+    fun get_models_should_preserve_models_with_null_hashes() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(
+                """
+                [
+                    {
+                        "title": "hashed-before.safetensors [abc]",
+                        "model_name": "hashed-before",
+                        "hash": "abc",
+                        "sha256": "sha-before",
+                        "filename": "/models/hashed-before.safetensors",
+                        "config": null
+                    },
+                    {
+                        "title": "svd.safetensors",
+                        "model_name": "svd",
+                        "hash": null,
+                        "sha256": null,
+                        "filename": "/models/svd.safetensors",
+                        "config": null
+                    },
+                    {
+                        "title": "hashed-after.safetensors [def]",
+                        "model_name": "hashed-after",
+                        "hash": "def",
+                        "sha256": "sha-after",
+                        "filename": "/models/hashed-after.safetensors",
+                        "config": null
+                    }
+                ]
+                """.trimIndent(),
+            )
+        }
+
+        val models = newService(client).getModels().getOrThrow()
+
+        assertEquals(listOf("hashed-before", "svd", "hashed-after"), models.map { it.name })
+        assertEquals("abc", models.first().hash)
+        assertEquals("sha-before", models.first().sha256)
+        assertEquals("svd.safetensors", models[1].title)
+        assertEquals("/models/svd.safetensors", models[1].filename)
+        assertNull(models[1].hash)
+        assertNull(models[1].sha256)
+        assertNull(models[1].config)
+        assertEquals("def", models.last().hash)
+        assertEquals("sha-after", models.last().sha256)
+    }
+
+    /** 验证只有短哈希为空时，已提供的完整哈希不被丢弃。 */
+    @Test
+    fun get_models_should_accept_null_hash_with_present_sha256() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(
+                """
+                [{
+                    "title": "checkpoint.safetensors",
+                    "model_name": "checkpoint",
+                    "hash": null,
+                    "sha256": "known-sha256",
+                    "filename": "/models/checkpoint.safetensors",
+                    "config": null
+                }]
+                """.trimIndent(),
+            )
+        }
+
+        val model = newService(client).getModels().getOrThrow().single()
+
+        assertNull(model.hash)
+        assertEquals("known-sha256", model.sha256)
+    }
+
+    /** 验证只有完整哈希为空时，已提供的短哈希不被丢弃。 */
+    @Test
+    fun get_models_should_accept_null_sha256_with_present_hash() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(
+                """
+                [{
+                    "title": "checkpoint.safetensors [abc]",
+                    "model_name": "checkpoint",
+                    "hash": "abc",
+                    "sha256": null,
+                    "filename": "/models/checkpoint.safetensors",
+                    "config": null
+                }]
+                """.trimIndent(),
+            )
+        }
+
+        val model = newService(client).getModels().getOrThrow().single()
+
+        assertEquals("abc", model.hash)
+        assertNull(model.sha256)
+    }
+
+    /** 验证未提供可选哈希字段的响应也能保留模型，并明确表示哈希未知。 */
+    @Test
+    fun get_models_should_accept_missing_hash_fields() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(
+                """
+                [{
+                    "title": "checkpoint.safetensors",
+                    "model_name": "checkpoint",
+                    "filename": "/models/checkpoint.safetensors",
+                    "config": null
+                }]
+                """.trimIndent(),
+            )
+        }
+
+        val model = newService(client).getModels().getOrThrow().single()
+
+        assertEquals("checkpoint", model.name)
+        assertNull(model.hash)
+        assertNull(model.sha256)
+    }
+
+    /** 验证模型身份字段仍严格解析，不把非法响应当成成功或空目录。 */
+    @Test
+    fun get_models_should_fail_when_required_model_name_is_null() = runTest {
+        val client = RecordingClient().apply {
+            enqueueSuccess(
+                """
+                [{
+                    "title": "checkpoint.safetensors",
+                    "model_name": null,
+                    "hash": null,
+                    "sha256": null,
+                    "filename": "/models/checkpoint.safetensors",
+                    "config": null
+                }]
+                """.trimIndent(),
+            )
+        }
+
+        val result = newService(client).getModels()
+
+        assertTrue(result.isFailure)
+        assertIs<SerializationException>(result.exceptionOrNull())
     }
 
     /** 验证 LoRA 查询会访问 `sdapi/v1/loras` 并把 metadata 保留为 JSON 字符串。 */

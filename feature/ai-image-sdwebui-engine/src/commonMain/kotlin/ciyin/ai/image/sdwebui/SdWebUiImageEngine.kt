@@ -6,6 +6,7 @@ import ciyin.ai.core.engine.EngineId
 import ciyin.ai.core.engine.EngineRuntime
 import ciyin.ai.core.engine.ImageEngine
 import ciyin.ai.core.error.AiEngineError
+import ciyin.ai.core.error.AiEngineException
 import ciyin.ai.core.image.GeneratedImage
 import ciyin.ai.core.image.ImageEvent
 import ciyin.ai.core.image.ImageModelInfo
@@ -135,11 +136,20 @@ class SdWebUiImageEngine(
         }
     }
 
+    /**
+     * 拉取并映射当前可用的生图模型，成功的空响应列表仍正常返回。
+     *
+     * 请求直接抛出的异常与 SDK 返回的失败统一经 [toAiEngineError] 转译；协程取消原样上抛。
+     *
+     * @throws AiEngineException 拉取或映射失败时携带统一的引擎错误。
+     * @throws CancellationException 请求被取消时原样传播取消异常。
+     */
     override suspend fun models(): List<ImageModelInfo> {
         logger.d { "拉取 SD WebUI 模型列表 engineId=${id.value}" }
-        return sdWebUi.stableDiffusion.getModels().fold(
-            onSuccess = { models ->
-                val list = models.map { model ->
+        return try {
+            sdWebUi.stableDiffusion.getModels()
+                .getOrThrow()
+                .map { model ->
                     ImageModelInfo(
                         engineId = id,
                         model = model.title,
@@ -147,14 +157,15 @@ class SdWebUiImageEngine(
                         capabilities = capabilities.filterIsInstance<ImageCapability>().toSet(),
                     )
                 }
-                logger.d { "模型列表成功 engineId=${id.value} 数量=${list.size}" }
-                list
-            },
-            onFailure = { e ->
-                logger.e(e) { "模型列表失败 engineId=${id.value} cause=${e.message}" }
-                emptyList()
-            },
-        )
+                .also { models ->
+                    logger.d { "模型列表成功 engineId=${id.value} 数量=${models.size}" }
+                }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.e(e) { "模型列表失败 engineId=${id.value} cause=${e.message}" }
+            throw AiEngineException(e.toAiEngineError())
+        }
     }
 
     /**

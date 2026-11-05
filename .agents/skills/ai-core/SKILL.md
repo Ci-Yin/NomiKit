@@ -5,11 +5,12 @@ description: Use the feature/ai-core Kotlin Multiplatform module (package ciyin.
 
 # feature/ai-core 模块协作指南
 
-`feature/ai-core` 是 NomiKit AI 引擎抽象层的**根模块**。所有 Kotlin 源码包名为 `ciyin.ai.core.*`，目前只有
+`feature/ai-core` 是 NomiKit AI 引擎抽象层的 **根模块**。所有 Kotlin 源码包名为 `ciyin.ai.core.*`
+，目前只有
 `commonMain` + `commonTest`，没有任何平台源集——刻意保持平台中性，确保任何 KMP 目标都能复用同一份抽象。
 
-它只做四件事：**统一引擎抽象 / 统一请求响应模型 / 统一能力声明 / 统一注册与选择**。**不**
-包含任何厂商命名（OpenAI / SD WebUI / Anthropic / Ollama 等），也**不**实现任何具体调用逻辑。
+它只做四件事： **统一引擎抽象 / 统一请求响应模型 / 统一能力声明 / 统一注册与选择**。 **不**
+包含任何厂商命名（OpenAI / SD WebUI / Anthropic / Ollama 等），也 **不**实现任何具体调用逻辑。
 
 ## 触发场景
 
@@ -71,7 +72,7 @@ interface ChatEngine : AiEngine {
 
 interface ImageEngine : AiEngine {
     fun generate(request: ImageRequest): Flow<ImageEvent>
-    suspend fun listModels(): Result<List<ImageModelInfo>>
+    suspend fun models(): List<ImageModelInfo>
     suspend fun validate(request: ImageRequest): Result<Unit>
 }
 ```
@@ -79,20 +80,22 @@ interface ImageEngine : AiEngine {
 铁律：
 
 - **绝不**搞"万能 AiEngine + 所有 capability 都往里塞"，能力按引擎子接口分。
-- 任何引擎层错误都通过 `Flow` 的 `Failed` 事件传递，**禁止**直接 `throw RuntimeException`。
-  `CancellationException` 例外，必须原样上抛。
+- 生成/聊天事件流的引擎错误通过 `Flow` 的 `Failed` 事件传递，禁止直接抛未建模的 RuntimeException。
+- 生图 `ImageEngine.models()` 的同步目录查询失败通过公共 `AiEngineException` 携带 `AiEngineError`；成功
+  `emptyList()` 仅表示没有可用模型，不能掩盖失败。
+- `CancellationException` 在所有边界都必须原样上抛，不转换成目录空列表或普通失败。
 - `EngineId` 是 `value class`，业务侧持久化偏好时存 `EngineId.value`。
 
 ### 通用模型（`chat/` + `image/`）
 
-- `ChatRequest` / `ImageRequest` 公共字段只覆盖**主流厂商都稳定支持**的能力；厂商专有字段一律走
+- `ChatRequest` / `ImageRequest` 公共字段只覆盖 **主流厂商都稳定支持**的能力；厂商专有字段一律走
   `vendorOptions: Map<String, JsonElement>`，键名加厂商前缀（`openai.response_format` /
   `sdwebui.alwaysonScripts`）。
-- `ChatEvent` / `ImageEvent` 是 `sealed interface`，必须满足三条契约：**首个为 Started**、**末尾为
-  Completed 或 Failed 之一**、**Completed 与 Failed 同次调用不能同时出现**。
+- `ChatEvent` / `ImageEvent` 是 `sealed interface`，必须满足三条契约： **首个为 Started**、 **末尾为
+  Completed 或 Failed 之一**、 **Completed 与 Failed 同次调用不能同时出现**。
 - `ChatMessage` / `ImageSource` / `ImageControl` / `ImagePostProcessor` 也都是 `sealed interface`
   ，新增分支会强制下游 `when` 适配——这是有意的，避免静默漏适配。
-- 二进制（图像、音频、文档、ControlNet 控制图）一律用 `ByteArray` + `mimeType`，**不**依赖任何平台位图类型（
+- 二进制（图像、音频、文档、ControlNet 控制图）一律用 `ByteArray` + `mimeType`， **不**依赖任何平台位图类型（
   `Bitmap` / `UIImage` / `BufferedImage` 都不行）。
 
 ### 能力声明（`capability/`）
@@ -140,15 +143,14 @@ class EngineSelector(chatRegistry, imageRegistry) {
 }
 ```
 
-选择策略（Chat / Image 完全同构）：**先看 preferredId** → **否则按 required 过滤后取注册顺序首个** → *
-*找不到抛 UnsupportedCapabilityException**。`Registry` 不负责降级、重试、观测——这些归
-上层聚合或业务模块。
+选择策略（Chat / Image 完全同构）： **先看 preferredId** → **否则按 required 过滤后取注册顺序首个** → *
+*找不到抛 UnsupportedCapabilityException**。`Registry` 不负责降级、重试、观测——这些归 上层聚合或业务模块。
 
 ## 工作流
 
 ### 工作流：新增一个引擎能力（capability）
 
-按"从源头建模"原则，**禁止**在引擎实现里硬编码"这个引擎其实也支持 X 但 ai-core 没声明"。标准流程：
+按"从源头建模"原则， **禁止**在引擎实现里硬编码"这个引擎其实也支持 X 但 ai-core 没声明"。标准流程：
 
 1. **判断归属**：聊天相关 → `ChatCapability`；生图相关 → `ImageCapability`；都不属于（如未来的 ASR /
    TTS / Embedding）→ 在 `capability/` 下新增 `XxxCapability : AiCapability` 接口。
@@ -168,7 +170,7 @@ class EngineSelector(chatRegistry, imageRegistry) {
 ### 工作流：新增 / 修改通用请求字段
 
 1. **优先走 `vendorOptions`**：如果只有一两家厂商有的字段（OpenAI 的 `response_format`、SD WebUI 的
-   `alwaysonScripts`），**绝不**进 `ChatRequest` / `ImageRequest` 公共字段；让对应 `ai-xxx-engine` 通过
+   `alwaysonScripts`）， **绝不**进 `ChatRequest` / `ImageRequest` 公共字段；让对应 `ai-xxx-engine` 通过
    `vendorOptions[key]` 自己解释。
 2. **真要进公共字段时**：必须满足"主流厂商都稳定支持"。新字段一律 `null` 默认值，避免破坏既有调用方。
 3. **同步 mapper**：每个 `ai-xxx-engine` 的 `mapper/` 目录里的 `XxxRequestToYyyMapper` 都要补对应解释；
@@ -203,12 +205,12 @@ class EngineSelector(chatRegistry, imageRegistry) {
 ```
 
 > 已知问题：`testAndroidHostTest` 因工程级 `multiplatform-lib-targets` 把 Android `jvmTarget` 设为
-> 21、而 Gradle daemon 跑在 JDK 17 而失败。**这是工程级问题**，不要为它打 hack；等工程统一升级 JDK 21
+> 21、而 Gradle daemon 跑在 JDK 17 而失败。 **这是工程级问题**，不要为它打 hack；等工程统一升级 JDK 21
 > 即可恢复。
 
 ## 硬性约束
 
-- 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补**中文 KDoc**。
+- 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补 **中文 KDoc**。
 - **禁止**在 `ai-core` 出现 `OpenAi` / `SdWebUi` / `ControlNet`（作为厂商命名）/ `Anthropic` /`Ollama`
   等任何厂商命名（`ImageCapability.ControlNet` 是已抽象的通用能力命名，不算厂商命名，但新增此类命名要谨慎）。
 - **禁止**依赖 `feature/sdwebui` / `ai-xxx-engine` / `ai-integrate` / 任何 `app:*` / `business:*`：
@@ -217,19 +219,20 @@ class EngineSelector(chatRegistry, imageRegistry) {
 - **禁止**用 `Throwable` / `Exception` 作为通用错误传输模型；只用 `AiEngineError` + `Result` +
   `Failed` 事件。
 - 平台特定代码完全不存在于本模块：仅 `commonMain`，没有 `androidMain` / `desktopMain` / `iosMain`。
-- 依赖版本一律走 `libs.versions.toml`，**不要**在 `build.gradle.kts` 里写裸版本号。
+- 依赖版本一律走 `libs.versions.toml`， **不要**在 `build.gradle.kts` 里写裸版本号。
 - `ChatEvent` / `ImageEvent` 流契约必须遵守：`Started` 开头 + `Completed`/`Failed` 结尾 + 二选一不并存。
 
 ## 与下游模块的边界
 
-| 下游模块                              | 它能依赖 ai-core 的什么                                                                        | 它**不能**做什么                                                 |
-|-----------------------------------|-----------------------------------------------------------------------------------------|------------------------------------------------------------|
-| `ai-integrate`                    | 所有 public 抽象，尤其 `EngineSelector` / `Registry` / `ChatEvent` / `ImageEvent`              | 反向依赖任何 `app:*`                                             |
-| `ai-xxx-engine`（聊天 / 生图 / 未来 ASR） | 实现对应 `ChatEngine` / `ImageEngine`；用 `AiEngineError` 折叠错误                                | 直接 import 其他 `ai-xxx-engine`；引入 DI 框架                      |
-| `app:shared`                      | 可通过 `ai-integrate` 的 `api(projects.feature.aiCore)` 获得公共模型                             | 默认不要散落具体引擎实现类构造                                      |
+| 下游模块                                  | 它能依赖 ai-core 的什么                                                           | 它**不能**做什么                               |
+|-------------------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------|
+| `ai-integrate`                            | 所有 public 抽象，尤其 `EngineSelector` / `Registry` / `ChatEvent` / `ImageEvent` | 反向依赖任何 `app:*`                           |
+| `ai-xxx-engine`（聊天 / 生图 / 未来 ASR） | 实现对应 `ChatEngine` / `ImageEngine`；用 `AiEngineError` 折叠错误                | 直接 import 其他 `ai-xxx-engine`；引入 DI 框架 |
+| `app:shared`                              | 可通过 `ai-integrate` 的 `api(projects.feature.aiCore)` 获得公共模型              | 默认不要散落具体引擎实现类构造                 |
 
 ## 附加资源
 
 - 分层错误流转：[`.docs/contributing/layered.md`](../../../.docs/contributing/layered.md)
-- 相关 skill：`.agents/skills/ai-integrate/SKILL.md`、`.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
+- 相关 skill：`.agents/skills/ai-integrate/SKILL.md`、
+  `.agents/skills/ai-image-sdwebui-engine/SKILL.md`、
   `.agents/skills/ai-chat-openai-engine/SKILL.md`

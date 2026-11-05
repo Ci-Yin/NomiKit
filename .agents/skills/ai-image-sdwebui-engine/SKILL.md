@@ -5,12 +5,13 @@ description: Use the feature/ai-image-sdwebui-engine Kotlin Multiplatform module
 
 # feature/ai-image-sdwebui-engine 模块协作指南
 
-`feature/ai-image-sdwebui-engine` 是 `feature/sdwebui` vendor SDK 在 `ai-core` 抽象上的**薄适配层**
+`feature/ai-image-sdwebui-engine` 是 `feature/sdwebui` vendor SDK 在 `ai-core` 抽象上的 **薄适配层**
 。所有 Kotlin 源码包名为 `ciyin.ai.image.sdwebui.*`，仅 `commonMain` + `commonTest`（无平台源集——平台细节归底层
 `feature/sdwebui` 解决）。
 
 它的角色：把 `ai-core.ImageRequest` 翻译成 `feature/sdwebui` 的 Process DSL，把 SD WebUI 响应折叠回
-`ai-core.ImageEvent` / `ImageResult`，把异常折叠回 `AiEngineError`。**不**承担降级、观测、业务策略——这些由上层聚合或业务模块负责。
+`ai-core.ImageEvent` / `ImageResult`，把异常折叠回 `AiEngineError`。 **不**
+承担降级、观测、业务策略——这些由上层聚合或业务模块负责。
 
 ## 触发场景
 
@@ -45,13 +46,14 @@ feature/ai-image-sdwebui-engine/
     │       ├── PostProcessorMapper.kt           # ADetailer/ReActor 前置 + RemBG/Upscale 后置
     │       └── ErrorMapper.kt                   # Throwable → AiEngineError + AiEngineErrorException
     └── commonTest/kotlin/ciyin/ai/image/sdwebui/
-        ├── SdWebUiImageEngineTest.kt      # 5 个用例：txt2img / img2img / 后处理 / listModels / validate
-        └── support/RecordingClient.kt     # 自研 mock，记录请求 + 回放响应
+        ├── SdWebUiImageEngineTest.kt      # txt2img / img2img / 后处理 / models 错误契约 / LoRA / validate
+        └── support/RecordingClient.kt     # 自研 mock，记录请求 + 回放响应或请求异常
 ```
 
-依赖：`api(project(":feature:ai-core"))` + `implementation(project(":feature:sdwebui"))` +
-`kotlinx-coroutines-core`。**没有**任何 Ktor / 平台引擎依赖——HTTP 走 `feature/sdwebui` 的
-`Client.Default`。
+依赖以模块 `build.gradle.kts` 为准：`api(projects.feature.aiCore)`；
+`implementation(projects.feature.sdwebui)`、`projects.core.serialization`、`projects.core.platform` 与
+`kotlinx-coroutines-core`。 **没有直接声明** Ktor / 平台引擎依赖——HTTP 走 `feature/sdwebui` 的
+`DefaultClient`。
 
 ## 核心 API（外部使用顺序）
 
@@ -125,43 +127,69 @@ engine.generate(
 
 ## 关键映射规则速查
 
-| 通用层概念                                                    | SD WebUI 落点                                                                                         | 处理位置                                                     |
-|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| `ImageSource.TextToImage`                                | `runText2Image { ... }`                                                                             | `ImageRequestToSdWebUiMapper.invoke`                     |
-| `ImageSource.ImageToImage`                               | `runImage2Image { ... }` + `initImages`                                                             | 同上                                                       |
-| `ImageSource.Inpainting`                                 | `runImage2Image { ... }` + `initImages` + `mask`                                                    | 同上                                                       |
-| `ImageRequest.model`（非 null）                             | 调用前 `stableDiffusion.setModel(model)`                                                               | 同上                                                       |
-| `ImageControl.ControlNet`                                | `controlNet { addUnit(controlNetUnit { ... }) }` 通过 `applyControlNet` 注入 alwayson scripts           | `ControlMapper`                                          |
-| `ImageControl.IPAdapter`                                 | **拒绝**：`AiEngineError.Unsupported`                                                                  | `ControlMapper`                                          |
-| `ImagePostProcessor.FaceDetailer`                        | `aDetailer { model / confidence }` 前置 alwayson                                                      | `PostProcessorMapper.applyPreGenerationPostProcessors`   |
-| `ImagePostProcessor.FaceSwap`                            | `reActor { image }` 前置 alwayson                                                                     | 同上                                                       |
-| `ImagePostProcessor.BackgroundRemoval`                   | `runRemBG { inputImage }` 二次调用                                                                      | `applyPostGenerationPostProcessors`                      |
-| `ImagePostProcessor.Upscale`                             | `runExtraSingleImage { upscalingResize / upscaler1 }` 二次调用                                          | 同上                                                       |
+| 通用层概念                                                 | SD WebUI 落点                                                                                                    | 处理位置                                                 |
+|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| `ImageSource.TextToImage`                                  | `runText2Image { ... }`                                                                                          | `ImageRequestToSdWebUiMapper.invoke`                     |
+| `ImageSource.ImageToImage`                                 | `runImage2Image { ... }` + `initImages`                                                                          | 同上                                                     |
+| `ImageSource.Inpainting`                                   | `runImage2Image { ... }` + `initImages` + `mask`                                                                 | 同上                                                     |
+| `ImageRequest.model`（非 null）                            | 调用前 `stableDiffusion.setModel(model)`                                                                         | 同上                                                     |
+| `ImageControl.ControlNet`                                  | `controlNet { addUnit(controlNetUnit { ... }) }` 通过 `applyControlNet` 注入 alwayson scripts                    | `ControlMapper`                                          |
+| `ImageControl.IPAdapter`                                   | **拒绝**：`AiEngineError.Unsupported`                                                                            | `ControlMapper`                                          |
+| `ImagePostProcessor.FaceDetailer`                          | `aDetailer { model / confidence }` 前置 alwayson                                                                 | `PostProcessorMapper.applyPreGenerationPostProcessors`   |
+| `ImagePostProcessor.FaceSwap`                              | `reActor { image }` 前置 alwayson                                                                                | 同上                                                     |
+| `ImagePostProcessor.BackgroundRemoval`                     | `runRemBG { inputImage }` 二次调用                                                                               | `applyPostGenerationPostProcessors`                      |
+| `ImagePostProcessor.Upscale`                               | `runExtraSingleImage { upscalingResize / upscaler1 }` 二次调用                                                   | 同上                                                     |
 | `vendorOptions["sdwebui.alwaysonScripts"]`（`JsonObject`） | 解析每个键为 `ScriptPayload`（识别 `ad_model` → ADetailer，`module+model` → ControlNet），再 `addAlwaysonScript` | `ImageRequestToSdWebUiMapper.applyVendorAlwaysOnScripts` |
-| `ImageRequest.steps` 缺省                                  | txt2img 用 25，img2img/inpainting 用 20                                                                | `applyCommonTextSettings` / `applyCommonImageSettings`   |
-| `ImageRequest.cfgScale` 缺省                               | 7.0f                                                                                                | 同上                                                       |
-| `ImageRequest.seed`（`Long`）                              | 收缩到 `Int`（饱和）                                                                                       | `Long.toSdSeed()`                                        |
-| 图像字节 ↔ base64                                            | `ByteArray.toSdWebUiBase64()` / `String.fromSdWebUiBase64()`（兼容 `data:image/...;base64,` 前缀）        | `SdWebUiResultToImageResultMapper`                       |
+| `ImageRequest.steps` 缺省                                  | txt2img 用 25，img2img/inpainting 用 20                                                                          | `applyCommonTextSettings` / `applyCommonImageSettings`   |
+| `ImageRequest.cfgScale` 缺省                               | 7.0f                                                                                                             | 同上                                                     |
+| `ImageRequest.seed`（`Long`）                              | 收缩到 `Int`（饱和）                                                                                             | `Long.toSdSeed()`                                        |
+| 图像字节 ↔ base64                                          | `ByteArray.toSdWebUiBase64()` / `String.fromSdWebUiBase64()`（兼容 `data:image/...;base64,` 前缀）               | `SdWebUiResultToImageResultMapper`                       |
 
 ## 错误映射（`ErrorMapper.kt`）
 
-```
-CancellationException        → 原样上抛（永远不要吞）
-AiEngineErrorException       → 解包内部 AiEngineError
-IOException (kotlinx.io)     → AiEngineError.Network
-Client.Error                 → AiEngineError.Protocol(message = body)
-IllegalArgumentException     → AiEngineError.Unsupported
-其他                         → AiEngineError.Unknown
-```
+| 异常                                 | 映射                                         |
+|--------------------------------------|----------------------------------------------|
+| `CancellationException`              | 原样上抛，永远不能包装或吞掉                 |
+| `AiEngineException`                  | 解包已有 `AiEngineError`                     |
+| `AiEngineErrorException`（internal） | 解包 mapper 内部已有 `AiEngineError`         |
+| `IOException`（kotlinx.io）          | `AiEngineError.Network`                      |
+| `Client.Error`                       | `AiEngineError.Protocol(message = body)`     |
+| `SerializationException`             | `AiEngineError.Protocol`，保留解析失败 cause |
+| 其他 `IllegalArgumentException`      | `AiEngineError.Unsupported`                  |
+| 其他                                 | `AiEngineError.Unknown`                      |
 
-mapper 内部需要在中途短路失败时，统一 `throw AiEngineErrorException(AiEngineError.Xxx(...))`，**禁止**
-直接抛 `IllegalStateException`、用 `error("...")` 之类——那样会被错误地折叠到 `Unknown`。
+`SerializationException` 的分支必须位于 `IllegalArgumentException` 之前，否则响应损坏会被误分类成请求不支持。
+mapper 内部短路继续使用 `throw AiEngineErrorException(AiEngineError.Xxx(...))`；不要用裸
+`IllegalStateException`
+或 `error("...")` 替代类型化错误。
+
+### `models()` 的公共失败契约
+
+- 成功的 `[]` 正常返回空 `List<ImageModelInfo>`；不能用空列表代替失败。
+- 非 2xx、JSON 解析失败等 SDK `Result.failure` 与 `Client.request` 直接抛出的 transport 异常走同一边界：
+  `getModels().getOrThrow()` 后由 `toAiEngineError()` 分类，并抛公共 `ai-core.AiEngineException`。
+- 调用方用 `AiEngineException.error` 消费错误模型，不依赖本模块 internal 包装类型。
+- `CancellationException` 原样传播，包括同一个异常实例；不得放进普通失败、吞掉或包装。
+- `generate(...)` 的失败仍通过 `ImageEvent.Failed` 返回；`loras()` 保留既有的底层原始异常契约。
+
+模型查询边界示意（实现以源码为准）：
+
+```kotlin
+try {
+    sdWebUi.stableDiffusion.getModels().getOrThrow()
+    // 映射为 ImageModelInfo，保留成功空列表。
+} catch (cancelled: CancellationException) {
+    throw cancelled
+} catch (failure: Throwable) {
+    throw AiEngineException(failure.toAiEngineError())
+}
+```
 
 ## 工作流
 
 ### 工作流：在 `ai-core` 新增了 `ImageControl` / `ImagePostProcessor` 分支后补适配
 
-按"从源头建模"原则，新增 sealed 子类后必须在所有 mapper 的 `when` 里给出真实映射，**禁止**
+按"从源头建模"原则，新增 sealed 子类后必须在所有 mapper 的 `when` 里给出真实映射， **禁止**
 `else -> Unit` 静默忽略。
 
 1. **更新能力声明**：若新分支表示新能力，先在 `capabilities` set 里加上对应 `ImageCapability`（或先在
@@ -205,7 +233,7 @@ buildJsonObject {
 2. 把它放进 `request.vendorOptions["sdwebui.alwaysonScripts"]`。
 3. mapper 会自动识别 `ad_model` → ADetailer、`module + model` → ControlNet；其他结构会抛
    `AiEngineError.Unsupported`。
-4. 如果是新脚本结构，在 `ImageRequestToSdWebUiMapper.toScriptArgs()` 里加识别分支（**不要**改
+4. 如果是新脚本结构，在 `ImageRequestToSdWebUiMapper.toScriptArgs()` 里加识别分支（ **不要**改
    `ai-core`）。
 
 ### 工作流：写单元测试
@@ -214,10 +242,13 @@ buildJsonObject {
 
 1. 用 `commonTest/support/RecordingClient`（继承 `ciyin.sdwebui.client.Client`）作为底层客户端，**不要
    **引入真实 HTTP / 不要用 `ktor-client-mock`。
-2. 用 `kotlinx.coroutines.runBlocking` 包裹（与 `feature/sdwebui` 测试约定一致）。
-3. 用 `client.enqueueSuccess(jsonBody)` / `enqueueFailure(body)` 按调用顺序入队响应；用
-   `client.requests` / `client.lastRequest` 断言 path / body。
-4. 构造引擎：
+2. 用 `kotlinx.coroutines.runBlocking` 包裹（按本模块现有测试约定）。
+3. 用 `client.enqueueSuccess(jsonBody)` / `enqueueFailure(body)` 按调用顺序入队响应； 用
+   `client.enqueueException(throwable)` 回放请求阶段直接抛出的异常。用 `client.requests` /
+   `client.lastRequest` 断言 path / body。生图并发测试用独立 `progressStub`，避免进度请求抢走生成响应。
+4. 模型查询回归需区分成功空数组、非 2xx 和无效 JSON（含错误根类型、缺字段）；同时覆盖直接 HTTP / IO /
+   未知请求异常、已有公共/内部包装的错误负载保留，以及取消异常的 `assertSame` 身份断言。
+5. 构造引擎：
 
 ```kotlin
 private fun engine(client: RecordingClient) = SdWebUiImageEngine(
@@ -233,7 +264,7 @@ val sdEngine = aiImageIntegrate.engine<SdWebUiImageEngine>()
 val loras: List<SdWebUiLoraInfo> = sdEngine.loras()
 ```
 
-5. 验证命令：
+6. 验证命令：
 
 ```bash
 ./gradlew :feature:ai-image-sdwebui-engine:desktopTest ^
@@ -241,16 +272,17 @@ val loras: List<SdWebUiLoraInfo> = sdEngine.loras()
 ```
 
 > 已知问题：`testAndroidHostTest` 因工程级 JVM target 21 / daemon JDK 17 不一致而失败，**这是工程级问题
-**，不要为它加 hack。
+> **，不要为它加 hack。
 
 ## 硬性约束
 
-- 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补**中文 KDoc**。
-- **本模块只能依赖 `:feature:ai-core` 与 `:feature:sdwebui`**；**禁止**反向依赖上层聚合模块
-  、任何 `app:*`、任何其他 `ai-xxx-engine`。
+- 任何新增 `class` / `interface` / `object` / 公开/扩展函数必须补 **中文 KDoc**。
+- 模块依赖以 `build.gradle.kts` 为准，复用 `ai-core`、`sdwebui` 与既有 core 辅助能力； **禁止**反向依赖
+  上层聚合模块、任何 `app:*` 或其他 `ai-xxx-engine`。
 - **禁止**引入 DI 框架（Koin / Dagger 等）。`SdWebUiImageEngine` 只通过普通构造函数装配。
-- **禁止**直接 `throw RuntimeException`：错误必须走 `AiEngineError` 经 `Failed` 事件流回上层；mapper
-  内部短路用 `AiEngineErrorException` 包装。
+- 生图失败统一经 `AiEngineError` 进入 `ImageEvent.Failed`；mapper 内部短路用
+  `AiEngineErrorException`。
+  `models()` 无事件流，必须抛公共 `AiEngineException` 携带错误，不能泄漏普通裸异常或把失败降为 `[]`。
 - **禁止**吞 `CancellationException`（`ErrorMapper` 第一行就是 `throw this`）。
 - **禁止**在 `ImageEvent.Completed` 之外再发 `Failed`，反之亦然——契约由 `ai-core.ImageEvent` 定义。
 - **禁止**修改 `feature/sdwebui`（vendor SDK）来"配合"本适配层；新需求要么走 `vendorOptions`，要么先在
@@ -259,15 +291,16 @@ val loras: List<SdWebUiLoraInfo> = sdEngine.loras()
 
 ## 与上下游模块的边界
 
-| 模块                  | 与本模块的关系                                                                | 注意                                                                      |
-|---------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| `feature/ai-core`   | 提供 `ImageEngine` 接口、`ImageRequest`、`ImageEvent`、`AiEngineError`        | `api` 依赖，可暴露在公共签名                                                       |
-| `feature/sdwebui`   | 提供底层 `SdWebUi` + Process DSL + 各类 alwayson script payload              | `implementation` 依赖，**不应**出现在公共签名。新增 endpoint 走 `feature/sdwebui` skill |
-| `feature/ai-integrate` | 通过配置装配本模块并向上提供生图聚合入口                                     | **绝不**反向依赖 integrate                                                       |
-| `app:shared`        | 可通过 `ai-integrate` 使用本模块 | 业务代码默认不要散落 `SdWebUiImageEngine` 构造                    |
+| 模块                   | 与本模块的关系                                                         | 注意                                                                                                              |
+|------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `feature/ai-core`      | 提供 `ImageEngine` 接口、`ImageRequest`、`ImageEvent`、`AiEngineError` | `api` 依赖，可暴露在公共签名                                                                                      |
+| `feature/sdwebui`      | 提供底层 `SdWebUi` + Process DSL + 各类 alwayson script payload        | `implementation` 依赖；既有注入构造接受 `SdWebUi`，常规接入优先配置构造。新增 endpoint 走 `feature/sdwebui` skill |
+| `feature/ai-integrate` | 通过配置装配本模块并向上提供生图聚合入口                               | **绝不**反向依赖 integrate                                                                                        |
+| `app:shared`           | 可通过 `ai-integrate` 使用本模块                                       | 业务代码默认不要散落 `SdWebUiImageEngine` 构造                                                                    |
 
 ## 附加资源
 
+- [模块 README](../../../feature/ai-image-sdwebui-engine/README.md)
 - `ai-core` 抽象：`.agents/skills/ai-core/SKILL.md`
 - 底层 SDK：`.agents/skills/sdwebui/SKILL.md`
 - 上层聚合：`.agents/skills/ai-integrate/SKILL.md`
