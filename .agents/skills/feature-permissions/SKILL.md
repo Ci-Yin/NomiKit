@@ -45,8 +45,8 @@ val statuses = Permissions.getStatuses(context, PermissionGroup.Media)
   `Permissions.request` 时，`Context` 必须是 `Activity`，或能沿 `ContextWrapper` 解析到 Activity。
   模块使用的 XXPermissions 26.5 仍基于旧 Support Library；AndroidX 应用必须在根
   `gradle.properties` 中同时启用 `android.useAndroidX=true` 和 `android.enableJetifier=true`，否则运行时会
-  因旧 `android.support.*` 类无法解析而崩溃。
-  将 `Permission.Sensors` 作为心率传感器读取权限使用；XXPermissions 会把
+  因旧 `android.support.*` 类无法解析而崩溃。 将 `Permission.Sensors` 作为心率传感器读取权限使用；XXPermissions
+  会把
   `READ_HEART_RATE` 回退到旧系统的 `BODY_SENSORS`。当 `targetSdk >= 36` 时，在 Manifest 中将
   `BODY_SENSORS` 限制为 `maxSdkVersion=35`，同时声明 `android.permission.health.READ_HEART_RATE`，并为
   `VIEW_PERMISSION_USAGE` + `HEALTH_PERMISSIONS` 提供真实的健康权限说明 Activity。
@@ -71,8 +71,23 @@ iOS 应用必须为实际使用的能力补齐对应 `Info.plist` 用途说明�
 
 示例位于
 `app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/permissions/PermissionsScreen.kt`
-，可从 sample
-首页的“权限管理示例”进入。页面支持刷新全部状态、逐组申请和逐组打开设置，不提供一次申请全部权限。
+，可从 sample 首页的“权限管理示例”进入。页面支持刷新全部状态、逐组申请和逐组打开设置，不提供一次申请全部权限。
+
+## Android Parcelize 构建依赖
+
+内部的 `InternetPermission` 和 `InstallShortcutPermission` 使用 `@Parcelize` 适配 XXPermissions 的
+Parcelable 契约。模块除应用 Parcelize 插件外，还必须在 `androidMain` 中通过
+`implementation(libs.kotlin.parcelize.runtime)` 声明运行时依赖，版本跟随 Version Catalog 的 Kotlin
+版本。 仅能编译通过不代表依赖已传递到消费方的运行时类路径；缺少该依赖会让 Release R8 报
+`Missing class kotlinx.parcelize.Parcelize`。不要用 `-dontwarn` 或关闭混淆替代依赖声明，
+也不要要求每个宿主应用重复补库。
+
+变更此依赖后验证发布运行时依赖与实际 R8 构建：
+
+```powershell
+./gradlew.bat :app:android:dependencyInsight --configuration releaseRuntimeClasspath --dependency kotlin-parcelize-runtime --console=plain
+./gradlew.bat :app:android:assembleRelease --console=plain
+```
 
 ## 修改与验证
 
