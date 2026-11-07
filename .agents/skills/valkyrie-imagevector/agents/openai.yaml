@@ -1,0 +1,3 @@
+interface:
+  display_name: "Valkyrie ImageVector"
+  short_description: "将 SVG/XML 转成项目 IconPack 的 Compose ImageVector"
