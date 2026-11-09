@@ -33,7 +33,7 @@ class PictureMultiParser(
      * 在多个站点的图站解析结果基础上，构造聚合后的 [PictureResult]。
      *
      * - 分页信息与标签来自框架归并后的 [multiResult]；
-     * - 画集列表按“站点 + pool ID”去重；其他图片列表继续按 `md5` 去重。
+     * - 画集列表按“站点 + pool ID”去重；其他图片优先按非空 `md5` 去重，缺失时使用站点与帖子 ID。
      */
     override suspend fun onMerge(
         request: PictureRequest,
@@ -46,7 +46,7 @@ class PictureMultiParser(
             contents = results.flatMap { it.contents }.let { contents ->
                 when (request.type) {
                     PictureParserType.CollectionList -> contents.distinctBy(Picture::requirePoolMergeIdentity)
-                    else -> contents.distinctBy(Picture::md5)
+                    else -> contents.distinctBy(Picture::requirePostMergeIdentity)
                 }
             },
         )
@@ -58,6 +58,20 @@ class PictureMultiParser(
     override fun onFallback(): PictureResult {
         return PictureResult()
     }
+}
+
+/**
+ * 普通帖子优先按非空 MD5 聚合，缺失时回退规范化站点与原始字符串 ID。
+ *
+ * 使用独立身份类别，避免 MD5 文本恰好等于站点与 ID 时发生误合并；无法确定身份时明确失败。
+ */
+private fun Picture.requirePostMergeIdentity(): Pair<String, String> {
+    if (md5.isNotBlank()) return "md5" to md5
+    val normalizedSite = site.trim().lowercase()
+    require(normalizedSite.isNotEmpty() && id.isNotBlank()) {
+        "图片聚合条目缺少非空 MD5 或合法站点与帖子 ID：$this"
+    }
+    return "site:$normalizedSite" to id
 }
 
 /**

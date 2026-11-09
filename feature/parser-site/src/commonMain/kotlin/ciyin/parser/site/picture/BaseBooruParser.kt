@@ -26,8 +26,9 @@ import kotlinx.serialization.Serializable
  *
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2026/3/8 7:19
+ * @param baseUrlOverride 可选基础地址，用于镜像端点与离线请求链契约测试。
  */
-abstract class BaseBooruParser : PictureParser() {
+abstract class BaseBooruParser(baseUrlOverride: String? = null) : PictureParser(baseUrlOverride) {
     /**
      * Booru 解析器内部常量与日期辅助映射。
      */
@@ -57,6 +58,8 @@ abstract class BaseBooruParser : PictureParser() {
                     "tags" to req.tags.joinToString(" "),
                 )
                 val jsonParameters = htmlParameters.toMutableMap().apply {
+                    // DAPI 的 pid 是零基页码，不是 HTML 的帖子偏移。
+                    this["pid"] = page - 1
                     this["page"] = "dapi"
                     this["s"] = "post"
                     this["q"] = "index"
@@ -74,14 +77,14 @@ abstract class BaseBooruParser : PictureParser() {
 
         on(Detail) {
             request { req ->
-                val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "view",
                     "id" to req.id,
                 )
                 val jsonParameters = htmlParameters.toMutableMap().apply {
+                    // 详情按 ID 定位，不随列表请求页码偏移唯一结果。
+                    this["pid"] = 0
                     this["page"] = "dapi"
                     this["s"] = "post"
                     this["q"] = "index"

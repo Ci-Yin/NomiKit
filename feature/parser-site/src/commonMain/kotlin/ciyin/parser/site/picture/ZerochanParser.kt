@@ -22,8 +22,9 @@ import kotlinx.serialization.Serializable
  * Zerochan 解析器（新 DSL 版）。
  *
  * 基于旧版 `ZerochanParser` 的 URL 与 JSON 协议迁移到多平台 DSL。
+ * @param baseUrlOverride 可选基础地址，用于镜像端点与离线请求链契约测试。
  */
-class ZerochanParser : PictureParser() {
+class ZerochanParser(baseUrlOverride: String? = null) : PictureParser(baseUrlOverride) {
 
     /**
      * Zerochan 站点 DSL 配置入口。
@@ -43,11 +44,8 @@ class ZerochanParser : PictureParser() {
                 fileExt = fileExt,
                 site = resolvedWeb,
                 md5 = resolvedMd5,
-                children = if (children.isEmpty() && resolvedFileName.isNotBlank()) {
-                    listOf(resolvedFileName)
-                } else {
-                    children
-                },
+                // 通用修订器会填入当前文件名，但 Zerochan 未提供关联子图，必须清空该占位值。
+                children = emptyList(),
             )
         }
 
@@ -78,11 +76,6 @@ class ZerochanParser : PictureParser() {
      * 解析 Feed 列表结果。
      */
     private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
-        val jsonBody = bodyForJson().trim()
-        if (jsonBody.isBlank() || !jsonBody.contains("\"items\"")) {
-            return result
-        }
-
         val payload = bodyForJson<ZerochanResults>()
         val contents = payload.items.map { it.toPicture() }
         val tags = contents
@@ -105,10 +98,6 @@ class ZerochanParser : PictureParser() {
      * 解析单帖详情结果。
      */
     private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult {
-        val jsonBody = bodyForJson().trim()
-        if (jsonBody.isBlank()) {
-            return result
-        }
         val contents = bodyForJson<ZerochanItem>().toPicture()
         return result.copy(
             contents = listOf(contents),
@@ -146,6 +135,7 @@ class ZerochanParser : PictureParser() {
      * 将 Zerochan JSON 对象转换为通用的 [Picture]。
      */
     private fun ZerochanItem.toPicture(): Picture {
+        require(id > 0) { "Zerochan 帖子缺少合法 ID" }
 
         val thumbnailUrl = thumbnail.ifBlank { small }
         val original = full.ifBlank {
@@ -223,7 +213,7 @@ class ZerochanParser : PictureParser() {
     @Serializable
     private data class ZerochanResults(
         @SerialName("items")
-        val items: List<ZerochanItem> = emptyList(),
+        val items: List<ZerochanItem>,
     )
 
     /**
@@ -232,7 +222,7 @@ class ZerochanParser : PictureParser() {
     @Serializable
     private data class ZerochanItem(
         @SerialName("id")
-        val id: Int = 0,
+        val id: Int,
         @SerialName("small")
         val small: String = "",
         @SerialName("thumbnail")

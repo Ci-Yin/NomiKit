@@ -138,9 +138,13 @@ val multiParser = PictureMultiParser(
 
 注意事项：
 
-- 普通图片聚合按 `md5` 去重；`PictureParserType.CollectionList` 按规范化站点 + 正数 `poolId`
+- 普通图片聚合优先按非空 `md5` 去重；空白 `md5` 使用规范化站点 + 原始字符串帖子 ID，缺少站点或 ID
+  时明确抛错，不能静默丢图；两类身份不得碰撞。`PictureParserType.CollectionList` 按规范化站点 + 正数
+  `poolId`
   去重，使同站点同画集合并、跨站点相同 ID 共存，空封面的多个画集也不会互相吞掉。画集缺少站点、摘要或正数
   `poolId` 时应明确失败，不能伪造 `md5`。
+- 聚合总页数仅当全部成功站点都已知时取最大值；任一站点 `totalPages = null` 时聚合也必须为 `null`
+  ，不能用已知站点的末页截断未知站点。单站保持原值。
 - 漫画/影视聚合以对应 `MultiParser` 实现为准。
 - 全部失败或无启用 parser 时返回 `onFallback()` 的默认结果。
 - `MultiParserEvent.Failure` 的 key 是失败站点的 `ParserId`，适合向上层做明确错误提示或降级。

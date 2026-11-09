@@ -28,16 +28,21 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Gelbooru 站点解析器的新 DSL 实现。
  *
  * 该实现对齐旧版 `GelbooruParser` 的分页与 DAPI 调用方式，
  * 同时复用当前多平台 Parser DSL 的请求注册、结果映射和统一字段补全能力。
+ * @param baseUrlOverride 可选基础地址，用于镜像端点与离线请求链契约测试。
  */
-class GelbooruParser : PictureParser() {
+class GelbooruParser(baseUrlOverride: String? = null) : PictureParser(baseUrlOverride) {
 
     /**
      * Gelbooru 解析器内部常量与日期辅助映射。
@@ -107,6 +112,8 @@ class GelbooruParser : PictureParser() {
                     "tags" to req.tags.joinToString(" "),
                 )
                 val jsonParameters = htmlParameters.toMutableMap().apply {
+                    // DAPI 的 pid 是零基页码，不是 HTML 的帖子偏移。
+                    this["pid"] = page - 1
                     this["page"] = "dapi"
                     this["s"] = "post"
                     this["q"] = "index"
@@ -124,14 +131,14 @@ class GelbooruParser : PictureParser() {
 
         on(Detail) {
             request { req ->
-                val page = req.page.coerceAtLeast(1)
                 val htmlParameters = parametersOf(
-                    "pid" to (page - 1) * ItemsPerPage,
                     "page" to "post",
                     "s" to "view",
                     "id" to req.id,
                 )
                 val jsonParameters = htmlParameters.toMutableMap().apply {
+                    // 详情按 ID 定位，不随列表请求页码偏移唯一结果。
+                    this["pid"] = 0
                     this["page"] = "dapi"
                     this["s"] = "post"
                     this["q"] = "index"
@@ -154,11 +161,7 @@ class GelbooruParser : PictureParser() {
     private fun ResponseScope.parseFeedResult(result: PictureResult): PictureResult {
         val siteTags = parseHtmlTags()
         val tagIndex = siteTags.associateBy { it.tag }
-        val payload = parsePayloadOrNull()
-            ?: return result.copy(
-                tags = siteTags,
-                pagination = result.pagination.copy(totalPages = totalPagesFromHtml()),
-            )
+        val payload = parsePayload()
 
         val contents = payload.post.map { post ->
             post.toPictureInfo(tagIndex)
@@ -180,13 +183,9 @@ class GelbooruParser : PictureParser() {
     private fun ResponseScope.parseDetailResult(result: PictureResult): PictureResult {
         val siteTags = parseHtmlTags()
         val tagIndex = siteTags.associateBy { it.tag }
-        val picture = parsePayloadOrNull()
-            ?.post
-            ?.firstOrNull()
-            ?.toPictureInfo(tagIndex)
-            ?: return result.copy(
-                tags = siteTags,
-            )
+        val posts = parsePayload().post
+        require(posts.size == 1) { "Gelbooru 详情未返回唯一帖子：${posts.size}" }
+        val picture = posts.single().toPictureInfo(tagIndex)
 
         return result.copy(
             tags = siteTags,
@@ -195,12 +194,20 @@ class GelbooruParser : PictureParser() {
     }
 
     /**
-     * 在 JSON 响应有效时解析 Gelbooru 的 DAPI 结果。
+     * 解析 DAPI 的帖子信封；只接受显式空数组或计数为零的空结果，不把错误对象当作空列表。
      */
-    private fun ResponseScope.parsePayloadOrNull(): GelbooruPostsResponse? {
-        val jsonBody = bodyForJson().trim()
-        if (jsonBody.isBlank() || jsonBody == "[]" || !jsonBody.contains("\"post\"")) {
-            return null
+    private fun ResponseScope.parsePayload(): GelbooruPostsResponse {
+        val payload = Json.parseToJsonElement(bodyForJson())
+        if (payload is JsonArray && payload.isEmpty()) return GelbooruPostsResponse(post = emptyList())
+        require(payload is JsonObject && "success" !in payload && "error" !in payload) {
+            "Gelbooru DAPI 返回错误或非帖子结构：$payload"
+        }
+        if ("post" !in payload) {
+            val attributes = payload["@attributes"] as? JsonObject
+            require(attributes?.get("count")?.jsonPrimitive?.intOrNull == 0) {
+                "Gelbooru DAPI 缺少 post 列表：$payload"
+            }
+            return GelbooruPostsResponse(post = emptyList())
         }
         return bodyForJson<GelbooruPostsResponse>()
     }
@@ -263,6 +270,7 @@ class GelbooruParser : PictureParser() {
      * 将 Gelbooru 帖子对象映射为通用 [Picture]。
      */
     private fun GelbooruPost.toPictureInfo(tagIndex: Map<String, Tag>): Picture {
+        require(id > 0) { "Gelbooru 帖子缺少合法 ID" }
         val primaryUrl = fileUrl.ifBlank { sampleUrl.ifBlank { previewUrl } }
         val resolvedMd5 = md5.ifBlank {
             primaryUrl.urlFileNameWithoutExtension().ifBlank { image.toFile().nameWithoutExtension }
@@ -409,7 +417,7 @@ class GelbooruParser : PictureParser() {
         @SerialName("@attributes")
         val attributes: GelbooruAttributes = GelbooruAttributes(),
         @SerialName("post")
-        val post: List<GelbooruPost> = emptyList(),
+        val post: List<GelbooruPost>,
     )
 
     /**

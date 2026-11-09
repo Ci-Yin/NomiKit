@@ -137,12 +137,14 @@ abstract class MultiParser<TType : ParserType, TRequest : ParserRequest, TResult
     /**
      * 归并多个站点的分页状态。
      *
-     * 总页数只有在至少一个站点明确提供时才保留；游标只在归并结果中唯一时保留，
+     * 总页数仅在全部成功站点都明确提供时取最大值；任一站点未知则保持未知，避免提前截断续页。
+     * 游标只在归并结果中唯一时保留，
      * 但多站点游标场景会在执行阶段提前拒绝，避免生成无法安全续接的请求。
      */
     private fun mergePagination(page: Int, paginations: List<Pagination>): Pagination {
         require(paginations.isNotEmpty()) { "归并分页状态时至少需要一个解析结果" }
-        val totalPages = paginations.mapNotNull { it.totalPages }.maxOrNull()
+        val knownTotalPages = paginations.mapNotNull { it.totalPages }
+        val totalPages = knownTotalPages.takeIf { it.size == paginations.size }?.maxOrNull()
         val cursors = paginations.map { it.nextCursor }.distinct()
         val nextCursor = cursors.singleOrNull()
         val hasNext = when {

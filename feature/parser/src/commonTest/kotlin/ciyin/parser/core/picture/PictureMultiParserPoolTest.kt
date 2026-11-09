@@ -6,6 +6,7 @@ import ciyin.parser.core.picture.model.PictureParserId
 import ciyin.parser.core.picture.model.PictureRequest
 import ciyin.parser.core.picture.model.PictureResult
 import ciyin.parser.core.picture.model.PoolSummary
+import ciyin.parser.model.Pagination
 import ciyin.parser.util.PictureParserScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -69,6 +70,49 @@ class PictureMultiParserPoolTest {
         assertEquals(listOf("same", "alpha-only"), result.contents.map(Picture::md5))
     }
 
+    /** 空 MD5 不得合并不同帖子，同站点重复 ID 合并，跨站相同 ID 保留。 */
+    @Test
+    fun blankMd5UsesNormalizedSiteAndPostId() = runTest {
+        val alpha = AlphaPictureParser(
+            result = PictureResult(
+                contents = listOf(
+                    Picture(site = " Alpha ", id = "one"),
+                    Picture(site = "alpha", id = "two", md5 = " "),
+                    Picture(site = "alpha", id = "one"),
+                    Picture(site = "alpha", id = "hash", md5 = "alpha:one"),
+                )
+            ),
+        )
+        val beta = BetaPictureParser(
+            result = PictureResult(contents = listOf(Picture(site = "beta", id = "one"))),
+        )
+        val result = PictureMultiParser(
+            parsers = listOf(alpha, beta),
+            enabledParserIds = listOf(TestPictureSite.Alpha, TestPictureSite.Beta),
+        ).request(PictureRequest(type = PictureParserType.Feed)).first().successResult()
+
+        assertEquals(listOf("one", "two", "hash", "one"), result.contents.map { it.id })
+    }
+
+    /** MD5 缺失且站点或帖子 ID 不完整时直接失败，不能静默丢图。 */
+    @Test
+    fun blankMd5RejectsMissingPostIdentity() = runTest {
+        listOf(
+            Picture(site = "alpha"),
+            Picture(id = "one"),
+            Picture(site = " ", id = "one", md5 = " "),
+        ).forEach { picture ->
+            val parser = AlphaPictureParser(result = PictureResult(contents = listOf(picture)))
+            val multi = PictureMultiParser(
+                parsers = listOf(parser),
+                enabledParserIds = listOf(TestPictureSite.Alpha),
+            )
+            assertFailsWith<IllegalArgumentException> {
+                multi.request(PictureRequest(type = PictureParserType.Feed)).first()
+            }
+        }
+    }
+
     /** CollectionList 缺少站点或合法 pool ID 时必须明确失败。 */
     @Test
     fun poolsRejectMissingBusinessIdentity() = runTest {
@@ -94,6 +138,67 @@ class PictureMultiParserPoolTest {
 
         assertFailsWith<IllegalArgumentException> {
             multiParser.request(PictureRequest(type = PictureParserType.CollectionList)).first()
+        }
+    }
+
+    /** 已知末页与未知站点混合时不能把局部总页数当作聚合上限。 */
+    @Test
+    fun mixedKnownAndUnknownTotalsRemainUnknown() = runTest {
+        for (unknownHasNext in listOf(null, true)) {
+            val alpha = AlphaPictureParser(
+                result = PictureResult(
+                    pagination = Pagination(totalPages = 2, hasNext = false),
+                )
+            )
+            val beta = BetaPictureParser(
+                result = PictureResult(
+                    pagination = Pagination(totalPages = null, hasNext = unknownHasNext),
+                    contents = listOf(Picture(site = "beta", id = "still-available")),
+                )
+            )
+            val result = PictureMultiParser(
+                parsers = listOf(alpha, beta),
+                enabledParserIds = listOf(TestPictureSite.Alpha, TestPictureSite.Beta),
+            ).request(PictureRequest(type = PictureParserType.Feed, page = 2)).first()
+                .successResult()
+
+            assertEquals(null, result.pagination.totalPages)
+            assertEquals(unknownHasNext, result.pagination.hasNext)
+            assertEquals(listOf("still-available"), result.contents.map { it.id })
+        }
+    }
+
+    /** 全部已知时取最大总页数，单站已知或未知时保持原值。 */
+    @Test
+    fun knownTotalsAndSingleSitePaginationRemainUnchanged() = runTest {
+        val alpha = AlphaPictureParser(
+            result = PictureResult(
+                pagination = Pagination(totalPages = 2, hasNext = false),
+            )
+        )
+        val beta = BetaPictureParser(
+            result = PictureResult(
+                pagination = Pagination(totalPages = 5, hasNext = true),
+            )
+        )
+        val merged = PictureMultiParser(
+            parsers = listOf(alpha, beta),
+            enabledParserIds = listOf(TestPictureSite.Alpha, TestPictureSite.Beta),
+        ).request(PictureRequest(type = PictureParserType.Feed, page = 2)).first().successResult()
+        assertEquals(5, merged.pagination.totalPages)
+        assertEquals(true, merged.pagination.hasNext)
+
+        for (totalPages in listOf(null, 2)) {
+            val single = AlphaPictureParser(
+                result = PictureResult(
+                    pagination = Pagination(totalPages = totalPages),
+                )
+            )
+            val result = PictureMultiParser(
+                parsers = listOf(single),
+                enabledParserIds = listOf(TestPictureSite.Alpha),
+            ).request(PictureRequest(type = PictureParserType.Feed)).first().successResult()
+            assertEquals(totalPages, result.pagination.totalPages)
         }
     }
 

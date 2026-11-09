@@ -113,6 +113,24 @@ Sankaku 第一阶段只实现 `Feed` 与 `Detail`，并声明 `supportsCursorPag
 `Accept: application/vnd.sankaku.api+json;v=2` 与 `Origin: https://sankaku.app`，不使用普通 `page=2`
 代替 keyset 游标。
 
+## 五站离线契约
+
+Gelbooru、Hypnohub、Xbooru、Safebooru 的 HTML 列表使用 `pid = (page - 1) * 42`，DAPI 使用零基页码
+`pid = page - 1` 与 `limit = 42`。Detail 按 ID 定位，HTML 不传 pid、DAPI 固定 pid=0，不受请求页码影响。
+协议依据为 [Gelbooru 官方 API](https://gelbooru.com/index.php?page=wiki&s=view&id=18780) 与
+[Hypnohub](https://hypnohub.net/index.php?page=help&topic=dapi)、[Xbooru](https://xbooru.com/index.php?page=help&topic=dapi)、
+[Safebooru](https://safebooru.org/index.php?page=help&topic=dapi) 的 DAPI 文档；它们均把 `pid` 定义为页码。
+
+[
+`FiveSiteParserDslContractTest.kt`](src/desktopTest/kotlin/ciyin/parser/site/picture/FiveSiteParserDslContractTest.kt)
+通过本机 HTTP fixture 验证五站 Feed/Detail 的生产请求链，覆盖 HTML/DAPI 参数差异、42/43 与 84/85
+连续边界、Zerochan 标签路径、错误结构与合法空列表。 Gelbooru、Zerochan 和 Booru 子类通过可选
+`baseUrlOverride` 接入本机服务。
+
+错误 JSON 不能作为空成功：Zerochan Feed 要求 `items`，Gelbooru 要求帖子信封或明确的空结果。 所有失败沿用现有
+`ParserEvent.Failure`，不扩展通用错误协议。Zerochan 不再把当前文件名填入 `children`；未知关联保持空，避免触发错误的
+`parent:` 查询。
+
 ## 源码布局
 
 - `src/commonMain/kotlin/ciyin/parser/site/SiteId.kt`：站点身份枚举。

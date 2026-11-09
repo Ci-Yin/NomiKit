@@ -27,7 +27,7 @@ Danbooru、Yande、Hanime 等站点的 HTML/JSON 结构映射成通用 `Picture`
 
 ```kotlin
 val parser = PictureMultiParser(
-    siteIds = PictureSiteId.entries,
+    siteIds = listOf(PictureSiteId.Danbooru, PictureSiteId.Yande),
     enabledSiteIds = listOf(PictureSiteId.Danbooru, PictureSiteId.Yande),
 )
 ```
@@ -160,6 +160,27 @@ class ExampleComicParser : ComicParser() {
 3. 在 `ParserFactory.kt` 的对应 `factory()` 分支返回新 parser；暂未实现的 ID 保留枚举项并返回明确未实现错误。
 4. 如果要提供聚合入口，确认 `PictureMultiParser/ComicMultiParser/MovieMultiParser` 能从站点 ID 列表构造。
 5. 增加至少一个不依赖网络的基础契约测试，验证 `configure.id`、`configure.baseUrl`、默认结果和 `enable`。
+
+## 五站请求契约
+
+- Booru 族（Hypnohub/Xbooru/Safebooru）与 Gelbooru 的 HTML `pid = (page - 1) * 42`，DAPI
+  `pid = page - 1`，`limit = 42`；不能从 HTML 参数复制偏移后不覆盖 DAPI 页码。Detail 按 ID 定位，HTML 不传
+  pid、DAPI 固定 pid=0，不随请求页码偏移。离线测试必须断言 42/43 与 84/85 相邻边界，不只检查无交集。
+- Gelbooru、Zerochan 与 Booru 子类可传 `baseUrlOverride` 运行本机 HTTP fixture。
+  `FiveSiteParserDslContractTest` 覆盖五站 Feed/Detail 请求链、空结果及错误结构。
+- Zerochan Feed 必须含 `items` 且帖子须有正数 ID；Gelbooru 仅接受 `post`
+  信封、显式空数组或计数为零的空信封。错误对象/空文本不得返回空成功；沿用现有 Failure/异常，不新增通用错误协议。
+- Zerochan 没有权威关联子图时 `children` 保持空，禁止把当前文件名伪造为 children，否则消费方会发出无意义的
+  Booru `parent:` 查询。
+
+分页协议依据：
+
+- [Gelbooru 官方 API](https://gelbooru.com/index.php?page=wiki&s=view&id=18780)
+- [Hypnohub DAPI](https://hypnohub.net/index.php?page=help&topic=dapi)
+- [Xbooru DAPI](https://xbooru.com/index.php?page=help&topic=dapi)
+- [Safebooru DAPI](https://safebooru.org/index.php?page=help&topic=dapi)
+
+上述文档将 `pid` 定义为页码，而不是 HTML 的帖子偏移。
 
 ## 测试与验证
 
