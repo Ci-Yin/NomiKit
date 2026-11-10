@@ -145,10 +145,13 @@ fun AppBuildConfig.toDesktopAppInfo(): AppInfo {
 
 映射规则：
 
-- 同时配置 `app.organization` + `app.name`：返回
-  `AppInfo.OrganizationName(qualifier, organization, name)`；`qualifier` 取 `id` 的首段（例如
-  `com.ciyin.nomikit` → `com`）。
-- 任一项缺失或为空：回退到 `AppInfo.ApplicationId(id)`。
+- 仅当接收者为实际 `DesktopAppBuildConfig` 且组织名、应用名同时非空时，返回
+  `AppInfo.OrganizationName(qualifier, organization, name)`；`qualifier` 取 `id` 的首段。
+- 其它情况回退到 `AppInfo.ApplicationId(id)`；构建期只配置一个目录名会被配对校验拒绝。
+- 已知缺口：默认 `runApplication` 传入的是 `AppBuildConfig` companion，不是生成对象，
+  因此当前默认映射不会因配置组织名而进入组织名分支。设计与源码依据见
+  [AppBuildConfig 实现说明](<../../../.docs/design/appbuildconfig-注入配置重构方案.md>)
+  ；不要把委托误认为具体类型。
 - 仅 `desktopMain` 调用此扩展；其它平台源集直接使用平台自带的目录解析逻辑。
 
 ## 运行时使用

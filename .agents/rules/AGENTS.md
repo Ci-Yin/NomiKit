@@ -83,6 +83,7 @@ apply: always
 
 ### 模块文档
 
+- 任务明确依据或影响既有设计文档时，使用 `design-docs` 核对并同步其状态、实现入口及验证记录。
 - 创建或维护模块 README、判断复杂目录是否需要文档时，必须先读取 `.agents/skills/module-docs/SKILL.md`。
 - `README.md` 作为开发者入口；模块级 `AGENTS.md` 只保留该目录独有且必须自动生效的硬约束。
 - 源码、Gradle 配置和测试是事实来源；修改模块公共 API、行为或构建配置时，按该 skill 检查 README 和相关

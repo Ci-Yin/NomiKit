@@ -18,7 +18,8 @@ description: Use the core/application Kotlin Multiplatform module (package ciyin
   `properties`；`AppBuildConfig` companion 通过 `currentAppBuildConfigImpl` 委托到当前平台生成对象。
 - Android 入口：`BaseAndroidApplication` 继承 `android.app.Application`，把 `onCreate` /
   `onTerminate` 转发给 `MultiplatformApplication`。
-- Desktop 入口：`runApplication(createApplication, exitProcessOnExit, appBuildConfig, appInfo, content)`
+- Desktop 入口：
+  `runApplication(createApplication, exitProcessOnExit, appBuildConfig, appInfo, content)`
   包装 Compose Desktop `application`，默认用 `AppBuildConfig.toDesktopAppInfo()` 创建
   `DesktopContext` 并注入 `LocalContext` / `LocalAppBuildConfig`。
 - iOS 入口：`runApplication(createApplication, configure, appBuildConfig, content)` 返回
@@ -58,20 +59,26 @@ fun MainViewController() = runApplication(::IosApplication) {
 - 默认 `AppBuildConfig` 由 `buildSrc` 的 `app-build-config` 插件按平台生成：
   `DesktopAppBuildConfig` / `AndroidAppBuildConfig` / `IosAppBuildConfig`。
 - Desktop 的 `organization` / `name` 只存在于生成的 `DesktopAppBuildConfig`；Android 的
-  `namespace` / `versionCode` 只存在于生成的 `AndroidAppBuildConfig`，不要把这些平台字段加进 common 接口。
-- Desktop 默认 `AppInfo` 从 `AppBuildConfig` 映射：同时配置 `app.organization` + `app.name` 时走
-  `AppInfo.OrganizationName`；未配置时走 `AppInfo.ApplicationId(app.id)`，例如 `com.ciyin.nomikit`。
-- Compose 根内容必须包在 `CompositionLocalProvider(LocalContext provides context, LocalAppBuildConfig provides appBuildConfig)` 之后，确保下游组件能读取当前平台上下文和构建配置。
+  `namespace` / `versionCode` 只存在于生成的 `AndroidAppBuildConfig`，不要把这些平台字段加进 common
+  接口。
+- Desktop 默认传入 `AppBuildConfig` companion，当前映射会回退到 `AppInfo.ApplicationId(id)`； 只有接收者为实际
+  `DesktopAppBuildConfig` 且组织名配对非空时才进入组织名分支。
+  这是已有默认调用链缺口，详见 [AppBuildConfig 实现说明](<../../../.docs/design/appbuildconfig-注入配置重构方案.md>)。
+- Compose 根内容必须包在
+  `CompositionLocalProvider(LocalContext provides context, LocalAppBuildConfig provides appBuildConfig)`
+  之后，确保下游组件能读取当前平台上下文和构建配置。
 - `onCreate()` 用于启动 DI、日志、全局配置等应用初始化；`onDestroy()` 用于释放应用级资源。
 - 不要在 `core/application` 引入 `app:*`、`business:*`、`feature:*` 依赖，保持 core 层在依赖方向底部。
 
 ## 修改平台入口时
 
-- Android：保持 `super.onCreate()` 先执行，再调用 `application.onCreate()`；`onTerminate()` 只适合模拟器/调试生命周期，不要依赖它做必须执行的持久化。
+- Android：保持 `super.onCreate()` 先执行，再调用 `application.onCreate()`；`onTerminate()`
+  只适合模拟器/调试生命周期，不要依赖它做必须执行的持久化。
 - Desktop：文件目录仍通过 `AppFolderResolver.resolve(AppInfo)` 生成；运行时不要读取源码目录下的
   `gradle.properties`。调整默认身份时改 `AppBuildConfig.toDesktopAppInfo()` 或生成配置，不要恢复硬编码。
 - 构建配置：`core/application/build.gradle.kts` 只声明 `appBuildConfig { packageName/configPrefix }`；
-  生成逻辑放在 `buildSrc/src/main/kotlin/app-build-config.gradle.kts`。`app.organization` 和 `app.name`
+  生成逻辑放在 `buildSrc/src/main/kotlin/app-build-config.gradle.kts`。`app.organization` 和
+  `app.name`
   必须同时配置或同时省略，错误信息保持中文。
 - iOS：系统目录通过 `NSSearchPathForDirectoriesInDomains` 获取，访问 Foundation API 时保留必要的
   `@OptIn(ExperimentalForeignApi::class)`。
