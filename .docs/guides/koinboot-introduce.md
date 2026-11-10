@@ -1,23 +1,28 @@
 # KoinBoot：解决 Koin 实际使用中的痛点
 
+> 适用范围：NomiKit `component:koin` 的 KoinBoot 配置、生命周期和模块装配。
+> 相关模块：[`:component:koin`](../../component/koin/build.gradle.kts)
+> ；源码入口：[KoinBoot.kt](../../component/koin/src/commonMain/kotlin/ciyin/koin/KoinBoot.kt)。
+> 最近核对：2026-11-10；工作区 HEAD `cd08542f`。
+> 验证记录：本次核对源码符号和本地链接，未运行 Gradle 或测试；本文示例未逐段编译验证。
+
 > 一个基于 Koin 的应用框架，专注解决企业级开发中的配置管理、生命周期和模块装配问题
 
 ## 背景：从重复造轮子到统一架构
 
-我是卡莫，一名 Kotlin 开发工程师。在公司的项目中，我们经常面临一个问题：
-每个新项目启动时，都需要重新搭建一套相似的基础设施，比如网络、日志、缓存等。
+在维护多个 Kotlin 项目时，团队经常面临一个问题： 每个新项目启动时，都需要重新搭建一套相似的基础设施，比如网络、日志、缓存等。
 由于不同项目选择的技术方案各不相同，导致后续的运维和维护成本居高不下。
 
-为了解决这个问题，我们决定暂停新业务的开发，集中精力打造一个统一的技术脚手手架。
-我们选择了 Kotlin Multiplatform (KMP) 作为跨平台方案，并使用 Koin 来进行依赖注入管理。
-我们希望借助 Koin，让基础组件能像积木一样灵活地插拔和组合，开发者只需按需选用，就能快速构建应用。
+为了解决这个问题，我们决定暂停新业务的开发，集中精力打造一个统一的技术脚手架。 我们选择了 Kotlin
+Multiplatform (KMP) 作为跨平台方案，并使用 Koin 来进行依赖注入管理。 我们希望借助
+Koin，让基础组件能像积木一样灵活地插拔和组合，开发者只需按需选用，就能快速构建应用。
 
 ## 初识 Koin：优秀但有局限
 
 ### Koin 的核心工作原理
 
-在深入探讨之前，我们可以用一句话概括 Koin 的设计思路：它将依赖注入容器看作一个可配置的注册表。
-开发者通过 module 来定义依赖关系，应用启动时将这些模块注册到 DI 容器中，运行时再按需从中获取实例。
+在深入探讨之前，我们可以用一句话概括 Koin 的设计思路：它将依赖注入容器看作一个可配置的注册表。 开发者通过
+module 来定义依赖关系，应用启动时将这些模块注册到 DI 容器中，运行时再按需从中获取实例。
 
 ```kotlin
 // Koin 的基本用法
@@ -58,8 +63,8 @@ inline fun indexKey(
 Type + Name + Scope = Key → Map<Key, InstanceFactory> → get<T>()
 ```
 
-- Type: 声明实例时的类型(默认为泛型推导出的类型)
-- Name: 声明实例时的名称(`named("...")`，默认为无)
+- Type: 声明实例时的类型 (默认为泛型推导出的类型)
+- Name: 声明实例时的名称 (`named("...")`，默认为无)
 - Scope: 作用域，默认为全局的 `__root__` 作用域
 
 当你定义 `single<HttpClient>(named("client"))` 时，`Koin` 内部会完成以下工作：
@@ -112,7 +117,7 @@ val networkModule = module {
 **问题场景**：应用启动时，组件的初始化需要有严格的顺序。例如，错误监控（如 `Sentry`）必须在所有其他模块之前完成初始化。
 
 > `Sentry` 必须在应用启动之初就绪，而后端服务则要等所有准备工作完成后才能启动。但在 `Koin` 中，我们只能在
-`startKoin` 函数前后手动堆砌初始化代码。
+> `startKoin` 函数前后手动堆砌初始化代码。
 
 > ⚠️ 这里的生命周期指的是容器生命周期，而不是安卓的生命周期。
 
@@ -203,8 +208,8 @@ properties {
 
 **第三阶段：实现代码提示**
 
-但光有 DSL 还不够，基于字符串的操作不仅容易写错，也没有代码提示。
-既然这些配置项的 Key 通常是固定的，我们自然想到，为什么不把它们定义成 KoinProperties 的扩展属性呢？
+但光有 DSL 还不够，基于字符串的操作不仅容易写错，也没有代码提示。 既然这些配置项的 Key
+通常是固定的，我们自然想到，为什么不把它们定义成 KoinProperties 的扩展属性呢？
 
 ```kotlin
 // 模块化的配置属性
@@ -257,7 +262,7 @@ val config = koin.get<Timeout>()
 
 > @MetaSerializable 能在运行时获取元数据拿到配置属性数据类上 `@KoinPropInstance` 配置的 `preKey`
 > 字段的值
-![img_12.png](images/img_12.png)
+> ![img_12.png](images/img_12.png)
 >
 
 ```kotlin
@@ -275,6 +280,7 @@ data class Timeout(
     val connect: Long = 30000L,
     val socket: Long = 30000L,
 )
+
 val config = koin.get<Timeout>()
 ```
 
@@ -299,7 +305,7 @@ assert(LogLevel.BODY == logging.level && ktorClientProperties.client.logging.lev
 
 ### 从"何时配置"到"何时生效"
 
-解决了配置"怎么配"的问题后，另一个重要问题出现了：**"何时配置？"以及"配置何时生效？"**
+解决了配置"怎么配"的问题后，另一个重要问题出现了： **"何时配置？"以及"配置何时生效？"**
 
 仅有配置还不够，如果不能在正确的时间点初始化和销毁组件——比如 Sentry
 必须在所有业务模块启动前完成初始化来捕获全局异常，才能保证应用启动与运行的全部异常被捕获。
@@ -508,7 +514,7 @@ val MultiplatformSettingsBootInitializer: KoinBootInitializer = {
 }
 // main.kt
 runKoinBoot {
-    
+
     MultiplatformSettingsBootInitializer()
     SentryBootInitializer()
     // ...其他默认模块的BootInitializer
@@ -520,8 +526,7 @@ runKoinBoot {
 ```
 
 但这仍然不够理想：每当在 `build.gradle` 中添加一个新的模块依赖时，开发者必须记得在启动文件里手动调用它的
-`BootInitializer`。
-反之，移除依赖时，也必须记得删掉对应的调用代码。
+`BootInitializer`。 反之，移除依赖时，也必须记得删掉对应的调用代码。
 
 ### 让构建工具来帮忙
 
@@ -683,7 +688,7 @@ fun main() {
 
 这时 `main.kt` 中之前写的 `kermit_severity` 配置项会立刻在 IDE 中标红报错，提示该属性不存在。
 
-这就是真正的"即插即用"：**依赖决定功能，代码自动校验**。
+这就是真正的"即插即用"： **依赖决定功能，代码自动校验**。
 
 ## 总结
 

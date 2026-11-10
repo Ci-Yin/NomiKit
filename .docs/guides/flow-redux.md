@@ -1,5 +1,11 @@
 # FlowRedux2 状态机使用指南
 
+> 适用范围：NomiKit 的 `StateMachineMviViewModel` 与 FlowRedux2 状态机 DSL。
+> 相关模块：[`:core:ui-foundation`](../../core/ui-foundation/build.gradle.kts)；示例见 [
+`app/sample`](../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen)。
+> 最近核对：2026-11-10；工作区 HEAD `cd08542f`。
+> 验证记录：本次仅核对文档入口、源码符号和本地链接，未运行 Gradle 或测试；代码块部分为说明性示例。
+
 FlowRedux 是一个专为 Kotlin 多平台设计的异步状态机库，通过 DSL 和协程简化状态管理。
 
 > 📖 官方文档：[FlowRedux User Guide](https://freeletics.github.io/FlowRedux/user-guide/1_basics/)
@@ -102,7 +108,7 @@ spec {
 
 ### 2. `onEnter` - 进入状态时触发
 
-当进入指定状态时**执行一次**：
+当进入指定状态时 **执行一次**：
 
 ```kotlin
 inState<ListState.Loading> {
@@ -186,10 +192,10 @@ class ChangeableState<T> {
 
 ### 2. `override` vs `mutate`
 
-| 方法             | 用途           | 示例                                   |
-|----------------|--------------|--------------------------------------|
+| 方法           | 用途                     | 示例                                 |
+|----------------|--------------------------|--------------------------------------|
 | `override { }` | 切换到完全不同的状态类型 | `override { Error("msg") }`          |
-| `mutate { }`   | 修改当前状态的属性    | `mutate { copy(count = count + 1) }` |
+| `mutate { }`   | 修改当前状态的属性       | `mutate { copy(count = count + 1) }` |
 
 ```kotlin
 // ✅ 使用 override 切换状态类型
@@ -296,19 +302,20 @@ inState<ShowContent> {
 }
 ```
 
-| 策略                | 行为              | 适用场景      |
-|-------------------|-----------------|-----------|
-| `ORDERED`         | 按顺序执行           | 需要保证顺序的操作 |
+| 策略              | 行为                           | 适用场景           |
+|-------------------|--------------------------------|--------------------|
+| `ORDERED`         | 按顺序执行                     | 需要保证顺序的操作 |
 | `CANCEL_PREVIOUS` | 取消之前的，只执行最新（默认） | 搜索防抖、表单提交 |
-| `UNORDERED`       | 并行执行(无顺序)       | 独立的预加载操作  |
+| `UNORDERED`       | 并行执行(无顺序)               | 独立的预加载操作   |
 
 ## 六、副作用 (Effects)
 
 副作用是不影响状态但需要执行的操作（如导航、Toast）。
 
-> ⚠️ **注意**: `poseEffect` 是本项目在 `StateMachineMviViewModel` 中扩展的 API，**不是** FlowRedux 原生
+> ⚠️ **注意**: `poseEffect` 是本项目在 `StateMachineMviViewModel` 中扩展的 API， **不是** FlowRedux
+> 原生
 > API。只有继承
-`StateMachineMviViewModel` 时才可使用。
+> `StateMachineMviViewModel` 时才可使用。
 
 ### 1. 使用 `poseEffect`（推荐）
 
@@ -342,9 +349,9 @@ class AuthViewModel : StateMachineMviViewModel<AuthState, AuthAction, AuthEffect
 
 ### 2. `poseEffect` vs `tryPoseEffect`
 
-| 方法                      | 说明                          |
-|-------------------------|-----------------------------|
-| `poseEffect(effect)`    | 异步发送副作用（启动协程）               |
+| 方法                    | 说明                                        |
+|-------------------------|---------------------------------------------|
+| `poseEffect(effect)`    | 异步发送副作用（启动协程）                  |
 | `tryPoseEffect(effect)` | 尝试发送副作用，返回 `Boolean` 表示是否成功 |
 
 ```kotlin
@@ -566,14 +573,14 @@ condition({ it.captchaUiState.needVerify }) {
 
 ### 5. 子状态机设计要点
 
-| 要点            | 说明                                      |
-|---------------|-----------------------------------------|
-| **独立性**       | 子状态机有自己的 State 和 Action，与父状态机解耦         |
-| **初始状态**      | 通过构造参数传入，由父状态机决定                        |
-| **状态同步**      | 通过 `handler` 回调将子状态机的状态同步到父状态机          |
-| **Action 转发** | 通过 `actionMapper` 将父 Action 选择性地转发给子状态机 |
-| **激活条件**      | 使用 `condition` 限定子状态机的激活时机              |
-| **副作用传递**     | 通过回调函数（如 `onMessage`）将副作用传递给父状态机处理      |
+| 要点            | 说明                                                     |
+|-----------------|----------------------------------------------------------|
+| **独立性**      | 子状态机有自己的 State 和 Action，与父状态机解耦         |
+| **初始状态**    | 通过构造参数传入，由父状态机决定                         |
+| **状态同步**    | 通过 `handler` 回调将子状态机的状态同步到父状态机        |
+| **Action 转发** | 通过 `actionMapper` 将父 Action 选择性地转发给子状态机   |
+| **激活条件**    | 使用 `condition` 限定子状态机的激活时机                  |
+| **副作用传递**  | 通过回调函数（如 `onMessage`）将副作用传递给父状态机处理 |
 
 ## 八、测试
 
@@ -624,29 +631,29 @@ fun `test retry action in error state`() = runTest {
 
 ### FlowRedux 原生 DSL
 
-| DSL                                  | 触发时机      | 用途       |
-|--------------------------------------|-----------|----------|
-| `inState<T>`                         | 状态匹配时     | 定义状态范围   |
+| DSL                                  | 触发时机           | 用途             |
+|--------------------------------------|--------------------|------------------|
+| `inState<T>`                         | 状态匹配时         | 定义状态范围     |
 | `onEnter`                            | 进入状态时（一次） | 初始化、数据加载 |
-| `on<A>`                              | 收到动作时     | 处理用户交互   |
-| `collectWhileInState(flow)`          | 状态持续期间    | 订阅数据流    |
-| `condition({ predicate })`           | 条件满足时     | 条件分支     |
-| `untilIdentityChanged({ selector })` | 属性变化时重新执行 | 监听属性变化   |
+| `on<A>`                              | 收到动作时         | 处理用户交互     |
+| `collectWhileInState(flow)`          | 状态持续期间       | 订阅数据流       |
+| `condition({ predicate })`           | 条件满足时         | 条件分支         |
+| `untilIdentityChanged({ selector })` | 属性变化时重新执行 | 监听属性变化     |
 
 ### 状态操作 (FlowRedux 原生)
 
-| 操作                      | 用途       |
-|-------------------------|----------|
+| 操作                    | 用途             |
+|-------------------------|------------------|
 | `override { NewState }` | 切换到新状态类型 |
 | `mutate { copy(...) }`  | 修改当前状态属性 |
-| `noChange()`            | 不改变状态    |
+| `noChange()`            | 不改变状态       |
 | `snapshot`              | 获取当前状态快照 |
 
 ### 项目扩展 API (仅 `StateMachineMviViewModel`)
 
-| 操作                      | 用途             |
-|-------------------------|----------------|
-| `poseEffect(effect)`    | 异步触发副作用        |
+| 操作                    | 用途                         |
+|-------------------------|------------------------------|
+| `poseEffect(effect)`    | 异步触发副作用               |
 | `tryPoseEffect(effect)` | 尝试触发副作用，返回是否成功 |
 
 ## 十、注意事项

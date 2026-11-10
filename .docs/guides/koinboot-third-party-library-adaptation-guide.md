@@ -1,8 +1,13 @@
 # KoinBoot 第三方库适配指南
 
-本指南将详细介绍如何为第三方库添加 KoinBoot 自动装配支持，使其能够与 KoinBoot 框架无缝集成。通过本指南，您将了解
-KoinBoot
-的实现原理、核心组件以及如何适配新的第三方库。
+> 适用范围：NomiKit `component:koin` 的自动配置、生命周期扩展和 BootInitializer 适配。
+> 相关模块：[`:component:koin`](../../component/koin/build.gradle.kts)
+>
+；源码入口：[KoinAutoConfiguration.kt](../../component/koin/src/commonMain/kotlin/ciyin/koin/configuration/KoinAutoConfiguration.kt)、[KoinBoot.kt](../../component/koin/src/commonMain/kotlin/ciyin/koin/KoinBoot.kt)。
+> 最近核对：2026-11-10；工作区 HEAD `cd08542f`。
+> 验证记录：本次核对源码符号和本地链接，未运行 Gradle 或测试；示例代码未逐段编译验证。
+
+本指南介绍如何为第三方库添加 KoinBoot 自动装配支持，内容包括实现原理、核心组件以及适配步骤。
 
 ## 目录
 
@@ -56,8 +61,8 @@ KoinBoot 的启动流程分为以下几个阶段：
 
 `KoinAutoConfiguration` 是一个接口，用于定义自动配置。它有三个主要部分：
 
-1. **match()**：决定是否应用配置的条件，默认返回 true
-2. **configure()**：包含实际的配置逻辑
+1. **match ()**：决定是否应用配置的条件，默认返回 true
+2. **configure ()**：包含实际的配置逻辑
 3. **order**：控制配置的顺序，数字越小优先级越高
 
 ```kotlin
@@ -124,8 +129,7 @@ typealias KoinBootInitializer = KoinBootDSL.() -> Unit
 ```
 
 每个支持自动装配的库都会提供一个 `KoinBootInitializer`，用于注册其自动配置或生命周期扩展器。
-`KoinBootInitializer` 是连接库和
-KoinBoot 的桥梁，它告诉 KoinBoot 如何配置和初始化库。
+`KoinBootInitializer` 是连接库和 KoinBoot 的桥梁，它告诉 KoinBoot 如何配置和初始化库。
 
 ## koin-boot-initializer 插件
 
@@ -488,7 +492,7 @@ dataStore.updateData { it.copy(theme = "dark") }
    `<库名>BootInitializer`
 6. **模块化设计**：将功能分解为小的、可组合的模块
 7. **测试适配代码**：编写测试确保适配代码在各种情况下都能正常工作
-8. **考虑条件配置**：使用 match() 方法根据条件决定是否应用配置
+8. **考虑条件配置**：使用 match () 方法根据条件决定是否应用配置
 9. **注意配置顺序**：使用 order 属性控制配置的顺序
 10. **提供扩展点**：允许用户扩展你的适配代码
 

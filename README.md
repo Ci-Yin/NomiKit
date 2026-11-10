@@ -178,15 +178,19 @@ Android Instrumented Test 需要连接设备或启动模拟器：
 
 ## 文档索引
 
-- 环境搭建：`.docs/contributing/setup.md`
-- 构建打包：`.docs/contributing/building.md`
-- 测试说明：`.docs/contributing/testing.md`
-- 代码风格：`.docs/contributing/code-style.md`
-- 分层架构与错误处理：`.docs/contributing/layered.md`
-- MVI 与 ViewModel：`.docs/contributing/mvi.md`
-- FlowRedux2：`.docs/guides/flow-redux.md`
-- 架构总览：`.docs/contributing/architecture.md`
-- KMP 说明：`.docs/contributing/kmp.md`
+- [项目文档总览](.docs/README.md)
+- [环境搭建](.docs/contributing/setup.md)
+- [构建打包](.docs/contributing/building.md)
+- [测试说明](.docs/contributing/testing.md)
+- [代码风格](.docs/contributing/code-style.md)
+- [分层架构与错误处理](.docs/contributing/layered.md)
+- [MVI 与 ViewModel](.docs/contributing/mvi.md)
+- [FlowRedux2 指南](.docs/guides/flow-redux.md)
+- [KoinBoot 介绍](.docs/guides/koinboot-introduce.md)
+- [KoinBoot 第三方库适配](.docs/guides/koinboot-third-party-library-adaptation-guide.md)
+- [架构总览](.docs/contributing/architecture.md)
+- [KMP 说明](.docs/contributing/kmp.md)
+- [设计文档索引](.docs/design/README.md)
 
 ## License
 

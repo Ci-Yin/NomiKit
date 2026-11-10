@@ -3,7 +3,7 @@
 ## 上手指南
 
 > [!IMPORTANT]
-> 每个步骤都很重要，根据你的经验不同，总共可能需要花费 10-30 分钟。请不要跳过，跳过可能会导致花费更多时间解决问题。
+> 先确认目标平台与本机工具链，再选择最窄构建或测试任务。文档中的命令不等于已验证结果；已知限制和核对记录见各页。
 
 1. [开发工具: IDE, JDK, 推荐插件](setup.md)
 2. [代码风格与代码规范](code-style.md)
@@ -13,7 +13,23 @@
 6. [编写测试和调试 APP](testing.md)
 7. [一些开发提示](dev-tips.md): 预览 Compose UI
 
-## 指南
+## 按任务查阅
+
+| 任务                          | 权威入口                                                                                                                     |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 理解模块职责与源集            | [项目架构](<architecture.md>)、[KMP 说明](<kmp.md>)                                                                          |
+| 编写 Data / Domain 与错误映射 | [分层架构与错误处理](<layered.md>)                                                                                           |
+| 编写页面与 ViewModel          | [MVI 规范](<mvi.md>)、[FlowRedux2 指南](<../guides/flow-redux.md>)                                                           |
+| 配置 KoinBoot 或适配第三方库  | [KoinBoot 介绍](<../guides/koinboot-introduce.md>)、[适配指南](<../guides/koinboot-third-party-library-adaptation-guide.md>) |
+| 查询长期设计与落地状态        | [设计索引](<../design/README.md>)；以正文状态和验证记录为准                                                                  |
+| 查询自动生效的仓库约束        | [公共规则](<../../.agents/rules/AGENTS.md>)                                                                                  |
+
+代码风格维护命名与格式，分层文档维护业务边界，MVI 文档维护状态与 ViewModel，FlowRedux2 指南维护 DSL。
+遇到差异时核对源码并修正权威入口，不再复制一套完整规范。
+
+## 外部学习资料
+
+以下资料用于学习，不替代本仓库约定；本次未验证外部链接或第三方内容的时效性。
 
 ### 大厂分享
 
@@ -37,4 +53,5 @@ Kotlin基础语法:[柏码:Kotlin开心路线](https://space.bilibili.com/377371
 Compose大致实现原理:[霍丙乾:你想知道的 Jetpack Compose 的编译器黑魔法](https://www.bilibili.com/video/BV1ck4y1j7Pa)
 
 5. UI架构科普[全新MVI：颠覆传统MVVM架构](https://www.bilibili.com/video/BV1nT411Q7hc)
-6. KMP相关(鸿蒙)杂谈:[霍丙乾:KMP合集](https://space.bilibili.com/28615855/lists/5462016?type=season)
+6. KMP相关 (鸿蒙)
+   杂谈:[霍丙乾:KMP合集](https://space.bilibili.com/28615855/lists/5462016?type=season)

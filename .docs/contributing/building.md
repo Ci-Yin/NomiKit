@@ -1,64 +1,94 @@
-# 构建打包
+# 构建与打包
 
-如果遇到问题，请查看 [常见构建和运行问题](#常见构建和运行问题)。
+> 最近核对：2026-11-10；源码基线 `cd08542f`。本页基于构建脚本静态整理，未执行构建、安装或发布。
 
-## 配置秘钥
+[返回参与开发](<README.md>) · [环境准备](<setup.md>) · [测试与运行](<testing.md>)
+
+## 运行命令前
+
+- Windows PowerShell 使用 `.\gradlew.bat`，macOS / Linux 使用 `./gradlew`；以下 Android/Desktop 示例采用
+  PowerShell。
+- 平台开关与工具链限制见 [环境准备](<setup.md>)。使用完整模块路径，避免无意触发同名聚合任务。
+- 插件提供的任务是否注册取决于当前平台与配置；先用目标模块的 `tasks --all` 确认。命令列表不是本次执行成功记录。
+
+## Android 发布签名
+
+[Android 构建配置](<../../app/android/build.gradle.kts>) 从根目录本机 `local.properties` 读取：
+
+| 属性                     | 含义                                                      |
+|--------------------------|-----------------------------------------------------------|
+| `android.store.file`     | Keystore 路径；相对路径按 Android 模块的 `file(...)` 解析 |
+| `android.store.password` | Keystore 密码                                             |
+| `android.key.alias`      | 签名别名                                                  |
+| `android.key.password`   | 私钥密码                                                  |
+
+只有配置了 `android.store.file`，当前脚本才进入 release 签名及压缩配置分支。没有这组配置不能据此宣称已生成可发布签名产物。
+密钥、密码和个人路径不得提交仓库；本文不提供生产凭据。
 
 ## 打包 Android APP
 
-在 IDE 中双击 Ctrl，可用的命令：
+先确认 Android SDK 与签名条件，再选择一个任务：
 
-- `./gradlew assembleRelease` - 编译发布版
-- `./gradlew assembleDebug` - 编译测试版
-- `./gradlew installRelease` - 构建发布版并安装到模拟器
-- `./gradlew installDebug` - 构建测试版并安装到模拟器
+```powershell
+.\gradlew.bat :app:android:assembleDebug --console=plain
+.\gradlew.bat :app:android:assembleRelease --console=plain
+```
 
-在 IDE 上也可以选择 `Build -> Build Bundle(s) / APK(s) -> Build APK(s)` 来构建 APK。
+如需安装，先连接并确认目标设备，再显式运行 `:app:android:installDebug` 或
+`:app:android:installRelease`。 安装任务会影响连接设备，不是纯编译检查；release 安装需要有效签名。
 
 ## 打包 iOS APP
 
-打包之前，需要运行以下命令初始化项目：
+在 macOS 中打开 [Xcode 工程](<../../app/ios/ios.xcodeproj/project.pbxproj>) 所在工程目录，配置签名和目标设备。
+该工程通过 `:app:shared:embedAndSignAppleFrameworkForXcode` 接入 Kotlin Framework。
 
-1. `./gradlew podInstall`。如果找不到 pod，可以自行 `cd app/ios && pod install`。
-2. `./gradlew patchInfoPlist`
+**当前阻塞需先核对：** 同一 target 还挂载了旧的 `:composeApp:embedAndSignAppleFrameworkForXcode` 阶段，
+但 [模块声明](<../../settings.gradle.kts>) 没有 `:composeApp`。本文只记录差异，未修改 Xcode 工程； 修复并在
+macOS 验证前，不承诺构建或归档成功。
 
-在 IDE 中双击 Ctrl，可用的命令：
-
-- `./gradlew buildDebugIpa` - 构建测试版（安装需要自签）
-- `./gradlew buildReleaseIpa` - 构建发布版（安装需要自签）
+旧文档中的 `podInstall`、`patchInfoPlist`、`buildDebugIpa`、`buildReleaseIpa` 未在本次核对的应用与构建逻辑中
+找到对应实现，也未发现 Podfile，不再作为当前可用命令列出。后续打包应以实际 Xcode 工程、已注册任务和签名配置为准。
 
 ## 打包桌面应用
 
-要构建桌面应用，请参考 [Compose for Desktop]
-官方文档，或简单执行 `./gradlew createReleaseDistributable`
-，结果保存在 `app/desktop/build/compose/binaries` 中。
+应用配置见 [Desktop 构建脚本](<../../app/desktop/build.gradle.kts>)；插件打包概念可参考
+[Compose Multiplatform 原生分发文档](<https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-native-distribution.html>)。
+外部文档本次未做联网验证。
 
-一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
+```powershell
+.\gradlew.bat :app:desktop:createReleaseDistributable --console=plain
+```
 
-## 运行测试版应用
+输出在 Desktop 模块的 `build/compose/binaries` 下；不要手工修改生成物。只能在对应操作系统构建其原生分发产物。
+当前脚本另有依赖本机绝对路径的 `buildInstaller`，不作为通用构建入口。
 
-参考 [testing](testing.md)。
+## 运行与测试
 
-## 运行测试
-
-在 IDE 中双击 Ctrl，执行 `./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
-
-在 macOS 上，这将会运行全部测试 (如果未启用 iOS 目标，会少一些)。在 Windows 上只能运行安卓和
-JVM 平台测试，无法运行 iOS 测试。
-
-> [!TIP]
-> **重复运行测试**
->
-> 由于启用了 Gradle build cache，如果代码没有修改，test 就不会执行。
->
-> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试。
+运行应用、选择单元测试/设备测试/显式集成测试、重复执行及结果记录，统一见
+[测试与运行指南](<testing.md>)。`check` 是聚合验证任务，不代表所有平台、所有设备测试或真实网络集成测试均已执行。
 
 ## 常见构建和运行问题
 
-### 编译报错找不到 `Res.*`
+### 编译报错找不到 Res
 
-这是 Compose 的 bug，请生成 Compose Multiplatform 资源：
+先核对 [共享模块资源配置](<../../app/shared/build.gradle.kts>) 中的 `compose.resources`、资源目录和调用处导入包，
+再检查 Gradle 同步及资源生成任务的错误。不能将所有 `Res` 缺失一概归为 Compose bug。
 
-执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类，用于在 `:app:shared` 访问资源文件。
+若当前插件注册了 `:app:shared:generateComposeResClass`，可运行该任务定位生成失败；先通过 `tasks --all`
+确认任务名。 修复生成输入或依赖关系，不手改生成的 `Res` 类。
 
+### JVM 目标或平台任务不存在
 
+见 [JDK 与 Gradle 配置差异](<setup.md#准备-jdk-与-gradle>)。任务缺失时先核对模块是否启用目标及插件是否应用，
+不要直接改成全仓 `check` 或反复 `clean` 掩盖配置问题。
+
+## 验证记录
+
+| 检查                                     | 结果                           |
+|------------------------------------------|--------------------------------|
+| 模块路径、Android 签名属性、Desktop 配置 | 已静态核对源码                 |
+| iOS 接入                                 | 已发现旧阶段差异；未运行或修复 |
+| Gradle 任务列表、编译、打包、安装        | 未执行                         |
+| 外部文档链接内容                         | 未联网验证                     |
+
+执行后补充实际日期、操作系统、工具链、命令及成功/失败/跳过结果；本文不作平台验收声明。

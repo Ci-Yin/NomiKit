@@ -1,4 +1,9 @@
-# 🧱 Android Compose + MVVM 命名与架构规范手册
+# Android Compose + MVVM 命名与架构规范手册（历史参考）
+
+>
+本文为历史参考，不是当前工程规范。新代码请以 [代码风格](contributing/code-style.md)、[分层架构与错误处理](contributing/layered.md)
+和 [MVI 与 ViewModel](contributing/mvi.md) 为准。
+> 本文的示例目录来自通用 Android 项目，不等同于当前 NomiKit 的 Gradle 模块和源码布局。
 
 > 适用于 Android + Kotlin Multiplatform + Jetpack Compose 项目
 > 统一模块结构、命名风格、架构层次与文件组织。
@@ -49,7 +54,7 @@ com.ciyin.app
 │    │    │    ├── ui/             # UI 层（Compose 页面 + ViewModel）
 │    │    │    │    ├── LoginScreen.kt
 │    │    │    │    ├── LoginViewModel.kt
-│    │    │    │    ├── LoginUiModel.kt     # ✅ UI 数据模型（界面状态）
+│    │    │    │    ├── LoginUiState.kt     # ✅ UI 数据模型（界面状态）
 │    │    │    │    └── component/          # 子组件（Compose）
 │    │    │    │         ├── LoginForm.kt
 │    │    │    │         ├── LoginButton.kt
@@ -84,44 +89,44 @@ com.ciyin.app
 
 ## 二、MVVM 架构命名规范
 
-| 层级                    | 命名示例                                     | 说明                               |
-|-----------------------|------------------------------------------|----------------------------------|
-| **数据层 (Data)**        | `LoginRepository`, `UserLocalDataSource` | 封装网络与本地数据访问逻辑                    |
-| **领域层 (Domain)**      | `LoginUseCase`, `FetchUserInfoUseCase`   | 业务逻辑与操作的封装层                      |
-| **UI 层 (UI)**         | `LoginViewModel`, `LoginScreen`          | 页面与状态逻辑                          |
-| **UI 数据模型 (UiModel)** | `LoginUiModel`, `UserUiModel`            | ✅ 仅供 UI 层使用的状态模型（包含展示数据、加载与错误状态） |
-| **事件类 (UiEvent)**     | `LoginUiEvent`, `HomeUiEvent`            | UI 事件（如点击、刷新、滚动）                 |
-| **组件 (Component)**    | `LoginForm`, `VipCard`, `BannerSection`  | 可复用的 Compose 子组件                 |
-| **导航 (Navigation)**   | `AppNavGraph`, `HomeNavGraph`            | Compose Navigation 路由定义          |
+| 层级                      | 命名示例                                 | 说明                                                        |
+|---------------------------|------------------------------------------|-------------------------------------------------------------|
+| **数据层 (Data)**         | `LoginRepository`, `UserLocalDataSource` | 封装网络与本地数据访问逻辑                                  |
+| **领域层 (Domain)**       | `LoginUseCase`, `FetchUserInfoUseCase`   | 业务逻辑与操作的封装层                                      |
+| **UI 层 (UI)**            | `LoginViewModel`, `LoginScreen`          | 页面与状态逻辑                                              |
+| **UI 数据模型 (UiState)** | `LoginUiState`, `UserUiState`            | ✅ 仅供 UI 层使用的状态模型（包含展示数据、加载与错误状态） |
+| **事件类 (UiEvent)**      | `LoginUiEvent`, `HomeUiEvent`            | UI 事件（如点击、刷新、滚动）                               |
+| **组件 (Component)**      | `LoginForm`, `VipCard`, `BannerSection`  | 可复用的 Compose 子组件                                     |
+| **导航 (Navigation)**     | `AppNavGraph`, `HomeNavGraph`            | Compose Navigation 路由定义                                 |
 
 ---
 
 ## 三、Compose 命名规范
 
-| 类型                | 命名规则              | 示例                                |
-|-------------------|-------------------|-----------------------------------|
-| **Composable 函数** | 首字母大写，语义化命名       | `LoginScreen()`, `BannerCard()`   |
-| **状态类**           | 以 `UiModel` 结尾    | `HomeUiModel`, `PlayerUiModel`    |
-| **事件类**           | 以 `UiEvent` 结尾    | `LoginUiEvent`, `ProfileUiEvent`  |
-| **ViewModel**     | 模块名 + `ViewModel` | `LoginViewModel`, `HomeViewModel` |
-| **子组件文件夹**        | `component/`      | 统一放小型可组合 UI 组件                    |
-| **主题类**           | 以 `Theme` 结尾      | `AppTheme`, `PlayerTheme`         |
-| **资源文件**          | 小写下划线分隔           | `ic_logo.png`, `bg_banner.jpg`    |
+| 类型                | 命名规则               | 示例                              |
+|---------------------|------------------------|-----------------------------------|
+| **Composable 函数** | 首字母大写，语义化命名 | `LoginScreen()`, `BannerCard()`   |
+| **状态类**          | 以 `UiState` 结尾      | `HomeUiState`, `PlayerUiState`    |
+| **事件类**          | 以 `UiEvent` 结尾      | `LoginUiEvent`, `ProfileUiEvent`  |
+| **ViewModel**       | 模块名 + `ViewModel`   | `LoginViewModel`, `HomeViewModel` |
+| **子组件文件夹**    | `component/`           | 统一放小型可组合 UI 组件          |
+| **主题类**          | 以 `Theme` 结尾        | `AppTheme`, `PlayerTheme`         |
+| **资源文件**        | 小写下划线分隔         | `ic_logo.png`, `bg_banner.jpg`    |
 
 ---
 
 ## 四、命名风格对照表
 
-| 类型                | 风格                    | 示例                                       |
-|-------------------|-----------------------|------------------------------------------|
-| **包名 / 模块名**      | 全小写                   | `feature.login`, `core.network`          |
-| **类名 / 接口名**      | 大驼峰（PascalCase）       | `LoginRepository`, `AppTheme`            |
-| **函数名 / 方法名**     | 小驼峰（camelCase）        | `loadUserData()`, `onLoginClick()`       |
-| **变量名**           | 小驼峰（camelCase）        | `userList`, `loginState`                 |
-| **常量名**           | 全大写 + 下划线             | `DEFAULT_TIMEOUT`, `MAX_RETRY_COUNT`     |
+| 类型                 | 风格                             | 示例                                     |
+|----------------------|----------------------------------|------------------------------------------|
+| **包名 / 模块名**    | 全小写                           | `feature.login`, `core.network`          |
+| **类名 / 接口名**    | 大驼峰（PascalCase）             | `LoginRepository`, `AppTheme`            |
+| **函数名 / 方法名**  | 小驼峰（camelCase）              | `loadUserData()`, `onLoginClick()`       |
+| **变量名**           | 小驼峰（camelCase）              | `userList`, `loginState`                 |
+| **常量名**           | 全大写 + 下划线                  | `DEFAULT_TIMEOUT`, `MAX_RETRY_COUNT`     |
 | **枚举值**           | 每个单词首字母大写（PascalCase） | `NetworkType.Wifi`, `NetworkType.Mobile` |
-| **文件名**           | 与类名一致                 | `LoginViewModel.kt`, `HomeScreen.kt`     |
-| **资源名 (Compose)** | 小写 + 下划线              | `ic_launcher.xml`, `bg_main.jpg`         |
+| **文件名**           | 与类名一致                       | `LoginViewModel.kt`, `HomeScreen.kt`     |
+| **资源名 (Compose)** | 小写 + 下划线                    | `ic_launcher.xml`, `bg_main.jpg`         |
 
 ---
 
@@ -135,13 +140,13 @@ com.ciyin.app
 │  └── 响应 UiEvent 事件        │
 └───────────────▲──────────────┘
                 │
-     StateFlow / UiModel 更新
+     StateFlow / UiState 更新
                 │
 ┌───────────────┴──────────────┐
 │      ViewModel 层 (逻辑层)   │
 │  LoginViewModel.kt           │
 │  └── 调用 UseCase 执行业务逻辑 │
-│  └── 更新 UiModel 状态         │
+│  └── 更新 UiState 状态         │
 └───────────────▲──────────────┘
                 │
         调用仓库与领域层逻辑
@@ -165,14 +170,14 @@ com.ciyin.app
 
 ## 六、文件组织建议
 
-| 目录                         | 作用     | 示例文件                                                     |
-|----------------------------|--------|----------------------------------------------------------|
+| 目录                       | 作用         | 示例文件                                                 |
+|----------------------------|--------------|----------------------------------------------------------|
 | `data/repository/`         | 负责获取数据 | `LoginRepository.kt`, `UserRepository.kt`                |
 | `domain/usecase/`          | 封装业务逻辑 | `LoginUseCase.kt`, `FetchUserProfileUseCase.kt`          |
-| `ui/screen/.../ui/`        | 页面逻辑   | `LoginScreen.kt`, `LoginViewModel.kt`, `LoginUiModel.kt` |
-| `ui/screen/.../component/` | UI 子组件 | `LoginForm.kt`, `LoginHeader.kt`                         |
-| `core/ui/`                 | 通用组件库  | `LoadingView.kt`, `ErrorView.kt`                         |
-| `ui/theme/`                | 主题与样式  | `Theme.kt`, `Color.kt`, `Typography.kt`                  |
+| `ui/screen/.../ui/`        | 页面逻辑     | `LoginScreen.kt`, `LoginViewModel.kt`, `LoginUiState.kt` |
+| `ui/screen/.../component/` | UI 子组件    | `LoginForm.kt`, `LoginHeader.kt`                         |
+| `core/ui/`                 | 通用组件库   | `LoadingView.kt`, `ErrorView.kt`                         |
+| `ui/theme/`                | 主题与样式   | `Theme.kt`, `Color.kt`, `Typography.kt`                  |
 | `ui/navigation/`           | 路由与导航图 | `AppNavGraph.kt`, `Route.kt`                             |
 
 ---

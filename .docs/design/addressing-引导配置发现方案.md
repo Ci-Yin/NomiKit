@@ -1,5 +1,16 @@
 # Addressing 引导配置发现方案
 
+> 状态：未标注（待核对）；尚未确认本方案的采纳与落地状态。
+> 范围：拟议的引导配置发现、签名校验、缓存恢复与端点提供；目标平台为 Android / Desktop / iOS，Web/Wasm
+> 留待后续适配。
+> 相关模块：现有 `:business:base`、`:core:serialization`、`:core:platform`、`:component:data-store`、
+> `:core:application`；构建逻辑 `buildSrc`；拟新增 `:feature:addressing`。
+> 最近核对：2026-11-10；工作区 HEAD `cd08542f`，本次仅核对文档元信息、索引与模块声明，未逐项核验实现。
+> 验证记录：当前 [settings.gradle.kts](<../../settings.gradle.kts>) 未声明 `:feature:addressing`
+> ；本次未运行 Gradle、单测或平台应用，不能据此判断方案已采纳或完成验收。
+
+正文中的接口、配置与流程代码仍是拟议设计示例，不代表当前可用 API。
+
 ## 1. 方案定位
 
 Addressing 用于解决客户端在启动或业务 API 域名失效时，如何找到一份可信的引导配置。它只负责：

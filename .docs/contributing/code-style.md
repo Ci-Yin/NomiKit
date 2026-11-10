@@ -7,31 +7,31 @@
 
 ### 1. 命名规范
 
-| 类型   | 规范                      | 示例                                                          |
-|------|-------------------------|-------------------------------------------------------------|
-| 函数   | 动词/动词短语，驼峰命名            | `fetchUser()`, `calculateTotal()`, `submitForm()`           |
-| 布尔函数 | `is/has/can/should` 前缀  | `isValid()`, `hasPermission()`, `canRetry()`                |
-| 断言函数 | `need/require/check` 前缀 | `needLogin()`, `requireAuth()`, `checkPermission()`         |
-| 工厂函数 | `create/of/from` 前缀     | `createUser()`, `fromJson()`, `Color.of(hex)`               |
-| 转换函数 | `to` 前缀（创建新对象）          | `toUiModel()`, `toDomain()`, `toList()`                     |
-| 视图函数 | `as` 前缀（返回当前对象的代理/包装）   | `asStateFlow()`, `asSequence()`, `asList()`                 |
-| 变量   | 名词/名词短语，驼峰命名            | `userName`, `orderList`, `currentIndex`                     |
-| 布尔变量 | `is/has/can/should` 前缀  | `isLoading`, `hasError`, `canSubmit`                        |
-| 私有状态 | `_` 前缀（配合公开只读属性）        | `private val _state`, `val state = _state.asStateFlow()`    |
-| 枚举值  | 驼峰命名（因与单例对象类似）          | `enum class AppPlatformType { Android, Desktop, Ios, Web }` |
-| 静态对象 | 驼峰命名（因与单例对象类似）          | `val DataModule = module {}`                                |
-| 常量   | 全大写 + 下划线分隔             | `const val MAX_RETRY_COUNT = 3`                             |
-| 接口   | 无 `I` 前缀                | `AuthRepository` 而非 `IAuthRepository`                       |
-| 实现类  | `Impl` 后缀或具体描述          | `AuthRepositoryImpl` 或 `DefaultAuthRepository`              |
-| 密封子类 | 不重复父类后缀                 | `AuthAction.Submit` 而非 `AuthAction.SubmitAction`            |
+| 类型     | 规范                                 | 示例                                                        |
+|----------|--------------------------------------|-------------------------------------------------------------|
+| 函数     | 动词/动词短语，驼峰命名              | `fetchUser()`, `calculateTotal()`, `submitForm()`           |
+| 布尔函数 | `is/has/can/should` 前缀             | `isValid()`, `hasPermission()`, `canRetry()`                |
+| 断言函数 | `need/require/check` 前缀            | `needLogin()`, `requireAuth()`, `checkPermission()`         |
+| 工厂函数 | `create/of/from` 前缀                | `createUser()`, `fromJson()`, `Color.of(hex)`               |
+| 转换函数 | `to` 前缀（创建新对象）              | `toUiModel()`, `toDomain()`, `toList()`                     |
+| 视图函数 | `as` 前缀（返回当前对象的代理/包装） | `asStateFlow()`, `asSequence()`, `asList()`                 |
+| 变量     | 名词/名词短语，驼峰命名              | `userName`, `orderList`, `currentIndex`                     |
+| 布尔变量 | `is/has/can/should` 前缀             | `isLoading`, `hasError`, `canSubmit`                        |
+| 私有状态 | `_` 前缀（配合公开只读属性）         | `private val _state`, `val state = _state.asStateFlow()`    |
+| 枚举值   | 驼峰命名（因与单例对象类似）         | `enum class AppPlatformType { Android, Desktop, Ios, Web }` |
+| 静态对象 | 驼峰命名（因与单例对象类似）         | `val DataModule = module {}`                                |
+| 常量     | 全大写 + 下划线分隔                  | `const val MAX_RETRY_COUNT = 3`                             |
+| 接口     | 无 `I` 前缀                          | `AuthRepository` 而非 `IAuthRepository`                     |
+| 实现类   | `Impl` 后缀或具体描述                | `AuthRepositoryImpl` 或 `DefaultAuthRepository`             |
+| 密封子类 | 不重复父类后缀                       | `AuthAction.Submit` 而非 `AuthAction.SubmitAction`          |
 
 > **💡 密封类子类命名**
 >
-> `UiState`/`UiEvent`/`Action`/`Effect` 等密封类的子类**不要重复父类后缀**，避免冗长：
+> `UiState`/`UiEvent`/`Action`/`Effect` 等密封类的子类 **不要重复父类后缀**，避免冗长：
 >
 > ```kotlin
 > // ✅ 推荐：简洁明了
-> @Stable
+> @Immutable
 > sealed interface SendCodeUiState {
 >     /**
 >      * 就绪状态，可以发送验证码。
@@ -58,12 +58,12 @@
 
 ### 2. 文件夹与文件命名
 
-| 类型   | 规范               | 示例                                    | 说明                         |
-|------|------------------|---------------------------------------|----------------------------|
-| 文件夹名 | 单数形式，表示模块或功能领域划分 | `mapper/`、`model/`、`api/`             | 文件夹本身就是多个文件的集合，无需用复数强调     |
-| 文件名  | 根据内容决定单复数        | `Colors.kt`、`UserMappers.kt`          | 包含多个相关扩展函数或转换器时使用复数        |
-| 单一职责 | 单数形式             | `AuthRepository.kt`、`LoginUseCase.kt` | 文件内仅定义一个主要类型时使用单数          |
-| 集合型  | 复数形式             | `Strings.kt`、`Dimensions.kt`          | 文件内包含多个同类扩展函数、常量或工具方法时使用复数 |
+| 类型     | 规范                             | 示例                                   | 说明                                                 |
+|----------|----------------------------------|----------------------------------------|------------------------------------------------------|
+| 文件夹名 | 单数形式，表示模块或功能领域划分 | `mapper/`、`model/`、`api/`            | 文件夹本身就是多个文件的集合，无需用复数强调         |
+| 文件名   | 根据内容决定单复数               | `Colors.kt`、`UserMappers.kt`          | 包含多个相关扩展函数或转换器时使用复数               |
+| 单一职责 | 单数形式                         | `AuthRepository.kt`、`LoginUseCase.kt` | 文件内仅定义一个主要类型时使用单数                   |
+| 集合型   | 复数形式                         | `Strings.kt`、`Dimensions.kt`          | 文件内包含多个同类扩展函数、常量或工具方法时使用复数 |
 
 > **💡 文件夹与文件命名原则**
 >
@@ -71,8 +71,8 @@
     `mapper/`、`di/`、
     `api/`。
 > - **文件名视内容而定**：
-    >   - 单一类型定义：使用单数，如 `User.kt`、`AuthRepository.kt`
-    >
+>   - 单一类型定义：使用单数，如 `User.kt`、`AuthRepository.kt`
+>
 
 - 多个相关函数/扩展集合：使用复数，如 `Colors.kt`（Color 的多个扩展函数）、`UserMappers.kt`（User
   及其内部类的多个转换函数）
@@ -207,16 +207,16 @@ val activeUsers = users.let { list ->
 
 ### UI 层命名
 
-| 层级         | 后缀         | 示例                              | 说明                                            |
-|------------|------------|---------------------------------|-----------------------------------------------|
-| **UI 状态**  | `UiState`  | `ProfileUiState`                | 页面状态，随用户交互改变                                  |
-| **UI 模型**  | `UiModel`  | `FilmUiModel`, `ProfileUiModel` | 视图展示数据，纯数据承载（一个类一个文件(除非强关联性), 放在 `model/` 目录） |
-| **UI 事件**  | `UiEvent`  | `ProfileUiEvent`                | 用户交互产生的原始事件                                   |
-| **UI 动作**  | `Action`   | `AuthAction`                    | 直接作用于 ViewModel 的动作                           |
-| **UI 副作用** | `Effect`   | `AuthEffect`                    | 单次动作（弹窗、导航、Toast）                             |
-| **列表项模型**  | `UiItem`   | `FeedUiItem`                    | 列表或网格项数据                                      |
-| **映射器**    | `UiMapper` | `HomeUiMapper`                  | 扩展函数 `.toUiModel()`（放在 `mapper/` 目录）          |
-| **DI 模块**  | `UiModule` | `HomeUiModule`                  | Ui 层 DI 配置（放在 `di/` 目录）                       |
+| 层级           | 后缀       | 示例                            | 说明                                                                         |
+|----------------|------------|---------------------------------|------------------------------------------------------------------------------|
+| **UI 状态**    | `UiState`  | `ProfileUiState`                | 页面状态，随用户交互改变                                                     |
+| **UI 模型**    | `UiModel`  | `FilmUiModel`, `ProfileUiModel` | 视图展示数据，纯数据承载（一个类一个文件(除非强关联性), 放在 `model/` 目录） |
+| **UI 事件**    | `UiEvent`  | `ProfileUiEvent`                | 用户交互产生的原始事件                                                       |
+| **UI 动作**    | `Action`   | `AuthAction`                    | 直接作用于 ViewModel 的动作                                                  |
+| **UI 副作用**  | `Effect`   | `AuthEffect`                    | 单次动作（弹窗、导航、Toast）                                                |
+| **列表项模型** | `UiItem`   | `FeedUiItem`                    | 列表或网格项数据                                                             |
+| **映射器**     | `UiMapper` | `HomeUiMapper`                  | 扩展函数 `.toUiModel()`（放在 `mapper/` 目录）                               |
+| **DI 模块**    | `UiModule` | `HomeUiModule`                  | Ui 层 DI 配置（放在 `di/` 目录）                                             |
 
 > 加上 `Ui` 前缀 是为了区分 UI 层与业务层，避免命名冲突。而Action 和 Effect 不需要加 `Ui` 前缀, 因为
 > Action 和 Effect 是
@@ -248,15 +248,14 @@ val activeUsers = users.let { list ->
 
 > **💡 UI 事件 vs UI 动作**
 >
-> - **UI 事件 (Event)**：用户交互产生的原始事件（点击、滑动、返回等）。事件**不直接作用于 ViewModel**，需要经过
-    UI
-    层处理后决定是否转换为动作。有些事件（如返回操作、展开/收起）只涉及 UI 层状态变化，不需要与 ViewModel
-    交互。
+> - **UI 事件 (Event)**：用户交互产生的原始事件（点击、滑动、返回等）。事件 **不直接作用于 ViewModel**
+    ，需要经过 UI 层处理后决定是否转换为动作。有些事件（如返回操作、展开/收起）只涉及 UI 层状态变化，不需要与
+    ViewModel 交互。
 >
-> - **UI 动作 (Action)**：经过 UI 层处理后，**直接分发给 ViewModel** 的指令。Action 会触发 ViewModel
+> - **UI 动作 (Action)**：经过 UI 层处理后， **直接分发给 ViewModel** 的指令。Action 会触发 ViewModel
     中的状态变化或业务逻辑。
 >
-> **UI 事件的另一个用途**：作为子组件回调父组件的**统一入参类型**，避免多个回调参数导致的歧义和混乱。
+> **UI 事件的另一个用途**：作为子组件回调父组件的 **统一入参类型**，避免多个回调参数导致的歧义和混乱。
 >
 > ```kotlin
 > // ❌ 避免：多个回调参数，容易混淆
@@ -299,27 +298,27 @@ val activeUsers = users.let { list ->
 
 ### Domain 层命名
 
-| 层级                | 后缀                             | 示例                                        | 说明                          |
-|-------------------|--------------------------------|-------------------------------------------|-----------------------------|
-| **Repository 接口** | `Repository`                   | `AuthRepository`                          | 定义在 Domain 层的数据操作抽象         |
+| 层级                | 后缀                           | 示例                                      | 说明                                 |
+|---------------------|--------------------------------|-------------------------------------------|--------------------------------------|
+| **Repository 接口** | `Repository`                   | `AuthRepository`                          | 定义在 Domain 层的数据操作抽象       |
 | **用例**            | `UseCase`                      | `LoginUserUseCase`, `RegisterUserUseCase` | 业务用例，编排流程                   |
-| **校验器**           | `Validator` / `InputValidator` | `RegisterInputValidator`                  | 输入校验策略                      |
-| **领域模型**          | 无特定后缀                          | `Banner`,                                 | 业务实体                        |
-| **输入模型**          | `Input`                        | `LoginInput`, `RegisterInput`             | UseCase 输入参数                |
-| **输出模型**          | `Result`                       | `RegisterResult`, `LoginResult`           | UseCase 输出结果                |
+| **校验器**          | `Validator` / `InputValidator` | `RegisterInputValidator`                  | 输入校验策略                         |
+| **领域模型**        | 无特定后缀                     | `Banner`,                                 | 业务实体                             |
+| **输入模型**        | `Input`                        | `LoginInput`, `RegisterInput`             | UseCase 输入参数                     |
+| **输出模型**        | `Result`                       | `RegisterResult`, `LoginResult`           | UseCase 输出结果                     |
 | **DI 模块**         | `DomainModule`                 | `HomeDomainModule`                        | Domain 层 DI 配置（放在 `di/` 目录） |
 
 ### Data 层命名
 
-| 层级                | 后缀                                                | 示例                                              | 说明                                                           |
-|-------------------|---------------------------------------------------|-------------------------------------------------|--------------------------------------------------------------|
-| **Repository 实现** | `RepositoryImpl`                                  | `HomeRepositoryImpl`                            | Repository 的具体实现                                             |
-| **API 类**         | `Api`                                             | `HomeApi`, `UserAuthApi`                        | 网络请求类（放在 `api/` 目录）                                          |
-| **本地数据源**         | `Settings` / `Dao`  / `DataStore`                 | `AuthSettings`, `AuthInfoDao` , `UserDataStore` | 本地数据操作（放在 `datasource/` 目录）, `Dao` 为数据库存储, `Settings` 为键值对存储 |
-| **API 响应数据**      | `ApiData` / `ApiItem`                             | `HotPlayApiData`, `GuessYouLikeVideoApiItem`    | API 响应 DTO（放在 `model/` 目录）                                   |
-| **本地实体**          | `Entity(Dao的数据类)` / `Preferences(DataStore 的数据类)` | `AuthInfoEntity` , `UserPreferences`            | Room 实体类（放在 `model/` 目录）                                     |
-| **映射器**           | `ApiMapper`                                       | `HomeApiMapper`                                 | 扩展函数 `.toDomain()`（放在 `mappers/` 目录）                         |
-| **DI 模块**         | `DataModule`                                      | `HomeDataModule`                                | Data 层 DI 配置（放在 `di/` 目录）                                    |
+| 层级                | 后缀                                                      | 示例                                            | 说明                                                                                 |
+|---------------------|-----------------------------------------------------------|-------------------------------------------------|--------------------------------------------------------------------------------------|
+| **Repository 实现** | `RepositoryImpl`                                          | `HomeRepositoryImpl`                            | Repository 的具体实现                                                                |
+| **API 类**          | `Api`                                                     | `HomeApi`, `UserAuthApi`                        | 网络请求类（放在 `api/` 目录）                                                       |
+| **本地数据源**      | `Settings` / `Dao`  / `DataStore`                         | `AuthSettings`, `AuthInfoDao` , `UserDataStore` | 本地数据操作（放在 `datasource/` 目录）, `Dao` 为数据库存储, `Settings` 为键值对存储 |
+| **API 响应数据**    | `ApiData` / `ApiItem`                                     | `HotPlayApiData`, `GuessYouLikeVideoApiItem`    | API 响应 DTO（放在 `model/` 目录）                                                   |
+| **本地实体**        | `Entity(Dao的数据类)` / `Preferences(DataStore 的数据类)` | `AuthInfoEntity` , `UserPreferences`            | Room 实体类（放在 `model/` 目录）                                                    |
+| **映射器**          | `ApiMapper`                                               | `HomeApiMapper`                                 | 扩展函数 `.toDomain()`（放在 `mappers/` 目录）                                       |
+| **DI 模块**         | `DataModule`                                              | `HomeDataModule`                                | Data 层 DI 配置（放在 `di/` 目录）                                                   |
 
 > **💡 Settings vs DataStore**
 >
@@ -361,10 +360,10 @@ val activeUsers = users.let { list ->
 
 ### 错误命名
 
-| 层级       | 后缀             | 示例                            | 说明           |
-|----------|----------------|-------------------------------|--------------|
-| **通用错误** | `DataError`    | `DataError.Network.Http`      | 跨用例复用的技术性错误  |
-| **场景错误** | `XxxError`     | `RegisterError`, `LoginError` | 特定业务场景的错误    |
+| 层级         | 后缀           | 示例                          | 说明                     |
+|--------------|----------------|-------------------------------|--------------------------|
+| **通用错误** | `DataError`    | `DataError.Network.Http`      | 跨用例复用的技术性错误   |
+| **场景错误** | `XxxError`     | `RegisterError`, `LoginError` | 特定业务场景的错误       |
 | **通用错误** | `GenericError` | `GenericError`                | 最终展示给用户的通用错误 |
 
 ## 四、UiAction 命名约定
@@ -385,24 +384,16 @@ sealed interface AuthAction {
 }
 ```
 
-## 五、Effect 定义规范
+## 五、Effect 命名约定
 
-Effect 用于一次性副作用事件：
+Effect 的职责、生命周期和消费方式统一维护在 [MVI 与 ViewModel](mvi.md)；本节只保留命名约定，避免重复维护完整状态模型。
 
-```kotlin
-// ✅ 推荐：简洁的副作用定义
-internal interface AuthEffect {
-    data object NavigateToMain : AuthEffect
-    data class ShowMessage(val message: String) : AuthEffect
-    data class ShowError(val error: GenericError) : AuthEffect
-}
+- 导航：`NavigateToXxx`、`NavigateBack`
+- 提示：`ShowMessage`、`ShowToast`、`ShowError`
+- 对话框：`ShowDialog`、`CloseDialog`
+- 外部链接：`OpenUrl`
 
-// 常见 Effect 类型：
-// - NavigateToXxx: 导航
-// - ShowMessage/ShowToast: 提示消息
-// - ShowDialog: 显示对话框
-// - OpenUrl: 打开外部链接
-```
+Effect 表达一次性事件，不应作为持久字段存储在 `UiState` 中。
 
 ## 六、Compose Preview 规范
 

@@ -1,8 +1,13 @@
-太好了 👍 那我来为你整理出一份完整、现代化、清晰的规范文档：
+# Android 开发命名规范（历史参考）
+
+>
+本文为历史参考，不是当前工程规范。新代码请以 [代码风格](contributing/code-style.md)、[分层架构与错误处理](contributing/layered.md)
+和 [MVI 与 ViewModel](contributing/mvi.md) 为准。
+> 本文保留部分通用命名示例；其中模块结构、状态模型和 ViewModel 职责可能与当前 NomiKit 不一致。
 
 ---
 
-# **Android 开发命名规范（Jetpack Compose + MVVM 架构）**
+> 原文标题：Android 开发命名规范（Jetpack Compose + MVVM 架构）
 
 > 适用于 Kotlin + Compose 项目，统一命名风格、可读性与模块化设计。
 > 重点覆盖：模块划分、包结构、Compose 组件、ViewModel、主题、状态、事件等。
@@ -31,7 +36,7 @@
 
 > 当前可以先在 `app` 模块下放置所有内容，每个功能对应一个子文件夹，未来可拆分为独立 Gradle
 > 模块（上面第一点），下面的是简单的结构，具体看《Android Compose + MVVM 命名与架构规范手册》里的
-`一、模块与包命名结构`。
+> `一、模块与包命名结构`。
 
 ```
 app/
@@ -178,6 +183,7 @@ class HomeViewModel(
 
     // 私有可变状态流
     private val _uiState = MutableStateFlow(HomeUiState())
+
     // 公开只读状态流
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -193,7 +199,8 @@ class HomeViewModel(
         }
     }
 
-    fun onVideoClick(videoId: String) { /* ... */ }
+    fun onVideoClick(videoId: String) { /* ... */
+    }
 }
 ```
 
@@ -322,13 +329,13 @@ object Config {
 
 ## 🧩 六、MVVM 层次规范
 
-| 层级          | 职责        | 命名后缀                 | 示例               |
-|-------------|-----------|----------------------|------------------|
-| UI（Compose） | 界面展示、事件收集 | `Screen` / `Content` | `HomeScreen`     |
-| ViewModel   | 状态管理、业务逻辑 | `ViewModel`          | `HomeViewModel`  |
-| UiState     | 状态数据模型    | `UiState`            | `HomeUiState`    |
-| Event       | 用户行为或单次事件 | `Event`              | `HomeEvent`      |
-| Repository  | 数据来源抽象    | `Repository`         | `UserRepository` |
+| 层级          | 职责                                             | 命名后缀             | 示例             |
+|---------------|--------------------------------------------------|----------------------|------------------|
+| UI（Compose） | 界面展示、事件收集                               | `Screen` / `Content` | `HomeScreen`     |
+| ViewModel     | 接收 Action、调用 UseCase、编排 UI 状态与 Effect | `ViewModel`          | `HomeViewModel`  |
+| UiState       | 状态数据模型                                     | `UiState`            | `HomeUiState`    |
+| Event         | 用户行为或单次事件                               | `Event`              | `HomeEvent`      |
+| Repository    | 数据来源抽象                                     | `Repository`         | `UserRepository` |
 
 ---
 
@@ -354,8 +361,10 @@ class HomeViewModel(
     var uiState by mutableStateOf(HomeUiState())
         private set
 
-    fun loadVideos() { /* ... */ }
-    fun onVideoClick(id: String) { /* ... */ }
+    fun loadVideos() { /* ... */
+    }
+    fun onVideoClick(id: String) { /* ... */
+    }
 }
 
 // HomeScreen.kt
@@ -374,52 +383,52 @@ fun HomeScreen(
 
 ## 1️⃣ Compose 组件函数命名
 
-| ❌ 不推荐                | ✅ 推荐                  | 说明                                                         |
-|----------------------|-----------------------|------------------------------------------------------------|
+| ❌ 不推荐            | ✅ 推荐               | 说明                                                                               |
+|----------------------|-----------------------|------------------------------------------------------------------------------------|
 | `fun home_screen()`  | `fun HomeScreen()`    | ❌ 下划线 + 小写不符合 Compose 函数规范；✅ PascalCase 可读性高，符合 Compose 风格 |
-| `fun showbanner()`   | `fun BannerSection()` | ❌ 动词开头语义不清；✅ 名词 + Section/Item 明确组件用途                      |
-| `fun userform()`     | `fun UserForm()`      | ❌ 小写驼峰，界面组件易混淆；✅ PascalCase，易于识别 Compose 组件                |
-| `fun screen_login()` | `fun LoginScreen()`   | ❌ 下划线命名，不直观；✅ 首字母大写 + Screen 后缀清晰                          |
+| `fun showbanner()`   | `fun BannerSection()` | ❌ 动词开头语义不清；✅ 名词 + Section/Item 明确组件用途                           |
+| `fun userform()`     | `fun UserForm()`      | ❌ 小写驼峰，界面组件易混淆；✅ PascalCase，易于识别 Compose 组件                  |
+| `fun screen_login()` | `fun LoginScreen()`   | ❌ 下划线命名，不直观；✅ 首字母大写 + Screen 后缀清晰                             |
 
 ---
 
 ## 2️⃣ ViewModel / UiState / Event 命名
 
-| ❌ 不推荐                     | ✅ 推荐                          | 说明                                               |
-|---------------------------|-------------------------------|--------------------------------------------------|
+| ❌ 不推荐                 | ✅ 推荐                       | 说明                                                                 |
+|---------------------------|-------------------------------|----------------------------------------------------------------------|
 | `class loginmodel`        | `class LoginViewModel`        | ❌ 小写 + 模糊，非标准 ViewModel；✅ 模块名 + ViewModel 后缀清楚职责 |
-| `data class loginState`   | `data class LoginUiState`     | ❌ 小写 + 不清楚用途；✅ UiState 后缀表明是 UI 状态模型             |
-| `sealed class loginevent` | `sealed interface LoginEvent` | ❌ 小写 + 类名不规范；✅ PascalCase + Event 后缀，明确事件角色      |
-| `fun load()`              | `fun loadUserData()`          | ❌ 动作不明确；✅ 方法名语义清晰，指明操作对象                         |
+| `data class loginState`   | `data class LoginUiState`     | ❌ 小写 + 不清楚用途；✅ UiState 后缀表明是 UI 状态模型              |
+| `sealed class loginevent` | `sealed interface LoginEvent` | ❌ 小写 + 类名不规范；✅ PascalCase + Event 后缀，明确事件角色       |
+| `fun load()`              | `fun loadUserData()`          | ❌ 动作不明确；✅ 方法名语义清晰，指明操作对象                       |
 
 ---
 
 ## 3️⃣ 颜色 / 主题 / Typography 命名
 
-| ❌ 不推荐                             | ✅ 推荐                                     | 说明                                  |
-|-----------------------------------|------------------------------------------|-------------------------------------|
-| `val blue500 = Color(0xFF2196F3)` | `val Primary = Color(0xFF2196F3)`        | ❌ 数值化命名，语义不清；✅ 语义化命名，易理解用途          |
-| `val dark_bg = Color(0xFF000000)` | `val BackgroundDark = Color(0xFF000000)` | ❌ 下划线 + 不标准；✅ PascalCase + 明确用途     |
+| ❌ 不推荐                         | ✅ 推荐                                  | 说明                                                     |
+|-----------------------------------|------------------------------------------|----------------------------------------------------------|
+| `val blue500 = Color(0xFF2196F3)` | `val Primary = Color(0xFF2196F3)`        | ❌ 数值化命名，语义不清；✅ 语义化命名，易理解用途       |
+| `val dark_bg = Color(0xFF000000)` | `val BackgroundDark = Color(0xFF000000)` | ❌ 下划线 + 不标准；✅ PascalCase + 明确用途             |
 | `val font1 = TextStyle(...)`      | `val TitleMedium = TextStyle(...)`       | ❌ 无语义，维护困难；✅ 按 Typography 类型命名，语义清晰 |
 
 ---
 
 ## 4️⃣ 包名与模块名
 
-| ❌ 不推荐                    | ✅ 推荐                      | 说明                                 |
-|--------------------------|---------------------------|------------------------------------|
+| ❌ 不推荐                | ✅ 推荐                   | 说明                                                         |
+|--------------------------|---------------------------|--------------------------------------------------------------|
 | `org.ciyin.FeatureLogin` | `org.ciyin.feature.login` | ❌ 大写 + 驼峰，不符合包名规范；✅ 小写 + 点分隔，按模块划分 |
-| `org.ciyin.UiComponent`  | `org.ciyin.ui`            | ❌ 模糊，跨模块使用不明；✅ core.ui 表示通用组件      |
+| `org.ciyin.UiComponent`  | `org.ciyin.ui`            | ❌ 模糊，跨模块使用不明；✅ core.ui 表示通用组件             |
 
 ---
 
 ## 5️⃣ 枚举与常量命名
 
-| ❌ 不推荐                                       | ✅ 推荐                                                 | 说明                            |
-|---------------------------------------------|------------------------------------------------------|-------------------------------|
-| `enum class player_state { idle, loading }` | `enum class PlayerState { Idle, Loading }`           | ❌ 小写 + 下划线；✅ 每个单词首字母大写，清晰明了   |
-| `const val timeout = 5000L`                 | `const val TIMEOUT_MS = 5000L`                       | ❌ 小写 + 无单位；✅ 全大写 + 下划线 + 单位清楚 |
-| `object config { val pagesize = 20 }`       | `object Config { const val DEFAULT_PAGE_SIZE = 20 }` | ❌ 属性名不规范；✅ 全局常量规范，易维护         |
+| ❌ 不推荐                                   | ✅ 推荐                                              | 说明                                              |
+|---------------------------------------------|------------------------------------------------------|---------------------------------------------------|
+| `enum class player_state { idle, loading }` | `enum class PlayerState { Idle, Loading }`           | ❌ 小写 + 下划线；✅ 每个单词首字母大写，清晰明了 |
+| `const val timeout = 5000L`                 | `const val TIMEOUT_MS = 5000L`                       | ❌ 小写 + 无单位；✅ 全大写 + 下划线 + 单位清楚   |
+| `object config { val pagesize = 20 }`       | `object Config { const val DEFAULT_PAGE_SIZE = 20 }` | ❌ 属性名不规范；✅ 全局常量规范，易维护          |
 
 ---
 

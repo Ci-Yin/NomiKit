@@ -1,5 +1,16 @@
 # Design System 模块化方案
 
+> 状态：未标注（待核对）；尚未确认本方案的采纳与落地状态。
+> 范围：拟议的设计系统抽象、主题令牌与组件 API，以及 NomiKit 默认实现、Material 3 / Compose Fluent
+> 适配；各平台支持与验证边界待核对。
+> 相关模块：现有 `:core:material`、`:core:ui-foundation`、`:app:shared`、`:app:desktop`；拟新增
+> `:core:design-system`、`:core:design-system-material3`、`:core:design-system-fluent`。
+> 最近核对：2026-11-10；工作区 HEAD `cd08542f`，本次仅核对文档元信息、索引与模块声明，未逐项核验实现。
+> 验证记录：当前 [settings.gradle.kts](<../../settings.gradle.kts>) 未声明上述三个拟新增模块；本次未运行
+> Gradle、单测或平台 UI，不能据此判断方案已采纳或完成验收。
+
+正文中的接口、模块配置与组件代码仍是拟议设计示例，不代表当前可用 API。
+
 ## 背景
 
 当前 `core/material` 已经承担了 NomiKit 的 Design System 入口职责，提供

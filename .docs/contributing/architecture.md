@@ -1,25 +1,30 @@
-## **Kotlin Multiplatform 快速开发脚手架 - 架构设计方案**
+# NomiKit 架构与模块导航
 
-### 1. 总体架构设计 (Overall Architecture Design)
+> 类型：当前模块职责、历史架构图与依赖边界说明。历史示例保留用于理解演进，不代表所有名称和依赖仍然存在。
+> 最近核对：2026-11-10；源码基线 `cd08542f`。本次只做局部文档修订，未执行依赖图任务、编译或测试。
 
-本架构旨在构建一个高度模块化、可扩展、易于维护的Kotlin Multiplatform (KMP) 应用脚手架。其核心思想是*
-*关注点分离 (Separation
-of Concerns)** 和 **依赖倒置 (Dependency Inversion)**。
+[返回参与开发](<README.md>) · [分层与错误处理](<layered.md>) · [MVI 与 ViewModel](<mvi.md>) · [KMP 说明](<kmp.md>)
 
-- **分层结构**: 架构采用金字塔形的四层结构，从下至上依次为 `core`, `component`, `feature`, `business`
-  和 `app`
-  。上层模块可以依赖下层模块，但反之不行，确保了单向的依赖关系，使得整个系统结构清晰、稳定。
+## 1. 总体架构设计
+
+本架构旨在构建一个高度模块化、可扩展、易于维护的 Kotlin Multiplatform (KMP)
+应用脚手架。其核心思想是关注点分离（Separation of Concerns）和依赖倒置（Dependency Inversion）。
+
+- **分层结构**：工程按 `core`、`component`、`feature`、`business`、`app` 五类职责分组。上层模块原则上依赖下层模块，但具体边界仍以
+  `settings.gradle.kts` 与模块构建脚本为准。
 - **模块化**: 每个模块都有明确的职责边界。
     - `core`: 提供最基础、与业务完全无关的能力。
     - `component`: 封装第三方库，提供即插即用的“组件”。
-    - `feature`: 封装可复用的“业务能力集”。
-    - `business`: 封装可复用的“技术能力”。
-    - `app`: 整合所有模块，构建最终的、面向用户的应用程序。
+    - `feature`：封装与具体产品无关的通用特性。
+    - `business`：封装可复用的业务中间层能力。
+        - `app`: 整合所有模块，构建最终的、面向用户的应用程序。
 - **跨平台与UI**: 使用 Kotlin Multiplatform 技术共享非UI的业务逻辑和基础能力，使用 Compose
-  Multiplatform
-  构建跨平台的声明式UI，最大限度地复用代码。
+  Multiplatform 构建跨平台的声明式UI，最大限度地复用代码。
 
-### 2. 架构图 (Architecture Diagram)
+### 2. 架构图（历史概念图）
+
+> 下图保留原有的概念分组，用于说明依赖方向；其中 `androidApp`、`iosApp`、`network`
+> 等名称可能来自旧工程。当前模块清单请以 [settings.gradle.kts](<../../settings.gradle.kts>) 为准。
 
 ```mermaid
 graph TD
@@ -102,7 +107,19 @@ graph TD
 - **层级关系**: `app` 在最顶层，`core` 在最底层，清晰地展示了依赖的流动方向。
 - **内部依赖**: `component` 层内部的模块（如 `ktor`, `room`）依赖于 `koin-boot`，以实现依赖的自动注册。
 
-## 3. 模块职责详解
+## 3. 当前工程事实与维护边界
+
+> 本节补充当前工程核对结果；下方原有职责说明和概念图保留作为历史设计参考。
+
+- 当前模块清单以 [settings.gradle.kts](<../../settings.gradle.kts>) 为准，旧图中的模块名称不应直接复制到新依赖配置。
+- 当前应用入口为 `:app:android`、`:app:desktop`、`:app:ios`、`:app:shared` 和 `:app:sample`；旧文档中的
+  `androidApp`、`iosApp`、`application` 是历史命名。
+- 当前目标依赖方向为 `app -> business / feature / component -> core`，但
+  `:core:application -> :component:koin` 与媒体适配组件到 feature 的边界例外已记录在源码构建配置中，不能用概念图掩盖。
+- 详细分层、错误映射、ViewModel 和状态机规范分别见 [分层架构](<layered.md>)、[MVI](<mvi.md>)
+  和 [FlowRedux2 指南](<../guides/flow-redux.md>)。
+
+## 4. 模块职责详解
 
 ### **`core` 模块 (🏗️ 核心层)**
 
@@ -157,7 +174,7 @@ graph TD
 
 ### **`feature` 模块 (🧰 通用特性层)**
 
-可复用的**技术能力**（与具体业务无关，如:播放器、弹幕引擎、动态布局） ，一个`feature`
+可复用的 **技术能力**（与具体业务无关，如:播放器、弹幕引擎、动态布局） ，一个`feature`
 模块代表一个垂直的特性领域，通常包含自研或开源的轮子框架/工具。
 
 - **`danmaku-engine`**: 弹幕引擎特性模块
@@ -177,7 +194,7 @@ graph TD
 
 ### **`business` 模块 (‍💼 业务中间层)**
 
-可复用的**业务能力**（含领域模型、API、数据持久化） | 用户中心、会员体系、皮肤系统 |
+可复用的 **业务能力**（含领域模型、API、数据持久化） | 用户中心、会员体系、皮肤系统 |
 
 ### **`app` 模块 (📱 应用层)**
 
@@ -229,7 +246,7 @@ graph TD
               `Unknown` 兜底，保证 UI 只消费场景错误。
         - **`data`**: 数据实现层。包含 `Repository` 实现与各类数据源（网络/数据库/缓存/本地设置等），负责具体的数据拉取与存储策略并隐藏实现细节。
 
-      > 分层与错误处理的权威约定请参考：@.docs/contributing/layered.md
+      > 分层与错误处理的权威约定请参考 [分层架构与错误处理](<layered.md>)。
       >
       > 推荐调用链：
       `Screen → ViewModel → UseCase/ObserveXxxUseCase → Repository(接口) → RepositoryImpl/数据源`
@@ -237,14 +254,15 @@ graph TD
 
 ### **依赖关系优化**
 
-根据新架构图，依赖关系更加清晰：
+以下是原方案提出的目标依赖方向；它用于说明设计意图，不代表当前所有模块均已满足。当前模块声明与实际依赖请以 [settings.gradle.kts](<../../settings.gradle.kts>)
+和各模块构建脚本为准。
 
 1. **严格的层级依赖**:
     - `app` → `feature`, `component`, `business`
     - `business` → `feature`, `component`
     - `feature` → `core`
     - `component` → `core`
-    - `core` → (无外部依赖)
+    - `core` → 原则上不反向依赖上层模块（具体外部库依赖仍以构建脚本为准）
 
 2. **组件内部依赖**:
     - `component` 层的各个模块 (`network`, `database`, `others`) 都依赖于 `ioc/koin-boot`

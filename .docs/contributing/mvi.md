@@ -1,4 +1,4 @@
-_# MVI 架构与 ViewModel 规范
+# MVI 架构与 ViewModel 规范
 
 本项目使用 MVI（Model-View-Intent）架构，结合 FlowRedux2 状态机处理复杂业务场景。
 
@@ -58,12 +58,12 @@ _# MVI 架构与 ViewModel 规范
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-| 接口                      | 职责    | 核心成员                                              |
-|-------------------------|-------|---------------------------------------------------|
-| `StateViewModel<S>`     | 状态管理  | `val state: StateFlow<S>`                         |
-| `ActionViewModel<A>`    | 动作分发  | `val dispatchAction: (A) -> Unit`                 |
+| 接口                    | 职责       | 核心成员                                          |
+|-------------------------|------------|---------------------------------------------------|
+| `StateViewModel<S>`     | 状态管理   | `val state: StateFlow<S>`                         |
+| `ActionViewModel<A>`    | 动作分发   | `val dispatchAction: (A) -> Unit`                 |
 | `EffectViewModel<E>`    | 副作用触发 | `val sideEffects: SharedFlow<E>`, `poseEffect(E)` |
-| `MviViewModel<S, A, E>` | 组合接口  | 继承以上三者                                            |
+| `MviViewModel<S, A, E>` | 组合接口   | 继承以上三者                                      |
 
 ### 实现类继承关系
 
@@ -219,13 +219,13 @@ class ComplexViewModel : StateMachineMviViewModel<State, Action, Effect>() {
 
 ### 选择指南
 
-| 场景                 | 推荐 ViewModel               | 说明                         |
-|--------------------|----------------------------|----------------------------|
-| 纯数据展示，无副作用         | `AbstractViewModel`        | 最简单，手动管理状态                 |
-| 简单 CRUD + Toast/导航 | `AbsMvvmViewModel`         | 有状态和副作用，无动作分发              |
-| 表单提交、用户交互          | `AbsMviViewModel`          | 完整 MVI，使用 `on<Action>` DSL |
-| 多步骤流程、复杂状态         | `StateMachineMviViewModel` | FlowRedux 状态机              |
-| 可复用状态逻辑            | `StateMachineMviViewModel` | 子状态机模式                     |
+| 场景                   | 推荐 ViewModel             | 说明                            |
+|------------------------|----------------------------|---------------------------------|
+| 纯数据展示，无副作用   | `AbstractViewModel`        | 最简单，手动管理状态            |
+| 简单 CRUD + Toast/导航 | `AbsMvvmViewModel`         | 有状态和副作用，无动作分发      |
+| 表单提交、用户交互     | `AbsMviViewModel`          | 完整 MVI，使用 `on<Action>` DSL |
+| 多步骤流程、复杂状态   | `StateMachineMviViewModel` | FlowRedux 状态机                |
+| 可复用状态逻辑         | `StateMachineMviViewModel` | 子状态机模式                    |
 
 ### 快速决策流程
 
@@ -244,11 +244,11 @@ class ComplexViewModel : StateMachineMviViewModel<State, Action, Effect>() {
 ### 1. 基本结构
 
 ```kotlin
-@Stable
+@Immutable
 data class AuthState(
-    // 用户输入
-    val email: TextFieldState = TextFieldState(),
-    val password: TextFieldState = TextFieldState(),
+    // 用户输入的纯数据；TextFieldState 等 Compose 运行时对象由 UI 层持有
+    val email: String = "",
+    val password: String = "",
 
     // UI 状态
     val isLoading: Boolean = false,
@@ -263,16 +263,16 @@ data class AuthState(
 ) {
     // 派生状态（计算属性）
     val isSubmitEnabled: Boolean
-        get() = email.text.isNotBlank() && password.text.isNotBlank() && !isLoading
+        get() = email.isNotBlank() && password.isNotBlank() && !isLoading
 
     val fullEmail: String
-        get() = "${email.text}${emailSuffixes.getOrElse(0) { "" }}"
+        get() = "$email${emailSuffixes.getOrElse(0) { "" }}"
 }
 ```
 
 ### 2. State 设计原则
 
-- 使用 `@Stable` 注解优化 Compose 重组
+- 只包含不可变数据的状态模型使用 `@Immutable`；不要用它包装可变的 Compose 运行时对象
 - 所有字段都应有合理的默认值
 - 复杂逻辑使用派生属性（计算属性）
 - 子状态机状态使用独立的 sealed class
@@ -333,8 +333,8 @@ viewModel.collectSideEffects { effect ->
 > 何时可以把“滚动位置”放进 `State`？
 >
 > 仅在你确实需要跨页面/跨进程/跨路由共享或回放时，才考虑把 **纯数据形式** 的位置（例如
-`firstVisibleItemIndex/firstVisibleItemScrollOffset`）放入 `State`；不要把 `LazyListState` 本体放进
-`State`。
+> `firstVisibleItemIndex/firstVisibleItemScrollOffset`）放入 `State`；不要把 `LazyListState` 本体放进
+> `State`。
 
 ### 4. 子状态机模式
 
@@ -342,7 +342,7 @@ viewModel.collectSideEffects { effect ->
 /**
  * 发送验证码的状态机。
  */
-@Stable
+@Immutable
 sealed interface SendCodeState {
     /** 空闲状态，可以发送 */
     sealed interface Ready : SendCodeState {
@@ -397,12 +397,12 @@ interface AuthAction {
 
 ### 2. Action 命名约定
 
-| UI 回调            | Action 名称                         |
-|------------------|-----------------------------------|
+| UI 回调          | Action 名称                              |
+|------------------|------------------------------------------|
 | `onClick`        | 描述性名称，如 `Submit`, `NavigateToXxx` |
-| `onValueChanged` | `XxxChanged`, 如 `EmailChanged`    |
-| `onSelected`     | `XxxSelected`, 如 `TabSelected`    |
-| `onDismiss`      | `DismissXxx` 或 `CloseXxx`         |
+| `onValueChanged` | `XxxChanged`, 如 `EmailChanged`          |
+| `onSelected`     | `XxxSelected`, 如 `TabSelected`          |
+| `onDismiss`      | `DismissXxx` 或 `CloseXxx`               |
 
 ### 3. 子状态机 Action
 
@@ -439,13 +439,13 @@ internal interface AuthEffect {
 
 ### 2. Effect 使用场景
 
-| 场景                 | Effect 类型                       |
-|--------------------|---------------------------------|
-| 页面跳转               | `NavigateToXxx`                 |
-| Toast/Snackbar     | `ShowMessage` / `ShowToast`     |
-| 对话框                | `ShowDialog` / `CloseDialog`    |
-| 外部链接               | `OpenUrl`                       |
-| 系统分享               | `Share`                         |
+| 场景                            | Effect 类型                         |
+|---------------------------------|-------------------------------------|
+| 页面跳转                        | `NavigateToXxx`                     |
+| Toast/Snackbar                  | `ShowMessage` / `ShowToast`         |
+| 对话框                          | `ShowDialog` / `CloseDialog`        |
+| 外部链接                        | `OpenUrl`                           |
+| 系统分享                        | `Share`                             |
 | UI 状态操作（滚动/聚焦/切页等） | `UiState.Xxx`（例如 `ScrollToTop`） |
 
 ### 3. Effect 消费
@@ -504,14 +504,15 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
 
 **扩展函数说明：**
 
-| 扩展函数                                 | 来源                | 说明                        |
-|--------------------------------------|-------------------|---------------------------|
-| `stateCollectAsStateWithLifecycle()` | `StateViewModel`  | 生命周期感知的状态收集               |
+| 扩展函数                             | 来源              | 说明                                |
+|--------------------------------------|-------------------|-------------------------------------|
+| `stateCollectAsStateWithLifecycle()` | `StateViewModel`  | 生命周期感知的状态收集              |
 | `collectSideEffects { }`             | `EffectViewModel` | 副作用收集，内部使用 LaunchedEffect |
 
 ## 七、FlowRedux2 状态机使用
 
-> 📖 **详细文档**: 请参阅 [flowredux.md](/.docs/guides/flow-redux.md) 获取完整的 FlowRedux2 API 使用指南。
+> 📖 **详细文档**：请参阅 [FlowRedux2 状态机指南](../guides/flow-redux.md)，本页只说明如何在 ViewModel
+> 中选择和接入状态机。
 
 ### 1. 基本结构
 
@@ -548,41 +549,14 @@ class AuthViewModel : StateMachineMviViewModel<AuthState, AuthAction, AuthEffect
 }
 ```
 
-### 2. 核心 DSL 速查
+### 2. DSL 与状态变更规则
 
-| DSL                                  | 用途          |
-|--------------------------------------|-------------|
-| `inState<S>`                         | 定义状态类型的处理块  |
-| `on<A>`                              | 处理特定 Action |
-| `onEnter`                            | 进入状态时执行（一次） |
-| `condition({ predicate })`           | 条件状态处理      |
-| `collectWhileInState(flow)`          | 订阅 Flow     |
-| `untilIdentityChanged({ selector })` | 属性变化时重新执行   |
+FlowRedux DSL
+的完整速查、执行策略、取消语义和状态变更规则统一维护在 [FlowRedux2 状态机指南](../guides/flow-redux.md)
+；本页只保留 ViewModel 的接入示例，避免维护两份易漂移的 API 说明。
 
-| 状态操作                    | 用途                                           |
-|-------------------------|----------------------------------------------|
-| `override { NewState }` | 切换到新状态类型                                     |
-| `mutate { copy(...) }`  | 修改当前状态属性                                     |
-| `noChange()`            | 不改变状态                                        |
-| `snapshot`              | 获取当前状态快照                                     |
-| `poseEffect(effect)`    | 触发副作用 ⚠️ *项目扩展，仅 `StateMachineMviViewModel`* |
-
-### 3. 重要规则
-
-> **⚠️ 一个 DSL 块中只能改变一次状态，多次调用只有最后一次生效**
-
-```kotlin
-// ❌ 错误：多次改变状态
-on<AuthAction.Submit> {
-    mutate { copy(isLoading = true) }  // 被忽略！
-    mutate { copy(error = null) }       // 生效
-}
-
-// ✅ 正确：一次性改变所有需要的状态
-on<AuthAction.Submit> {
-    mutate { copy(isLoading = true, error = null) }
-}
-```
+在项目中使用 `StateMachineMviViewModel` 时，遵循该指南关于一次 DSL 块只提交一次状态变更的约束，并通过
+`poseEffect` 发出一次性副作用。
 
 ## 八、Screen 组件结构
 
@@ -646,9 +620,9 @@ private fun AuthScreenPreview() = AppPreview {
 
 ### 2. 分离原则
 
-| 组件                 | 职责                          |
-|--------------------|-----------------------------|
-| `XxxScreen`        | 连接 ViewModel，处理 Effect      |
+| 组件               | 职责                               |
+|--------------------|------------------------------------|
+| `XxxScreen`        | 连接 ViewModel，处理 Effect        |
 | `XxxScreenContent` | 纯 UI 渲染，接收 state 和 onAction |
 | `HandleEffects`    | 集中处理副作用                     |
 
@@ -659,4 +633,4 @@ private fun AuthScreenPreview() = AppPreview {
 3. **Effect 一次性**: Effect 用于一次性事件，不要存储在 State 中
 4. **分离 UI 和逻辑**: Content 组件应该是纯函数，便于预览和测试
 5. **利用派生状态**: 复杂的 UI 逻辑放在 State 的计算属性中
-6. **子状态机复用**: 通用的状态逻辑抽取为可复用的子状态机_
+6. **子状态机复用**：通用的状态逻辑抽取为可复用的子状态机。
