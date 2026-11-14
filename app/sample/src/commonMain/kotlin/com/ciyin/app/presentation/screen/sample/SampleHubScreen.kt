@@ -7,12 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,13 +43,14 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
 /**
  * 样例入口列表，点击后交由独立样例导航栈处理。
  *
- * @param onExitSampleModule 点击顶部返回按钮时调用，由宿主决定如何退出或回退。
+ * 本页是样例子导航栈的根页，身后没有可退回的页面，因此不提供返回入口；
+ * 系统返回由宿主 NavDisplay 处理。
+ *
  * @param toNavigate 点击样例条目时接收其路由，由宿主维护导航栈。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SampleHubScreen(
-    onExitSampleModule: () -> Unit,
     toNavigate: (NavRouter) -> Unit,
 ) {
     val entries = rememberSampleHubEntries()
@@ -62,14 +59,6 @@ internal fun SampleHubScreen(
         topBar = {
             TopAppBar(
                 title = { Text("示例 / 样例") },
-                navigationIcon = {
-                    IconButton(onClick = onExitSampleModule) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "退出示例模块"
-                        )
-                    }
-                },
             )
         },
     ) { padding ->
@@ -224,6 +213,6 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
 @Composable
 private fun SampleHubContentPreview() {
     NomiTheme(designSystem = NomiDesignSystem.Material3) {
-        SampleHubScreen(onExitSampleModule = {}, toNavigate = {})
+        SampleHubScreen(toNavigate = {})
     }
 }

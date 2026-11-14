@@ -4,9 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.presentation.screen.aichat.AiChatScreen
 import com.ciyin.app.presentation.screen.aiimage.AiImageDemoScreen
 import ciyin.designsystem.theme.NomiTheme
@@ -27,15 +24,12 @@ import com.ciyin.app.presentation.screen.videoplayer.VideoPlayerDemoScreen
 /**
  * 样例模块根入口，创建以首页为起点、支持保存恢复的独立子导航栈。
  *
- * 页面事件和系统返回都交给样例栈处理；设计系统候选从外层 provider 读取。
+ * 系统返回由 NavDisplay 按栈深处理：栈内有多页时回退，处于样例根页时交回宿主，
+ * 不会清空子导航栈；设计系统候选从外层 provider 读取。
  */
 @Composable
 fun SampleModuleRoot() {
     val sampleBackStack = rememberNavBackStack(NavSavedStateConfig, SampleHubRouter)
-
-    NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None)) {
-        sampleBackStack.back()
-    }
 
     NavDisplay(
         backStack = sampleBackStack,
@@ -46,7 +40,6 @@ fun SampleModuleRoot() {
             entry<SampleHubRouter> {
                 SampleHubScreen(
                     toNavigate = { sampleBackStack.navigate(it) },
-                    onExitSampleModule = { sampleBackStack.back() },
                 )
             }
             entry<AiImageDemoRouter> {

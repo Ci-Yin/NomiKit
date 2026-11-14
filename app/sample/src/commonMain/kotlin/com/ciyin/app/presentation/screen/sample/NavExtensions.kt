@@ -18,10 +18,12 @@ internal fun <T : NavKey> NavBackStack<NavKey>.navigate(
 
 /**
  * 从导航栈返回上一页。
- * 移除栈顶元素，如果栈为空则不执行任何操作。
+ *
+ * Navigation3 的 NavDisplay 要求 backstack 非空：栈底元素是导航起点，移除后重组合会抛出
+ * “NavDisplay backstack cannot be empty”。因此只剩栈底元素时不执行任何操作，把返回交给宿主处理。
  */
 internal fun NavBackStack<NavKey>.back() {
-    removeLastOrNull()
+    if (size > 1) removeLastOrNull()
 }
 
 /**
