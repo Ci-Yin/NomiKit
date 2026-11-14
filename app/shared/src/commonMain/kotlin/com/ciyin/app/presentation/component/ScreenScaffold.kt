@@ -20,22 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import ciyin.material.theme.AppTheme
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.material3.Material3
+import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.extension.thenIf
-import ciyin.ui.foundation.widget.Title
 import com.ciyin.app.shared.Res
 import com.ciyin.app.shared.app_name
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-
-/**
- *
- * kotlin文件作用描述
- *
- * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
- * @since 2024/10/19 下午8:16
- */
 
 /**
  * 应用页面通用脚手架。
@@ -56,8 +49,8 @@ fun ScreenScaffold(
     title: String = "",
     maxWidth: Dp? = 1000.dp,
     scrollState: ScrollState? = null,
-    contentPadding: PaddingValues = PaddingValues(AppTheme.spacings.large),
-    containerColor: Color = AppTheme.colorScheme.background,
+    contentPadding: PaddingValues = PaddingValues(NomiTheme.spacings.large),
+    containerColor: Color = windowBackgroundColor(NomiTheme.colorScheme.background),
     topBar: @Composable RowScope.() -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
@@ -74,21 +67,21 @@ fun ScreenScaffold(
                 widthIn(max = maxWidth!!)
             }
             .fillMaxSize()
-            .background(AppTheme.colorScheme.background),
+            .background(windowBackgroundColor(NomiTheme.colorScheme.background)),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    vertical = AppTheme.spacings.small,
-                    horizontal = AppTheme.spacings.large
+                    vertical = NomiTheme.spacings.small,
+                    horizontal = NomiTheme.spacings.large
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (title.isNotEmpty()) {
-                Title(
-                    style = AppTheme.typography.titleLarge,
-                    text = title
+                NomiText(
+                    text = title,
+                    style = NomiTheme.typography.titleLarge,
                 )
             }
             topBar()
@@ -110,10 +103,12 @@ fun ScreenScaffold(
 @Preview
 @Composable
 private fun ScreenPreview() {
-    ScreenScaffold(
-        title = stringResource(Res.string.app_name),
-        topBar = {}
-    ) {
+    NomiTheme(designSystem = NomiDesignSystem.Material3) {
+        ScreenScaffold(
+            title = stringResource(Res.string.app_name),
+            topBar = {}
+        ) {
 
+        }
     }
 }

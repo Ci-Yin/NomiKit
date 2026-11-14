@@ -18,6 +18,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.text.encodeToByteArray
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -39,9 +40,7 @@ internal class MediaDirectoryDemoViewModel(
     /** 页面级可选 Access 工厂；非空时优先于 [MediaDirectorySession.requestAccess]。 */
     private val accessFactoryOverride: (suspend () -> ciyin.media.directory.MediaDirectoryAccess?)? = null,
     /** 当前平台上下文（用于写示例源文件到 cache 目录）。 */
-    private val contextProvider: () -> Context = {
-        org.koin.core.context.GlobalContext.get().get()
-    },
+    private val contextProvider: (() -> Context)? = null,
     /** 内置示例字节读取器。 */
     private val sampleSourceBytes: () -> ByteArray = { DEFAULT_SAMPLE_BYTES },
     /** 示例提交文件名。 */
@@ -55,6 +54,13 @@ internal class MediaDirectoryDemoViewModel(
         >(), KoinComponent {
     /** KoinBoot 自动装配的用户媒体目录会话。 */
     private val injectedSession: MediaDirectorySession by inject()
+
+    /** KoinBoot 自动装配的当前平台上下文。 */
+    private val injectedContext: Context by inject()
+
+    /** 当前平台上下文提供器；测试可传入覆盖实现。 */
+    private val resolvedContextProvider: () -> Context
+        get() = contextProvider ?: { injectedContext }
 
     /** 测试覆盖优先的当前会话。 */
     private val session: MediaDirectorySession
@@ -432,7 +438,7 @@ internal class MediaDirectoryDemoViewModel(
 
     /** 准备示例源文件到当前平台 cache 目录。 */
     private suspend fun prepareSampleSourceFile(): File {
-        val directory = contextProvider().files.cacheDir
+        val directory = resolvedContextProvider().files.cacheDir
             .resolve("media-directory-demo")
             .apply { mkdirs() }
         val source = directory.resolve("media-directory-sample.txt")
@@ -450,6 +456,6 @@ internal class MediaDirectoryDemoViewModel(
     private companion object {
         /** 示例使用的固定字节内容。 */
         val DEFAULT_SAMPLE_BYTES: ByteArray =
-            "NomiKit user-media-directory demo payload.".toByteArray()
+            "NomiKit user-media-directory demo payload.".encodeToByteArray()
     }
 }

@@ -9,6 +9,12 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ciyin.app.presentation.screen.aichat.AiChatScreen
 import com.ciyin.app.presentation.screen.aiimage.AiImageDemoScreen
+import ciyin.designsystem.theme.NomiTheme
+import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoContent
+import com.ciyin.app.presentation.screen.designsystem.component.SamplePreviewTheme
+import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoUiState
+import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoScreen
+import org.jetbrains.compose.ui.tooling.preview.AppPreview
 import com.ciyin.app.presentation.screen.filedownloader.FileDownloaderDemoScreen
 import com.ciyin.app.presentation.screen.filepicker.FilePickerDemoScreen
 import com.ciyin.app.presentation.screen.mediadirectory.MediaDirectoryDemoScreen
@@ -19,7 +25,9 @@ import com.ciyin.app.presentation.screen.runtimeinfo.RuntimeInfoScreen
 import com.ciyin.app.presentation.screen.videoplayer.VideoPlayerDemoScreen
 
 /**
- * 样例模块根 Composable：独立子导航栈
+ * 样例模块根入口，创建以首页为起点、支持保存恢复的独立子导航栈。
+ *
+ * 页面事件和系统返回都交给样例栈处理；设计系统候选从外层 provider 读取。
  */
 @Composable
 fun SampleModuleRoot() {
@@ -91,6 +99,11 @@ fun SampleModuleRoot() {
                     onBack = { sampleBackStack.back() },
                 )
             }
+            entry<DesignSystemDemoRouter> {
+                DesignSystemDemoScreen(
+                    onBack = { sampleBackStack.back() },
+                )
+            }
             entry<SampleExamplePlaceholderARouter> {
                 SamplePlaceholderScreen(
                     title = "占位示例 A",
@@ -99,4 +112,15 @@ fun SampleModuleRoot() {
             }
         },
     )
+}
+
+/**
+ * 导航宿主同文件预览纯展示内容，不创建真实 back stack 或状态机。
+ */
+@AppPreview
+@Composable
+private fun SampleDesignSystemEntryPreview() {
+    SamplePreviewTheme {
+        DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {})
+    }
 }

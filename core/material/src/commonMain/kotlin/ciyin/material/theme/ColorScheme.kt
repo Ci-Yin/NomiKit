@@ -1,132 +1,52 @@
 package ciyin.material.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import ciyin.material.theme.DarkMode.Dark
-import ciyin.material.theme.DarkMode.Light
-import ciyin.material.theme.DarkMode.System
-
+import ciyin.designsystem.theme.NomiColorScheme as DesignSystemColorScheme
+import ciyin.designsystem.theme.defaultDarkNomiColorScheme
+import ciyin.designsystem.theme.defaultLightNomiColorScheme
 
 /**
- * 应用颜色方案
+ * 旧颜色类型的源码兼容别名，承载主色、表面色、状态色、文本色与边框色。
  *
- * 简化的颜色系统，包含必要的颜色类别：
- * - 主色（Primary/Secondary）：品牌主色和次要色
- * - 表面色（Surface/Background）：背景和卡片表面
- * - 语义色（Error/Warning/Success/Info）：状态提示颜色
- * - 文本色（Text）：主要、次要、提示、说明、禁用五级文本颜色
- * - 中性色（Outline/Divider）：边框和分隔线
- *
- * @property primary 主色，用于按钮、链接等主要交互元素
- * @property onPrimary 主色上的内容颜色（通常是文字或图标）
- * @property secondary 次要色，用于次要的交互元素
- * @property onSecondary 次要色上的内容颜色
- * @property background 主背景色，用于整个应用背景
- * @property onBackground 背景上的内容颜色（通常是文字）
- * @property surface 中层容器表面色，用于卡片、对话框等标准容器
- * @property surfaceHigh 更高层级的表面色，用于比基础表面更突出的容器
- * @property surfaceHigher 最高层级的表面色，用于最突出的容器
- * @property surfaceLow 较低层级的表面色，用于轻量容器
- * @property surfaceLower 最低层级的表面色，用于最贴近背景的容器
- * @property onSurface 表面上的内容颜色
- * @property error 错误状态颜色
- * @property onError 错误色上的内容颜色
- * @property warning 警告状态颜色
- * @property onWarning 警告色上的内容颜色
- * @property success 成功状态颜色
- * @property onSuccess 成功色上的内容颜色
- * @property info 信息状态颜色
- * @property onInfo 信息色上的内容颜色
- * @property textPrimary 主要文本颜色，用于正文内容
- * @property textSecondary 次要文本颜色，用于辅助说明文字
- * @property textHint 提示文本颜色，用于占位符、提示文字等
- * @property textCaption 说明文本颜色，用于图注、辅助说明等
- * @property textDisabled 禁用文本颜色，用于禁用状态的文字
- * @property outline 边框颜色，用于输入框、卡片边框等
- * @property divider 分隔线颜色，用于列表项分隔等
+ * 使用 [lightColorScheme]、[darkColorScheme] 和生成的成员 copy创建或复制中立模型。
  */
-@Immutable
-@ConsistentCopyVisibility
-data class AppColorScheme internal constructor(
-    // ========== 主色 ==========
-    val primary: Color,
-    val onPrimary: Color,
-
-    val secondary: Color,
-    val onSecondary: Color,
-
-    // ========== 表面色 ==========
-    val background: Color,
-    val onBackground: Color,
-
-    val surface: Color,
-    val surfaceHigh: Color,
-    val surfaceHigher: Color,
-    val surfaceLow: Color,
-    val surfaceLower: Color,
-    val onSurface: Color,
-
-    // ========== 语义色 ==========
-    val error: Color,
-    val onError: Color,
-
-    val warning: Color,
-    val onWarning: Color,
-
-    val success: Color,
-    val onSuccess: Color,
-
-    val info: Color,
-    val onInfo: Color,
-
-    // ========== 文本色 ==========
-    val textPrimary: Color,
-    val textSecondary: Color,
-    val textHint: Color,
-    val textCaption: Color,
-    val textDisabled: Color,
-
-    // ========== 中性色 ==========
-    val outline: Color,
-    val divider: Color,
-)
+typealias AppColorScheme = DesignSystemColorScheme
 
 /**
- * 创建浅色主题颜色方案。
+ * 创建基于旧浅色默认值的完整颜色方案。
  *
- * 所有参数默认使用内置浅色主题令牌，调用方可以通过命名参数覆盖任意颜色。
+ * 未传参数沿用中立工厂 [defaultLightNomiColorScheme] 的浅色默认值，不读取当前主题或系统明暗模式。
+ * 显式传入的颜色原样保存，包括 [Color.Unspecified] 与 [Color.Transparent]；二者都不会触发默认色回填。
+ * 此工厂保留旧配色，不代表 Material 3 的原生默认色板。
  *
- * @param primary 主色，用于按钮、链接等主要交互元素
- * @param onPrimary 主色上的内容颜色
- * @param secondary 次要色，用于次要的交互元素
- * @param onSecondary 次要色上的内容颜色
- * @param background 主背景色，用于整个应用背景
- * @param onBackground 背景上的内容颜色
- * @param surface 中层容器表面色，用于卡片、对话框等标准容器
- * @param surfaceHigh 更高层级的表面色，用于比基础表面更突出的容器
- * @param surfaceHigher 最高层级的表面色，用于最突出的容器
- * @param surfaceLow 较低层级的表面色，用于轻量容器
- * @param surfaceLower 最低层级的表面色，用于最贴近背景的容器
- * @param onSurface 表面上的内容颜色
- * @param error 错误状态颜色
- * @param onError 错误色上的内容颜色
- * @param warning 警告状态颜色
- * @param onWarning 警告色上的内容颜色
- * @param success 成功状态颜色
- * @param onSuccess 成功色上的内容颜色
- * @param info 信息状态颜色
- * @param onInfo 信息色上的内容颜色
- * @param textPrimary 主要文本颜色，用于正文内容
- * @param textSecondary 次要文本颜色，用于辅助说明文字
- * @param textHint 提示文本颜色，用于占位符、提示文字等
- * @param textCaption 说明文本颜色，用于图注、辅助说明等
- * @param textDisabled 禁用文本颜色，用于禁用状态的文字
- * @param outline 边框颜色，用于输入框、卡片边框等
- * @param divider 分隔线颜色，用于列表项分隔等
+ * @param primary 主色，用于按钮、链接等主要交互元素。
+ * @param onPrimary 主色上的文字、图标等内容颜色。
+ * @param secondary 次要交互元素使用的辅助色。
+ * @param onSecondary 次要色上的内容颜色。
+ * @param background 应用主背景色。
+ * @param onBackground 主背景上的内容颜色。
+ * @param surface 卡片、对话框等标准容器的中层表面色。
+ * @param surfaceHigh 比基础表面更突出的高层容器表面色。
+ * @param surfaceHigher 最高层级容器的表面色。
+ * @param surfaceLow 轻量容器使用的较低层级表面色。
+ * @param surfaceLower 最贴近背景的最低层级表面色。
+ * @param onSurface 容器表面上的内容颜色。
+ * @param error 错误状态提示色。
+ * @param onError 错误色上的内容颜色。
+ * @param warning 警告状态提示色。
+ * @param onWarning 警告色上的内容颜色。
+ * @param success 成功状态提示色。
+ * @param onSuccess 成功色上的内容颜色。
+ * @param info 一般信息提示色。
+ * @param onInfo 信息色上的内容颜色。
+ * @param textPrimary 正文等主要文本的颜色。
+ * @param textSecondary 辅助文本的颜色。
+ * @param textHint 占位符、输入提示等提示文本的颜色。
+ * @param textCaption 图注、说明等补充文本的颜色。
+ * @param textDisabled 禁用状态文本的颜色。
+ * @param outline 输入框、卡片等元素的边框颜色。
+ * @param divider 列表项等内容之间的分隔线颜色。
+ * @return 应用上述颜色的新 [AppColorScheme] 实例，未指定字段为浅色默认值。
  */
 fun lightColorScheme(
     primary: Color = LightThemeColors.primary,
@@ -156,7 +76,7 @@ fun lightColorScheme(
     textDisabled: Color = LightThemeColors.textDisabled,
     outline: Color = LightThemeColors.outline,
     divider: Color = LightThemeColors.divider,
-): AppColorScheme = AppColorScheme(
+): AppColorScheme = defaultLightNomiColorScheme(
     primary = primary,
     onPrimary = onPrimary,
     secondary = secondary,
@@ -187,37 +107,40 @@ fun lightColorScheme(
 )
 
 /**
- * 创建深色主题颜色方案。
+ * 创建基于旧深色默认值的完整颜色方案。
  *
- * 所有参数默认使用内置深色主题令牌，调用方可以通过命名参数覆盖任意颜色。
+ * 未传参数沿用中立工厂 [defaultDarkNomiColorScheme] 的深色默认值，不读取当前主题或系统明暗模式。
+ * 显式传入的颜色原样保存，包括 [Color.Unspecified] 与 [Color.Transparent]；二者都不会触发默认色回填。
+ * 此工厂保留旧配色，不代表 Material 3 的原生默认色板。
  *
- * @param primary 主色，用于按钮、链接等主要交互元素
- * @param onPrimary 主色上的内容颜色
- * @param secondary 次要色，用于次要的交互元素
- * @param onSecondary 次要色上的内容颜色
- * @param background 主背景色，用于整个应用背景
- * @param onBackground 背景上的内容颜色
- * @param surface 中层容器表面色，用于卡片、对话框等标准容器
- * @param surfaceHigh 更高层级的表面色，用于比基础表面更突出的容器
- * @param surfaceHigher 最高层级的表面色，用于最突出的容器
- * @param surfaceLow 较低层级的表面色，用于轻量容器
- * @param surfaceLower 最低层级的表面色，用于最贴近背景的容器
- * @param onSurface 表面上的内容颜色
- * @param error 错误状态颜色
- * @param onError 错误色上的内容颜色
- * @param warning 警告状态颜色
- * @param onWarning 警告色上的内容颜色
- * @param success 成功状态颜色
- * @param onSuccess 成功色上的内容颜色
- * @param info 信息状态颜色
- * @param onInfo 信息色上的内容颜色
- * @param textPrimary 主要文本颜色，用于正文内容
- * @param textSecondary 次要文本颜色，用于辅助说明文字
- * @param textHint 提示文本颜色，用于占位符、提示文字等
- * @param textCaption 说明文本颜色，用于图注、辅助说明等
- * @param textDisabled 禁用文本颜色，用于禁用状态的文字
- * @param outline 边框颜色，用于输入框、卡片边框等
- * @param divider 分隔线颜色，用于列表项分隔等
+ * @param primary 主色，用于按钮、链接等主要交互元素。
+ * @param onPrimary 主色上的文字、图标等内容颜色。
+ * @param secondary 次要交互元素使用的辅助色。
+ * @param onSecondary 次要色上的内容颜色。
+ * @param background 应用主背景色。
+ * @param onBackground 主背景上的内容颜色。
+ * @param surface 卡片、对话框等标准容器的中层表面色。
+ * @param surfaceHigh 比基础表面更突出的高层容器表面色。
+ * @param surfaceHigher 最高层级容器的表面色。
+ * @param surfaceLow 轻量容器使用的较低层级表面色。
+ * @param surfaceLower 最贴近背景的最低层级表面色。
+ * @param onSurface 容器表面上的内容颜色。
+ * @param error 错误状态提示色。
+ * @param onError 错误色上的内容颜色。
+ * @param warning 警告状态提示色。
+ * @param onWarning 警告色上的内容颜色。
+ * @param success 成功状态提示色。
+ * @param onSuccess 成功色上的内容颜色。
+ * @param info 一般信息提示色。
+ * @param onInfo 信息色上的内容颜色。
+ * @param textPrimary 正文等主要文本的颜色。
+ * @param textSecondary 辅助文本的颜色。
+ * @param textHint 占位符、输入提示等提示文本的颜色。
+ * @param textCaption 图注、说明等补充文本的颜色。
+ * @param textDisabled 禁用状态文本的颜色。
+ * @param outline 输入框、卡片等元素的边框颜色。
+ * @param divider 列表项等内容之间的分隔线颜色。
+ * @return 应用上述颜色的新 [AppColorScheme] 实例，未指定字段为深色默认值。
  */
 fun darkColorScheme(
     primary: Color = DarkThemeColors.primary,
@@ -247,7 +170,7 @@ fun darkColorScheme(
     textDisabled: Color = DarkThemeColors.textDisabled,
     outline: Color = DarkThemeColors.outline,
     divider: Color = DarkThemeColors.divider,
-): AppColorScheme = AppColorScheme(
+): AppColorScheme = defaultDarkNomiColorScheme(
     primary = primary,
     onPrimary = onPrimary,
     secondary = secondary,
@@ -276,45 +199,3 @@ fun darkColorScheme(
     outline = outline,
     divider = divider,
 )
-
-/**
- * 将 [AppColorScheme] 转换为 Material3 的 [ColorScheme]。
- *
- * 将应用自定义颜色方案映射到 Material3 的标准颜色方案，用于 MaterialTheme。
- */
-@Composable
-internal fun AppColorScheme.toMaterialColorScheme(darkMode: DarkMode): ColorScheme {
-    val lightColorScheme = androidx.compose.material3.lightColorScheme()
-    val darkColorScheme = androidx.compose.material3.darkColorScheme()
-    val colorScheme = when (darkMode) {
-        Light -> lightColorScheme
-        Dark -> darkColorScheme
-        System -> if (isSystemInDarkTheme()) darkColorScheme else lightColorScheme
-    }
-    return colorScheme.copy(
-        primary = primary,
-        onPrimary = onPrimary,
-        secondary = secondary,
-        onSecondary = onSecondary,
-        error = error,
-        onError = onError,
-        background = background,
-        onBackground = onBackground,
-        surface = surface,
-        surfaceContainer = surface,
-        surfaceContainerHigh = surfaceHigh,
-        surfaceContainerHighest = surfaceHigher,
-        surfaceContainerLow = surfaceLow,
-        surfaceContainerLowest = surfaceLower,
-        onSurface = onSurface,
-        outline = outline,
-    )
-}
-
-/**
- * CompositionLocal 用于在组件树中传递 [AppColorScheme] 配色方案。
- *
- * 该值的设置通常作为 [AppTheme] 的一部分来完成。要获取此 CompositionLocal 的当前值，
- * 可以使用 [AppTheme.colorScheme] 来访问。
- */
-internal val LocalColorScheme = staticCompositionLocalOf { lightColorScheme() }

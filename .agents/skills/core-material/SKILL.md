@@ -1,72 +1,65 @@
 ---
 name: core-material
-description: Use the core/material Kotlin Multiplatform Design System module (packages ciyin.material.theme and ciyin.material.theme.iconpack). Covers AppTheme, DarkMode, AppColorScheme, AppShapes, Spacings, AppSizes, Material 3 theme bridging, and built-in IconPack icons. Use when 用户要在 NomiKit 中使用或维护项目 Design System、主题令牌、Material 3 主题封装、内置图标，或排查 core/material 构建问题。
+description: Maintain NomiKit core/material as the ciyin.material.theme source-compatibility facade. Use for legacy AppTheme, Material Typography, DarkMode imports, token factories, old IconPack extensions, or migration failures. New native-default-first components and adapters belong to core-design-system.
 ---
 
-# core/material 使用指南
+# core/material 兼容门面
 
-`core/material` 是 NomiKit 的 Design System 入口模块。当前实现以 Material 3 为默认设计语言，包名为 `ciyin.material.theme`，未来可以继续聚合 Compose Fluent 等其它 Design 实现。
+新增、重构或修复 Kotlin 声明时，先读取 [kotlin-kdoc](<../kotlin-kdoc/SKILL.md>)
+；仅有中文摘要不代表参数、返回值和边界契约已完整。
 
-## 主题入口
+保留旧 `ciyin.material.theme` 与旧图标
+API，新增中立能力转[core-design-system](<../core-design-system/SKILL.md>)。
+完整矩阵见[模块 README](<../../../core/material/README.md>)；修改前读
+[旧 Theme](<../../../core/material/src/commonMain/kotlin/ciyin/material/theme/Theme.kt>)、
+[M3 配置入口](<../../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3DesignSystem.kt>)
+和真实旧调用方。
 
-```kotlin
-import ciyin.material.theme.AppTheme
-import ciyin.material.theme.DarkMode
+## 原生默认重构后的兼容方式
 
-AppTheme(darkMode = DarkMode.System) {
-    Text(
-        text = "Hello",
-        color = AppTheme.colorScheme.textPrimary,
-        style = AppTheme.typography.bodyMedium,
-    )
-}
+- 旧 `AppTheme(...)` 保留参数名、顺序和默认选择行为；省略颜色按请求模式选择旧默认，其余参数继承当前值。
+- `rememberLegacyMaterial3DesignSystem(colorScheme, typography, shapes, spacings, sizes)` 直接保存旧颜色、原生
+  Material Typography、形状、间距和尺寸，再建立 Nomi/M3 原生环境；不把主题聚合对象重新引入核心入口。
+- `AppTheme.typography` 仍是 Material 类型；M3 环境读取实际实例，不能用十五角色往返转换丢失库专属角色。
+- 旧 colorScheme/shapes/spacings/sizes getter 通过 `NomiTheme` 读取；typography 在 Material3 环境保留原生
+  `MaterialTheme.typography` 实例，其余环境从中立排版映射。分支判定读取可空
+  `LocalNomiDesignSystem.current?.id == NomiDesignSystem.Material3.id`（需导入扩展属性
+  `ciyin.designsystem.material3.Material3`），未提供时走中立映射而非抛错。不要复制一套独立
+  CompositionLocal；组件通过 `NomiTheme` 读取中立主题。
+- `DarkMode` 保留真实旧枚举与显式映射，不能仅 typealias 而破坏枚举项 import。
+- 五组旧类型别名、颜色工厂 27 个命名参数和形状扩展保留；中立主题 data class 公开构造，旧别名同样可直接构造。
+  使用生成的成员 copy，无需导入任何 copy 扩展；删除此前新建的 8 个复制转发，不留 Deprecated/兼容入口，不误删既有
+  AppTheme/别名/工厂/图标兼容。 旧 lightColorScheme/darkColorScheme 直接转发到中立
+  defaultLightNomiColorScheme/defaultDarkNomiColorScheme，不复制默认值。
+  构造默认值与必填参数不变；单组默认工厂的新外层/共享子组身份不变，成员 copy 是保留未覆盖引用的浅复制。
+- 图标保留旧 namespace，数据只在中立核心；扩展转发使用显式 import alias，防止递归。
+- 既有兼容入口只承诺源码兼容，不承诺旧二进制 ABI；使用过新增复制转发的调用方须删除旧 copy import 后重编译。
+
+[构建](<../../../core/material/build.gradle.kts>)保留核心、M3 adapter 和 UI foundation 的 api 依赖；
+不能让核心/adapter 反向依赖旧门面，也不把 Fluent 依赖塞进兼容包。 应用根已选新 M3，legacy
+配置只服务旧入口；不添加全局双主题桥或延后根迁移 gate。 app/shared 已迁移到中立导航、NomiTheme 与中立
+IconPack，不再 import ciyin.material；旧门面消费者只剩 sample 等显式使用旧 AppTheme 的页面。 不要为
+app/shared 的导航/预览/脚手架恢复 AppTheme、旧 iconpack 或 ui-foundation 的 M3 Title。 新 NomiTheme
+接收五组直接参数，但 typography 是 Type 中的 NomiTypography，不是旧 Material 类型。 只有旧
+ciyin.material 门面继续保留 AppTheme/AppColorScheme/AppShapes/AppSizes
+名称；旧包默认工厂转发已删除，默认入口统一为中立核心工厂。新 API 不提供 App* 别名。 新根只继承非颜色明确组，Override
+继承全部明确组；这不取消旧函数自身的颜色默认选择与完整原生 Typography 身份契约。
+
+## 验证
+
+检查[源码兼容测试](<../../../core/material/src/commonTest/kotlin/ciyin/material/compat/LegacySourceCompatibilityTest.kt>)
+与
+[主题兼容测试](<../../../core/material/src/commonTest/kotlin/ciyin/material/compat/LegacyThemeCompatibilityTest.kt>)：
+保留的旧 import、命名参数、别名公开构造、无扩展导入的成员 copy、中立默认工厂/共享子组身份、 完整 Material
+Typography 对象身份、形状/图标转发、嵌套默认与新 M3 根下旧 getter。 新原生 M3
+默认和旧门面默认是不同契约，不为统一外观改掉旧默认数值。
+
+```powershell
+.\gradlew.bat :core:material:desktopTest --console=plain
+.\gradlew.bat :app:shared:compileCommonMainKotlinMetadata --console=plain
 ```
 
-常用入口：
-
-- `AppTheme(...)`：根主题包装器，内部桥接 Material 3 `MaterialTheme`。
-- `AppTheme.colorScheme`：项目颜色令牌，类型为 `AppColorScheme`。
-- `AppTheme.colorScheme.surfaceLower` / `surfaceLow` / `surface` / `surfaceHigh` / `surfaceHigher`：五级表面层级色，用于区分不同高度或突出程度的容器。
-- `AppTheme.typography`：Material 3 `Typography`。
-- `AppTheme.shapes`：项目圆角令牌，类型为 `AppShapes`。
-- `AppTheme.spacings`：项目间距令牌，类型为 `Spacings`。
-- `AppTheme.sizes`：项目尺寸令牌，类型为 `AppSizes`。
-- `lightColorScheme(...)` / `darkColorScheme(...)`：默认亮色/暗色配色，所有颜色参数都可用命名参数局部覆盖。
-
-注意事项：
-
-- app 层不要继续在旧 app 主题包下新增主题令牌；Design System 令牌应放在 `core/material`。
-- 调用侧导入 `ciyin.material.theme.*`，不要再使用旧 app 主题包。
-- 主题当前只抽出 Material 3 封装，不要提前新增 Design Provider 抽象；等第二套 Design 真正接入时再抽象。
-- `core/material` 通过 `api(projects.core.uiFoundation)` 获得 Compose Material 3、UI 与 Preview 能力，不重复声明底层 Compose 依赖。
-
-## 图标入口
-
-```kotlin
-import ciyin.material.theme.iconpack.IconPack
-import ciyin.material.theme.iconpack.Home
-
-Icon(
-    imageVector = IconPack.Home,
-    contentDescription = null,
-)
-```
-
-可用入口：
-
-- `IconPack.Home`
-- `IconPack.Settings`
-- `IconPack.LightMode`
-- `IconPack.ArrowRight`
-- `IconPack.Null`
-
-注意事项：
-
-- 图标包名是 `ciyin.material.theme.iconpack`。
-- `IconPack.Null` 用作占位图标，避免调用侧为可选图标建立额外分支。
-
-## 修改注意
-
-- 新增公开或内部 Kotlin 符号时按项目规则补中文 KDoc。
-- 主题令牌应优先保持语义命名，不要让 app 业务直接依赖裸 dp 或裸色值。
-- 修改本模块后优先运行 `.\gradlew.bat :core:material:compileCommonMainKotlinMetadata --console=plain`；如果改动影响 app 调用方，再运行 `.\gradlew.bat :app:shared:compileCommonMainKotlinMetadata --console=plain`。
+当前实施与验证记录见[设计说明](<../../../.docs/design/design-system-模块化方案.md>)。
+公开构造、中立单组默认工厂和旧类型别名仍是当前契约；旧包默认工厂转发已按用户授权删除。主题结果扁平化后的
+legacy factory 与 getter 已复验，后续修改仍须独立验证，不以历史原生默认、主题恢复和包迁移记录替代。
+修改公共兼容行为时同步 README 与本技能。

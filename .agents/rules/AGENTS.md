@@ -56,7 +56,8 @@ apply: always
 - 使用 Room 实体/DAO/版本、`TypeConverter` 或 Koin Room 绑定 → `room`。
 - 使用 `component:data-store`、DataStore 序列化或 Koin 装配 → `data-store`。
 - 新增或修改通用 Compose、Modifier、窗口、布局、刷新、网格或滚动 → `core-ui-foundation`。
-- 设计系统和 `AppTheme` 令牌 → `core-material`；Preview 注解 → `core-ui-preview`。
+- Nomi 设计系统、`NomiTheme` 令牌与 M3/Fluent adapter → `core-design-system`；旧 `ciyin.material.*`
+  兼容 → `core-material`；Preview 注解 → `core-ui-preview`。
 - 下游改动可能属于 NomiKit 公共模块 → `nomikit-public-sync`。
 - 其他模块以对应 skill 描述判断；不确定归属时先查看描述和真实模块依赖。
 
@@ -156,12 +157,13 @@ apply: always
 
 ## 十二、UI 设计令牌使用细则
 
-- 令牌位于 `core/material/src/commonMain/kotlin/ciyin/material/theme/`，通过 `AppTheme` 访问。
-- 间距、尺寸、形状、颜色、排版分别用 `AppTheme.spacings/sizes/shapes/colorScheme/typography`；深浅色用
+- 中立令牌位于 `core/design-system/src/commonMain/kotlin/ciyin/designsystem/theme/`，通过新
+  `NomiTheme` 访问；旧 `core/material` 只保留 AppTheme 兼容转发。
+- 间距、尺寸、形状、颜色、排版分别用 `NomiTheme.spacings/sizes/shapes/colorScheme/typography`；深浅色用
   `darkMode`。
-- `AppTheme.sizes` 包含图标、描边与布局约束，`AppTheme.typography` 已含 `TextStyle.lineHeight`。
+- `NomiTheme.sizes` 包含图标、描边与布局约束，`NomiTheme.typography` 已含 `TextStyle.lineHeight`。
 - 业务页面、Screen、ViewModel、UI model 禁止新增裸 `N.dp` 魔法值；优先复用现有间距、尺寸与形状令牌。
-- 颜色只取 `AppTheme.colorScheme`，文本样式只取 `AppTheme.typography`；不在业务代码硬编码
+- 颜色只取 `NomiTheme.colorScheme`，文本样式只取 `NomiTheme.typography`；不在业务代码硬编码
   `Color(0x...)`、字号或行高。
 - 页面独有度量须提取为具名 `private val`、补中文 KDoc，说明不是修错位或固定高度；可复用时沉淀为 token。
 - 承载文字、按钮、列表项、卡片或弹窗内容的容器禁止 `.height(N.dp)`、`.requiredHeight(N.dp)` 或
@@ -171,5 +173,5 @@ apply: always
 - 禁止用固定 top/bottom padding、`Spacer` 或 `offset(y = N.dp)` 修对齐、避让系统栏或撑空态。
 - 系统栏和空态布局使用 `WindowInsets`、`weight`、`Arrangement` 或内容分组。
 - 主题 token、矢量图标固有尺寸、发丝线/描边、稳定圆角/阴影和弹窗最大宽度可用明确 `dp`，优先已有尺寸令牌。
-- 描边与弹窗最大宽度优先取 `AppTheme.sizes.strokes`、`layoutConstraints`。
+- 描边与弹窗最大宽度优先取 `NomiTheme.sizes.strokes`、`layoutConstraints`。
 - `0.dp` 可作为边界值；业务 UI 中非零裸 `N.dp` 必须能解释稳定语义。

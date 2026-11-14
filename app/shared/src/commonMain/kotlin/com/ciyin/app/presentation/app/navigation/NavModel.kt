@@ -2,8 +2,8 @@ package com.ciyin.app.presentation.app.navigation
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
-import ciyin.material.theme.iconpack.IconPack
-import ciyin.material.theme.iconpack.Null
+import ciyin.designsystem.icon.IconPack
+import ciyin.designsystem.icon.Null
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -29,30 +29,24 @@ data class NavUiItem(
  * 应用主导航项 ID。
  */
 enum class NavId {
-    /** 首页导航项。 */
+    /**
+     * 首页导航项。
+     */
     Main,
 
-    /** 空占位导航项。 */
+    /**
+     * 空占位导航项；导航外壳把它解释为主导航与底部导航的分组边界。
+     */
     Null,
 
-    /** 主题导航项。 */
+    /**
+     * 主题导航项。
+     */
     Theme,
 
-    /** 设置导航项。 */
+    /**
+     * 设置导航项。
+     */
     Settings,
-}
-
-/**
- * 主导航组件的布局类型。
- */
-enum class NavigationSuiteType {
-    /** 底部导航栏。 */
-    NavigationBar,
-
-    /** 侧边导航栏。 */
-    NavigationRail,
-
-    /** 导航抽屉。 */
-    NavigationDrawer
 }
 

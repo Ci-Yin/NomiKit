@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ciyin.material.theme.AppTheme
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.shared.Res
 import com.ciyin.app.shared.nav_home
@@ -55,7 +55,7 @@ private fun MainContent(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium)
+        verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium)
     ) {
         items(state.items, { it.id }) { item ->
             Box(
@@ -64,9 +64,9 @@ private fun MainContent(
                     .clickable {
                         onAction(MainAction.ItemAction(item))
                     }
-                    .padding(AppTheme.spacings.small)
+                    .padding(NomiTheme.spacings.small)
             ) {
-                Text(item.name)
+                NomiText(text = item.name)
             }
         }
     }

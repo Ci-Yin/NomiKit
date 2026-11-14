@@ -7,5 +7,17 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         api(projects.core.uiFoundation)
+        api(projects.core.designSystem)
+        api(projects.core.designSystemMaterial3)
+    }
+
+    sourceSets.commonTest.dependencies {
+        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+        implementation(compose.uiTest)
+    }
+
+    sourceSets.desktopTest.dependencies {
+        implementation(compose.desktop.currentOs)
+        implementation(compose.desktop.uiTestJUnit4)
     }
 }

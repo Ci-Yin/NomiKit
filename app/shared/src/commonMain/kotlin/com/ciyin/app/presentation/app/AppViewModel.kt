@@ -1,11 +1,11 @@
 package com.ciyin.app.presentation.app
 
 import androidx.lifecycle.SavedStateHandle
-import ciyin.material.theme.iconpack.Home
-import ciyin.material.theme.iconpack.IconPack
-import ciyin.material.theme.iconpack.LightMode
-import ciyin.material.theme.iconpack.Null
-import ciyin.material.theme.iconpack.Settings
+import ciyin.designsystem.icon.Home
+import ciyin.designsystem.icon.IconPack
+import ciyin.designsystem.icon.LightMode
+import ciyin.designsystem.icon.Null
+import ciyin.designsystem.icon.Settings
 import ciyin.ui.foundation.viewmodel.AbsMviViewModel
 import ciyin.ui.foundation.viewmodel.SingleStateMachine
 import com.ciyin.app.shared.Res
@@ -24,8 +24,9 @@ import org.koin.core.component.KoinComponent
 
 
 /**
+ * 应用根 ViewModel：提供主导航项列表与初始导航状态，并把导航项点击合并进单状态机。
  *
- * kotlin类作用描述
+ * @param savedStateHandle 参与单状态机状态保存恢复的句柄；本类不额外持久化导航项数据。
  *
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/2 下午12:31

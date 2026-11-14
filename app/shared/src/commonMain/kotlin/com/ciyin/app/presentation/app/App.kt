@@ -1,13 +1,19 @@
 package com.ciyin.app.presentation.app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import ciyin.material.theme.AppTheme
+import ciyin.designsystem.fluent.Fluent
+import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
+import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.viewmodel.viewModel
 import com.ciyin.app.presentation.app.navigation.MainRouter
 import com.ciyin.app.presentation.app.navigation.NavId.Main
@@ -24,34 +30,44 @@ import com.ciyin.app.presentation.screen.setting.SettingScreen
 
 
 /**
+ * 应用根入口，按生命周期收集 AppViewModel 状态，并将动作分发到该 ViewModel。
  *
- * kotlin文件作用描述
+ * 主题与导航树由纯内容层装配。
  *
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/23 下午5:52
  */
-
-/**
- * 应用根入口。
- */
 @Composable
-fun App() {
+fun App(windowBackdropActive: Boolean = false) {
     val viewModel = viewModel(::AppViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AppContent(state, viewModel.dispatchAction)
+    CompositionLocalProvider(LocalFluentSystemBackdropActive provides windowBackdropActive) {
+        if (windowBackdropActive) {
+            MaterialTheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
+                    background = Color.Transparent,
+                    surface = Color.Transparent,
+                ),
+            ) {
+                AppContent(state, viewModel.dispatchAction)
+            }
+        } else {
+            AppContent(state, viewModel.dispatchAction)
+        }
+    }
 }
 
 /**
- * 应用根内容，负责主题包裹与导航树装配。
+ * 应用根内容，显式建立 Material 3 主题，并装配可保存恢复的主页面导航树。
  *
- * @param state 应用 UI 状态
- * @param onAction 应用动作分发回调
+ * @param state 提供导航条目与当前选中项的 UI 状态；不在导航条目中的页面不选中任何项。
+ * @param onAction 点击导航项时接收 NavigateItemClick；当前内容层同时将主页面或设置页路由更新到子栈。
  */
 @Composable
 private fun AppContent(
     state: AppUiState,
     onAction: (AppAction) -> Unit
-) = AppTheme {
+) = NomiTheme(designSystem = NomiDesignSystem.Fluent) {
     val navBackStack = rememberNavBackStack(NavSavedStateConfig, MainRouter)
     NavigationBar(
         navList = state.navList,
