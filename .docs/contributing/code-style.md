@@ -433,26 +433,45 @@ import androidx.compose.ui.res.painterResource
 
 ## 八、文档注释规范
 
-为新功能添加标准文档注释：
+新增或重构 Kotlin 声明时，先读取 [Kotlin KDoc skill](<../../.agents/skills/kotlin-kdoc/SKILL.md>)。
+文档必须描述真实契约，不以“有一句中文”代替参数、返回值和边界说明；修复旧代码时限定当前任务范围，不默认重写无关历史模块。
+
+### 格式与覆盖范围
+
+- 声明 KDoc 使用多行块，`/**`、以 ` *` 开头的正文和 ` */` 分别独立成行；位于声明之前，有注解时位于注解之前。
+- 不使用 `/** 说明。 */ val value = ...` 的同行写法，也不把 KDoc 嵌入 primary constructor 参数列表。
+- 顶层和成员类型、函数、属性、类型别名、枚举项及扩展均需中文
+  KDoc，public/internal/protected/private、override、测试辅助声明和 Preview 不自动豁免。
+- 局部临时变量、字段分组标题、lambda 实现步骤可以使用普通 `//`；不把实现说明机械改成文档注释。
+
+### 参数、属性与返回值
+
+- 类型摘要说明职责和不变量；构造 `val/var` 使用类级 `@property`，普通构造参数使用 `@param`
+  。类级标签已完整覆盖时不再重复属性 KDoc。
+- 函数的每个值参数都写 `@param`，名称对应实际签名；回调说明触发时机、作用域与状态职责。泛型参数需要解释时也补充标签。
+- 非 `Unit` 结果（包括推断返回类型）写 `@return`，说明结果/空值/新实例等语义；不为纯 Compose 或 `Unit`
+  函数机械写“无返回值”。
+- 扩展必要时使用 `@receiver`，不虚构 `@param ReceiverType`；`@throws` 只记录真实的异常和失败边界。
+- Compose API 写清 `null`、`Color.Unspecified` 与透明色的区别、原生默认来源、slot
+  内容环境以及不支持的覆盖；转发工厂仍需完整消费者契约。
+- 简单声明允许简短的多行摘要；复杂 API 不能只描述内部实现或改动历史。注释与实现冲突时修正文档，不改行为迎合文档。
 
 ```kotlin
 /**
- * 用户登录用例。
+ * 用户登录用例，编排输入校验、认证和错误映射。
  *
- * 负责编排登录流程：校验输入 → 调用 Repository → 错误映射。
- *
- * @param repository 认证仓库，提供登录能力
- * @param validator 输入校验器
+ * @property repository 提供登录能力的认证仓库。
+ * @property validator 在访问仓库前检查登录输入的校验器。
  */
 class LoginUserUseCase(
     private val repository: AuthRepository,
-    private val validator: LoginInputValidator
+    private val validator: LoginInputValidator,
 ) {
     /**
-     * 执行登录操作。
+     * 校验输入并执行登录，将仓库错误转换为登录场景错误。
      *
-     * @param input 登录输入参数
-     * @return [Either.Left] 包含 [LoginError]，[Either.Right] 包含登录结果
+     * @param input 本次登录的输入参数。
+     * @return [Either.Left] 包含 [LoginError]，或 [Either.Right] 包含登录结果。
      */
     suspend operator fun invoke(input: LoginInput): Either<LoginError, LoginResult> = either {
         validator.validate(input).bind()
@@ -460,6 +479,11 @@ class LoginUserUseCase(
     }
 }
 ```
+
+### 检查
+
+使用 skill 的只读检查器定位格式/结构候选，并人工核对标签、符号、默认值和能力边界。
+纯注释修改须对照基线检查非注释代码与换行敏感位置；编译和测试通过不能代替 KDoc 内容审查。
 
 ## 九、单元测试规范
 
