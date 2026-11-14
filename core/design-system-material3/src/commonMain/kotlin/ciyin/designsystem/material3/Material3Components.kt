@@ -7,6 +7,7 @@ import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.material3.button.Material3ActionRenderer
 import ciyin.designsystem.material3.navigation.Material3NavigationRenderer
+import ciyin.designsystem.material3.scaffold.Material3ScaffoldRenderer
 import ciyin.designsystem.material3.surface.Material3SurfaceRenderer
 import ciyin.designsystem.material3.text.Material3TextRenderer
 
@@ -33,4 +34,9 @@ object Material3DesignSystemComponents : NomiDesignSystemComponents {
      * 导航套件的原生适配；Bar、Rail 与永久抽屉均由对应原生组件实现。
      */
     override val navigation: NomiNavigationRenderer = Material3NavigationRenderer
+
+    /**
+     * 页面脚手架的原生适配；外壳与内容让位由原生 Scaffold 承担。
+     */
+    override val scaffold = Material3ScaffoldRenderer
 }

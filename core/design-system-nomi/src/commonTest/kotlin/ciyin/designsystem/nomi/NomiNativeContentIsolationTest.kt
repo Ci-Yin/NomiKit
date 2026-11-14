@@ -22,6 +22,7 @@ import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.card.NomiCard
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.component.text.NomiTextRenderer
@@ -218,6 +219,12 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
          */
         override val navigation: NomiNavigationRenderer =
             NomiDesignSystem.Default.components.navigation
+
+        /**
+         * 脚手架族委托 Nomi 默认实现，本夹具不验证页面外壳视觉。
+         */
+        override val scaffold: NomiScaffoldRenderer =
+            NomiDesignSystem.Default.components.scaffold
     }
 
     /**

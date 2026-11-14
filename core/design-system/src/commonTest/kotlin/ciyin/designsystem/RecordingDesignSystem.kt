@@ -35,6 +35,8 @@ import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
+import ciyin.designsystem.component.scaffold.NomiScaffoldColors
+import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiTextRenderer
@@ -160,6 +162,16 @@ internal data class RecordedNavigationSuite(
 )
 
 /**
+ * 记录中立层传给脚手架的真实颜色参数。
+ *
+ * @property colors 原样记录的容器色与内容色覆盖；Unspecified 仍表示未指定。
+ */
+@Immutable
+internal data class RecordedScaffold(
+    val colors: NomiScaffoldColors,
+)
+
+/**
  * 不依赖任何原生 adapter 的录制型设计系统；主题投影由夹具自身生成。
  *
  * 派发记录在 SideEffect 提交，列表在实例生命周期内累积，不在重组时自动清空。
@@ -207,6 +219,11 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录导航套件派发及分组后的导航项。
      */
     val navigations: MutableList<RecordedNavigationSuite> = mutableListOf()
+
+    /**
+     * 按组合顺序记录页面脚手架派发。
+     */
+    val scaffolds: MutableList<RecordedScaffold> = mutableListOf()
 
     /**
      * 录制型设计系统标识。
@@ -486,6 +503,34 @@ internal class RecordingDesignSystem(
                 )
                 SideEffect { navigations += call }
                 content()
+            }
+        }
+
+        /**
+         * 记录脚手架颜色并按声明顺序组合三个槽位，不绘制原生外壳。
+         */
+        override val scaffold: NomiScaffoldRenderer = object : NomiScaffoldRenderer {
+            /**
+             * 提交后追加一条脚手架派发记录，并按顶栏、主体、底栏顺序组合内容。
+             *
+             * @param modifier 接口要求的修饰符；录制夹具不应用也不记录。
+             * @param colors 原样记录的容器色与内容色覆盖。
+             * @param topBar 顶部栏槽，直接组合。
+             * @param bottomBar 底部栏槽，直接组合。
+             * @param content 页面主体槽，直接组合。
+             */
+            @Composable
+            override fun Scaffold(
+                modifier: Modifier,
+                colors: NomiScaffoldColors,
+                topBar: @Composable () -> Unit,
+                bottomBar: @Composable () -> Unit,
+                content: @Composable () -> Unit,
+            ) {
+                SideEffect { scaffolds += RecordedScaffold(colors = colors) }
+                topBar()
+                content()
+                bottomBar()
             }
         }
     }

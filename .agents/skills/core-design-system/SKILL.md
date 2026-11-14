@@ -48,7 +48,8 @@ Typography 文件已移除。
 [NomiButton](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)、
 [NomiSurface](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>)、
 [NomiCard](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>)、
-[NomiNavigationSuite](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)
+[NomiNavigationSuite](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)、
+[NomiScaffold](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)
 。每个文件维护真实 API/SPI，不重建组件大文件。
 
 - 原生适配：读[M3 README](<../../../core/design-system-material3/README.md>)
@@ -58,26 +59,31 @@ Typography 文件已移除。
   UI 页面不新增业务数据层。
 
 公共 component 留在核心，内置实现 nomi、material3、fluent 各自模块根下均按
-text/button/surface/card/navigation 组织；nomi 是独立 Gradle 模块（:core:design-system-nomi）但包名
-ciyin.designsystem.nomi 不变。 公共入口、SPI 和专属参数类型留在核心 component，FluentButtonColors 属于
+text/button/surface/card/navigation/scaffold 组织；nomi 是独立 Gradle 模块（:core:
+design-system-nomi）但包名 ciyin.designsystem.nomi 不变。 公共入口、SPI 和专属参数类型留在核心
+component，FluentButtonColors 属于
 fluent/button。NomiBorder/NomiControlSize/NomiComponentCapabilities/NomiDesignSystemComponents 留在核心
 component 根。 DefaultNomiSystem（internal，经 `NomiDesignSystem.Default` 暴露）与
 NomiNativeContentStyle 位于 nomi 模块；默认 renderer 位于其组件子包。公共主题 API/数据仍在
 theme，通用请求/契约/显式 slot 仍在 runtime。 核心不引用 nomi：LocalNomiDesignSystem 可空且无隐式默认，应用根、测试与
 Preview 必须显式提供（CompositionLocalProvider 或 NomiTheme (designSystem=...)
-）；未提供时读取组件明确失败。text/actions/surfaces/navigation 四族 SPI，Card 仍归 surfaces，导航套件归
-navigation。 导航套件入口 NomiNavigationSuite (layoutType, modifier, items, footerItems, content)
-：布局类型由调用方按窗口形态选择，核心与实现都不读取窗口/平台；items 与 footerItems 两个声明组必须按顺序渲染。
-导航项是槽位式 NavigationItem (selected, onClick, modifier, icon, badge, label, colors,
-interactionSource)：icon/badge/label 由调用方组合，没有 enabled；NomiNavigationItemColors 只覆盖
+）；未提供时读取组件明确失败。text/actions/surfaces/navigation/scaffold 五族 SPI，Card 仍归
+surfaces，导航套件归 navigation，页面外壳归 scaffold。 导航套件入口 NomiNavigationSuite (layoutType,
+modifier, items, footerItems, content)：布局类型由调用方按窗口形态选择，核心与实现都不读取窗口/平台；items
+与 footerItems 两个声明组必须按顺序渲染。 页面外壳入口 NomiScaffold (modifier, colors, topBar,
+bottomBar, content)：content 必须位于顶栏与底栏之间， 空槽不占位；M3 委托原生 Scaffold（innerPadding
+让位），Fluent/Nomi 用 Column 权重排布，标题/最大宽度/滚动仍归调用方。 导航项是槽位式 NavigationItem
+(selected, onClick, modifier, icon, badge, label, colors, interactionSource)：icon/badge/label
+由调用方组合，没有 enabled；NomiNavigationItemColors 只覆盖
 contentColor/selectedContentColor/disabledContentColor/indicatorColor。槽内的图标尺寸与无障碍名称由调用方负责（IconPack
 固有 256dp，必须显式 size）；适配器不得替槽内容定尺寸。 能力
 navigationBar/navigationRail/navigationDrawer 默认 Bar/Rail 支持、Drawer
 需实现显式声明；navigationItemModifier 声明是否支持项级 modifier（Fluent 为 false，非默认值必须明确
 require 失败）。入口按能力提前拒绝，不静默降级。 Nomi 复刻既有 Navigation.kt 视觉（Bar/Rail，M3 外壳 +
-NomiTheme 令牌，Drawer 禁用）；M3 用 NavigationBar/NavigationRail/PermanentNavigationDrawer；Fluent 用
-NavigationView 的 Top/Left/LeftCompact，且因原生菜单 DSL 非
-@Composable，采用组合阶段记录声明再重放，选中刷新依赖调用方以组合可见状态驱动。
+NomiTheme 令牌，Drawer 禁用）；M3 用 NavigationBar/NavigationRail/PermanentNavigationDrawer；Fluent 的
+Bar/Drawer 用 NavigationView 的 Top/LeftCompact，Rail 改用公开 SideNav 组合左置外壳（上游 Left 布局会固定插入
+footer 分割线并给内容面板加 1dp 描边且都无关闭入口，底部项因此由适配层贴在 SideNav 下方自绘）；原生菜单
+DSL 非 @Composable，采用组合阶段记录声明再重放，选中刷新依赖调用方以组合可见状态驱动。
 
 ## 主题输入与结果不要混用
 

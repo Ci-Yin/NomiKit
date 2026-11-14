@@ -22,16 +22,18 @@ import io.github.composefluent.component.NavigationView
 /**
  * Fluent 导航套件适配。
  *
- * 三种布局都映射到原生 [NavigationView] 的显示模式；导航项以槽位形式在组合阶段记录，
- * 再由原生菜单 DSL 按声明顺序重放，颜色只在调用方显式覆盖时改写原生方案，不重建排版或尺寸配方。
+ * 导航项以槽位形式在组合阶段记录，再按声明顺序交给原生菜单重建，颜色只在调用方显式覆盖时
+ * 改写原生方案，不重建排版或尺寸配方。顶部与紧凑抽屉布局交由原生 [NavigationView]；
+ * 左置布局改用公开 SideNav 组合（原生 footer 上方固定插入分割线且无关闭入口，无法直接复用）。
  */
 internal object FluentNavigationRenderer : NomiNavigationRenderer {
     /**
      * 按布局类型建立原生 Fluent 导航外壳，并把页面内容交给原生导航布局排布。
      *
-     * 主导航项与底部项分别进入原生 menuItems 与 footerItems，不交换、不合并、不丢弃分组。
+     * 主导航项与底部项分别进入原生菜单区与底部区，不交换、不合并、不丢弃分组；
+     * 顶部与紧凑抽屉使用原生 NavigationView，左置布局使用公开 SideNav 重组且不绘制任何分割线。
      *
-     * @param layoutType 调用方选择的导航布局；本实现把三种布局映射为原生显示模式。
+     * @param layoutType 调用方选择的导航布局；Bar 映射顶部、Drawer 映射紧凑侧边，Rail 使用左置外壳。
      * @param modifier 应用于原生导航外壳根节点的修饰符。
      * @param items 主导航项声明；按声明顺序进入原生菜单项区域。
      * @param footerItems 底部导航项声明；空 lambda 时原生导航自然省略底部区域。
@@ -45,14 +47,29 @@ internal object FluentNavigationRenderer : NomiNavigationRenderer {
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
         content: @Composable () -> Unit,
     ) {
-        NavigationView(
-            menuItems = rememberFluentNavigationMenu(items),
-            modifier = modifier,
-            displayMode = layoutType.toFluentDisplayMode(),
-            footerItems = rememberFluentNavigationMenu(footerItems),
-            color = fluentNavigationPaneColor(),
-            pane = content,
-        )
+        val mainItems = rememberFluentNavigationItemDeclarations(items)
+        val footerDeclarations = rememberFluentNavigationItemDeclarations(footerItems)
+        val paneColor = fluentNavigationPaneColor()
+        when (layoutType) {
+            NomiNavigationSuiteType.Rail -> FluentSideNavigationShell(
+                modifier = modifier,
+                paneColor = paneColor,
+                mainItems = mainItems,
+                footerItems = footerDeclarations,
+                pane = content,
+            )
+
+            NomiNavigationSuiteType.Bar, NomiNavigationSuiteType.Drawer -> NavigationView(
+                menuItems = mainItems.toFluentNavigationMenu(),
+                modifier = modifier,
+                displayMode = layoutType.toFluentDisplayMode(),
+                footerItems = footerDeclarations.toFluentNavigationMenu(),
+                // 上游默认给内容面板加 1dp 描边，这里显式关闭，避免导航栏与内容之间出现分割线。
+                border = null,
+                color = paneColor,
+                pane = content,
+            )
+        }
     }
 }
 
@@ -81,7 +98,8 @@ private fun fluentNavigationPaneColor(): Color =
  * 把中立导航布局映射为 Fluent 原生显示模式。
  *
  * Bar 使用顶部导航，Rail 使用完整侧边导航，Drawer 使用可展开的紧凑侧边导航；
- * 映射只决定原生外壳形态，选中状态与路由仍由调用方持有。
+ * Rail 的左置外壳由适配层按公开 SideNav 组合（原生 Left 布局无法关闭 footer 分割线与内容描边），
+ * 其余布局直接交给原生 NavigationView；映射只决定外壳形态，选中状态与路由仍由调用方持有。
  *
  * @receiver 调用方选择的导航布局。
  * @return 与该布局语义最接近的原生显示模式。
@@ -102,14 +120,24 @@ internal fun NomiNavigationSuiteType.toFluentDisplayMode(): NavigationDisplayMod
  * @return 把已记录声明写入 Fluent 原生菜单作用域的 DSL lambda。
  */
 @Composable
-private fun rememberFluentNavigationMenu(
+private fun rememberFluentNavigationItemDeclarations(
     items: @Composable NomiNavigationItemScope.() -> Unit,
-): NavigationMenuScope.() -> Unit {
+): List<FluentNavigationItemDeclaration> {
     val declarations = mutableListOf<FluentNavigationItemDeclaration>()
     FluentNavigationItemRecorder(declarations).items()
-    return {
+    return declarations
+}
+
+/**
+ * 把已记录声明重放为原生菜单 DSL；顶部与紧凑抽屉布局仍由原生 NavigationView 排布。
+ *
+ * @receiver 本次组合记录到的导航项声明，按声明顺序输出。
+ * @return 供原生菜单作用域调用的 DSL，每次调用都按当前声明重建菜单项。
+ */
+private fun List<FluentNavigationItemDeclaration>.toFluentNavigationMenu(): NavigationMenuScope.() -> Unit =
+    {
         val menuScope = this
-        declarations.forEach { declaration ->
+        forEach { declaration ->
             menuScope.item {
                 MenuItem(
                     selected = declaration.selected,
@@ -128,7 +156,6 @@ private fun rememberFluentNavigationMenu(
             }
         }
     }
-}
 
 /**
  * 解析一个导航项的原生颜色方案；只有显式覆盖的通道改写原生方案。
@@ -142,7 +169,7 @@ private fun rememberFluentNavigationMenu(
  * @return 已叠加显式覆盖的原生五态颜色方案，focused 状态与 default 使用同一覆盖内容色。
  */
 @Composable
-private fun resolveFluentItemColors(
+internal fun resolveFluentItemColors(
     displayMode: NavigationDisplayMode,
     selected: Boolean,
     overrides: NomiNavigationItemColors,
@@ -193,7 +220,7 @@ private fun NavigationItemColor.withNomiColors(
  * @property colors 中立稀疏颜色覆盖，在组合阶段映射为原生五态方案。
  * @property interactionSource 调用方提供的交互源；null 时由原生菜单项自行创建。
  */
-private class FluentNavigationItemDeclaration(
+internal class FluentNavigationItemDeclaration(
     val selected: Boolean,
     val onClick: () -> Unit,
     val icon: (@Composable () -> Unit)?,

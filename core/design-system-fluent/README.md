@@ -75,18 +75,19 @@ resolved 默认结果。组件通过 NomiTheme 只读 getter 读取五组结果�
 
 ## 原生能力与限制
 
-| 中立调用                | Fluent 原生调用与限制                                                                                                                                       |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| NomiText                | component.Text 双重载；部分 style 合入原生 LocalTextStyle；不支持 autoSize，非 null 明确拒绝                                                                |
-| 默认 / Default Button   | component.Button                                                                                                                                            |
-| Primary Button          | AccentButton                                                                                                                                                |
-| Subtle Button           | SubtleButton                                                                                                                                                |
-| Text Button             | HyperlinkButton                                                                                                                                             |
-| Destructive Button      | Button + 显式 critical 配方                                                                                                                                 |
-| NomiSurface             | background.Layer；任意 shape、显式颜色与三态 border                                                                                                         |
-| NomiCard                | surface.Card 非点击重载；显式 shape 和内容 padding 可用                                                                                                     |
-| NomiNavigationSuite     | component.NavigationView；Bar 映射 Top、Rail 映射 Left、Drawer 映射 LeftCompact。图标/徽标/文案为调用方槽位，颜色只覆盖显式通道，排版与折叠动效沿用原生默认 |
-| NavigationItem modifier | 原生没有项级修饰符入口，capabilities.navigationItemModifier = false；非默认 Modifier 明确拒绝，布局调整使用套件级 modifier                                  |
+| 中立调用                | Fluent 原生调用与限制                                                                                                                                                                                                                                                            |
+|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| NomiText                | component.Text 双重载；部分 style 合入原生 LocalTextStyle；不支持 autoSize，非 null 明确拒绝                                                                                                                                                                                     |
+| 默认 / Default Button   | component.Button                                                                                                                                                                                                                                                                 |
+| Primary Button          | AccentButton                                                                                                                                                                                                                                                                     |
+| Subtle Button           | SubtleButton                                                                                                                                                                                                                                                                     |
+| Text Button             | HyperlinkButton                                                                                                                                                                                                                                                                  |
+| Destructive Button      | Button + 显式 critical 配方                                                                                                                                                                                                                                                      |
+| NomiSurface             | background.Layer；任意 shape、显式颜色与三态 border                                                                                                                                                                                                                              |
+| NomiCard                | surface.Card 非点击重载；显式 shape 和内容 padding 可用                                                                                                                                                                                                                          |
+| NomiNavigationSuite     | Bar/Drawer 用 component.NavigationView（Top/LeftCompact）；Rail 用公开 SideNav 组合左置外壳，底部项贴在 SideNav 下方自绘，因为上游 Left 布局会固定插入 footer 分割线并给内容面板加描边且都无关闭入口。图标/徽标/文案为调用方槽位，颜色只覆盖显式通道，排版与折叠动效沿用原生默认 |
+| NavigationItem modifier | 原生没有项级修饰符入口，capabilities.navigationItemModifier = false；非默认 Modifier 明确拒绝，布局调整使用套件级 modifier                                                                                                                                                       |
+| NomiScaffold            | 上游没有 Scaffold；用 FluentTheme 原生色板与 LocalContentColor/ProvideTextStyle 环境建立 Column 外壳，顶栏/主体/底栏顺序排布，主体占剩余高度                                                                                                                                     |
 
 **不再 Layer + clickable 重绘按钮。** v0.1.0 原生 Button 不支持 size/shape/contentPadding， 任何非
 null 覆盖都会明确失败。原生普通按钮没有 Role.Button，adapter 不强加 role、不加第二个点击层；

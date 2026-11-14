@@ -1,12 +1,12 @@
 # :core:design-system-material3
 
-Material 3 设计系统适配器，将中立主题、四组件与导航套件映射到官方 Compose Material 3。
+Material 3 设计系统适配器，将中立主题、四类组件、导航套件与页面脚手架映射到官方 Compose Material 3。
 
 ## 职责与边界
 
 - 依赖 [中立核心](<../design-system/README.md>)，不依赖旧 material、ui-foundation 或应用模块。
 - Material 3 由 Version Catalog 的既有 `libs.compose.material3` 提供。
-- 四个 SPI 族实现 Text、Button、Surface、独立 Card 与导航套件；各组件分别调用官方原生组件，不共享外观配方。
+- 五个 SPI 族实现 Text、Button、Surface、独立 Card、导航套件与页面脚手架；各组件分别调用官方原生组件，不共享外观配方。
 - 导航套件直接使用原生 NavigationBar、NavigationRail 与 PermanentNavigationDrawer，Bar/Rail/Drawer
   均声明支持。
 - 输入框、图标按钮、列表项、弹窗等属于二期，不提供空实现或占位 SPI。
@@ -23,9 +23,9 @@ Material 3 设计系统适配器，将中立主题、四组件与导航套件映
 - [主题转换](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Conversions.kt>)
   ：公开颜色、圆角、排版转换，供适配器和旧包兼容层复用。
 - 组件位于 material3
-  根下的 [text](<src/commonMain/kotlin/ciyin/designsystem/material3/text/Material3Text.kt>)、[button](<src/commonMain/kotlin/ciyin/designsystem/material3/button/Material3Button.kt>)、[surface](<src/commonMain/kotlin/ciyin/designsystem/material3/surface/Material3Surface.kt>)、[card](<src/commonMain/kotlin/ciyin/designsystem/material3/card/Material3Card.kt>)、[navigation](<src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)
+  根下的 [text](<src/commonMain/kotlin/ciyin/designsystem/material3/text/Material3Text.kt>)、[button](<src/commonMain/kotlin/ciyin/designsystem/material3/button/Material3Button.kt>)、[surface](<src/commonMain/kotlin/ciyin/designsystem/material3/surface/Material3Surface.kt>)、[card](<src/commonMain/kotlin/ciyin/designsystem/material3/card/Material3Card.kt>)、[navigation](<src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)、[scaffold](<src/commonMain/kotlin/ciyin/designsystem/material3/scaffold/Material3ScaffoldRenderer.kt>)
   子目录，package 同步细分；组件专属辅助函数随文件迁移。
-  主题、转换、投影与[四族装配](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)
+  主题、转换、投影与[五族装配](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)
   留在原位置；Card 仍属于 surfaces SPI，导航套件归入 navigation 子目录，不保留旧包兼容转发。
 
 ```kotlin
@@ -92,13 +92,15 @@ Android/Desktop/iOS 专有 API。api 导出中立核心与 Material 3；公开�
 
 ## 验证
 
-当前 Desktop 回归 30 项：上一轮 26 项加本轮 4 项导航测试；本轮 metadata 编译通过，Desktop
+当前 Desktop 回归 32 项：上一轮 26 项、导航 4 项加本轮脚手架 2 项；本轮 metadata 编译通过，Desktop
 回归零失败、零跳过。联合回归和未验证范围见[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
 
 [映射测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ConversionsTest.kt>)
 覆盖十五排版角色往返、表面层级及旧圆角映射。
 [导航测试](<src/commonTest/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationTest.kt>)
 覆盖 Bar/Rail/Drawer 三种原生布局、选中与点击语义、分组顺序及导航能力声明。
+[脚手架测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ScaffoldTest.kt>)
+覆盖顶栏/主体/底栏顺序与显式颜色透传。
 [组件测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ComponentsTest.kt>)
 覆盖五种按钮变体、三种尺寸、启用/禁用状态，以及原生 Material 按钮中的中立文字实际布局颜色； 同时检查
 Surface 与 Card 的内容颜色继承。

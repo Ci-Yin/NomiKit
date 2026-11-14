@@ -25,6 +25,7 @@ import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.component.text.NomiTextRenderer
@@ -140,6 +141,12 @@ class ExternalApiConsumptionTest {
                      */
                     override val navigation: NomiNavigationRenderer =
                         NomiDesignSystem.Fluent.components.navigation
+
+                    /**
+                     * 沿用 Fluent 页面脚手架，不改变本次替换文本族的测试语义。
+                     */
+                    override val scaffold: NomiScaffoldRenderer =
+                        NomiDesignSystem.Fluent.components.scaffold
                 }
         }
         setContent {

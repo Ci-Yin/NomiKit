@@ -25,6 +25,7 @@ Preview 必须显式提供实现。
 | [LocalNomiNativeContentColor / LocalNomiNativeTextStyle](<src/commonMain/kotlin/ciyin/designsystem/nomi/NomiNativeContentStyle.kt>)                                                                                                                                                                                                                                                             | Nomi 自身解析环境；与公共显式 slot 分离                                                   |
 | [DefaultNomiTextRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/text/DefaultNomiTextRenderer.kt>) / [Button](<src/commonMain/kotlin/ciyin/designsystem/nomi/button/DefaultNomiActionRenderer.kt>) / [Surface](<src/commonMain/kotlin/ciyin/designsystem/nomi/surface/DefaultNomiSurfaceRenderer.kt>) / [Card](<src/commonMain/kotlin/ciyin/designsystem/nomi/card/DefaultNomiCard.kt>) | 四组件 Foundation 实现                                                                    |
 | [DefaultNomiNavigationRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationRenderer.kt>)                                                                                                                                                                                                                                                                    | 导航套件实现；Bar 与 Rail 使用槽位式导航项，Drawer 由能力声明禁用                         |
+| [DefaultNomiScaffoldRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/scaffold/DefaultNomiScaffoldRenderer.kt>)                                                                                                                                                                                                                                                                          | 页面脚手架实现；顶栏/主体/底栏顺序排布，主体占剩余高度                                    |
 
 ## 最小接入路径
 
@@ -73,8 +74,8 @@ NavigationItem(
 
 ## 源码布局
 
-- `src/commonMain/kotlin/ciyin/designsystem/nomi/`：装配、原生内容环境与五个组件族
-  renderer（text/button/surface/card/navigation 子包）。
+- `src/commonMain/kotlin/ciyin/designsystem/nomi/`：装配、原生内容环境与六个组件族
+  renderer（text/button/surface/card/navigation/scaffold 子包）。
 -
 
 `src/commonTest`：[NomiNativeContentIsolationTest](<src/commonTest/kotlin/ciyin/designsystem/nomi/NomiNativeContentIsolationTest.kt>)

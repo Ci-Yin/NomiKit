@@ -160,6 +160,43 @@ class FluentNavigationTest {
     }
 
     /**
+     * 左置布局的底部项由适配层组合在 SideNav 之外，仍必须保留文案并分发点击。
+     */
+    @Test
+    fun railFooterItemKeepsLabelAndDispatchesClick() = runComposeUiTest {
+        var footerClicks = 0
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Fluent) {
+                NomiNavigationSuite(
+                    layoutType = NomiNavigationSuiteType.Rail,
+                    items = {
+                        NavigationItem(
+                            selected = true,
+                            onClick = {},
+                            icon = { TestIconSlot(tag = "icon-首页") },
+                        )
+                    },
+                    footerItems = {
+                        NavigationItem(
+                            selected = false,
+                            onClick = { footerClicks++ },
+                            icon = { TestIconSlot(tag = "icon-底部项") },
+                            label = { NativeText("底部项") },
+                        )
+                    },
+                    content = {
+                        Box(modifier = Modifier.fillMaxSize().testTag("pane"))
+                    },
+                )
+            }
+        }
+        onNodeWithText("底部项").assertExists()
+        onNodeWithTag("icon-底部项", useUnmergedTree = true).assertExists()
+        onNodeWithText("底部项").performClick()
+        runOnIdle { assertEquals(1, footerClicks) }
+    }
+
+    /**
      * Drawer 布局使用紧凑侧边导航：折叠时只组合图标与徽标槽，页面内容右移出导航宽度。
      */
     @Test

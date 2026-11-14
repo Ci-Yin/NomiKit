@@ -3,6 +3,7 @@ package ciyin.designsystem.fluent
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.fluent.button.FluentButton
 import ciyin.designsystem.fluent.navigation.FluentNavigationRenderer
+import ciyin.designsystem.fluent.scaffold.FluentScaffoldRenderer
 import ciyin.designsystem.fluent.surface.FluentSurface
 import ciyin.designsystem.fluent.text.FluentText
 
@@ -29,4 +30,9 @@ internal object FluentComponents : NomiDesignSystemComponents {
      * 导航套件；三种布局由原生 NavigationView 的显示模式承担。
      */
     override val navigation = FluentNavigationRenderer
+
+    /**
+     * 页面脚手架；上游没有 Scaffold，由原生色板与内容环境建立等价外壳。
+     */
+    override val scaffold = FluentScaffoldRenderer
 }

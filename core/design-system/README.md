@@ -8,7 +8,7 @@
 Nomi 默认只属于 Nomi，不能在核心派发前填入其他 adapter。
 
 生产依赖仅为 Compose Runtime/Foundation/UI，不依赖 Material 3、Fluent、旧门面或 UI foundation。 当前提供
-`NomiText`、`NomiButton`、`NomiSurface`、`NomiCard` 与 `NomiNavigationSuite`
+`NomiText`、`NomiButton`、`NomiSurface`、`NomiCard`、`NomiNavigationSuite` 与 `NomiScaffold`
 ；不负责窗口形态判断、应用路由、平台窗口、持久化设置或全部第三方控件。
 原生默认组件保持不变；旧式主题文件职责、颜色工厂、五组直接主题参数与独立 nomi 包沿用此前实现。 当前 9
 个主题 data class 公开构造，复制使用编译器生成的成员 `copy`；默认工厂、默认值、必填参数与身份语义不变。
@@ -78,10 +78,11 @@ NomiTheme(designSystem = NomiDesignSystem.Material3) {
 | [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>) / [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>)                                                                                                         | Surface 与实际原生 Card 分开派发                                                     |
 | [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>) / [Capabilities](<src/commonMain/kotlin/ciyin/designsystem/component/NomiComponentCapabilities.kt>)                                                                                                   | 描边意图三态、显式覆盖与导航布局能力                                                 |
 | [NomiNavigation](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)                                                                                                                                                                                    | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                       |
+| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)                                                                                                                                                                                          | 页面脚手架入口、顶栏/主体/底栏三槽位、容器色与内容色稀疏覆盖                         |
 
 [组件集合](<src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)组装
-text/actions/surfaces/navigation 四族； 表面族同时有 `Surface` 和 `Card`
-方法，导航族提供套件入口。实现不再集中在一个组件大文件，Nomi 也按组件子包拆分。
+text/actions/surfaces/navigation/scaffold 五族； 表面族同时有 `Surface` 和 `Card`
+方法，导航族提供套件入口，脚手架族提供页面外壳入口。实现不再集中在一个组件大文件，Nomi 也按组件子包拆分。
 
 公共 `component` 保留公共入口、renderer SPI
 与共享参数；内置实现已拆到独立模块 [core/design-system-nomi](<../design-system-nomi/README.md>)， 包名仍为

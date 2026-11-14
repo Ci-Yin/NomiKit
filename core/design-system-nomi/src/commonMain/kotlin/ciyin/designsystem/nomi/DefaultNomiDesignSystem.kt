@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.nomi.button.DefaultNomiActionRenderer
 import ciyin.designsystem.nomi.navigation.DefaultNomiNavigationRenderer
+import ciyin.designsystem.nomi.scaffold.DefaultNomiScaffoldRenderer
 import ciyin.designsystem.nomi.surface.DefaultNomiSurfaceRenderer
 import ciyin.designsystem.nomi.text.DefaultNomiTextRenderer
 import ciyin.designsystem.runtime.ResolvedNomiTheme
@@ -51,6 +52,11 @@ internal object DefaultNomiSystem : NomiDesignSystem {
          * 导航套件实现；Bar 与 Rail 受支持，Drawer 由能力声明禁用。
          */
         override val navigation = DefaultNomiNavigationRenderer
+
+        /**
+         * 页面脚手架实现；顶栏、主体与底栏按 Nomi 自身令牌排布。
+         */
+        override val scaffold = DefaultNomiScaffoldRenderer
     }
 
     /**
