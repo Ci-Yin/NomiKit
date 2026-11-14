@@ -7,11 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import ciyin.application.runApplication
 import ciyin.ui.foundation.currentWindowDpSize
+import ciyin.ui.foundation.window.WindowsBackdropWindow
+import ciyin.ui.foundation.window.WindowsSystemBackdrop
 import ciyin.ui.foundation.widget.SystemTray
 import com.ciyin.app.application.DesktopApplication
 import com.ciyin.app.presentation.app.App
@@ -32,6 +33,7 @@ fun main(args: Array<String>) = runApplication(::DesktopApplication) {
 //            size = DpSize(450.dp, 1000.dp),
     )
     var isVisible by remember { mutableStateOf(true) }
+    var backdropApplied by remember { mutableStateOf(false) }
 
     currentWindowDpSize = state.size
 
@@ -49,19 +51,20 @@ fun main(args: Array<String>) = runApplication(::DesktopApplication) {
     )
 
 
-    Window(
-        state = state,
-        visible = isVisible,
-        icon = painterResource(Res.drawable.ic_launcher),
-        title = stringResource(Res.string.app_name),
+    WindowsBackdropWindow(
         onCloseRequest = {
             isVisible = false
         },
+        state = state,
+        visible = isVisible,
+        title = stringResource(Res.string.app_name),
+        icon = painterResource(Res.drawable.ic_launcher),
+        backdrop = WindowsSystemBackdrop.Mica,
+        darkTitleBar = false,
+        onBackdropApplied = { backdropApplied = it },
         content = {
-            App()
+            App(windowBackdropActive = backdropApplied)
         }
     )
 
 }
-
-

@@ -5,8 +5,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.awt.SwingWindow
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.window.FrameWindowScope
+import androidx.compose.ui.window.WindowState
 import ciyin.platform.logger
 import ciyin.platform.thisLogger
 import com.sun.jna.CallbackReference
@@ -442,6 +446,9 @@ internal class AcrylicContentPane(
     /** 修改前的 Skia 透明状态。 */
     private val originalTransparency = linkedMapOf<SkiaLayer, Boolean>()
 
+    /** 修改前的 Skia 渲染层背景色。 */
+    private val originalBackgrounds = linkedMapOf<SkiaLayer, java.awt.Color?>()
+
     /** 是否在绘制 Compose 内容前清除客户区 Alpha。 */
     var backdropEnabled: Boolean = false
         set(value) {
@@ -479,7 +486,11 @@ internal class AcrylicContentPane(
         }
         skiaLayers.forEach { layer ->
             originalTransparency.putIfAbsent(layer, layer.transparency)
+            originalBackgrounds.putIfAbsent(layer, layer.background)
             layer.transparency = true
+            // Compose Desktop 1.12 只把硬件层的背景设为透明，Skia 渲染层自身的背景仍为 null，
+            // 实际取到父容器的实色背景，清屏时用该实色覆盖客户区；这里必须显式设为全透明。
+            layer.background = TRANSPARENT_AWT_COLOR
         }
         backdropEnabled = true
         true
@@ -494,10 +505,14 @@ internal class AcrylicContentPane(
         originalTransparency.forEach { (layer, transparency) ->
             layer.transparency = transparency
         }
+        originalBackgrounds.forEach { (layer, background) ->
+            layer.background = background
+        }
         originalOpacity.forEach { (component, opaque) ->
             component.isOpaque = opaque
         }
         originalTransparency.clear()
+        originalBackgrounds.clear()
         originalOpacity.clear()
     }
 
@@ -765,3 +780,50 @@ private const val WINDOWS_VERSION_REGISTRY_PATH: String =
 
 /** Windows 当前 build 注册表值名称。 */
 private const val WINDOWS_BUILD_VALUE: String = "CurrentBuildNumber"
+
+/**
+ * 创建带 Windows 系统背景材质的常规主窗口。
+ *
+ * 与普通 Compose Window 的差异仅在于通过 SwingWindow 的 init 回调调用 [prepareWindowsSystemBackdrop]，
+ * 并在窗口内容中挂载 [WindowsSystemBackdropEffect]；非 Windows 或系统版本不支持时材质回退为实色背景。
+ *
+ * @param onCloseRequest 用户请求关闭窗口时调用。
+ * @param state 窗口位置、尺寸与最小化状态。
+ * @param visible 窗口是否可见。
+ * @param title 窗口标题。
+ * @param icon 窗口图标；null 时使用系统默认图标。
+ * @param backdrop 系统背景材质类型，例如 [WindowsSystemBackdrop.DesktopAcrylic] 实时模糊。
+ * @param darkTitleBar 是否使用深色系统标题栏。
+ * @param onBackdropApplied 系统材质与透明客户区是否均已生效；材质被移除或失败时回调 false。
+ * @param content 窗口内容，接收 [FrameWindowScope] 接收者。
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun WindowsBackdropWindow(
+    onCloseRequest: () -> Unit,
+    state: WindowState,
+    visible: Boolean,
+    title: String,
+    icon: Painter?,
+    backdrop: WindowsSystemBackdrop,
+    darkTitleBar: Boolean,
+    onBackdropApplied: (Boolean) -> Unit,
+    content: @Composable FrameWindowScope.() -> Unit,
+) {
+    SwingWindow(
+        onCloseRequest = onCloseRequest,
+        state = state,
+        visible = visible,
+        title = title,
+        icon = icon,
+        init = { window -> window.prepareWindowsSystemBackdrop() },
+        content = {
+            WindowsSystemBackdropEffect(
+                type = backdrop,
+                darkTitleBar = darkTitleBar,
+                onApplied = onBackdropApplied,
+            )
+            content()
+        },
+    )
+}
