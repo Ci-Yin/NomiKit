@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -147,6 +148,12 @@ class ExternalApiConsumptionTest {
                      */
                     override val scaffold: NomiScaffoldRenderer =
                         NomiDesignSystem.Fluent.components.scaffold
+
+                    /**
+                     * 沿用 Fluent 列表项，不改变本次替换文本族的测试语义。
+                     */
+                    override val listItems: NomiListItemRenderer =
+                        NomiDesignSystem.Fluent.components.listItems
                 }
         }
         setContent {

@@ -68,6 +68,7 @@ internal fun DesignSystemShowcase(
                 onButtonClick = onButtonClick
             )
         }
+        DesignSystemSection { DesignSystemListItemShowcase() }
         DesignSystemSection {
             DesignSystemOverrideShowcase(
                 model.override,

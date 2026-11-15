@@ -8,15 +8,15 @@
 Nomi 默认只属于 Nomi，不能在核心派发前填入其他 adapter。
 
 生产依赖仅为 Compose Runtime/Foundation/UI，不依赖 Material 3、Fluent、旧门面或 UI foundation。 当前提供
-`NomiText`、`NomiButton`、`NomiSurface`、`NomiCard`、`NomiNavigationSuite` 与 `NomiScaffold`
-；不负责窗口形态判断、应用路由、平台窗口、持久化设置或全部第三方控件。
+`NomiText`、`NomiButton`、`NomiSurface`、`NomiCard`、`NomiNavigationSuite`、`NomiScaffold` 与
+`NomiListItem`；不负责窗口形态判断、应用路由、平台窗口、持久化设置或全部第三方控件。
 原生默认组件保持不变；旧式主题文件职责、颜色工厂、五组直接主题参数与独立 nomi 包沿用此前实现。 当前 9
 个主题 data class 公开构造，复制使用编译器生成的成员 `copy`；默认工厂、默认值、必填参数与身份语义不变。
-上一轮删除主题聚合层时，核心/M3/Fluent metadata、sample Android 编译及 154 项 Desktop
-回归通过，零失败、零跳过；本轮新增导航组件族与三适配后，五模块 `compileCommonMainKotlinMetadata`、app:
-shared Android/Desktop、sample `compileAndroidMain` 与 180 项 Desktop 回归通过（核心 42、Nomi 18、M3
-30、Fluent 46、旧门面 19、sample
-25），零失败、零跳过。完整范围见[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
+上一轮删除主题聚合层时，核心/M3/Fluent metadata、sample Android 编译及 154 项 Desktop 回归通过，零失败、零跳过；导航轮
+180 项与命名空间轮 218 项为历史记录。本轮新增列表项第六族与三适配后， 五模块
+`compileCommonMainKotlinMetadata`、sample metadata、app shared/desktop 编译与 203 项 Desktop 回归通过（核心
+47、M3 34、Fluent 53、Nomi 24、旧门面 19、sample 26），零失败、零跳过。完整范围见
+[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
 
 ## 命名边界
 
@@ -79,10 +79,12 @@ NomiTheme(designSystem = NomiDesignSystem.Material3) {
 | [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>) / [Capabilities](<src/commonMain/kotlin/ciyin/designsystem/component/NomiComponentCapabilities.kt>)                                                                                                   | 描边意图三态、显式覆盖与导航布局能力                                                 |
 | [NomiNavigation](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)                                                                                                                                                                                    | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                       |
 | [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)                                                                                                                                                                                          | 页面脚手架入口、顶栏/主体/底栏三槽位、容器色与内容色稀疏覆盖                         |
+| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)                                                                                                                                                                                              | 列表项入口、前导/标题/副标题/尾部槽位与原生列表渲染契约                              |
 
 [组件集合](<src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)组装
-text/actions/surfaces/navigation/scaffold 五族； 表面族同时有 `Surface` 和 `Card`
-方法，导航族提供套件入口，脚手架族提供页面外壳入口。实现不再集中在一个组件大文件，Nomi 也按组件子包拆分。
+text/actions/surfaces/navigation/scaffold/listItems 六族； 表面族同时有 `Surface` 和 `Card`
+方法，导航族提供套件入口， 脚手架族提供页面外壳入口，列表项族提供原生列表行入口。实现不再集中在一个组件大文件，Nomi
+也按组件子包拆分。
 
 公共 `component` 保留公共入口、renderer SPI
 与共享参数；内置实现已拆到独立模块 [core/design-system-nomi](<../design-system-nomi/README.md>)， 包名仍为
@@ -135,6 +137,50 @@ Drawer 需实现显式声明；`navigationItemModifier` 声明是否支持项级
 NavigationBar/NavigationRail/PermanentNavigationDrawer， Fluent 使用 NavigationView 的
 Top/Left/LeftCompact，Nomi 使用 Foundation/M3 混合外壳复刻既有视觉。 导航实现位于各 adapter
 模块，核心不引用任何内置实现。
+
+## 列表项
+
+`NomiListItem(title, modifier, onClick, leading, subtitle, trailing)` 是第六个组件族：槽位为 null
+时不占位，行高、容器、圆角、悬停/按下/点击状态与文本样式全部沿用当前设计系统的原生列表项；核心不补视觉参数，
+也不接受颜色、形状、内边距或高度覆盖。
+
+```kotlin
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.icon.ArrowRight
+import ciyin.designsystem.icon.IconPack
+import ciyin.designsystem.icon.LightMode
+import ciyin.designsystem.theme.NomiTheme
+
+NomiListItem(
+    title = { NomiText("深色模式") },
+    subtitle = { NomiText("跟随系统") },
+    leading = { Icon(IconPack.LightMode, null, Modifier.size(NomiTheme.sizes.icon.large)) },
+    trailing = {
+        Row(horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small)) {
+            NomiText("跟随系统")
+            Icon(IconPack.ArrowRight, null, Modifier.size(NomiTheme.sizes.icon.small))
+        }
+    },
+    onClick = { onOpenAppearance() },
+)
+```
+
+- `onClick = null` 表示静态行，不注册点击语义，实现不得添加悬停/按下外观。
+- 标题与副标题建议使用 `NomiText` 以继承原生列表文本样式与内容色；图标尺寸与无障碍名称由调用方负责，
+  中立 `IconPack` 的固有尺寸为 256dp，槽内必须显式约束。
+- 尾部只有一个原生槽位，“值文本 + 箭头”等组合由调用方在槽内完成；行内含 `NomiButton` 等交互内容时，
+  各自保留原生点击语义。
+- 本版不提供 `enabled`、选中、展开、`overline`、分组标题、分隔线及颜色/形状/内边距覆盖；不可点统一用
+  `onClick = null` 表达，选择控件（Switch/Radio/Checkbox）待控件族落地后在尾部槽组合。
+- 三端映射：Material 3 使用原生 `ListItem`，仅在有 `onClick` 时包装 `Modifier.clickable`；Fluent 使用
+  `CardExpanderItem` 的点击/静态重载，标题槽注入 bodyStrong、尾部槽注入 caption 与 secondary 内容色，
+  不绘制展开箭头；Nomi 使用透明行与 `NomiTheme` 令牌。
+- 删除 `:core:ui-foundation` 旧 `SettingItem` 后，设置行由本族组合：标题/副标题/前导/尾部槽 + 行点击。
 
 ## 最小接入：不要主动补齐默认参数
 
@@ -333,14 +379,15 @@ Nomi 默认渲染与组件契约已随实现迁至 [core/design-system-nomi](<..
 ，由该模块 `desktopTest` 独立验证；核心只保留公共契约与 adapter 无关测试。
 
 验证零参数请求不被填默认、单字段颜色覆盖、三态 border、能力拒绝、跨系统 Override 只继承显式值和 slot 恢复。
-无显式设计系统时 `NomiTheme`、四组件与导航套件入口必须抛出带指引的 `IllegalStateException`
+无显式设计系统时 `NomiTheme`、各组件与导航套件入口必须抛出带指引的 `IllegalStateException`
 ，不能被隐式回退掩盖（[契约测试](<src/commonTest/kotlin/ciyin/designsystem/NoImplicitDesignSystemContractTest.kt>)）。
-原生 adapter 还须对照真实库组件测量/截图，不能用旧统一外观测试证明 native parity。 还需验证旧 27 色/15
-排版/形状/间距/尺寸独立基线、root 与 Override 的显式组继承、同层重复拒绝、Fluent 支持边界。 9
-类跨模块公开构造、无扩展导入的成员复制、默认工厂身份等测试在上一轮（主题聚合层删除）继续通过：核心共 45 项
-Desktop 回归。 本轮新增导航组件族与三适配后：核心 42、Nomi 18、M3 30、Fluent 46、旧门面 19、sample 25（
-`--tests "*DesignSystemDemo*"`）共 180 项 Desktop 回归通过，零失败、零跳过；此前核心 43 项及联合 148 项
-Desktop 结果仅作历史记录，历史截图仍只作参考，当前编译/单测不代表设备或发布验收。
+列表项由 [ListItemDispatchContractTest](<src/commonTest/kotlin/ciyin/designsystem/ListItemDispatchContractTest.kt>)
+验证默认稀疏派发、槽位不占位与显式参数透传；三端适配分别验证点击/静态行与原生文本环境。 原生 adapter
+还须对照真实库组件测量/截图，不能用旧统一外观测试证明 native parity。 还需验证旧 27 色/15
+排版/形状/间距/尺寸独立基线、root 与 Override 的显式组继承、同层重复拒绝、Fluent 支持边界。 本轮新增列表项
+第六族与三适配后：核心 47、M3 34、Fluent 53、Nomi 24、旧门面 19、sample 26（`--tests "*DesignSystemDemo*"`）
+共 203 项 Desktop 回归通过，零失败、零跳过；导航轮 180 项、命名空间轮 218 项、此前的核心 43 项与联合 148
+项 结果仅作历史记录，历史截图仍只作参考，当前编译/单测不代表设备或发布验收。
 
 ## 相关资料
 

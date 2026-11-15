@@ -288,6 +288,13 @@
     <string name="design_system_demo_surface_high">高层 · High</string>
     <string name="design_system_demo_surface_higher">最高层 · Higher</string>
     <string name="design_system_demo_inherited_content">此文字继承当前表面的内容颜色。</string>
+    <string name="design_system_demo_list_items_title">列表项 · 槽位式行原语</string>
+    <string name="design_system_demo_list_item_title">列表项标题</string>
+    <string name="design_system_demo_list_item_subtitle">副标题：行高、文本样式与交互动效由原生实现决定</string>
+    <string name="design_system_demo_list_item_value">值</string>
+    <string name="design_system_demo_list_item_static_title">静态行</string>
+    <string name="design_system_demo_list_item_static_subtitle">副标题：行本身不响应点击，尾部可放设计系统组件</string>
+    <string name="design_system_demo_list_item_action">操作</string>
     <string name="design_system_demo_cards_title">卡片 · 非点击容器</string>
     <string name="design_system_demo_card_title">卡片标题</string>
     <string name="design_system_demo_card_body">卡片容器不响应点击；只有内部按钮会增加计数。正文随宽度换行，并继承卡片的内容颜色。</string>

@@ -3,7 +3,7 @@
 ## 用途与边界
 
 为中立设计系统提供 Compose Fluent **v0.1.0** 的原生默认优先适配。 统一调用入口，不统一外观；当前覆盖
-Text、Button、Surface、独立原生非点击 Card 与导航套件。 不负责 Mica、窗口生命周期、输入控件或其它二期组件。
+Text、Button、Surface、独立原生非点击 Card、导航套件与列表项。 不负责 Mica、窗口生命周期、输入控件或其它二期组件。
 
 - 使用仓库 `multiplatform-lib-targets`，Android 与按项目开关注册的 Desktop/iOS/JS/Wasm 共用
   commonMain。
@@ -19,13 +19,17 @@ Text、Button、Surface、独立原生非点击 Card 与导航套件。 不负�
   `ciyin.designsystem.fluent.Fluent`）暴露。
 - [主题投影](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentThemeMapping.kt>)
   ：稀疏强调色、原生八角色排版和中立只读投影。
-- [组件装配](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)只组装四族。
+- [组件装配](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)只组装六族。
 - [Text](<src/commonMain/kotlin/ciyin/designsystem/fluent/text/FluentText.kt>)、[Button](<src/commonMain/kotlin/ciyin/designsystem/fluent/button/FluentButton.kt>)、[Surface](<src/commonMain/kotlin/ciyin/designsystem/fluent/surface/FluentSurface.kt>)、[Card](<src/commonMain/kotlin/ciyin/designsystem/fluent/card/FluentCard.kt>)
   分别实现原生组件调用。
 - [按钮颜色](<src/commonMain/kotlin/ciyin/designsystem/fluent/button/FluentButtonColors.kt>)
   只覆盖原生五态中明确指定的通道。
 - [导航套件](<src/commonMain/kotlin/ciyin/designsystem/fluent/navigation/FluentNavigationRenderer.kt>)
   把槽位式中立导航项与布局映射到原生 NavigationView，只在显式覆盖时改写原生五态颜色，不重建排版或尺寸配方。
+- [列表项](<src/commonMain/kotlin/ciyin/designsystem/fluent/list/FluentListItemRenderer.kt>)
+  使用原生 `CardExpanderItem` 的点击/无点击重载：标题注入 bodyStrong，尾部注入 caption 与 secondary
+  内容色；
+  `dropdown` 保持 null，不绘制展开箭头，也不映射 enabled/selected。
 
 四组件分别归入 fluent 根下的 text/button/surface/card 子目录，package 与目录一致；FluentButtonColors 随
 Button 进入 button。 主题、投影和四族装配留在原位置，Card 仍由 surfaces 派发，导航套件归入 fluent 根下的

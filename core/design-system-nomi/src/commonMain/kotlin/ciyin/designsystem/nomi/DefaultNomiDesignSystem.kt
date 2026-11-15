@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.nomi.button.DefaultNomiActionRenderer
+import ciyin.designsystem.nomi.list.DefaultNomiListItemRenderer
 import ciyin.designsystem.nomi.navigation.DefaultNomiNavigationRenderer
 import ciyin.designsystem.nomi.scaffold.DefaultNomiScaffoldRenderer
 import ciyin.designsystem.nomi.surface.DefaultNomiSurfaceRenderer
@@ -57,6 +58,11 @@ internal object DefaultNomiSystem : NomiDesignSystem {
          * 页面脚手架实现；顶栏、主体与底栏按 Nomi 自身令牌排布。
          */
         override val scaffold = DefaultNomiScaffoldRenderer
+
+        /**
+         * 列表项实现；行内边距、文本样式与内容色读取 Nomi 令牌。
+         */
+        override val listItems = DefaultNomiListItemRenderer
     }
 
     /**

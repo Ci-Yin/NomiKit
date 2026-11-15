@@ -1,16 +1,17 @@
 # Design System 模块化方案
 
-> 状态：已实现（编译与 218 项回归已核；保留平台与发布验证缺口）；设计系统实现改由 `NomiDesignSystem`
-> 伴生对象上的扩展属性暴露，旧顶层单例名称已删除。
+> 状态：已实现（编译与 203 项桌面回归已核；保留平台与发布验证缺口）；设计系统实现改由 `NomiDesignSystem`
+> 伴生对象上的扩展属性暴露，旧顶层单例名称已删除；新增列表项第六族，旧 `SettingItem` 已删除。
 > 范围：`NomiDesignSystem` 新增空 `companion object` 作为绑定命名空间；三个实现对象降为 internal（
 > `DefaultNomiSystem`/`Material3System`/`FluentSystem`）；对外为
 > `NomiDesignSystem.Default/Material3/Fluent` 扩展属性；29 个文件 128 处引用迁移，6 个 README、设计索引与
-> 2 个 skill 同步。
+> 2 个 skill 同步；列表项族新增 `NomiListItem` 与 `listItems` renderer，三端原生映射落地，
+> `:core:ui-foundation` 旧 `SettingItem` 删除。
 > 相关模块：`:core:design-system`、`:core:design-system-nomi`、`:core:design-system-material3`、
-> `:core:design-system-fluent`、`:core:material`、`:app:shared`、`:app:sample`。
-> 最近核对：2026-11-14；master 未提交工作树（设计系统绑定命名空间改造）。
-> 验证记录：本轮 metadata 编译、app 编译与 218 项 Desktop 回归通过；导航轮的 metadata、app 编译与 180 项
-> Desktop 回归见“前轮：导航组件族与三适配”。
+> `:core:design-system-fluent`、`:core:ui-foundation`、`:core:material`、`:app:shared`、`:app:sample`。
+> 最近核对：2026-11-15；master 未提交工作树（列表项第六族与三适配）。
+> 验证记录：本轮 metadata 编译、app 编译与 203 项 Desktop 回归通过（核心 47、M3 34、Fluent 53、Nomi 24、
+> 旧门面 19、sample 26）；命名空间轮 218 项与导航轮 180 项见下方历史条目。
 
 本文沿原路径演进，不新增分支、版本号或归档副本。原设计有 Git 历史可追溯； 此前确立原生默认优先、旧式主题调用、单组默认工厂、Nomi
 品牌命名、独立 nomi 包及公开构造/生成成员
@@ -35,7 +36,7 @@ Material / Fluent 的原生默认视觉。
 - API、主题、每个组件实现分文件维护，聚合对象仅组装。
 
 非目标：不复刻全部第三方组件，不统一所有系统尺寸；不把窗口 Mica/Acrylic、导航、业务状态或持久化设置放入本模块；
-不一次性重写旧页面；不自动打开项目未启用的平台。首期仍只有四组件，二期列表见文末。
+不一次性重写旧页面；不自动打开项目未启用的平台。首期只有四组件，后续按轮次扩展为六族，后续列表见文末。
 
 ## Nomi 公共命名
 
@@ -106,7 +107,7 @@ NomiTheme / NomiThemeOverride
 `colorScheme/typography/shapes/spacings/sizes`， 再到 `designSystem = requireNomiDesignSystem()`、
 `overrides = NomiThemeOverrides()` 和 content。
 `LocalNomiDesignSystem` 为可空且 **无隐式默认**：未显式提供时 `requireNomiDesignSystem()` 抛出带指引的
-`IllegalStateException`；`NomiTheme`/`NomiThemeOverride` 入口与四组件读取共同遵守该契约。
+`IllegalStateException`；`NomiTheme`/`NomiThemeOverride` 入口与各组件读取共同遵守该契约。
 `NomiThemeOverride` 同样接收五组直接参数；null 表示未指定，不直接以 `NomiTheme` 的完整投影作默认。
 
 | 规则                                | NomiTheme 根                                             | NomiThemeOverride 局部                     |
@@ -271,18 +272,73 @@ Nomi/M3 的导航项默认颜色与标签排版读取 `NomiTheme`（选中 prima
 Bar/Rail 映射、`NavId.Null` 分组与槽位内容组合（M3 Icon + NomiText）， 不再直接使用 M3 导航外壳或旧
 `AppTheme`。
 
+## 列表项组件族
+
+第六个组件族把“设置行”泛化为列表项原语：
+`NomiListItem(title, modifier, onClick, leading, subtitle, trailing)`
+只负责把槽位交给当前设计系统的原生列表项，行高、容器、圆角、悬停/按下/点击外观与文本样式全部保持原生默认。
+槽位为 null 时不占位；`onClick = null` 表示静态行，实现不得附加点击语义。入口与 SPI 见
+[NomiListItem](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)，
+[组件集合](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)
+新增 `listItems` 族；本版没有“可能不被支持的显式覆盖”，因此不新增能力字段。
+
+### 三端原生映射与决策
+
+| 能力      | Material 3                     | Fluent                              | Nomi                                 |
+|-----------|--------------------------------|-------------------------------------|--------------------------------------|
+| 原生基元  | `ListItem`                     | `CardExpanderItem` 点击/无点击重载  | 透明 `Row` + NomiTheme 令牌          |
+| 标题      | `headlineContent`              | `heading` + 注入 bodyStrong         | `titleSmall` + SemiBold、textPrimary |
+| 副标题    | `supportingContent`            | 原生 caption 槽                     | `bodySmall`、textSecondary           |
+| 前导      | `leadingContent`               | 48dp icon 槽                        | Row 起始槽                           |
+| 尾部      | `trailingContent`              | `trailing` + 注入 caption/secondary | textSecondary                        |
+| 点击      | `Modifier.clickable`           | 原生 Card 五态（含 hover/pressed）  | 12dp 圆角 `clickable`                |
+| 行高/容器 | 一行 56dp、两行 72dp，无容器色 | 62dp 卡片行、1dp 描边               | 由令牌内边距与内容决定               |
+
+- 选 `CardExpanderItem` 而非 Fluent `ListItem`/`ExpanderItem`：前者原生带
+  heading/caption/icon/trailing 与卡片五态；`ListItem` 是单文本槽、16dp 图标的密集列表行，
+  `ExpanderItem` 背景不一致。`dropdown` 保持 null，静态行使用无点击重载，两种状态外观一致且不出现展开箭头。
+- v1 不提供 `enabled`：M3 1.9.0 的 `ListItem` 内部固定 `enabled = true` 取色，没有原生禁用内容色；
+  `onClick`/`enabled` 到 1.10.0-alpha05 的 `InteractiveListItem` 才出现。适配器自行降透明属于伪造原生状态，
+  因此不可点统一由 `onClick = null` 表达，禁用视觉留待 M3 升级或控件族统一。
+- v1 不提供 `selected`、展开、`overline`、分组标题、分隔线、颜色/形状/内边距/高度覆盖：这些能力只有一侧
+  原生支持，跨系统统一需要重绘；按既有原则不提前增加空参数。
+- Fluent 上游只为 caption 提供原生文本样式，适配器为标题注入 bodyStrong、为尾部注入 caption 与
+  secondary 内容色（与 Fluent `ListItem` 的尾部处理一致）；这与 Nomi 通过 `ProvideNomiContentStyle`
+  建立槽位环境 同类，不是重绘组件。
+- 旧 `:core:ui-foundation` `SettingItem` 全仓零调用点，直接删除：`SettingItem` → `NomiListItem`，
+  `content`/`trailingIcon` 组合进 `trailing` 槽，`SettingSwitch`/`SettingRadio`/`SettingCheckbox`
+  变体留待 控件族，`isWeight`/`contentPadding`/`useImageCompose` 与 `SettingStyle`/`SettingDefaults`
+  删除；
+  `ScrollChoose` 保留。
+- 行为差异是原生默认，不做跨系统对齐：M3 点击只有 ripple、无悬停容器色；Fluent 有 hover/pressed 变色；
+  Nomi 使用主题圆角与令牌内边距。行内含 `NomiButton` 等交互槽时由各自原生组件处理点击。
+
+```text
+M3（透明行，两行 72dp）          Fluent（62dp 卡片行、1dp 描边）      Nomi（透明行、令牌内边距）
+──────────────────────────       ┌──────────────────────────┐       ──────────────────────────
+ [leading] 标题         值 >     │ [leading] 标题     值 >  │        [leading] 标题         值 >
+           副标题                │           副标题          │                 副标题
+──────────────────────────       └──────────────────────────┘       ──────────────────────────
+```
+
+实现入口：[Material3ListItemRenderer](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/list/Material3ListItemRenderer.kt>)、
+[FluentListItemRenderer](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/list/FluentListItemRenderer.kt>)、
+[DefaultNomiListItemRenderer](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/list/DefaultNomiListItemRenderer.kt>)；
+展示见 [DesignSystemListItemShowcase](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemListItemShowcase.kt>)，
+契约测试见 [ListItemDispatchContractTest](<../../core/design-system/src/commonTest/kotlin/ciyin/designsystem/ListItemDispatchContractTest.kt>)。
+
 ## 各实现与拆分入口
 
 公共 component 留在核心，内置实现 nomi、material3、fluent 各自模块根下按
-text/button/surface/card/navigation 组织，package 与目录一致；nomi 为独立 Gradle 模块但包名不变。 SPI
-和专属参数类型随所在组件文件；FluentButtonColors 归 button。共享
+text/button/surface/card/navigation/scaffold/list 组织，package 与目录一致；nomi 为独立 Gradle
+模块但包名不变。 SPI 和专属参数类型随所在组件文件；FluentButtonColors 归 button。共享
 NomiBorder、NomiControlSize、NomiComponentCapabilities、NomiDesignSystemComponents 留在核心 component
 根， NomiNativeContentStyle 与 internal DefaultNomiSystem 位于 nomi 模块根（经
 `NomiDesignSystem.Default` 暴露），集中内置主题及组件装配；公共主题 API/数据留在 theme，通用请求/契约/显式
 slot 留在 runtime。 LocalNomiDesignSystem 为可空且无隐式默认，应用根/测试/Preview 显式提供；M3/Fluent
-的主题、转换、投影与装配位置不变。text/actions/surfaces/navigation 四族 SPI，Card 仍由 surfaces
-的独立方法派发，导航套件由 navigation 族派发。 消费者直接更新 imports 与显式提供点，不增加旧 package
-转发、typealias、兼容重载或隐式回退。
+的主题、转换、投影与装配位置不变。text/actions/surfaces/navigation/scaffold/listItems 六族 SPI，Card 仍由
+surfaces 的独立方法派发，导航套件由 navigation 族派发。 消费者直接更新 imports 与显式提供点，不增加旧
+package 转发、typealias、兼容重载或隐式回退。
 
 ### Nomi
 
@@ -293,7 +349,8 @@ slot 留在 runtime。 LocalNomiDesignSystem 为可空且无隐式默认，应�
 [Surface](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/surface/DefaultNomiSurfaceRenderer.kt>)、
 [Card](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/card/DefaultNomiCard.kt>)
 与
-[Navigation](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationRenderer.kt>)；
+[Navigation](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationRenderer.kt>)
+与 [List](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/list/DefaultNomiListItemRenderer.kt>)；
 导航外壳以 M3 `NavigationBar`/`NavigationRail` 为原生载体，复刻既有 Navigation.kt 的视觉，Drawer
 由能力声明禁用。 Nomi 可以使用自己的 Foundation 样式和交互反馈，它们不再充当其他 adapter 的原生默认。
 
@@ -311,9 +368,10 @@ Material Typography 身份仍由 legacy 配置保持。
 [Surface](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/surface/Material3Surface.kt>)、
 [Card](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/card/Material3Card.kt>)
 与
-[Navigation](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)；
+[Navigation](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)
+与 [List](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/list/Material3ListItemRenderer.kt>)；
 [聚合](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)
-只组装四个组件族。
+只组装六个组件族。
 
 ### Fluent
 
@@ -326,9 +384,10 @@ size/padding/role；现在用户选择保留原生默认，代价通过能力声
 与
 [FluentCard](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/card/FluentCard.kt>)
 与
-[FluentNavigation](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/navigation/FluentNavigationRenderer.kt>)；
+[FluentNavigation](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/navigation/FluentNavigationRenderer.kt>)
+与 [FluentList](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/list/FluentListItemRenderer.kt>)；
 [FluentComponents](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)
-仅组装四族，
+仅组装六族，
 [主题配置](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentDesignSystem.kt>)
 负责原生主题和 `rememberFluentDesignSystem`。
 完整边界见[Fluent README](<../../core/design-system-fluent/README.md>)。
@@ -375,6 +434,7 @@ copy。上一轮只改旧门面的内部主题配置与读取路径，保留既�
 [文本](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemTextShowcase.kt>)、
 [表面](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemSurfaceShowcase.kt>)、
 [卡片](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemCardShowcase.kt>)、
+[列表项](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemListItemShowcase.kt>)、
 [局部覆盖](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemOverrideShowcase.kt>)
 与
 [限制提示](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/DesignSystemRestrictionShowcase.kt>)。
@@ -385,7 +445,7 @@ copy。上一轮只改旧门面的内部主题配置与读取路径，保留既�
 Material3 应用根
 └─ Sample 独立导航栈
    └─ Gallery：Nomi / Material3 / Fluent + 明暗模式 + 字体比例
-      ├─ 原生默认：Text / Button / Surface / Card（不填视觉默认参数）
+      ├─ 原生默认：Text / Button / Surface / Card / ListItem（不填视觉默认参数）
       ├─ 显式覆盖：只演示用户主动指定的颜色/变体/可支持参数
       └─ 能力限制提示：Fluent Button size/shape/padding；Card colors/border
 
@@ -395,12 +455,28 @@ Material3 应用根
 
 后续布局优化保持原生风格：各展示区以原生 Card 组织，四默认示例和表面层级复用 foundation 自适应网格；
 排版角色使用选择器与单项真实字号预览，避免十五种标题顺序撑长页面；限制说明默认折叠。
+列表项分区展示可点击行（前导图标、标题/副标题、值文本与箭头）与静态行（尾部设计系统按钮），不传颜色、形状或内边距参数。
 控制区不再按页面三分之一无限变宽，大字体时按可用空间回退单列。
 
 只读投影可供说明和显式示例使用，但不能把全部投影自动填回“原生默认”区。局部覆盖展示必须验证切换新系统
 使用其原生默认，显式增量继承且退出恢复。测试/预览不启动真实设备能力。
 
 ## 验证记录与验收缺口
+
+### 本轮：列表项组件族与三适配，2026-11-15
+
+范围：`:core:design-system` 新增第六族 `NomiListItem` 与 `listItems` renderer；M3/Fluent/Nomi 三端原生映射；
+`:core:ui-foundation` 删除旧 `SettingItem`；sample 增加列表项分区；README、skill 与设计索引同步。
+
+- 核心 47、M3 34、Fluent 53、Nomi 24、旧门面 19、sample 26（`--tests "*DesignSystemDemo*"`）共 203 项
+  Desktop 回归通过，零失败、零跳过；五模块 `compileCommonMainKotlinMetadata`、sample metadata、 app
+  shared 与 app desktop 编译通过。
+- 契约测试覆盖默认稀疏派发、槽位 null 不占位、显式参数透传、点击回调、静态行无点击动作、无设计系统时
+  带指引失败；Fluent 标题槽 bodyStrong 与尾部 secondary 内容色、Nomi 标题槽 titleSmall+SemiBold 断言通过。
+- 未执行：Android/iOS/Web、设备运行、截图对比与 Release 验收。M3 1.9.0 `ListItem` 无原生禁用内容色，
+  `enabled` 留待 M3 升级 `InteractiveListItem` 或控件族统一后补充；选择控件族尚未落地，列表项尾部目前只演示
+  文本、图标与设计系统按钮。
+- 原生行高差异（M3 56/72dp、Fluent 62dp、Nomi 内容推断）是预期差异，不作为回归断言语义。
 
 ### 本轮：设计系统绑定命名空间与旧单例迁移，2026-11-14
 
@@ -432,292 +508,3 @@ Material3 应用根
 - 验证（Windows / JDK 21）：`:core:design-system`、`:core:design-system-nomi`、
   `:core:design-system-material3`、`:core:design-system-fluent`、`:core:material` 的
   `compileCommonMainKotlinMetadata` 通过；`:app:desktop:compileKotlin` 与
-  `:app:android:compileDebugKotlin` 通过；Desktop 回归共 218 项——核心 42、Nomi 18、M3 30、Fluent 46、旧门面
-  19、sample 63（全量 `desktopTest`），零失败、零跳过；KDoc 扫描 0 硬错误；`git diff --check` 通过。
-- 已知边界：扩展属性按模块分离，调用方必须逐模块导入；实现对象 internal 后外部只能依赖
-  `NomiDesignSystem` 接口，不再能引用具体实现类型。
-- 以下历史记录中出现的旧顶层 object 名称为当轮事实，仅作历史证据（含当时示例），不代表当前 API。
-
-### 前轮：导航组件族与三适配，2026-11-13
-
--
-
-核心新增中立导航组件族：[NomiNavigation](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)
-提供 `NomiNavigationSuite`、`NomiNavigationSuiteType`（Bar/Rail/Drawer）、
-`NomiNavigationItemScope.NavigationItem` 与
-`NomiNavigationRenderer`；[NomiDesignSystemComponents](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)
-增加第四族 `navigation`。
-
-- 导航项为槽位式：
-  `NavigationItem(selected, onClick, modifier, icon, badge, label, colors, interactionSource)`
-  ，icon/badge/label 由调用方组合，没有 enabled；`NomiNavigationItemColors` 只提供
-  content/selected/disabled 内容色与指示器色的稀疏覆盖；图标尺寸与无障碍名称由调用方负责（IconPack 固有
-  256dp）。
-- 能力声明扩展为 `navigationBar`/`navigationRail`/`navigationDrawer` 与 `navigationItemModifier`
-  ：默认支持 Bar/Rail 与项级 modifier，Drawer 需实现显式声明，Fluent 声明不支持项级
-  modifier；入口/实现在原生渲染前按能力拒绝，并带设计系统标识。
-- Nomi 适配器按既有 Navigation.kt 口径实现 Bar/Rail（M3 原生外壳 + NomiTheme 令牌，Rail 60dp），Drawer
-  能力禁用；M3 适配器使用 NavigationBar/NavigationRail/PermanentNavigationDrawer；Fluent 适配器使用
-  NavigationView 的 Top/Left/LeftCompact，并以“组合阶段记录声明 → 原生菜单 DSL 重放”桥接非
-  @Composable 菜单。
-- app/shared 的 Navigation.kt 改为只做 `windowAdaptive` → Bar/Rail 映射与 `NavId.Null` 分组，路由仍由
-  App.kt 分发；AppViewModel/NavModel 图标改用中立 IconPack；AppPreview/ScreenScaffold/MainScreen 去掉旧
-  AppTheme 与 ui-foundation M3 Title；app/shared 删除 `ciyin.material` 依赖与全部引用。
--
-
-新增测试：核心 [NavigationContractTest](<../../core/design-system/src/commonTest/kotlin/ciyin/designsystem/NavigationContractTest.kt>)
-（分组派发、能力拒绝、Drawer
-声明后派发）、Nomi [DefaultNomiNavigationTest](<../../core/design-system-nomi/src/desktopTest/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationTest.kt>)
-、M3 [Material3NavigationTest](<../../core/design-system-material3/src/commonTest/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationTest.kt>)
-、Fluent [FluentNavigationTest](<../../core/design-system-fluent/src/desktopTest/kotlin/ciyin/designsystem/fluent/navigation/FluentNavigationTest.kt>)。
-
-- 验证（Windows / JDK 21）：五模块 `compileCommonMainKotlinMetadata`、`:app:shared` Android/Desktop 编译、
-  `:app:sample:compileAndroidMain` 通过；Desktop 回归共 180 项——核心 42、Nomi 18、M3 30、Fluent 46、旧门面
-  19、sample 25（`--tests "*DesignSystemDemo*"`），零失败、零跳过；KDoc 扫描 0 硬错误；`git diff --check`
-  通过。
-- 已知边界：Fluent 菜单为录制-重放桥接，选中刷新依赖调用方以组合可见状态驱动，且无项级 modifier；导航项无
-  enabled，禁用态颜色只在原生提供状态位的实现上生效；Nomi Bar 不再固定高度，随原生导航默认；设备、iOS/Web
-  与 Release 未验证。
-
-### 前轮：Nomi 实现独立模块与移除隐式默认，2026-11-13
-
-- 内置 Nomi 实现拆为独立 Gradle 模块
-  `:core:design-system-nomi`（[工程声明](<../../settings.gradle.kts>)已 include），包名仍为
-  `ciyin.designsystem.nomi`；当轮的顶层 Nomi 单例、`NomiNativeContentStyle` 与四组件 renderer 随之迁入。核心
-  `api` 不引用该模块，也不依赖 M3/Fluent 适配器；本模块 `api(projects.core.designSystem)` 并保留 M3
-  库预留。
--
-
-核心移除隐式默认：[NomiDesignSystem.kt](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>)
-中 `LocalNomiDesignSystem` 改为 `staticCompositionLocalOf<NomiDesignSystem?> { null }`，新增 internal
-`@Composable @ReadOnlyComposable requireNomiDesignSystem()`，未提供时以带指引的
-`IllegalStateException` 失败。
-
-- 两个主题入口的 `designSystem` 默认参数改为 `requireNomiDesignSystem()`，四组件读取同一函数；不存在无上下文时回退
-  Nomi 的路径。
-- 测试与 Preview 显式化：核心 `commonTest`
-  新增 [NoImplicitDesignSystemContractTest](<../../core/design-system/src/commonTest/kotlin/ciyin/designsystem/NoImplicitDesignSystemContractTest.kt>)
-  ，覆盖裸 `NomiTheme` 与四组件的缺省失败信息；Nomi 模块 `commonTest` 的
-  `NomiNativeContentIsolationTest` 与 `desktopTest` 的 `NomiComponentsContractTest` /
-  `NomiCustomizationContractTest`
-  自核心迁入；[SamplePreviewTheme](<../../app/sample/src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/component/SamplePreviewTheme.kt>)
-  在 sample commonMain 以 `CompositionLocalProvider(LocalNomiDesignSystem provides ...)` 显式提供当轮的
-  Nomi 单例。
-- Material 3 仅有测试边：[构建脚本](<../../core/design-system-material3/build.gradle.kts>)的
-  `commonTest` 增加 `implementation(projects.core.designSystemNomi)`，生产 `commonMain` 无 Nomi 依赖；M3
-  测试以显式 `designSystem` 传入当轮的 M3 单例。
--
-
-旧门面契约保持：[旧 Theme](<../../core/material/src/commonMain/kotlin/ciyin/material/theme/Theme.kt>)
-的 `AppTheme.typography` 以可空的当前设计系统 id 与当轮 M3 单例 id 比较来判定 M3
-环境，未提供设计系统时不抛错，继续回退中立排版映射与旧默认值。
-
-- 验证（Windows / JDK 21）：`:core:design-system`、`:core:design-system-nomi`、
-  `:core:design-system-material3`、`:core:design-system-fluent`、`:core:material` 的
-  `compileCommonMainKotlinMetadata` 与 sample `compileAndroidMain` 通过；Desktop 回归共 162 项——核心
-  38、Nomi 13、M3 26、Fluent 41、旧门面 19、sample 25（`--tests "*DesignSystemDemo*"`），零失败、零跳过；KDoc
-  扫描 63 文件、428 声明、0 硬错误（18 个 inferred-return 候选均为表达式体 `runComposeUiTest` 返回
-  Unit）；`git diff --check` 通过。
-- 未验证：设备、iOS/Web 与 Release 缺口保留；模块拆分本身不代表平台或发布验收完成。
-
-### 前轮：删除主题聚合层，2026-11-12
-
-- 删除独立主题聚合类型及默认工厂；已有 ResolvedNomiTheme 直接承载五组结果，核心以 request 规范化
-  requestedMode/isDark/overrides，不将解析默认值反推为显式输入。
-- Nomi/Material3/Fluent 在原生主题环境内回调扁平结果；组件只经 NomiTheme 读取。旧 AppTheme 对外 API
-  不变，legacy 工厂改用颜色、原生 Typography、形状、间距、尺寸五个直接参数。
-- Windows / JDK 21：核心、M3、Fluent 的 `compileCommonMainKotlinMetadata` 与 sample 的
-  `compileAndroidMain` 通过。
-- Desktop 回归重新执行 154 项：核心 45、M3 25、Fluent 40、旧门面 19、sample 25；零失败、零跳过，sample 限定
-  `--tests "*DesignSystemDemo*"`。
-- 新增回归覆盖浅色兜底/getter 身份、核心规范化错误 adapter metadata、M3/Fluent 直接回调来源、真实跨模块
-  SPI 消费及父完整色板与子透明 accent 合并。原独立历史 golden、原生默认/slot/能力限制与旧门面测试继续通过。
-- 集成中修复 M3 可空色板分支及跨层 accent 最终覆盖顺序；测试夹具修复组合内读取时机与重组跨时刻引用比较，保留严格身份断言。
-- 未新增模块或兼容包装，构造与单组默认工厂不变；未运行设备、iOS/Web 或发布构建，既有缺口保留。
-
-### 前轮：公开主题构造与生成成员 copy，2026-11-12
-
-- 已批准范围：9 个主题 data class 公开构造，移除 `ConsistentCopyVisibility` 与 9 个手写核心复制扩展、8
-  个旧门面复制转发；默认工厂及既有旧门面兼容保留。
-- 默认数值、默认/必填参数、工厂新实例或共享实例身份，以及成员浅复制的未改字段引用均保持；原生默认、主题继承、SPI、gallery
-  布局不变。
-- Windows / JDK 21：核心、M3、Fluent 的 `compileCommonMainKotlinMetadata` 与 sample 的
-  `compileAndroidMain` 通过。
-- Desktop 回归共 148 项重新执行：核心 43、M3 23、Fluent 38、旧门面 19、sample 25，零失败、零跳过；sample 限定
-  `--tests "*DesignSystemDemo*"`。
-- 新增 19 项测试：Fluent 消费模块新增 11 项，覆盖 9 类直接构造/成员 copy、显式颜色哨兵及默认工厂身份；旧门面新增
-  8 项类型别名直接构造/成员 copy 验证，均不导入复制扩展。
-- 对照执行前快照，9 类参数列表与默认表达式逐字不变；24 个其余改动源码文件的非注释 token
-  与批准的构造/扩展/import 转换一致，没有额外实现改动。
-- 相关主题与消费测试的 KDoc 扫描 27 文件、206 声明，零错误与待核候选；工作区 `git diff --check` 通过。
-- 下列所有前轮编译、测试数量和视觉资产仅作历史记录，不证明本轮通过；设备、iOS/Web 与 Release 缺口继续保留。
-
-### 前轮：Nomi 内置实现独立包，2026-11-12
-
-- Nomi 四组件实现及原生内容环境从 component 子包提至 `ciyin.designsystem.nomi`，当轮顶层 Nomi 单例也从
-  runtime 迁入。
-- 公共组件入口/SPI、主题 API/数据、运行时请求/契约/显式 slot 保持原位；默认 LocalNomiDesignSystem
-  仍引用内置实现回退，不新增模块或兼容转发。
-- 6 个文件移动，17 个 Kotlin 文件仅修改 package/import；逐文件对照迁移前快照，KDoc、实现正文与测试断言未变。
-- Windows / JDK 21：核心 `compileCommonMainKotlinMetadata`、sample `compileAndroidMain` 通过。
-- Desktop 测试重新执行：核心 43、M3 23、Fluent 27、旧门面 11、sample 25，共 129 项；零失败、零跳过。sample 使用
-  `--tests "*DesignSystemDemo*"`。
-- 迁移后 KDoc 扫描无格式错误；Surface.Card 的一个推断返回候选仍为 Unit，无须新增返回值说明。工作区
-  `git diff --check` 通过，旧包路径/import 无残留。
-- 未运行设备、发布构建或重拍截图；既有平台与 Release 缺口保持，不将该轮编译视为设备验收。
-
-### 前轮：组件目录与 package 组织，2026-11-11
-
-公共组件及 Nomi/M3/Fluent 实现按四组件子目录组织，SPI 与专属类型随文件迁移；共享类型、主题与装配位置不变。
-三族 SPI、原生默认行为和 gallery 布局保持既有契约，不保留旧 package 转发。文档链接、import 示例和目录约定同步更新。
-
-- Windows / JDK 21：核心、M3、Fluent 的 `compileCommonMainKotlinMetadata` 与 sample 的
-  `compileAndroidMain` 通过。
-- 该轮实际重跑 Desktop 测试：核心 43、M3 23、Fluent 27、旧门面 11、sample 25，共 129 项；XML
-  报告均为当次运行生成，零失败、零跳过。sample 使用 `--tests "*DesignSystemDemo*"` 限定范围。
-- 17 个文件按计划移动；对照该轮修改前的 61 个 Kotlin 文件快照，51 个文件仅有 package/import
-  差异，组件实现和测试断言不变。
-- 六个文档的 174 个本地文件链接存在，旧组件路径/import 扫描无残留；工作区 `git diff --check`
-  通过。暂存区既有三处文件末尾空行告警未改动，也未更新索引。
-- 该轮未新增设备运行、截图或发布验收；既有平台与 Release 缺口保留。
-
-### 前轮：Nomi 公共 API 命名迁移，2026-11-11
-
-新设计系统 App* 全部迁为 Nomi*，NomiDesignSystem 接口与当轮顶层默认实现分开； 默认 renderer 与原生内容环境另用
-DefaultNomi* / LocalNomiNative*，未合并显式 slot 与原生默认值。 包名、设计系统 id、资源及导航标识不变；旧
-material 公共 App* 门面和应用层名称不变。 该轮逐文件对照修改前快照，117 个候选源码仅发生批准的符号/import
-迁移及文件移动，无额外实现逻辑变化。
-
-- Desktop 回归：核心 43、M3 23、Fluent 27、旧门面 11、sample 25，共 129 项，无失败、无跳过。
-- 核心与两适配器 metadata、sample compileAndroidMain、Desktop 宿主和 Android 仪器源码编译通过。
-- 页面静态检查通过；该轮没有设备运行或截图刷新，前轮视觉资产仅作历史。
-- 新核心与适配器不保留 App* 别名；外部消费者需更新 imports，源码兼容例外仅限旧 ciyin.material 门面。
-
-### 已替代的历史方案：internal 构造与默认工厂复制，2026-11-11
-
-**该可见性与扩展复制策略已被[前轮公开构造与生成成员 copy](<#前轮公开主题构造与生成成员-copy2026-11-12>)
-替代，以下仅为历史证据，不是当前使用限制或当轮通过记录。**
-当时主题数据类保持 internal constructor，外部需从默认工厂取对象并导入复制扩展；旧包提供薄工厂及同名复制转发。
-公开构造改造时保留默认工厂、删除两层复制扩展并开放构造；上一轮再移除聚合默认工厂，单组默认值和主题行为不变。
-核心 43、M3 23、Fluent 27、旧门面 11 项 Desktop 测试通过，合计 104 项，无失败或跳过。
-包含[真正独立消费模块测试](<../../core/design-system-fluent/src/desktopTest/kotlin/consumer/ThemeFactoryCopyConsumptionTest.kt>)，
-不借助核心 friend-path；双模块编译实验另确认直接内部构造、未导入扩展的内部成员 copy 均不可访问。
-核心/两适配器 metadata、Android 依赖及 sample 编译、Desktop 宿主编译当时通过；该轮未运行设备或发布构建。
-
-### 前轮：旧式 Theme 调用与数据组织恢复，2026-11-11
-
-该轮只恢复源代码调用习惯与主题数据职责，原生组件默认和 gallery 布局保持不变。 基线为上述 HEAD +
-当时未提交工作树；该轮文档整理未运行 Gradle，构建结果由 Lead 提供。
-
-| 检查                                                    | 该轮记录                                                                                                |
-|---------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| Color/ColorScheme/Type/Shape/Spacing/Size 及 Theme 签名 | 已静态核对落盘源码；无 Material 类型进入核心                                                            |
-| 联合 Desktop 测试                                       | Lead 已实际执行并核对 XML：核心 42、M3 23、Fluent 24、旧门面 11、sample 25，合计 125 项，无失败、无跳过 |
-| 核心历史数值与主题继承新增测试                          | 已纳入该轮核心 42 项，独立 golden 与 root/Override 契约复验通过                                         |
-| 该轮平台编译                                            | 核心/M3/Fluent metadata、sample `compileAndroidMain`（包含所需依赖编译）、Desktop 宿主编译均通过        |
-| 该轮 APK、设备与截图                                    | 该轮没有 APK 构建、真机/WSA 运行或重新截图验收声明；更早构建/原生对照截图不是该轮执行记录               |
-| iOS/Web/Release                                         | 原有未验收与依赖兼容风险保留                                                                            |
-
-该轮回归覆盖：旧 27 色、十五排版与形状/间距/尺寸独立基线；同名工厂具名参数及 default* 薄转发；
-根不继承父颜色/accent、只继承非颜色明确组，Override 继承全部明确组；子完整色板清 inherited accent、 子
-accent 叠 parent palette；direct/overrides 重复及同层完整色板+accent 拒绝；Fluent typography 映射和
-full color/shapes 拒绝； M3 完整中立读模型与旧 Typography 身份保持。
-
-### 前轮：原生默认优先重构，2026-11-11
-
-以下为直接主题参数复刻之前，由 Lead 实际运行并核对 XML 报告的历史记录，基线为上述 HEAD + 当时未提交工作树；总计
-99 项 Desktop 测试通过，无失败或跳过。
-**它们不证明后续五组直接参数/工厂恢复或上一轮主题结果扁平化通过。**
-
-| 检查                                                 | 该轮记录                                                                                                       |
-|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| 核心 / M3 / Fluent metadata、Android 与 Desktop 编译 | 已通过；Desktop 宿主编译及 Android Debug/仪器 APK 构建通过                                                     |
-| 核心契约测试                                         | 29 项通过（`:core:design-system:desktopTest`）                                                                 |
-| M3 生产编译                                          | 已通过                                                                                                         |
-| M3 测试                                              | 19 项通过；独立 MaterialTheme 原生对照、显式覆盖、slot 来源隔离与严格像素/布局断言通过                         |
-| 旧门面测试                                           | 9 项复跑通过                                                                                                   |
-| Fluent / sample                                      | Fluent 20 项 Desktop 测试通过；sample 22 项设计系统 Desktop 测试通过，生产组件已按组件拆分                     |
-| 真正原生默认对照与截图                               | 三系统 Light/Dark 原生默认与显式区截图已生成；人工检查后的代表性原生风格和大字截图保存在下方链接               |
-| Android 设备、iOS native、JS/Wasm、Release           | Android Debug 与 androidTest APK 已构建，未在设备运行；iOS/Web 未验收；Desktop Release 既有缺失 API 风险仍保留 |
-
-该轮验收与回归覆盖：
-
-- 零参数 API 请求仍为空视觉字段，真实原生组件与 adapter 在同配置下的样式/尺寸/状态一致。
-- 单字段颜色覆盖不会顺带改其它原生状态；null、Unspecified、Transparent 与 Border 三态行为不同。
-- Fluent 不支持的 Button/Card 覆盖快速失败；不能继续用重绘实现绕开失败。
-- 跨系统局部覆盖只继承显式增量，原生默认投影不泄漏，显式 slot 和退出恢复正确。
-- 旧包命名参数、默认值、Typography 身份和图标转发继续兼容。
-- sample 原生默认/显式覆盖/限制提示与真实能力一致，大字体与明暗不裁剪内容。
-
-该轮已读取的代表性截图（上一轮主题结果扁平化未据此重新验收）：
-
-- [Nomi 原生浅色](<assets/design-system/native-default/native-nomi-Light.png>)、[Material 3 原生浅色](<assets/design-system/native-default/native-material3-Light.png>)。
-- [Fluent 原生浅色](<assets/design-system/native-default/native-fluent-Light.png>)、[Fluent 原生深色](<assets/design-system/native-default/native-fluent-Dark.png>)。
-- [窄屏两倍字号与长文本](<assets/design-system/native-default/compact-large-font-button.png>)。
-
-原生对照使用独立第三方 Theme 与组件，不用 NomiTheme 构造参照。Fluent 透明像素比较预乘 RGB 与 alpha，
-只容许两次 8-bit 存储量化误差；布局尺寸和文本样式、密度数值、约束、行数均严格比较。 评审发现的原生 slot
-误入显式上下文、typed Fluent 深色板被 accent 请求切成浅色均已修复并回归。
-
-### 前轮补充：展示排版优化，2026-11-11
-
-只调整 sample 页面：收紧控制栏、标签网格、横向按钮变体、可展开限制、排版角色单项预览。 25 项 gallery
-Desktop 测试、sample Android 编译与 Desktop 宿主编译通过；原生组件实现未修改。
-已读取[桌面完整布局](<assets/design-system/layout-refinement/layout-fluent-desktop.png>)、
-[Fluent 浅色](<assets/design-system/layout-refinement/native-fluent-Light.png>)、
-[Fluent 深色](<assets/design-system/layout-refinement/native-fluent-Dark.png>)与
-[窄屏大字体](<assets/design-system/layout-refinement/compact-large-font-button.png>)。
-
-### 前轮：恢复跨平台时的结果（不是当前行为验收）
-
-前轮将 Fluent 移入 commonMain 后，adapter metadata、Android/Desktop 编译与 **17 项 Desktop 测试**通过；
-sample metadata、 **18 项 Desktop 测试**、Desktop 宿主编译、Android Debug 应用与仪器 APK 构建通过。 新增
-Android Fluent 暗色/大字体及三系统禁用用例当时仅编译，没有执行设备安装/运行。
-这些记录证明的是旧统一视觉实现的跨平台接入，不能证明后续原生按钮/Card、稀疏请求、新能力边界或上一轮主题结果扁平化通过。
-
-### 更早阶段：Desktop-only 实现的历史证据
-
-此前有 **61 项 Desktop 测试**（核心 12、M3 6、Fluent 17、旧门面 9、sample 17）通过； WSA Android 33 上真实
-MainActivity → sample → gallery **2 项仪器测试**通过，覆盖当时 Nomi/M3， 不证明 Android Fluent 已运行。旧
-Layer-based Fluent 的 hover、按下、点击边界像素检查仅为旧实现证据。
-
-历史截图（此前已读取，本轮未据此验收）：
-
-- [Desktop Fluent 浅色](<assets/design-system/desktop-fluent-light.png>) / [深色及计数](<assets/design-system/desktop-fluent-dark.png>)。
-- [窄屏两倍字号](<assets/design-system/compact-large-font-button.png>) / [局部覆盖](<assets/design-system/compact-large-font-override.png>)。
-- [M3 暗色布局](<assets/design-system/wide-material3-dark.png>)。
-
-历史设备边界保持：K20 Pro USB 不在列表、网络超时；冲突 USB 与小米 15 未获使用许可，真机未验收。 WSA
-曾在启动已安装宿主后通过身份核验并安装/运行；随后 transport 消失，一次自动恢复仍拒连后停止，
-未反复重启或切换设备。不能把 WSA 视为真机，也不能因当前源码变更自动重用旧设备结论。
-
-历史 Release 风险仍未关闭：Desktop `createReleaseDistributable` 在 `proguardReleaseJars` 因
-Fluent/haze/FileKit 引用当前 Compose/Skia 缺失方法而失败，未使用 ignorewarnings；源码改回原生组件不等于依赖兼容问题已修复。
-iOS 需 macOS native/link/runtime，JS/Wasm 沿项目开关，Android Release 独立验收。
-
-### 验证入口
-
-下列是按改动选择的入口，不是新的执行记录；实际任务受当前目标与配置影响。
-
-```powershell
-.\gradlew.bat :core:design-system:compileCommonMainKotlinMetadata :core:design-system:desktopTest --console=plain
-.\gradlew.bat :core:design-system-nomi:compileCommonMainKotlinMetadata :core:design-system-nomi:desktopTest --console=plain
-.\gradlew.bat :core:design-system-material3:desktopTest :core:material:desktopTest --console=plain
-.\gradlew.bat :core:design-system-fluent:compileCommonMainKotlinMetadata :core:design-system-fluent:compileAndroidMain :core:design-system-fluent:desktopTest --console=plain
-.\gradlew.bat :app:shared:compileCommonMainKotlinMetadata :app:shared:compileAndroidMain :app:desktop:compileKotlin --console=plain
-.\gradlew.bat :app:sample:desktopTest --tests "*DesignSystemDemo*" --console=plain
-.\gradlew.bat :app:sample:compileCommonMainKotlinMetadata :app:android:assembleDebug --console=plain
-.\gradlew.bat :app:sample:compileCommonMainKotlinMetadata :app:desktop:compileKotlin :app:android:assembleDebug --console=plain
-```
-
-平台/签名条件见[构建指南](<../contributing/building.md>)，runner
-与执行记录要求见[测试指南](<../contributing/testing.md>)。 截图必须读取并检查；不要把测试生成了图片、metadata
-编译或 APK 构建当作视觉/设备/发布验收。
-
-## 后续范围
-
-IconButton、输入框、Checkbox/Switch/Radio/Slider、Dialog/Scaffold/TopBar、Tooltip/Menu/Progress、
-Tabs/ListItem/Badge/InfoBar/Expander/DatePicker/ColorPicker/CommandBar 等仍未纳入当前四组件 +
-导航套件范围。 导航已作为第四组件族落地；弹出层导航（ModalNavigationDrawer 的开关控制）与 Fluent
-折叠态无障碍细化留给后续迭代。 更多截图基线、Fluent 扩展图标、系统材质、全应用设计系统持久化设置、UI
-foundation 拆分及独立发布/ABI 策略另行演进。 本轮不凭“未来可能有用”增加空组件族，也不把用户已确认的原生优先改回统一外观。

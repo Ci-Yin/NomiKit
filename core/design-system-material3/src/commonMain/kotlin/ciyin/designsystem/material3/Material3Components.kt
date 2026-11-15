@@ -2,17 +2,19 @@ package ciyin.designsystem.material3
 
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.NomiDesignSystemComponents
+import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.material3.button.Material3ActionRenderer
+import ciyin.designsystem.material3.list.Material3ListItemRenderer
 import ciyin.designsystem.material3.navigation.Material3NavigationRenderer
 import ciyin.designsystem.material3.scaffold.Material3ScaffoldRenderer
 import ciyin.designsystem.material3.surface.Material3SurfaceRenderer
 import ciyin.designsystem.material3.text.Material3TextRenderer
 
 /**
- * Material 3 四族渲染器装配；各组件实现分别位于独立文件。
+ * Material 3 六族渲染器装配；各组件实现分别位于独立文件。
  */
 object Material3DesignSystemComponents : NomiDesignSystemComponents {
     /**
@@ -39,4 +41,9 @@ object Material3DesignSystemComponents : NomiDesignSystemComponents {
      * 页面脚手架的原生适配；外壳与内容让位由原生 Scaffold 承担。
      */
     override val scaffold = Material3ScaffoldRenderer
+
+    /**
+     * 列表项的原生适配；行高、文本样式与内容色由原生 ListItem 决定。
+     */
+    override val listItems: NomiListItemRenderer = Material3ListItemRenderer
 }

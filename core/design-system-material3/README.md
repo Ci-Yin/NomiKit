@@ -1,15 +1,15 @@
 # :core:design-system-material3
 
-Material 3 设计系统适配器，将中立主题、四类组件、导航套件与页面脚手架映射到官方 Compose Material 3。
+Material 3 设计系统适配器，将中立主题、六类组件（含列表项）映射到官方 Compose Material 3。
 
 ## 职责与边界
 
 - 依赖 [中立核心](<../design-system/README.md>)，不依赖旧 material、ui-foundation 或应用模块。
 - Material 3 由 Version Catalog 的既有 `libs.compose.material3` 提供。
-- 五个 SPI 族实现 Text、Button、Surface、独立 Card、导航套件与页面脚手架；各组件分别调用官方原生组件，不共享外观配方。
+- 六个 SPI 族实现 Text、Button、Surface、独立 Card、导航套件、页面脚手架与列表项；各组件分别调用官方原生组件，不共享外观配方。
 - 导航套件直接使用原生 NavigationBar、NavigationRail 与 PermanentNavigationDrawer，Bar/Rail/Drawer
   均声明支持。
-- 输入框、图标按钮、列表项、弹窗等属于二期，不提供空实现或占位 SPI。
+- 输入框、图标按钮、弹窗等属于二期，不提供空实现或占位 SPI。
 - 不引入 Fluent、不读取平台设置、不维护第二份设计令牌。
 
 ## 入口
@@ -23,9 +23,9 @@ Material 3 设计系统适配器，将中立主题、四类组件、导航套件
 - [主题转换](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Conversions.kt>)
   ：公开颜色、圆角、排版转换，供适配器和旧包兼容层复用。
 - 组件位于 material3
-  根下的 [text](<src/commonMain/kotlin/ciyin/designsystem/material3/text/Material3Text.kt>)、[button](<src/commonMain/kotlin/ciyin/designsystem/material3/button/Material3Button.kt>)、[surface](<src/commonMain/kotlin/ciyin/designsystem/material3/surface/Material3Surface.kt>)、[card](<src/commonMain/kotlin/ciyin/designsystem/material3/card/Material3Card.kt>)、[navigation](<src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)、[scaffold](<src/commonMain/kotlin/ciyin/designsystem/material3/scaffold/Material3ScaffoldRenderer.kt>)
+  根下的 [text](<src/commonMain/kotlin/ciyin/designsystem/material3/text/Material3Text.kt>)、[button](<src/commonMain/kotlin/ciyin/designsystem/material3/button/Material3Button.kt>)、[surface](<src/commonMain/kotlin/ciyin/designsystem/material3/surface/Material3Surface.kt>)、[card](<src/commonMain/kotlin/ciyin/designsystem/material3/card/Material3Card.kt>)、[navigation](<src/commonMain/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationRenderer.kt>)、[scaffold](<src/commonMain/kotlin/ciyin/designsystem/material3/scaffold/Material3ScaffoldRenderer.kt>)、[list](<src/commonMain/kotlin/ciyin/designsystem/material3/list/Material3ListItemRenderer.kt>)
   子目录，package 同步细分；组件专属辅助函数随文件迁移。
-  主题、转换、投影与[五族装配](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)
+  主题、转换、投影与[六族装配](<src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)
   留在原位置；Card 仍属于 surfaces SPI，导航套件归入 navigation 子目录，不保留旧包兼容转发。
 
 ```kotlin

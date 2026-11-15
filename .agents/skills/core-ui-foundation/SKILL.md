@@ -138,8 +138,7 @@ UI 前，按以下顺序执行：
 - 文本：`Title`、`ContentBody`、`SingleText`。
 - 按钮：`Button`、`SmallButton`、`OutLineButton`、`OutLineTextButton`、`FlexButton`、`ButtonStyle`、
   `FlexButtonStyles.Default`。
-- 设置项：`SettingItem`、`SettingSwitch`、`SettingRadio`、`SettingCheckbox`、`SettingScrollChoose`、
-  `SettingIconButton`、`SettingDefaults.settingStyle()`。
+- 设置选择项：`SettingScrollChoose`（列表行请使用 `:core:design-system` 的 `NomiListItem`）。
 - 容器/其它：`BoxSurface`、`ColumnSurface`、`RowSurface`、`MenuChip`、`ExposedMenu`、`MenuText`、`Toast`、
   `ProgressData`、`LinearProgressBar`、`ArcProgressBar`。
 

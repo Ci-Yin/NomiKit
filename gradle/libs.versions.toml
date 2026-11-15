@@ -150,6 +150,7 @@ androidx-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navi
 androidx-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
 androidx-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons" }
 compose-fluent = { module = "io.github.compose-fluent:fluent", version.ref = "composeFluent" }
+compose-fluent-icons-core = { module = "io.github.compose-fluent:fluent-icons-core", version.ref = "composeFluent" }
 compose-fluent-icons-extended = { module = "io.github.compose-fluent:fluent-icons-extended", version.ref = "composeFluent" }
 
 # Android / JVM 测试依赖。

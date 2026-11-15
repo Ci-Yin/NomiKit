@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.card.NomiCard
+import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -225,6 +226,12 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
          */
         override val scaffold: NomiScaffoldRenderer =
             NomiDesignSystem.Default.components.scaffold
+
+        /**
+         * 列表项族委托 Nomi 默认实现，本夹具不验证列表行视觉。
+         */
+        override val listItems: NomiListItemRenderer =
+            NomiDesignSystem.Default.components.listItems
     }
 
     /**

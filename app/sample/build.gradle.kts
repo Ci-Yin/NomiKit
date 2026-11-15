@@ -16,6 +16,8 @@ kotlin {
         implementation(projects.core.designSystemNomi)
         implementation(projects.core.designSystemMaterial3)
         implementation(projects.core.designSystemFluent)
+        implementation(libs.compose.fluent.icons.core)
+        implementation(libs.compose.fluent.icons.extended)
         implementation(projects.core.material)
         implementation(projects.core.platform)
         implementation(projects.core.uiFoundation)

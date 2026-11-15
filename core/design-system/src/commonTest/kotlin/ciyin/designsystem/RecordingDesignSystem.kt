@@ -31,6 +31,7 @@ import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
@@ -172,6 +173,24 @@ internal data class RecordedScaffold(
 )
 
 /**
+ * 记录列表项派发；槽位只记录是否提供，不执行槽内容。
+ *
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property hasOnClick 是否传入点击回调。
+ * @property hasLeading 是否提供前导槽。
+ * @property hasSubtitle 是否提供副标题槽。
+ * @property hasTrailing 是否提供尾部槽。
+ */
+@Immutable
+internal data class RecordedListItem(
+    val hasModifier: Boolean,
+    val hasOnClick: Boolean,
+    val hasLeading: Boolean,
+    val hasSubtitle: Boolean,
+    val hasTrailing: Boolean,
+)
+
+/**
  * 不依赖任何原生 adapter 的录制型设计系统；主题投影由夹具自身生成。
  *
  * 派发记录在 SideEffect 提交，列表在实例生命周期内累积，不在重组时自动清空。
@@ -224,6 +243,11 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录页面脚手架派发。
      */
     val scaffolds: MutableList<RecordedScaffold> = mutableListOf()
+
+    /**
+     * 按组合顺序记录列表项派发。
+     */
+    val listItems: MutableList<RecordedListItem> = mutableListOf()
 
     /**
      * 录制型设计系统标识。
@@ -531,6 +555,46 @@ internal class RecordingDesignSystem(
                 topBar()
                 content()
                 bottomBar()
+            }
+        }
+
+        /**
+         * 记录列表项槽位与点击参数，并按顺序组合提供的槽以验证文本派发。
+         */
+        override val listItems: NomiListItemRenderer = object : NomiListItemRenderer {
+            /**
+             * 组合提交后追加列表项记录，并直接组合提供的槽位，不绘制原生列表行。
+             *
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param onClick 接口要求的点击回调；录制夹具只记录是否提供，不会调用。
+             * @param leading 前导槽；null 表示不占位。
+             * @param title 标题槽，直接组合。
+             * @param subtitle 副标题槽；null 表示不占位。
+             * @param trailing 尾部槽；null 表示不占位。
+             */
+            @Composable
+            override fun ListItem(
+                modifier: Modifier,
+                onClick: (() -> Unit)?,
+                leading: (@Composable () -> Unit)?,
+                title: @Composable () -> Unit,
+                subtitle: (@Composable () -> Unit)?,
+                trailing: (@Composable () -> Unit)?,
+            ) {
+                val call = RecordedListItem(
+                    hasModifier = modifier != Modifier,
+                    hasOnClick = onClick != null,
+                    hasLeading = leading != null,
+                    hasSubtitle = subtitle != null,
+                    hasTrailing = trailing != null,
+                )
+                SideEffect { this@RecordingDesignSystem.listItems += call }
+                Column {
+                    leading?.invoke()
+                    title()
+                    subtitle?.invoke()
+                    trailing?.invoke()
+                }
             }
         }
     }

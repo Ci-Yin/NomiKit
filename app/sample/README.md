@@ -13,7 +13,7 @@
 
 [DesignSystemDemoScreen](src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/DesignSystemDemoScreen.kt)
 通过 [DesignSystemDemoRouter](src/commonMain/kotlin/com/ciyin/app/presentation/screen/sample/NavRouters.kt)
-进入样例子栈。首期只展示 Text、Button、Surface 和非点击 Card；其余控件属于后续范围。
+进入样例子栈。当前展示 Text、Button、Surface、非点击 Card 与列表项；其余控件属于后续范围。
 
 - Text：十五种排版角色以紧凑选择器呈现，默认 BodyMedium，每次只预览一个真实字号；保留长中文和显式多行。
 - 原生默认区：带独立标签的 Text/Button/Surface/Card 自适应网格，不给被测组件传视觉参数；行为 enabled
@@ -22,6 +22,8 @@
   null 表示原生默认。
 - Surface：五级表面色以自适应网格展示，保留隐式内容色继承。
 - Card：标题、正文与内部按钮；卡片容器不带点击语义。
+- 列表项：可点击行（前导图标、标题/副标题、值文本与箭头）与静态行（尾部设计系统按钮）；行本身不传
+  颜色、形状或内边距参数。
 - 配置：三种设计系统、System/Light/Dark、1/1.3/2 倍字体、仅强调色的稀疏覆盖、局部主题覆盖与恢复默认。
 - 能力限制：按 NomiComponentCapabilities 隐藏不支持的尺寸选项；摘要默认收起、可展开具体限制，切换系统在
   VM 动作边界清除不支持尺寸。
@@ -54,7 +56,8 @@ AppPreview/ScreenScaffold，不启动真实导航或 ViewModel。
 
 ## 验证入口
 
-原生默认优先改造及后续布局优化已完成。25 项设计系统 Desktop 回归通过，覆盖角色切换、限制说明折叠、按钮横排及宽窄屏/大字体；sample
+原生默认优先改造及后续布局优化已完成。26 项设计系统 Desktop
+回归通过，新增列表项分区后覆盖角色切换、限制说明折叠、按钮横排、列表项行原语及宽窄屏/大字体；sample
 Android 编译通过。三系统 native/explicit
 截图已生成，布局代表图见[桌面布局](<../../.docs/design/assets/design-system/layout-refinement/layout-fluent-desktop.png>)
 。前轮 Android APK 仅构建，设备执行仍未进行。
@@ -76,7 +79,7 @@ Fluent 已运行，更不等于真机验收。复验入口：
 - [导航恢复测试](src/commonTest/kotlin/com/ciyin/app/presentation/screen/sample/DesignSystemDemoNavigationTest.kt)
   ：使用真实 SavedStateConfiguration 做 NavKey 多态往返。
 - [Content 测试](<src/desktopTest/kotlin/com/ciyin/app/presentation/screen/designsystem/DesignSystemDemoContentTest.kt>)
-  ：三套默认候选、控件动作、disabled 语义和非点击 Card。
+  ：三套默认候选、控件动作、disabled 语义、非点击 Card 与列表项点击/静态行。
 - [Android 仪器测试](<../android/src/androidTest/java/com/ciyin/app/DesignSystemDemoInstrumentedTest.kt>)
   ：真实入口导航、三系统禁用计数和 Fluent 暗色/大字体；本轮已编译，设备执行未进行。
 - [布局与截图测试](src/desktopTest/kotlin/com/ciyin/app/presentation/screen/designsystem/DesignSystemDemoLayoutTest.kt)

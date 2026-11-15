@@ -1,17 +1,15 @@
 package com.ciyin.app.presentation.app
 
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import ciyin.designsystem.fluent.Fluent
 import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
+import ciyin.designsystem.nomi.Default
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.viewmodel.viewModel
@@ -42,23 +40,14 @@ fun App(windowBackdropActive: Boolean = false) {
     val viewModel = viewModel(::AppViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
     CompositionLocalProvider(LocalFluentSystemBackdropActive provides windowBackdropActive) {
-        if (windowBackdropActive) {
-            MaterialTheme(
-                colorScheme = MaterialTheme.colorScheme.copy(
-                    background = Color.Transparent,
-                    surface = Color.Transparent,
-                ),
-            ) {
-                AppContent(state, viewModel.dispatchAction)
-            }
-        } else {
+        NomiTheme(designSystem = NomiDesignSystem.Default) {
             AppContent(state, viewModel.dispatchAction)
         }
     }
 }
 
 /**
- * 应用根内容，显式建立 Material 3 主题，并装配可保存恢复的主页面导航树。
+ * 应用根内容。
  *
  * @param state 提供导航条目与当前选中项的 UI 状态；不在导航条目中的页面不选中任何项。
  * @param onAction 点击导航项时接收 NavigateItemClick；当前内容层同时将主页面或设置页路由更新到子栈。
@@ -67,7 +56,7 @@ fun App(windowBackdropActive: Boolean = false) {
 private fun AppContent(
     state: AppUiState,
     onAction: (AppAction) -> Unit
-) = NomiTheme(designSystem = NomiDesignSystem.Fluent) {
+) {
     val navBackStack = rememberNavBackStack(NavSavedStateConfig, MainRouter)
     NavigationBar(
         navList = state.navList,

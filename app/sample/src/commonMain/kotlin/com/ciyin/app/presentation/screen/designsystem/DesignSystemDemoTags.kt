@@ -90,6 +90,31 @@ internal object DesignSystemDemoTags {
     const val CardButton = "design-system-demo-card-button"
 
     /**
+     * 列表项展示分区。
+     */
+    const val ListItems = "design-system-demo-list-items"
+
+    /**
+     * 可点击列表项。
+     */
+    const val ListItemClickable = "design-system-demo-list-item-clickable"
+
+    /**
+     * 可点击列表项的尾部值文本。
+     */
+    const val ListItemValue = "design-system-demo-list-item-value"
+
+    /**
+     * 静态列表项。
+     */
+    const val ListItemStatic = "design-system-demo-list-item-static"
+
+    /**
+     * 静态列表项尾部按钮。
+     */
+    const val ListItemAction = "design-system-demo-list-item-action"
+
+    /**
      * 局部覆盖之前的外层节点。
      */
     const val OuterBefore = "design-system-demo-outer-before"

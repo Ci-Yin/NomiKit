@@ -1,30 +1,33 @@
 package com.ciyin.app.presentation.screen.sample
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.scaffold.NomiScaffold
+import ciyin.designsystem.component.scaffold.NomiScaffoldColors
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
 import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 import com.ciyin.app.sample.Res
-import com.ciyin.app.sample.design_system_demo_title
 import com.ciyin.app.sample.design_system_demo_hub_description
+import com.ciyin.app.sample.design_system_demo_title
 import com.ciyin.app.sample.file_picker_demo_hub_description
 import com.ciyin.app.sample.file_picker_demo_hub_title
 import com.ciyin.app.sample.media_directory_demo_hub_description
@@ -37,6 +40,20 @@ import com.ciyin.app.sample.platform_share_demo_hub_description
 import com.ciyin.app.sample.platform_share_demo_title
 import com.ciyin.app.sample.video_player_demo_description
 import com.ciyin.app.sample.video_player_demo_title
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.ArrowDownload
+import io.github.composefluent.icons.regular.Chat
+import io.github.composefluent.icons.regular.ChevronRight
+import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.FolderOpen
+import io.github.composefluent.icons.regular.Image
+import io.github.composefluent.icons.regular.Info
+import io.github.composefluent.icons.regular.Library
+import io.github.composefluent.icons.regular.LockClosed
+import io.github.composefluent.icons.regular.PaintBrush
+import io.github.composefluent.icons.regular.Share
+import io.github.composefluent.icons.regular.Video
+import io.github.composefluent.icons.regular.Wrench
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
@@ -48,43 +65,73 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
  *
  * @param toNavigate 点击样例条目时接收其路由，由宿主维护导航栈。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SampleHubScreen(
     toNavigate: (NavRouter) -> Unit,
 ) {
     val entries = rememberSampleHubEntries()
 
-    Scaffold(
+    NomiScaffold(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        colors = NomiScaffoldColors(
+            containerColor = if (LocalFluentSystemBackdropActive.current) {
+                NomiTheme.colorScheme.background.copy(alpha = 0f)
+            } else {
+                NomiTheme.colorScheme.background
+            }
+        ),
         topBar = {
-            TopAppBar(
-                title = { Text("示例 / 样例") },
+            NomiText(
+                text = "示例",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = NomiTheme.spacings.huge,
+                        vertical = NomiTheme.spacings.medium,
+                    ),
+                style = NomiTheme.typography.titleLarge,
             )
         },
-    ) { padding ->
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(0.dp),
+                .padding(horizontal = NomiTheme.spacings.huge)
+                .padding(bottom = NomiTheme.spacings.huge),
+            verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.extraSmall),
         ) {
             items(
                 items = entries,
                 key = { it.title },
             ) { item ->
-                ListItem(
-                    headlineContent = { Text(item.title) },
-                    supportingContent = { Text(item.description) },
+                NomiListItem(
+                    title = { NomiText(item.title) },
+                    subtitle = { NomiText(item.description) },
+                    leading = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(NomiTheme.sizes.icon.large),
+                            tint = NomiTheme.colorScheme.textSecondary,
+                        )
+                    },
+                    trailing = {
+                        Icon(
+                            imageVector = Icons.Regular.ChevronRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(NomiTheme.sizes.icon.small),
+                            tint = NomiTheme.colorScheme.textSecondary,
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
                             if (item.navRouter == DesignSystemDemoRouter) {
                                 Modifier.testTag("design-system-hub-entry")
                             } else Modifier,
-                        )
-                        .clickable { toNavigate(item.navRouter) },
+                        ),
+                    onClick = { toNavigate(item.navRouter) },
                 )
-                HorizontalDivider()
             }
         }
     }
@@ -95,12 +142,14 @@ internal fun SampleHubScreen(
  *
  * @property title 入口标题；资源条目已按当前语言解析，部分既有条目使用固定文案。
  * @property description 入口能力说明，来源与标题一致。
+ * @property icon 前导图标；仅作视觉标识，无障碍名称由标题提供。
  * @property navRouter 点击条目后提交给宿主导航的目标路由。
  */
 @Immutable
 private data class SampleHubEntry(
     val title: String,
     val description: String,
+    val icon: ImageVector,
     val navRouter: NavRouter,
 )
 
@@ -145,61 +194,73 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
             SampleHubEntry(
                 title = designSystemTitle,
                 description = designSystemDescription,
+                icon = Icons.Regular.PaintBrush,
                 navRouter = DesignSystemDemoRouter,
             ),
             SampleHubEntry(
                 title = "文生图（AiImageIntegrate + SD WebUI）",
                 description = "feature/ai-integrate 最小示例，需本地 WebUI --api",
+                icon = Icons.Regular.Image,
                 navRouter = AiImageDemoRouter,
             ),
             SampleHubEntry(
                 title = "AI 聊天（AiChatIntegrate + OpenAI 兼容）",
                 description = "类 ChatGPT 最小流式聊天示例，支持本地 Ollama 或云端兼容端点。",
+                icon = Icons.Regular.Chat,
                 navRouter = AiChatRouter,
             ),
             SampleHubEntry(
                 title = "文件下载",
                 description = "断点续传、分块下载、覆盖策略与任务控制示例。",
+                icon = Icons.Regular.ArrowDownload,
                 navRouter = FileDownloaderDemoRouter,
             ),
             SampleHubEntry(
                 title = permissionsTitle,
                 description = permissionsDescription,
+                icon = Icons.Regular.LockClosed,
                 navRouter = PermissionsRouter,
             ),
             SampleHubEntry(
                 title = platformShareTitle,
                 description = platformShareDescription,
+                icon = Icons.Regular.Share,
                 navRouter = PlatformShareDemoRouter,
             ),
             SampleHubEntry(
                 title = videoPlayerTitle,
                 description = videoPlayerDescription,
+                icon = Icons.Regular.Video,
                 navRouter = VideoPlayerDemoRouter,
             ),
             SampleHubEntry(
                 title = mediaLibraryTitle,
                 description = mediaLibraryDescription,
+                icon = Icons.Regular.Library,
                 navRouter = MediaLibraryDemoRouter,
             ),
             SampleHubEntry(
                 title = filePickerTitle,
                 description = filePickerDescription,
+                icon = Icons.Regular.FolderOpen,
                 navRouter = FilePickerDemoRouter,
             ),
             SampleHubEntry(
                 title = mediaDirectoryTitle,
                 description = mediaDirectoryDescription,
+                icon = Icons.Regular.Folder,
                 navRouter = MediaDirectoryDemoRouter,
             ),
             SampleHubEntry(
                 title = "运行环境信息",
                 description = "展示当前平台、构建配置、应用目录与时间参数。",
+                icon = Icons.Regular.Info,
                 navRouter = RuntimeInfoRouter,
             ),
             SampleHubEntry(
                 title = "占位示例 A",
                 description = "第二个占位入口。",
+                icon = Icons.Regular.Wrench,
                 navRouter = SampleExamplePlaceholderARouter,
             ),
         )

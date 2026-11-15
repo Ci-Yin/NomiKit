@@ -130,6 +130,22 @@ class DesignSystemDemoContentTest {
     }
 
     /**
+     * 列表项分区同时提供可点击行与静态行；尾部动作按钮保持独立点击语义。
+     */
+    @Test
+    fun listItemSectionExposesClickableAndStaticRows() = runComposeUiTest {
+        setContent { DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {}) }
+        onNodeWithTag(DesignSystemDemoTags.ListItemClickable)
+            .performScrollTo()
+            .assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.ListItemValue, useUnmergedTree = true).assertExists()
+        onNodeWithTag(DesignSystemDemoTags.ListItemStatic).assertExists()
+        onNodeWithTag(DesignSystemDemoTags.ListItemAction)
+            .performScrollTo()
+            .assertHasClickAction()
+    }
+
+    /**
      * 十五种角色均可选择；默认仅预览正文，点击后原样展示所选角色。
      */
     @Test

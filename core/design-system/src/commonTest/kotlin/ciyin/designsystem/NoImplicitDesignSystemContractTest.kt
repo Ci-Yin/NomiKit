@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.card.NomiCard
+import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.theme.NomiTheme
@@ -13,7 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * 验证未显式提供 [ciyin.designsystem.runtime.NomiDesignSystem] 时主题入口与四组件明确失败。
+ * 验证未显式提供 [ciyin.designsystem.runtime.NomiDesignSystem] 时主题入口与各组件明确失败。
  *
  * 覆盖无隐式默认契约：应用根、测试与 Preview 必须显式提供实现，缺省装配问题不能被静默回退掩盖。
  */
@@ -72,6 +73,16 @@ class NoImplicitDesignSystemContractTest {
             NomiCard {
                 NomiText(text = "missing design system")
             }
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiListItem 在组合阶段明确失败。
+     */
+    @Test
+    fun bareListItemFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiListItem(title = { NomiText(text = "missing design system") })
         }
     }
 }
