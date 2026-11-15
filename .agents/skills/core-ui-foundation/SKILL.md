@@ -72,7 +72,7 @@ UI 前，按以下顺序执行：
 - `FloatWindow` / `FloatWindow2`：Popup / DropdownMenu 浮窗。
 - `rememberSystemUiController()` 与 `SystemUiControllerEffect(...)`：系统栏颜色、可见性与深色图标。
 - `currentWindowWidth()` / `currentWindowHeight()` / `currentWindowSize()` / `currentWindowDpSize()`
-  ：窗口尺寸分级。
+  ：窗口尺寸分级；Desktop、iOS 与 Web 都读取 `LocalWindowInfo.containerSize`，窗口或浏览器视口变化会触发读取方重组。
 - `classifyWindowWidth(width)`：按布局实时可用宽度复用项目的 Compact / Medium / Expanded 断点，适合窗口组件基于
   `BoxWithConstraints.maxWidth` 自适应。
 - `KeepScreenOnEffect`、`ScreenRotationEffect`、`DarkStatusBarAppearance`、`cursorVisibility`、
@@ -81,6 +81,8 @@ UI 前，按以下顺序执行：
 注意事项：
 
 - `SystemUiController` 在非 Android 平台可能是简化或空操作实现，不要把业务正确性建立在系统栏必然可控上。
+- 窗口尺寸只能从 Compose 状态读取（Desktop 为 `LocalWindowInfo.containerSize`）；不要用外部全局变量写入窗口尺寸，
+  普通变量变化不会触发读取方重组，窗口缩放后布局会停在旧分级。
 - `DialogWindowConfig.size` 必须由业务调用方明确传入，不要在基建内写死业务尺寸；`resizable`、
   `dismissOnEscape` 分别控制用户缩放与 Esc 关闭行为；`darkTitleBar` 只影响 Windows DWM 系统标题栏。
 - Desktop `DialogWindow` 按 `dismissOnEscape` 决定是否消费 Esc 关闭请求，并使用 DWM 深色标题栏属性

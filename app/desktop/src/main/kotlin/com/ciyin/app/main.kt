@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import ciyin.application.runApplication
-import ciyin.ui.foundation.currentWindowDpSize
 import ciyin.ui.foundation.window.WindowsBackdropWindow
 import ciyin.ui.foundation.window.WindowsSystemBackdrop
 import ciyin.ui.foundation.widget.SystemTray
@@ -34,8 +33,6 @@ fun main(args: Array<String>) = runApplication(::DesktopApplication) {
     )
     var isVisible by remember { mutableStateOf(true) }
     var backdropApplied by remember { mutableStateOf(false) }
-
-    currentWindowDpSize = state.size
 
     // 系统托盘图标
     SystemTray(
