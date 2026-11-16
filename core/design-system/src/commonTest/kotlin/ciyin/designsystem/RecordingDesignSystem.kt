@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.NomiBorder
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
@@ -152,12 +151,14 @@ internal data class RecordedNavigationItem(
  * 记录一次导航套件派发，按分组保留主导航项与底部导航项。
  *
  * @property layoutType 调用方请求的导航布局。
+ * @property containerColor 原样记录的导航外壳容器色；Unspecified 仍表示未指定。
  * @property items 主导航项，按声明顺序记录。
  * @property footerItems 底部导航项，按声明顺序记录。
  */
 @Immutable
 internal data class RecordedNavigationSuite(
     val layoutType: NomiNavigationSuiteType,
+    val containerColor: Color,
     val items: List<RecordedNavigationItem>,
     val footerItems: List<RecordedNavigationItem>,
 )
@@ -197,12 +198,10 @@ internal data class RecordedListItem(
  *
  * @property name 构造设计系统标识的名称，用于区分嵌套实例。
  * @property nativeTheme 可选的自有主题基线；null 时按请求的实际明暗生成五组 Nomi 默认值。
- * @property capabilities 能力声明；默认全量支持，测试可只关闭单项能力验证入口拒绝。
  */
 internal class RecordingDesignSystem(
     private val name: String = "recording",
     private val nativeTheme: ResolvedNomiTheme? = null,
-    override val capabilities: NomiComponentCapabilities = NomiComponentCapabilities(),
 ) : NomiDesignSystem {
     /**
      * 收到的稀疏主题请求。
@@ -504,6 +503,7 @@ internal class RecordingDesignSystem(
              *
              * @param layoutType 原样记录的导航布局。
              * @param modifier 接口要求的修饰符；录制夹具不应用也不记录。
+             * @param containerColor 原样记录的导航外壳容器色；Unspecified 仍表示未指定。
              * @param items 主导航项声明；在录制作用域中执行以收集参数。
              * @param footerItems 底部导航项声明；在录制作用域中执行以收集参数。
              * @param content 直接组合的页面内容，不添加原生布局。
@@ -512,6 +512,7 @@ internal class RecordingDesignSystem(
             override fun NavigationSuite(
                 layoutType: NomiNavigationSuiteType,
                 modifier: Modifier,
+                containerColor: Color,
                 items: @Composable NomiNavigationItemScope.() -> Unit,
                 footerItems: @Composable NomiNavigationItemScope.() -> Unit,
                 content: @Composable () -> Unit,
@@ -522,6 +523,7 @@ internal class RecordingDesignSystem(
                 footerItems(RecordingNavigationItemScope(footerCalls))
                 val call = RecordedNavigationSuite(
                     layoutType = layoutType,
+                    containerColor = containerColor,
                     items = itemCalls.toList(),
                     footerItems = footerCalls.toList(),
                 )
@@ -615,11 +617,8 @@ internal class RecordingDesignSystem(
             isDark = request.isDark,
         )
         val overrides = request.overrides
-        val colors = overrides.colorScheme ?: baseline.colorScheme
         val projected = baseline.copy(
-            colorScheme = if (overrides.accentColor == Color.Unspecified) colors else {
-                colors.copy(primary = overrides.accentColor)
-            },
+            colorScheme = overrides.colorScheme ?: baseline.colorScheme,
             typography = overrides.typography ?: baseline.typography,
             shapes = overrides.shapes ?: baseline.shapes,
             spacings = overrides.spacings ?: baseline.spacings,

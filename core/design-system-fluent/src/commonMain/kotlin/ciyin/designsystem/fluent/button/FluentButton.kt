@@ -13,6 +13,7 @@ import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.NomiControlSize
+import ciyin.designsystem.fluent.rememberFluentWarning
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.LocalTextStyle
@@ -26,19 +27,18 @@ import io.github.composefluent.component.SubtleButton as NativeSubtleButton
  */
 internal object FluentButton : NomiActionRenderer {
     /**
-     * 原生 API 不支持的覆盖参数立即失败，其余参数按原生变体分派。
+     * 原生 API 无法承载的覆盖参数忽略并记录警告，其余参数按原生变体分派。
      *
      * @param onClick 原生按钮启用且被激活时调用；业务状态由调用方持有。
      * @param modifier 原生按钮修饰符，不追加点击层或统一尺寸。
      * @param enabled 是否启用，映射为原生 disabled 的反值。
      * @param variant null/Default 使用 Button，Primary 使用 AccentButton，Subtle 使用 SubtleButton，Text 使用 HyperlinkButton，Destructive 使用 critical 配色的 Button。
-     * @param size 必须为 null；原生按钮未公开尺寸覆盖。
+     * @param size 无原生入口；忽略覆盖并保留原生尺寸。
      * @param colors 逐字段覆盖启用四态和禁用态；Unspecified 保留相应原生通道，Transparent 是有效覆盖。
-     * @param shape 必须为 null；原生按钮未公开形状覆盖。
-     * @param contentPadding 必须为 null；原生按钮未公开内边距覆盖。
+     * @param shape 无原生入口；忽略覆盖并保留原生形状。
+     * @param contentPadding 无原生入口；忽略覆盖并保留原生内边距。
      * @param textStyle null 保留原生排版，非 null 按字段合并；样式色低于当前状态显式内容色、高于原生状态色。
      * @param content 原生 RowScope 内容；原生 locals 保留实际状态结果，中立 slot 仅传播显式颜色和样式增量。
-     * @throws IllegalArgumentException size、shape 或 contentPadding 非 null 时抛出。
      */
     @Composable
     override fun Button(
@@ -53,9 +53,15 @@ internal object FluentButton : NomiActionRenderer {
         textStyle: TextStyle?,
         content: @Composable RowScope.() -> Unit,
     ) {
-        require(size == null) { "Fluent 原生 Button 不支持 size 覆盖" }
-        require(shape == null) { "Fluent 原生 Button 不支持 shape 覆盖" }
-        require(contentPadding == null) { "Fluent 原生 Button 不支持 contentPadding 覆盖" }
+        rememberFluentWarning(size != null, size) {
+            "NomiButton 的 size 覆盖无原生入口，已保留原生默认"
+        }
+        rememberFluentWarning(shape != null, shape) {
+            "NomiButton 的 shape 覆盖无原生入口，已保留原生默认"
+        }
+        rememberFluentWarning(contentPadding != null, contentPadding) {
+            "NomiButton 的 contentPadding 覆盖无原生入口，已保留原生默认"
+        }
         val buttonColors = colors.toFluentButtonColors(variant)
         val nativeContent: @Composable RowScope.() -> Unit = {
             val stateColor = if (enabled) colors.contentColor else colors.disabledContentColor

@@ -1,11 +1,13 @@
 package ciyin.designsystem.nomi.navigation
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +19,8 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TooltipAnchorPosition
@@ -45,34 +49,36 @@ import ciyin.designsystem.theme.NomiTheme
 private val RailWidth = 60.dp
 
 /**
- * 侧边导航项选中时的容器底色透明度；只在 primary 上叠加，保留原生导航的轻量选中提示。
+ * 导航项选中时的容器底色透明度；只在 primary 上叠加，保留原生导航的轻量选中提示。
  */
-private const val RailSelectedContainerAlpha = 0.1f
+private const val NavigationSelectedContainerAlpha = 0.1f
 
 /**
- * Nomi 原生导航套件实现，复刻 Nomi 自身底部导航栏与侧边导航栏的视觉形态。
+ * Nomi 原生导航套件实现，复刻 Nomi 自身底部导航栏与侧边导航栏的视觉形态，并为宽屏提供永久抽屉。
  *
  * 图标、徽标与文案是调用方组合的槽位，实现只负责把它们放进原生导航项；图标尺寸与无障碍名称
  * 由槽内容负责。颜色与排版经 [NomiTheme] 读取，槽内容通过 [ProvideNomiContentStyle] 继承导航项
  * 内容色，因此 NomiText 槽能随选中状态变色。
  * 导航项级 [Modifier] 应用到可选中表面，交互源直接交给原生选择语义；
- * Drawer 布局由能力声明禁用，此处仅保留防御性失败。
+ * 三种布局都受支持：Bar 使用原生底部栏且只渲染主导航项，Rail 使用原生侧边栏，Drawer 使用原生永久抽屉。
+ * 导航外壳容器色只在调用方显式覆盖时改写，未指定时保留 Nomi surfaceLow。
  */
 internal object DefaultNomiNavigationRenderer : NomiNavigationRenderer {
     /**
      * 按布局类型建立 Nomi 原生导航外壳。
      *
-     * @param layoutType 调用方选择的导航布局；当前只支持 Bar 与 Rail。
-     * @param modifier 应用于导航外壳根节点的修饰符；Bar 作用于纵向容器，Rail 作用于横向容器。
+     * @param layoutType 调用方选择的导航布局；支持 Bar、Rail 与 Drawer 三种布局。
+     * @param modifier 应用于导航外壳根节点的修饰符；Bar 作用于纵向容器，Rail 作用于横向容器，Drawer 作用于永久抽屉根节点。
+     * @param containerColor 导航外壳容器底色；Unspecified 保留 Nomi surfaceLow，Transparent 是有效覆盖。
      * @param items 主导航项声明，按调用顺序渲染。
-     * @param footerItems 底部导航项声明；Bar 与主导航项同排渲染，Rail 固定到栏底。
+     * @param footerItems 底部导航项声明；Rail 与 Drawer 固定到栏底，Bar 不渲染底部组（复刻旧底部栏只展示主导航项）。
      * @param content 页面内容，与导航外壳共同完成排布。
-     * @throws IllegalStateException [NomiNavigationSuiteType.Drawer] 传入时抛出；统一入口已按能力声明提前失败，此处只作为直接调用 renderer 的防御。
      */
     @Composable
     override fun NavigationSuite(
         layoutType: NomiNavigationSuiteType,
         modifier: Modifier,
+        containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
         content: @Composable () -> Unit,
@@ -80,19 +86,26 @@ internal object DefaultNomiNavigationRenderer : NomiNavigationRenderer {
         when (layoutType) {
             NomiNavigationSuiteType.Bar -> BarNavigationSuite(
                 modifier = modifier,
+                containerColor = containerColor,
                 items = items,
-                footerItems = footerItems,
                 content = content,
             )
 
             NomiNavigationSuiteType.Rail -> RailNavigationSuite(
                 modifier = modifier,
+                containerColor = containerColor,
                 items = items,
                 footerItems = footerItems,
                 content = content,
             )
 
-            NomiNavigationSuiteType.Drawer -> error("nomi 不支持 Drawer 导航布局")
+            NomiNavigationSuiteType.Drawer -> DrawerNavigationSuite(
+                modifier = modifier,
+                containerColor = containerColor,
+                items = items,
+                footerItems = footerItems,
+                content = content,
+            )
         }
     }
 }
@@ -100,18 +113,19 @@ internal object DefaultNomiNavigationRenderer : NomiNavigationRenderer {
 /**
  * 底部导航布局：内容在上，底部栏占满宽度并固定在内容下方。
  *
- * 主导航项与底部导航项按声明顺序渲染在同一条导航栏中，不合并、不丢弃分组。
+ * 底部栏只渲染主导航项，复刻既有底部导航在分组占位项之前终止的行为；调用方声明的底部组
+ * 不在 Bar 中展示，由 Rail 与 Drawer 的垂直导航栏承载。
  *
  * @param modifier 应用于纵向容器的修饰符。
- * @param items 主导航项声明。
- * @param footerItems 底部导航项声明，与主导航项同排渲染。
+ * @param containerColor 底部导航栏容器色；Unspecified 回退 Nomi surfaceLow。
+ * @param items 主导航项声明，按调用顺序等宽渲染。
  * @param content 占满剩余高度的页面内容。
  */
 @Composable
 private fun BarNavigationSuite(
     modifier: Modifier,
+    containerColor: Color,
     items: @Composable NomiNavigationItemScope.() -> Unit,
-    footerItems: @Composable NomiNavigationItemScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -122,11 +136,10 @@ private fun BarNavigationSuite(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(NomiTheme.sizes.componentHeights.bottomBar),
-            containerColor = NomiTheme.colorScheme.surfaceLow,
+            containerColor = containerColor.takeOrElse { NomiTheme.colorScheme.surfaceLow },
         ) {
             val scope = BarItemScope(rowScope = this)
             items(scope)
-            footerItems(scope)
         }
     }
 }
@@ -137,6 +150,7 @@ private fun BarNavigationSuite(
  * 主导航项从栏顶开始排列，底部导航项被推至栏底；两组的相对顺序由调用方声明决定。
  *
  * @param modifier 应用于横向容器的修饰符。
+ * @param containerColor 侧边导航栏容器色；Unspecified 回退 Nomi surfaceLow。
  * @param items 主导航项声明。
  * @param footerItems 底部导航项声明，固定到栏底。
  * @param content 导航栏右侧的页面内容。
@@ -144,6 +158,7 @@ private fun BarNavigationSuite(
 @Composable
 private fun RailNavigationSuite(
     modifier: Modifier,
+    containerColor: Color,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit,
     content: @Composable () -> Unit,
@@ -153,7 +168,7 @@ private fun RailNavigationSuite(
             modifier = Modifier
                 .width(RailWidth)
                 .fillMaxHeight(),
-            containerColor = NomiTheme.colorScheme.surfaceLow,
+            containerColor = containerColor.takeOrElse { NomiTheme.colorScheme.surfaceLow },
         ) {
             items(RailItemScope)
             Spacer(modifier = Modifier.weight(1f))
@@ -161,6 +176,159 @@ private fun RailNavigationSuite(
         }
         content()
     }
+}
+
+/**
+ * 抽屉导航布局：永久抽屉固定在起始侧，主导航项从抽屉顶部排列，底部导航项推至抽屉底部。
+ *
+ * 抽屉宽度与排布沿用 Material 3 [PermanentNavigationDrawer] 的原生实现，容器色读取 Nomi surfaceLow；
+ * 抽屉不消费窗口 inset，安全区由调用方页面外壳处理（与 Bar/Rail 一致）。
+ *
+ * @param modifier 应用于原生永久抽屉根节点的修饰符。
+ * @param containerColor 抽屉容器色；Unspecified 回退 Nomi surfaceLow。
+ * @param items 主导航项声明。
+ * @param footerItems 底部导航项声明，通过弹性占位推到抽屉底部。
+ * @param content 抽屉右侧的页面内容。
+ */
+@Composable
+private fun DrawerNavigationSuite(
+    modifier: Modifier,
+    containerColor: Color,
+    items: @Composable NomiNavigationItemScope.() -> Unit,
+    footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val spacings = NomiTheme.spacings
+    PermanentNavigationDrawer(
+        modifier = modifier,
+        drawerContent = {
+            PermanentDrawerSheet(
+                modifier = Modifier.fillMaxHeight(),
+                drawerContainerColor = containerColor.takeOrElse { NomiTheme.colorScheme.surfaceLow },
+                // 抽屉不消费窗口 inset：安全区由调用方页面外壳处理，避免与 Bar/Rail 不一致的双重内缩。
+                windowInsets = WindowInsets(0, 0, 0, 0),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(horizontal = spacings.medium, vertical = spacings.large),
+                    verticalArrangement = Arrangement.spacedBy(spacings.extraSmall),
+                ) {
+                    items(DrawerItemScope)
+                    Spacer(modifier = Modifier.weight(1f))
+                    footerItems(DrawerItemScope)
+                }
+            }
+        },
+        content = content,
+    )
+}
+
+/**
+ * 抽屉布局的项作用域；导航项占满抽屉宽度，图标与文案槽同排，选中时使用圆角底色提示。
+ */
+private object DrawerItemScope : NomiNavigationItemScope {
+    /**
+     * 渲染一个抽屉导航项：图标/徽标在起始侧，文案槽在右侧直接渲染。
+     *
+     * 选中时容器底色读取 [NomiNavigationItemColors.indicatorColor]（Unspecified 回退 primary 的轻量底色），
+     * 内容色与 labelLarge 通过 [ProvideNomiContentStyle] 传给槽内容；项级修饰符作用于可选中表面。
+     *
+     * @param selected 是否为当前选中项。
+     * @param onClick 点击回调。
+     * @param modifier 应用于可选中表面（导航项根节点）的修饰符。
+     * @param icon 图标槽；null 表示不显示图标。
+     * @param badge 徽标槽；null 表示不显示徽标。
+     * @param label 文案槽；null 表示不显示可见文案。
+     * @param colors 稀疏颜色覆盖；读取 contentColor、selectedContentColor 与 indicatorColor。
+     * @param interactionSource 可选交互源；null 时由原生选择语义自行创建。
+     */
+    @Composable
+    override fun NavigationItem(
+        selected: Boolean,
+        onClick: () -> Unit,
+        modifier: Modifier,
+        icon: (@Composable () -> Unit)?,
+        badge: (@Composable () -> Unit)?,
+        label: (@Composable () -> Unit)?,
+        colors: NomiNavigationItemColors,
+        interactionSource: MutableInteractionSource?,
+    ) {
+        val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
+        val containerColor = resolveNavigationItemContainerColor(
+            selected = selected,
+            indicatorColor = colors.indicatorColor,
+        )
+        val shape = NomiTheme.shapes.medium
+        Surface(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .selectable(
+                    selected = selected,
+                    role = Role.Tab,
+                    interactionSource = interactionSource,
+                    onClick = onClick,
+                ),
+            color = containerColor,
+            shape = shape,
+            contentColor = contentColor,
+        ) {
+            ProvideNomiContentStyle(
+                color = contentColor,
+                textStyle = NomiTheme.typography.labelLarge,
+            ) {
+                Row(
+                    modifier = Modifier.padding(
+                        horizontal = NomiTheme.spacings.large,
+                        vertical = NomiTheme.spacings.medium,
+                    ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium),
+                ) {
+                    NavigationItemIconSlot(icon = icon, badge = badge)
+                    label?.invoke()
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 解析导航项内容色：选中项读取 selectedContentColor，未选中项读取 contentColor。
+ *
+ * @param selected 是否为当前选中项。
+ * @param colors 中立稀疏颜色覆盖；Unspecified 回退 Nomi primary / onBackground。
+ * @return 应用于导航项表面与槽内容的内容色。
+ */
+@Composable
+private fun resolveNavigationItemContentColor(
+    selected: Boolean,
+    colors: NomiNavigationItemColors,
+): Color {
+    val colorScheme = NomiTheme.colorScheme
+    return if (selected) {
+        colors.selectedContentColor.takeOrElse { colorScheme.primary }
+    } else {
+        colors.contentColor.takeOrElse { colorScheme.onBackground }
+    }
+}
+
+/**
+ * 解析导航项容器底色：选中项读取 indicatorColor，未选中项保持透明。
+ *
+ * @param selected 是否为当前选中项。
+ * @param indicatorColor 显式指示器色；Unspecified 回退 primary 的轻量底色。
+ * @return 导航项容器底色。
+ */
+@Composable
+private fun resolveNavigationItemContainerColor(
+    selected: Boolean,
+    indicatorColor: Color,
+): Color = if (selected) {
+    indicatorColor.takeOrElse { NomiTheme.colorScheme.primary.copy(alpha = NavigationSelectedContainerAlpha) }
+} else {
+    Color.Transparent
 }
 
 /**
@@ -192,34 +360,27 @@ private class BarItemScope(private val rowScope: RowScope) : NomiNavigationItemS
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
     ) {
-        val colorScheme = NomiTheme.colorScheme
-        val contentColor = if (selected) {
-            colors.selectedContentColor.takeOrElse { colorScheme.primary }
-        } else {
-            colors.contentColor.takeOrElse { colorScheme.onBackground }
-        }
-        Box(
-            modifier = rowScope.run { Modifier.weight(1f) },
-            contentAlignment = Alignment.Center,
-        ) {
-            Surface(
-                modifier = modifier.selectable(
+        val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
+        Surface(
+            modifier = modifier
+                .run {
+                    rowScope.run { weight(1f) }
+                }
+                .clip(CircleShape)
+                .selectable(
                     selected = selected,
                     role = Role.Tab,
                     interactionSource = interactionSource,
                     onClick = onClick,
                 ),
-                color = Color.Transparent,
-                shape = CircleShape,
-                contentColor = contentColor,
-            ) {
-                ProvideNomiContentStyle(color = contentColor, textStyle = TextStyle.Default) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        NavigationItemIconSlot(icon = icon, badge = badge)
-                        if (label != null) {
-                            label()
-                        }
-                    }
+            color = Color.Transparent,
+            shape = CircleShape,
+            contentColor = contentColor,
+        ) {
+            ProvideNomiContentStyle(color = contentColor, textStyle = TextStyle.Default) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    NavigationItemIconSlot(icon = icon, badge = badge)
+                    label?.invoke()
                 }
             }
         }
@@ -257,17 +418,11 @@ private object RailItemScope : NomiNavigationItemScope {
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
     ) {
-        val colorScheme = NomiTheme.colorScheme
-        val contentColor = if (selected) {
-            colors.selectedContentColor.takeOrElse { colorScheme.primary }
-        } else {
-            colors.contentColor.takeOrElse { colorScheme.onBackground }
-        }
-        val containerColor = if (selected) {
-            colors.indicatorColor.takeOrElse { colorScheme.primary.copy(alpha = RailSelectedContainerAlpha) }
-        } else {
-            Color.Transparent
-        }
+        val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
+        val containerColor = resolveNavigationItemContainerColor(
+            selected = selected,
+            indicatorColor = colors.indicatorColor,
+        )
         NavigationItemTooltipBoxSlot(label = label) {
             Surface(
                 modifier = modifier

@@ -66,44 +66,25 @@ class DesignSystemDemoContentTest {
     }
 
     /**
-     * Fluent 不暴露尺寸选择，每种变体仅渲染原生尺寸样例；不会以小中大标签伪造支持。
+     * 尺寸控件与显式覆盖矩阵对所有系统常驻；不支持的实现由适配器降级，页面不再隐藏或改写。
      */
     @Test
-    fun fluentHidesUnsupportedSizeAndRendersOneNativeSizePerVariant() = runComposeUiTest {
+    fun sizeMatrixStaysVisibleOnEveryDesignSystem() = runComposeUiTest {
         setContent {
             DesignSystemDemoContent(
                 state = DesignSystemDemoUiState(designSystemId = NomiDesignSystem.Fluent.id),
                 onAction = {},
             )
         }
-        onNodeWithTag("design-system-demo-size-default").assertDoesNotExist()
+        onNodeWithTag("design-system-demo-size-default").assertExists()
         NomiControlSize.entries.forEach { size ->
-            onNodeWithTag("design-system-demo-size-$size").assertDoesNotExist()
+            onNodeWithTag("design-system-demo-size-$size").assertExists()
         }
         NomiButtonVariant.entries.forEach { variant ->
-            onNodeWithTag("design-system-demo-explicit-button-$variant-default").assertExists()
             NomiControlSize.entries.forEach { size ->
-                onNodeWithTag("design-system-demo-explicit-button-$variant-$size").assertDoesNotExist()
+                onNodeWithTag("design-system-demo-explicit-button-$variant-$size").assertExists()
             }
         }
-    }
-
-    /**
-     * 验证原生能力说明默认收起，点击切换按钮可展开并再次收起详情。
-     */
-    @Test
-    fun fluentCapabilityDetailsCanBeExpandedAndCollapsed() = runComposeUiTest {
-        setContent {
-            DesignSystemDemoContent(
-                state = DesignSystemDemoUiState(designSystemId = NomiDesignSystem.Fluent.id),
-                onAction = {},
-            )
-        }
-        onNodeWithTag("design-system-demo-restrictions-details").assertDoesNotExist()
-        onNodeWithTag("design-system-demo-restrictions-toggle").performScrollTo().performClick()
-        onNodeWithTag("design-system-demo-restrictions-details").assertExists()
-        onNodeWithTag("design-system-demo-restrictions-toggle").performScrollTo().performClick()
-        onNodeWithTag("design-system-demo-restrictions-details").assertDoesNotExist()
     }
 
     /**
@@ -191,7 +172,6 @@ class DesignSystemDemoContentTest {
                 NomiButtonVariant.Destructive
             ),
             DesignSystemDemoTags.Enabled to DesignSystemDemoAction.ToggleEnabled,
-            DesignSystemDemoTags.CustomColors to DesignSystemDemoAction.ToggleCustomTokens,
             DesignSystemDemoTags.Override to DesignSystemDemoAction.ToggleOverride,
             DesignSystemDemoTags.Reset to DesignSystemDemoAction.Reset,
             DesignSystemDemoTags.Back to DesignSystemDemoAction.BackClick,

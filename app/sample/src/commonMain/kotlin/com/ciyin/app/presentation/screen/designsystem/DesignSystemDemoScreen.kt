@@ -29,8 +29,6 @@ import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
 import ciyin.designsystem.theme.DarkMode
 import ciyin.ui.foundation.WindowSize
 import ciyin.ui.foundation.classifyWindowWidth
@@ -72,7 +70,7 @@ internal fun DesignSystemDemoScreen(onBack: () -> Unit) {
 }
 
 /**
- * 无真实导航与平台副作用的展示页内容，按配置选择设计系统、字体比例及可选强调色覆盖。
+ * 无真实导航与平台副作用的展示页内容，按配置选择设计系统与字体比例。
  *
  * @param state 外部持有的展示配置快照。
  * @param onAction 用户操作的分发入口，由调用方处理状态更新及返回意图。
@@ -92,31 +90,19 @@ internal fun DesignSystemDemoContent(
     val alternate = systems.firstOrNull { it.id != system.id }
     val density = LocalDensity.current
     NomiTheme(designSystem = system, darkMode = state.darkMode) {
-        val content: @Composable () -> Unit = {
-            CompositionLocalProvider(
-                LocalDensity provides Density(
-                    density = density.density,
-                    fontScale = state.fontScale
-                ),
-            ) {
-                DesignSystemDemoLayout(
-                    state = state,
-                    system = system,
-                    systems = systems,
-                    alternateDesignSystem = alternate,
-                    onAction = onAction,
-                    contentScrollState = contentScrollState,
-                )
-            }
-        }
-        if (state.customTokens) {
-            NomiThemeOverride(
-                designSystem = system,
-                overrides = NomiThemeOverrides(accentColor = NomiTheme.colorScheme.success),
-                content = content,
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = density.density,
+                fontScale = state.fontScale
+            ),
+        ) {
+            DesignSystemDemoLayout(
+                state = state,
+                systems = systems,
+                alternateDesignSystem = alternate,
+                onAction = onAction,
+                contentScrollState = contentScrollState,
             )
-        } else {
-            content()
         }
     }
 }
@@ -125,7 +111,7 @@ internal fun DesignSystemDemoContent(
  * 按可用宽度事实选择上下或左右排布，两个模式都保持一条完整的纵向滚动链。
  *
  * @param state 用于配置控件和组件展示的页面快照。
- * @param system 当前选中的设计系统，提供展示能力声明。
+ * @param system 当前选中的设计系统。
  * @param systems 控制面板列出的候选实现，包含当前选中系统。
  * @param alternateDesignSystem 局部覆盖示例的另一实现；null 时保留当前系统。
  * @param onAction 用户操作的分发入口，状态仍由调用方持有。
@@ -134,7 +120,6 @@ internal fun DesignSystemDemoContent(
 @Composable
 private fun DesignSystemDemoLayout(
     state: DesignSystemDemoUiState,
-    system: NomiDesignSystem,
     systems: List<NomiDesignSystem>,
     alternateDesignSystem: NomiDesignSystem?,
     onAction: (DesignSystemDemoAction) -> Unit,
@@ -185,7 +170,6 @@ private fun DesignSystemDemoLayout(
                         )
                         DesignSystemDemoShowcase(
                             state = state,
-                            system = system,
                             alternateDesignSystem = alternateDesignSystem,
                             onAction = onAction,
                             modifier = Modifier.weight(1f),
@@ -199,7 +183,6 @@ private fun DesignSystemDemoLayout(
                     )
                     DesignSystemDemoShowcase(
                         state = state,
-                        system = system,
                         alternateDesignSystem = alternateDesignSystem,
                         onAction = onAction,
                     )
@@ -227,7 +210,6 @@ private fun AppThemeSurfaceRoot(content: @Composable () -> Unit) {
  * 将页面状态缩减为纯展示模型，组件不感知 Action 或 Effect。
  *
  * @param state 提供尺寸、样式、启用状态、局部覆盖开关和点击计数的页面快照。
- * @param system 当前设计系统，提供组件支持能力。
  * @param alternateDesignSystem 局部覆盖示例的备用实现；null 时沿用当前系统。
  * @param onAction 展示按钮点击时接收 ButtonClick，由调用方更新计数。
  * @param modifier 传给展示区域根容器的修饰符。
@@ -235,7 +217,6 @@ private fun AppThemeSurfaceRoot(content: @Composable () -> Unit) {
 @Composable
 private fun DesignSystemDemoShowcase(
     state: DesignSystemDemoUiState,
-    system: NomiDesignSystem,
     alternateDesignSystem: NomiDesignSystem?,
     onAction: (DesignSystemDemoAction) -> Unit,
     modifier: Modifier = Modifier,
@@ -247,7 +228,6 @@ private fun DesignSystemDemoShowcase(
             enabled = state.enabled,
             override = state.override,
             clickCount = state.clickCount,
-            capabilities = system.capabilities,
             alternateDesignSystem = alternateDesignSystem,
         ),
         onButtonClick = { onAction(DesignSystemDemoAction.ButtonClick) },
@@ -265,7 +245,7 @@ private fun DesignSystemDemoContentPreview() {
 }
 
 /**
- * 关键交互态：深色、大字、自定义强调色、局部覆盖和禁用按钮。
+ * 关键交互态：深色、大字、局部覆盖和禁用按钮。
  */
 @AppPreview
 @Composable
@@ -275,7 +255,6 @@ private fun DesignSystemDemoConfiguredPreview() {
             state = DesignSystemDemoUiState(
                 darkMode = DarkMode.Dark,
                 enabled = false,
-                customTokens = true,
                 override = true,
                 fontScale = 2f,
                 clickCount = 7,

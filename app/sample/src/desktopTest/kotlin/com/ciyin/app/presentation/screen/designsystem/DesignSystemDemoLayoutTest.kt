@@ -17,6 +17,7 @@ import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.fluent.Fluent
 import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.nomi.Default
@@ -56,10 +57,11 @@ class DesignSystemDemoLayoutTest {
     @Test
     fun fluentVariantsShareOneRowOnWideViewport() = runComposeUiTest {
         setGallery(width = WideWidth, system = NomiDesignSystem.Fluent)
+        val size = NomiControlSize.Small
         val primary =
-            onNodeWithTag("design-system-demo-explicit-button-Primary-default").getUnclippedBoundsInRoot()
+            onNodeWithTag("design-system-demo-explicit-button-Primary-$size").getUnclippedBoundsInRoot()
         val destructive =
-            onNodeWithTag("design-system-demo-explicit-button-Destructive-default").getUnclippedBoundsInRoot()
+            onNodeWithTag("design-system-demo-explicit-button-Destructive-$size").getUnclippedBoundsInRoot()
         assertTrue(abs(primary.top.value - destructive.top.value) < PixelTolerance)
         assertTrue(primary.right < destructive.left)
     }
@@ -140,7 +142,7 @@ class DesignSystemDemoLayoutTest {
      */
     @Test
     fun localOverrideRestoresOuterTheme() = runComposeUiTest {
-        setGallery(width = WideWidth, customTokens = true)
+        setGallery(width = WideWidth)
         val before = surfaceCorner(DesignSystemDemoTags.OuterBefore)
         val inner = surfaceCorner(DesignSystemDemoTags.InnerOverride)
         val after = surfaceCorner(DesignSystemDemoTags.OuterAfter)
@@ -157,7 +159,6 @@ class DesignSystemDemoLayoutTest {
      * @param fontScale 展示页使用的字体比例，默认 1 倍。
      * @param system 指定待选设计系统，须存在于共享默认候选目录中；这里只取其标识而不注入实现。
      * @param mode 展示页的外观请求，默认固定浅色而非跟随主机。
-     * @param customTokens 是否启用强调色覆盖；局部主题示例始终开启。
      * @param height 测试视口的逻辑高度，默认使用滚动测试高度。
      * @param density 每 dp 对应的像素密度，默认 1；独立于字体比例。
      */
@@ -166,7 +167,6 @@ class DesignSystemDemoLayoutTest {
         fontScale: Float = 1f,
         system: NomiDesignSystem = NomiDesignSystem.Default,
         mode: DarkMode = DarkMode.Light,
-        customTokens: Boolean = false,
         height: Dp = ViewportHeight,
         density: Float = 1f,
     ) {
@@ -182,7 +182,6 @@ class DesignSystemDemoLayoutTest {
                         state = DesignSystemDemoUiState(
                             designSystemId = system.id,
                             darkMode = mode,
-                            customTokens = customTokens,
                             override = true,
                             fontScale = fontScale,
                         ),

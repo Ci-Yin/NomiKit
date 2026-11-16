@@ -8,9 +8,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import ciyin.designsystem.component.NomiBorder
 import ciyin.designsystem.runtime.requireNomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.component.NomiBorder
 
 /**
  * 容器与非点击卡片分别派发，避免用统一表面配方代替各系统原生 Card。
@@ -103,12 +103,10 @@ fun NomiSurface(
     colors: NomiSurfaceColors = NomiSurfaceColors(),
     border: NomiBorder = NomiBorder.Default,
     content: @Composable () -> Unit,
-) {
-    requireNomiDesignSystem().components.surfaces.Surface(
-        modifier = modifier,
-        shape = shape,
-        colors = colors,
-        border = border,
-        content = content,
-    )
-}
+) = requireNomiDesignSystem().components.surfaces.Surface(
+    modifier = modifier,
+    shape = shape,
+    colors = colors,
+    border = border,
+    content = content,
+)

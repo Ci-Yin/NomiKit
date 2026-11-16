@@ -1,6 +1,5 @@
 package ciyin.designsystem.fluent
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
@@ -28,15 +27,14 @@ import io.github.composefluent.Typography
 import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * 旧式直接主题参数在 Fluent 的映射、继承及明确不支持边界。
+ * Fluent 主题入口基于 [NomiThemeOverrides] 的映射、继承及降级边界。
  */
 @OptIn(ExperimentalTestApi::class)
-class FluentDirectThemeTest {
+class FluentThemeEntryTest {
     /**
      * Fluent 直接回调五组结果与原请求来源，不把原生默认回填为明确覆盖。
      */
@@ -46,7 +44,6 @@ class FluentDirectThemeTest {
         val spacings = defaultSpacings().copy(large = 27.dp)
         val sizes = defaultNomiSizes()
         val overrides = NomiThemeOverrides(
-            accentColor = Color.Magenta,
             typography = typography,
             spacings = spacings,
             sizes = sizes,
@@ -87,7 +84,7 @@ class FluentDirectThemeTest {
      * 八个原生角色按既定映射生效，中立十五角色及布局组完整保留。
      */
     @Test
-    fun directTypographyAndLayoutGroupsKeepExactReadModel() = runComposeUiTest {
+    fun explicitTypographyAndLayoutGroupsKeepExactReadModel() = runComposeUiTest {
         val input = defaultNomiTypography().copy(
             displayLarge = TextStyle(fontSize = 61.sp),
             displayMedium = TextStyle(fontSize = 53.sp),
@@ -110,10 +107,12 @@ class FluentDirectThemeTest {
         setContent {
             NomiTheme(
                 darkMode = DarkMode.Light,
-                typography = input,
-                spacings = spacing,
-                sizes = sizes,
                 designSystem = NomiDesignSystem.Fluent,
+                overrides = NomiThemeOverrides(
+                    typography = input,
+                    spacings = spacing,
+                    sizes = sizes,
+                ),
             ) {
                 actual = FluentTheme.typography
                 projectedTypography = NomiTheme.typography
@@ -136,69 +135,65 @@ class FluentDirectThemeTest {
     }
 
     /**
-     * 嵌套根保留明确排版而重新选原生颜色，Override 则保留明确强调色。
+     * 嵌套根保留明确排版而重新选原生颜色，Override 则保留明确的完整色板。
      */
     @Test
-    fun nestedRootRechoosesColorsWhileOverrideInheritsAccent() = runComposeUiTest {
+    fun nestedRootRechoosesColorsWhileOverrideInheritsPalette() = runComposeUiTest {
         val input = defaultNomiTypography().copy(bodyMedium = TextStyle(fontSize = 24.sp))
+        val palette = defaultLightNomiColorScheme().copy(primary = Color.Red)
         var nestedColors: Colors? = null
         var nestedBody: TextStyle? = null
-        var overriddenAccent = Color.Unspecified
+        var overriddenBase = Color.Unspecified
         setContent {
             NomiTheme(
                 darkMode = DarkMode.Light,
-                typography = input,
                 designSystem = NomiDesignSystem.Fluent,
-                overrides = NomiThemeOverrides(accentColor = Color.Red),
+                overrides = NomiThemeOverrides(typography = input, colorScheme = palette),
             ) {
                 NomiTheme {
                     nestedColors = FluentTheme.colors
                     nestedBody = FluentTheme.typography.body
                 }
-                NomiThemeOverride { overriddenAccent = FluentTheme.colors.shades.base }
+                NomiThemeOverride { overriddenBase = FluentTheme.colors.shades.base }
             }
         }
         assertEquals(lightColors().shades.base, requireNotNull(nestedColors).shades.base)
         assertEquals(input.bodyMedium, nestedBody)
-        assertEquals(Color.Red, overriddenAccent)
+        assertEquals(Color.Red, overriddenBase)
     }
 
     /**
-     * Fluent 没有完整二十七字段色板入口，不可只取 primary 然后默默丢弃其它字段。
+     * Fluent 没有完整色板入口：完整色板只取 primary 作为强调色，其余字段忽略。
      */
     @Test
-    fun completeColorSchemeIsRejected() {
-        reject("colorScheme") {
+    fun completeColorSchemeFallsBackToPrimaryAccent() = runComposeUiTest {
+        val scheme = defaultLightNomiColorScheme().copy(primary = Color(0xFF123456))
+        var accent = Color.Unspecified
+        setContent {
             NomiTheme(
                 designSystem = NomiDesignSystem.Fluent,
-                colorScheme = defaultLightNomiColorScheme()
-            ) {}
+                overrides = NomiThemeOverrides(colorScheme = scheme),
+            ) {
+                accent = FluentTheme.colors.shades.base
+            }
         }
+        runOnIdle { assertEquals(Color(0xFF123456), accent) }
     }
 
     /**
-     * 九级任意圆角无法表示为原生 Dp CornerRadius，明确拒绝。
+     * 九级圆角无法表示为原生 Dp CornerRadius：忽略覆盖并正常渲染。
      */
     @Test
-    fun completeShapesAreRejected() {
-        reject("shapes") {
+    fun completeShapesAreIgnored() = runComposeUiTest {
+        var rendered = false
+        setContent {
             NomiTheme(
                 designSystem = NomiDesignSystem.Fluent,
-                shapes = defaultNomiShapes()
-            ) {}
+                overrides = NomiThemeOverrides(shapes = defaultNomiShapes()),
+            ) {
+                rendered = true
+            }
         }
-    }
-
-    /**
-     * 每个非法请求独立建立组合环境，避免二次 setContent 掩盖目标异常。
-     *
-     * @param parameter 预期异常消息包含的不支持参数名。
-     * @param content 在新 Compose 环境中执行的非法主题调用，应抛出 IllegalArgumentException。
-     */
-    private fun reject(parameter: String, content: @Composable () -> Unit) {
-        val failure = assertFailsWith<IllegalArgumentException> {
-            runComposeUiTest { setContent(composable = content) }
-        }
-        assertTrue(failure.message.orEmpty().contains(parameter))
+        runOnIdle { assertTrue(rendered) }
     }
 }

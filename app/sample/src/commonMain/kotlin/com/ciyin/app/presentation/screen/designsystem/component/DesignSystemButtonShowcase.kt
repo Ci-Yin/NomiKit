@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.button.NomiButtonVariant
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.theme.NomiTheme
@@ -28,21 +27,19 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 /**
- * 显式按钮覆盖矩阵；矩阵在不支持尺寸覆盖时仅展示原生尺寸的各按钮变体。
+ * 显式按钮覆盖矩阵；不支持尺寸覆盖的实现由适配器降级为原生默认。
  *
- * @param model 提供尺寸能力、当前尺寸与变体、启用状态和计数；当前尺寸须已由动作边界校验。
+ * @param model 提供当前尺寸与变体、启用状态和计数。
  * @param onButtonClick 任一可用展示按钮被点击时调用；计数由调用方维护，始终禁用的按钮不会触发。
  */
 @Composable
 internal fun DesignSystemButtonShowcase(model: DesignSystemDemoModel, onButtonClick: () -> Unit) {
-    val sizes: List<NomiControlSize?> =
-        if (model.capabilities.buttonSize) NomiControlSize.entries else listOf(null)
     Column(verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium)) {
         NomiText(
             text = stringResource(Res.string.design_system_demo_explicit_overrides_title),
             style = NomiTheme.typography.titleLarge
         )
-        sizes.forEach { size ->
+        NomiControlSize.entries.forEach { size ->
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small),
@@ -52,8 +49,7 @@ internal fun DesignSystemButtonShowcase(model: DesignSystemDemoModel, onButtonCl
                     NomiButton(
                         onClick = onButtonClick,
                         modifier = Modifier.testTag(
-                            "design-system-demo-explicit-button-" + variant + "-" + (size
-                                ?: "default")
+                            "design-system-demo-explicit-button-" + variant + "-" + size
                         ),
                         enabled = model.enabled,
                         variant = variant,
@@ -61,7 +57,7 @@ internal fun DesignSystemButtonShowcase(model: DesignSystemDemoModel, onButtonCl
                     ) {
                         val label = stringResource(designSystemVariantLabel(variant))
                         NomiText(
-                            text = if (size == null) label else stringResource(
+                            text = stringResource(
                                 Res.string.design_system_demo_button_label,
                                 label,
                                 stringResource(designSystemSizeLabel(size)),
@@ -119,7 +115,6 @@ private fun DesignSystemButtonShowcasePreview() {
                 enabled = true,
                 override = false,
                 clickCount = 0,
-                capabilities = NomiComponentCapabilities(),
                 alternateDesignSystem = null,
             ),
             onButtonClick = {},

@@ -24,7 +24,7 @@ enum class NomiNavigationSuiteType {
     Rail,
 
     /**
-     * 抽屉式导航，适合宽屏或需要隐藏导航项的窗口。
+     * 抽屉式导航，适合宽屏常驻的侧边导航。
      */
     Drawer,
 }
@@ -88,25 +88,27 @@ interface NomiNavigationItemScope {
  * 导航套件的原生渲染契约。
  *
  * 实现负责按 [layoutType] 建立当前设计系统的原生导航外壳，并把 [content] 放进原生布局。
- * [items] 与 [footerItems] 由调用方分组，实现只能按顺序渲染，不能交换、合并或丢弃分组；
- * 是否把 footer 固定在底部、是否显示可见文案由原生实现决定。
+ * [items] 与 [footerItems] 由调用方分组，实现只能按声明顺序渲染组内项目，不能交换或合并两组；
+ * 底部组是否参与当前布局、是否固定到底部由原生实现按原生导航语义决定（Nomi 的 Bar 只渲染主导航项）。
+ * 导航外壳容器色由 [containerColor] 稀疏覆盖；实现无法承载该覆盖时自行降级或记录，核心入口不拦截。
  */
 @Stable
 interface NomiNavigationRenderer {
     /**
      * 按布局类型建立原生导航套件。
      *
-     * @param layoutType 调用方选择的导航布局；实现必须在能力声明中逐项声明是否支持。
+     * @param layoutType 调用方选择的导航布局。
      * @param modifier 应用于导航外壳根节点的修饰符。
+     * @param containerColor 导航外壳容器底色；[Color.Unspecified] 保留当前设计系统的原生值，显式颜色（含 Transparent）覆盖。
      * @param items 主导航项；按调用顺序渲染。
-     * @param footerItems 底部导航项；空 lambda 表示没有底部项，实现应自然省略底部区域。
+     * @param footerItems 底部导航项；空 lambda 表示没有底部项，实现应自然省略底部区域，Bar 布局可不展示该组。
      * @param content 页面内容；必须与导航外壳共同完成排布。
-     * @throws IllegalArgumentException 实现不支持给定布局类型时抛出；正常入口会先行校验能力并提前失败。
      */
     @Composable
     fun NavigationSuite(
         layoutType: NomiNavigationSuiteType,
         modifier: Modifier,
+        containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
         content: @Composable () -> Unit,
@@ -117,40 +119,31 @@ interface NomiNavigationRenderer {
  * 统一导航套件入口；选中状态、导航项分组与路由分发全部由调用方持有。
  *
  * 布局类型由调用方根据窗口形态选择，组件本身不读取窗口宽度或平台状态。
- * 颜色、排版与尺寸沿用当前设计系统的原生导航默认值，不在此入口补齐统一视觉。
+ * 颜色、排版与尺寸沿用当前设计系统的原生导航默认值，不在此入口补齐统一视觉；
+ * 外壳容器色通过 [containerColor] 稀疏覆盖，导航项颜色仍由 [NomiNavigationItemColors] 表达。
  * 未提供设计系统时由 [requireNomiDesignSystem] 抛出带指引的异常；
- * 当前设计系统不支持所选布局时在进入原生渲染前明确失败。
+ * 实现不支持所选布局或容器色覆盖时自行降级或记录，核心入口不按能力拦截。
  *
  * @param layoutType 调用方按窗口形态选择的导航布局。
  * @param modifier 应用于导航外壳根节点的修饰符。
+ * @param containerColor 导航外壳容器底色；Unspecified 保留原生值，Transparent 是有效覆盖。
  * @param items 主导航项声明。
- * @param footerItems 底部导航项声明；空 lambda 表示没有底部项。
+ * @param footerItems 底部导航项声明；空 lambda 表示没有底部项，Bar 布局可不展示该组。
  * @param content 被导航外壳包裹的页面内容。
- * @throws IllegalArgumentException 当前设计系统不支持 [layoutType] 时抛出。
  */
 @Composable
 fun NomiNavigationSuite(
     layoutType: NomiNavigationSuiteType,
     modifier: Modifier = Modifier,
+    containerColor: Color = Color.Unspecified,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit = {},
     content: @Composable () -> Unit,
-) {
-    val designSystem = requireNomiDesignSystem()
-    val capabilities = designSystem.capabilities
-    val supported = when (layoutType) {
-        NomiNavigationSuiteType.Bar -> capabilities.navigationBar
-        NomiNavigationSuiteType.Rail -> capabilities.navigationRail
-        NomiNavigationSuiteType.Drawer -> capabilities.navigationDrawer
-    }
-    require(supported) {
-        designSystem.id.value + " 不支持 " + layoutType + " 导航布局"
-    }
-    designSystem.components.navigation.NavigationSuite(
-        layoutType = layoutType,
-        modifier = modifier,
-        items = items,
-        footerItems = footerItems,
-        content = content,
-    )
-}
+) = requireNomiDesignSystem().components.navigation.NavigationSuite(
+    layoutType = layoutType,
+    modifier = modifier,
+    containerColor = containerColor,
+    items = items,
+    footerItems = footerItems,
+    content = content,
+)

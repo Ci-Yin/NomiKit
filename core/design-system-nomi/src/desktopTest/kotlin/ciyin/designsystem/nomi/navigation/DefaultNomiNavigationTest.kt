@@ -1,9 +1,11 @@
 package ciyin.designsystem.nomi.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -26,22 +28,21 @@ import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
  * Nomi 原生导航套件的槽位渲染、分组顺序、选中语义与失败边界。
  *
  * 用例全部经 [NomiNavigationSuite] 统一入口或 Nomi 默认 renderer 进入，不替换设计系统；
- * 图标、徽标与文案由槽内容组合，用于锁定槽位映射、项级修饰符与 Drawer 拒绝行为。
+ * 图标、徽标与文案由槽内容组合，用于锁定槽位映射、项级修饰符与 Drawer 抽屉渲染行为。
  */
 @OptIn(ExperimentalTestApi::class)
 class DefaultNomiNavigationTest {
     /**
-     * 底部导航布局同时渲染主导航项、底部导航项和页面内容，槽位按声明进入选中语义。
+     * 底部导航布局只渲染主导航项与页面内容，底部组不进入 Bar；槽位按声明进入选中语义。
      */
     @Test
-    fun barRendersGroupedSlotsAndSelectedSemantics() = runComposeUiTest {
+    fun barRendersMainItemsOnlyAndSelectedSemantics() = runComposeUiTest {
         var clicks = 0
         setContent {
             NomiTheme(designSystem = NomiDesignSystem.Default, darkMode = DarkMode.Light) {
@@ -97,7 +98,8 @@ class DefaultNomiNavigationTest {
         onNodeWithTag("content").assertExists()
         onNodeWithText("home").assertIsSelected()
         onNodeWithText("settings").assertIsNotSelected()
-        onNodeWithText("theme").assertIsDisplayed()
+        // 底部组只由 Rail/Drawer 承载，Bar 复刻旧底部栏，不渲染底部组
+        onNodeWithText("theme").assertDoesNotExist()
         onNodeWithTag("badge", useUnmergedTree = true).assertExists()
         onNodeWithText("settings").performClick()
         runOnIdle { assertEquals(1, clicks) }
@@ -192,51 +194,73 @@ class DefaultNomiNavigationTest {
     }
 
     /**
-     * 统一入口按能力声明拒绝 Drawer，并在进入原生渲染前失败。
+     * 抽屉布局用永久抽屉渲染全部槽位：选中语义、图标/徽标/文案、底部组与点击分发保持在中立契约上。
      */
     @Test
-    fun drawerLayoutFailsThroughCapabilityCheck() {
-        val failure = assertFailsWith<IllegalArgumentException> {
-            runComposeUiTest {
-                setContent {
-                    NomiTheme(designSystem = NomiDesignSystem.Default, darkMode = DarkMode.Light) {
-                        NomiNavigationSuite(
-                            layoutType = NomiNavigationSuiteType.Drawer,
-                            items = {
-                                NavigationItem(selected = false, onClick = {})
+    fun drawerRendersGroupedSlotsAndSelectedSemantics() = runComposeUiTest {
+        var clicks = 0
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Default, darkMode = DarkMode.Light) {
+                NomiNavigationSuite(
+                    layoutType = NomiNavigationSuiteType.Drawer,
+                    containerColor = Color(0xFF112233),
+                    items = {
+                        NavigationItem(
+                            selected = true,
+                            onClick = { clicks++ },
+                            modifier = Modifier.testTag("drawer-selected"),
+                            icon = {
+                                Icon(
+                                    imageVector = IconPack.Home,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                )
                             },
-                            content = {},
+                            label = { NomiText("home") },
                         )
-                    }
-                }
-                waitForIdle()
+                        NavigationItem(
+                            selected = false,
+                            onClick = { clicks++ },
+                            modifier = Modifier.testTag("drawer-unselected"),
+                            icon = {
+                                Icon(
+                                    imageVector = IconPack.Settings,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                            badge = {
+                                NomiText(text = "9+", modifier = Modifier.testTag("badge"))
+                            },
+                            label = { NomiText("settings") },
+                        )
+                    },
+                    footerItems = {
+                        NavigationItem(
+                            selected = false,
+                            onClick = { clicks++ },
+                            icon = {
+                                Icon(
+                                    imageVector = IconPack.Home,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                            label = { NomiText("theme") },
+                        )
+                    },
+                    content = { Box(modifier = Modifier.fillMaxSize().testTag("content")) },
+                )
             }
         }
-        assertTrue(failure.message?.contains("nomi") == true)
-        assertTrue(failure.message?.contains("Drawer") == true)
+        onNodeWithTag("drawer-selected").assertIsSelected()
+        onNodeWithTag("drawer-unselected").assertIsNotSelected()
+        onNodeWithText("home").assertIsDisplayed()
+        onNodeWithText("theme").assertIsDisplayed()
+        onNodeWithTag("badge", useUnmergedTree = true).assertExists()
+        assertTrue(onNodeWithTag("content").fetchSemanticsNode().boundsInRoot.left > 0f)
+        onNodeWithText("settings").performClick()
+        runOnIdle { assertEquals(1, clicks) }
     }
 
-    /**
-     * 直接调用 renderer 时 Drawer 分支给出明确的防御性失败，不静默渲染空导航。
-     */
-    @Test
-    fun rendererRejectsDrawerLayoutDefensively() {
-        val failure = assertFailsWith<IllegalStateException> {
-            runComposeUiTest {
-                setContent {
-                    NomiTheme(designSystem = NomiDesignSystem.Default, darkMode = DarkMode.Light) {
-                        DefaultNomiNavigationRenderer.NavigationSuite(
-                            layoutType = NomiNavigationSuiteType.Drawer,
-                            modifier = Modifier,
-                            items = {},
-                            footerItems = {},
-                            content = {},
-                        )
-                    }
-                }
-                waitForIdle()
-            }
-        }
-        assertEquals("nomi 不支持 Drawer 导航布局", failure.message)
-    }
 }

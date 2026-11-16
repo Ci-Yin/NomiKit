@@ -1,7 +1,10 @@
 package com.ciyin.app.presentation.app.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ciyin.designsystem.component.navigation.NomiNavigationSuite
@@ -10,6 +13,7 @@ import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.theme.NomiTheme
 import com.ciyin.app.presentation.component.WindowType
 import com.ciyin.app.presentation.component.windowAdaptive
+import com.ciyin.app.presentation.component.windowBackgroundColor
 
 /**
  * 应用主导航容器：按窗口形态选择中立导航布局，并把导航数据拆分为主导航与底部导航两组。
@@ -33,14 +37,19 @@ fun NavigationBar(
     val layoutType = when (windowAdaptive) {
         WindowType.PHONE -> NomiNavigationSuiteType.Bar
         WindowType.TABLET, WindowType.PHONE_HORIZONTAL -> NomiNavigationSuiteType.Rail
-        else -> NomiNavigationSuiteType.Rail
+        else -> NomiNavigationSuiteType.Drawer
     }
+    // Bar 与 Drawer 直接渲染文案，Rail 只显示图标并把文案作为 tooltip / 无障碍名称。
+    val showsLabel = layoutType == NomiNavigationSuiteType.Bar ||
+            layoutType == NomiNavigationSuiteType.Drawer
     val splitIndex = navList.indexOfFirst { it.id == NavId.Null }
     val items = if (splitIndex < 0) navList else navList.take(splitIndex)
     val footerItems = if (splitIndex < 0) emptyList() else navList.drop(splitIndex + 1)
+    println("items: ${items.size}, footerItems: ${footerItems.size}")
     NomiNavigationSuite(
-        layoutType = layoutType,
         modifier = modifier,
+        layoutType = layoutType,
+        containerColor = windowBackgroundColor(NomiTheme.colorScheme.surfaceLow),
         items = {
             items.forEach { nav ->
                 NavigationItem(
@@ -49,15 +58,11 @@ fun NavigationBar(
                     icon = {
                         Icon(
                             imageVector = nav.icon,
-                            contentDescription = if (layoutType == NomiNavigationSuiteType.Bar) null else nav.title,
+                            contentDescription = if (showsLabel) null else nav.title,
                             modifier = Modifier.size(NomiTheme.sizes.icon.large),
                         )
                     },
-                    label = if (layoutType == NomiNavigationSuiteType.Bar) {
-                        { NomiText(text = nav.title) }
-                    } else {
-                        null
-                    },
+                    label = { NomiText(text = nav.title) }
                 )
             }
         },
@@ -70,17 +75,32 @@ fun NavigationBar(
                         Icon(
                             modifier = Modifier.size(NomiTheme.sizes.icon.large),
                             imageVector = nav.icon,
-                            contentDescription = if (layoutType == NomiNavigationSuiteType.Bar) null else nav.title,
+                            contentDescription = if (showsLabel) null else nav.title,
                         )
                     },
-                    label = if (layoutType == NomiNavigationSuiteType.Bar) {
-                        { NomiText(text = nav.title) }
-                    } else {
-                        null
-                    },
+                    label = { NomiText(text = nav.title) }
                 )
             }
         },
-        content = content,
+        content = {
+            when (layoutType) {
+                NomiNavigationSuiteType.Bar -> Column {
+                    content()
+                    HorizontalDivider(
+                        thickness = NomiTheme.sizes.strokes.thin,
+                        color = NomiTheme.colorScheme.divider
+                    )
+                }
+
+                NomiNavigationSuiteType.Rail,
+                NomiNavigationSuiteType.Drawer -> {
+                    VerticalDivider(
+                        thickness = NomiTheme.sizes.strokes.thin,
+                        color = NomiTheme.colorScheme.divider
+                    )
+                    content()
+                }
+            }
+        },
     )
 }

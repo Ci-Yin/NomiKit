@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import io.github.composefluent.LocalTextStyle
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.component.Text as NativeText
 
 /**
@@ -24,7 +25,7 @@ import io.github.composefluent.component.Text as NativeText
  */
 internal object FluentText : NomiTextRenderer {
     /**
-     * 透传文本参数，不补中立正文样式；Fluent 原生不支持自动字号，显式请求时明确拒绝。
+     * 透传文本参数，不补中立正文样式；Fluent 原生不支持自动字号，显式请求时忽略并记录警告。
      *
      * @param text 待显示的纯文本。
      * @param modifier 原生文本的布局与语义修饰符。
@@ -43,8 +44,7 @@ internal object FluentText : NomiTextRenderer {
      * @param maxLines 最大显示行数，交由原生文本校验。
      * @param minLines 最小占用行数，交由原生文本校验。
      * @param onTextLayout 布局完成回调；null 映射为原生空回调。
-     * @param autoSize 自动字号策略；Fluent 原生不支持，非 null 时抛出异常。
-     * @throws IllegalArgumentException autoSize 非 null 时抛出，调用方应改用固定字号或样式。
+     * @param autoSize 自动字号策略；Fluent 原生不支持，忽略覆盖并记录警告。
      */
     @Composable
     override fun Text(
@@ -67,7 +67,9 @@ internal object FluentText : NomiTextRenderer {
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
     ) {
-        require(autoSize == null) { "fluent NomiText 不支持 autoSize；请改用固定字号或样式" }
+        rememberFluentWarning(autoSize != null, autoSize) {
+            "NomiText 的 autoSize 覆盖无原生入口，已保留固定字号"
+        }
         NativeText(
             text = text,
             modifier = modifier,
@@ -90,7 +92,7 @@ internal object FluentText : NomiTextRenderer {
     }
 
     /**
-     * 富文本透传原生 Fluent Text，内联内容映射原样交给原生布局；不支持自动字号。
+     * 富文本透传原生 Fluent Text，内联内容映射原样交给原生布局；自动字号忽略并记录警告。
      *
      * @param text 待显示的富文本。
      * @param modifier 原生文本的布局与语义修饰符。
@@ -110,8 +112,7 @@ internal object FluentText : NomiTextRenderer {
      * @param minLines 最小占用行数，交由原生文本校验。
      * @param inlineContent 替换文本区段的内联组合映射，原样交给原生文本。
      * @param onTextLayout 布局完成回调；null 映射为原生空回调。
-     * @param autoSize 自动字号策略；Fluent 原生不支持，非 null 时抛出异常。
-     * @throws IllegalArgumentException autoSize 非 null 时抛出，调用方应改用固定字号或样式。
+     * @param autoSize 自动字号策略；Fluent 原生不支持，忽略覆盖并记录警告。
      */
     @Composable
     override fun Text(
@@ -135,7 +136,9 @@ internal object FluentText : NomiTextRenderer {
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
     ) {
-        require(autoSize == null) { "fluent NomiText 不支持 autoSize；请改用固定字号或样式" }
+        rememberFluentWarning(autoSize != null, autoSize) {
+            "NomiText 的 autoSize 覆盖无原生入口，已保留固定字号"
+        }
         NativeText(
             text = text,
             modifier = modifier,

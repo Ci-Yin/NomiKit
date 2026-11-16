@@ -13,14 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiDesignSystemComponents
+import ciyin.designsystem.runtime.LocalNomiContentColor
+import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystemId
 import ciyin.designsystem.runtime.NomiThemeRequest
 import ciyin.designsystem.runtime.ResolvedNomiTheme
-import ciyin.designsystem.runtime.LocalNomiContentColor
-import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.theme.NomiColorScheme
 import ciyin.designsystem.theme.NomiShapes
 import ciyin.designsystem.theme.NomiSizes
@@ -30,44 +29,17 @@ import ciyin.designsystem.theme.defaultNomiSizes
 import ciyin.designsystem.theme.defaultSpacings
 
 /**
+ * Material 3 原生适配设计系统，绑定在 [NomiDesignSystem.Companion] 上。
+ *
+ * 通过 `NomiDesignSystem.Material3` 访问；实现对象不对外暴露，调用方只依赖核心契约。
+ */
+val NomiDesignSystem.Companion.Material3: NomiDesignSystem get() = Material3System
+
+
+/**
  * 无配置时使用 Material 3 原生调色板、排版和形状，不反向套用中立默认令牌的唯一实现。
  */
-internal object Material3System : NomiDesignSystem {
-    /**
-     * 原生默认实现的固定基线，不从嵌套 MaterialTheme 反复取值。
-     */
-    private val baseline = ConfiguredMaterial3DesignSystem()
-
-    /**
-     * Material 3 的稳定标识。
-     */
-    override val id: NomiDesignSystemId = NomiDesignSystemId("material3")
-
-    /**
-     * Material 3 的组件集合。
-     */
-    override val components: NomiDesignSystemComponents = Material3DesignSystemComponents
-
-    /**
-     * Material 3 原生支持底部导航、侧边导航与永久抽屉三种布局，其余能力沿用默认。
-     */
-    override val capabilities: NomiComponentCapabilities =
-        NomiComponentCapabilities(navigationDrawer = true)
-
-    /**
-     * 建立原生环境后把扁平运行时主题结果交给核心主题。
-     *
-     * @param request 已解析明暗模式及显式覆盖；未指定组使用固定原生基线。
-     * @param content 在 Material 原生主题和显式 slot 环境中接收运行时五组主题结果的内容。
-     */
-    @Composable
-    override fun ProvideTheme(
-        request: NomiThemeRequest,
-        content: @Composable (ResolvedNomiTheme) -> Unit
-    ) {
-        baseline.ProvideTheme(request = request, content = content)
-    }
-}
+private object Material3System : NomiDesignSystem by ConfiguredMaterial3DesignSystem()
 
 /**
  * 记忆显式 Material 3 主题配置；未指定项使用原生基线而非祖先的投影。
@@ -179,15 +151,9 @@ private class ConfiguredMaterial3DesignSystem(
     override val components: NomiDesignSystemComponents = Material3DesignSystemComponents
 
     /**
-     * 与默认实现共用能力声明：三种导航布局均由原生组件支持。
-     */
-    override val capabilities: NomiComponentCapabilities =
-        NomiComponentCapabilities(navigationDrawer = true)
-
-    /**
      * 只将明确覆盖作用于原生配置，再生成扁平运行时主题结果。
      *
-     * 完整中立组在结果中原样保留；accent 仅替换 primary，Unspecified 不覆盖，透明色仍是覆盖。
+     * 完整中立组在结果中原样保留；颜色只由完整 [NomiColorScheme] 表达，未提供时沿用原生基线。
      * 原生内容环境只合入显式 slot 增量，不把原生默认发布为中立显式样式。
      *
      * @param request 已解析模式及显式主题组；请求组优先于配置和旧门面基线。
@@ -203,16 +169,13 @@ private class ConfiguredMaterial3DesignSystem(
             ?: colorScheme ?: if (request.isDark) darkColorScheme() else lightColorScheme()
         val overriddenColors =
             overrides.colorScheme?.toMaterial3ColorScheme(base = baseColors) ?: baseColors
-        val accent = overrides.accentColor
-        val actualColors =
-            if (accent == Color.Unspecified) overriddenColors else overriddenColors.copy(primary = accent)
         val actualTypography =
             overrides.typography?.toMaterial3Typography(base = typography) ?: typography
         val actualShapes = overrides.shapes?.toMaterial3Shapes() ?: shapes
         val actualSpacings = overrides.spacings ?: spacings
         val actualSizes = overrides.sizes ?: sizes
         MaterialTheme(
-            colorScheme = actualColors,
+            colorScheme = overriddenColors,
             typography = actualTypography,
             shapes = actualShapes,
         ) {
@@ -229,11 +192,8 @@ private class ConfiguredMaterial3DesignSystem(
                 typography = legacyTypography ?: nativeProjection.typography,
                 shapes = legacyShapes ?: nativeProjection.shapes,
             )
-            val explicitColors = overrides.colorScheme ?: baseProjection.colorScheme
             val projection = baseProjection.copy(
-                colorScheme = if (accent == Color.Unspecified) explicitColors else explicitColors.copy(
-                    primary = accent
-                ),
+                colorScheme = overrides.colorScheme ?: baseProjection.colorScheme,
                 typography = overrides.typography ?: baseProjection.typography,
                 shapes = overrides.shapes ?: baseProjection.shapes,
                 spacings = actualSpacings,
@@ -254,10 +214,3 @@ private class ConfiguredMaterial3DesignSystem(
         }
     }
 }
-
-/**
- * Material 3 原生适配设计系统，绑定在 [NomiDesignSystem.Companion] 上。
- *
- * 通过 `NomiDesignSystem.Material3` 访问；实现对象不对外暴露，调用方只依赖核心契约。
- */
-val NomiDesignSystem.Companion.Material3: NomiDesignSystem get() = Material3System

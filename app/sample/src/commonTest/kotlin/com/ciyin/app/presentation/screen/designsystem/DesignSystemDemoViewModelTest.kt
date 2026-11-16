@@ -1,7 +1,6 @@
 package com.ciyin.app.presentation.screen.designsystem
 
 import androidx.lifecycle.viewModelScope
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.nomi.Default
@@ -43,7 +42,6 @@ class DesignSystemDemoViewModelTest {
             viewModel.dispatchAction(DesignSystemDemoAction.SelectSize(NomiControlSize.Large))
             viewModel.dispatchAction(DesignSystemDemoAction.SelectVariant(NomiButtonVariant.Destructive))
             viewModel.dispatchAction(DesignSystemDemoAction.SelectFontScale(2f))
-            viewModel.dispatchAction(DesignSystemDemoAction.ToggleCustomTokens)
             viewModel.dispatchAction(DesignSystemDemoAction.ToggleOverride)
             viewModel.dispatchAction(DesignSystemDemoAction.ButtonClick)
             viewModel.dispatchAction(DesignSystemDemoAction.SelectDesignSystem(SecondSystem))
@@ -53,7 +51,6 @@ class DesignSystemDemoViewModelTest {
             assertEquals(NomiButtonVariant.Destructive, state.variant)
             assertEquals(2f, state.fontScale)
             assertEquals(1, state.clickCount)
-            assertTrue(state.customTokens)
             assertTrue(state.override)
         }
     }
@@ -79,24 +76,22 @@ class DesignSystemDemoViewModelTest {
     }
 
     /**
-     * 切换到不支持尺寸的候选时清除覆盖，并拒绝迟到的显式尺寸动作。
+     * 切换设计系统保留尺寸覆盖；不支持的系统由适配器降级，状态层不再清理。
      *
      * @return 协程测试框架的跨平台执行结果，供测试运行器等待断言与清理完成。
      */
     @Test
-    fun unsupportedSizeIsClearedAndRejectedAtActionBoundary() = runTest {
+    fun sizeOverrideSurvivesDesignSystemSwitch() = runTest {
         withViewModel { viewModel ->
             viewModel.dispatchAction(DesignSystemDemoAction.SelectSize(NomiControlSize.Large))
             viewModel.state.first { it.size == NomiControlSize.Large }
             viewModel.dispatchAction(DesignSystemDemoAction.SelectDesignSystem(LimitedSystem))
-            val limited = viewModel.state.first { it.designSystemId == LimitedSystem }
-            assertEquals(null, limited.size)
+            val switched = viewModel.state.first { it.designSystemId == LimitedSystem }
+            assertEquals(NomiControlSize.Large, switched.size)
             viewModel.dispatchAction(DesignSystemDemoAction.SelectSize(NomiControlSize.Small))
-            runCurrent()
-            assertEquals(null, viewModel.state.value.size)
             viewModel.dispatchAction(DesignSystemDemoAction.SelectDesignSystem(FirstSystem))
             val restored = viewModel.state.first { it.designSystemId == FirstSystem }
-            assertEquals(null, restored.size)
+            assertEquals(NomiControlSize.Small, restored.size)
         }
     }
 
@@ -134,7 +129,6 @@ class DesignSystemDemoViewModelTest {
             viewModel.dispatchAction(DesignSystemDemoAction.SelectSize(NomiControlSize.Small))
             viewModel.dispatchAction(DesignSystemDemoAction.SelectVariant(NomiButtonVariant.Text))
             viewModel.dispatchAction(DesignSystemDemoAction.SelectFontScale(1.3f))
-            viewModel.dispatchAction(DesignSystemDemoAction.ToggleCustomTokens)
             viewModel.dispatchAction(DesignSystemDemoAction.ToggleOverride)
             viewModel.dispatchAction(DesignSystemDemoAction.ButtonClick)
             viewModel.dispatchAction(DesignSystemDemoAction.ToggleEnabled)
@@ -206,7 +200,7 @@ class DesignSystemDemoViewModelTest {
             listOf(
                 fakeSystem(FirstSystem),
                 fakeSystem(SecondSystem),
-                fakeSystem(LimitedSystem, NomiComponentCapabilities(buttonSize = false)),
+                fakeSystem(LimitedSystem),
             ),
         )
         try {
@@ -234,30 +228,22 @@ class DesignSystemDemoViewModelTest {
         val SecondSystem = NomiDesignSystemId("host-alternative")
 
         /**
-         * 不支持按钮尺寸覆盖的候选身份。
+         * 第三个宿主候选身份。
          */
         val LimitedSystem = NomiDesignSystemId("limited")
 
         /**
-         * 用稳定身份和能力包装 Nomi renderer，避免测试构造第三方主题。
+         * 用稳定身份包装 Nomi renderer，避免测试构造第三方主题。
          *
          * @param id 测试候选的稳定标识。
-         * @param capabilities 测试候选声明的覆盖能力，默认支持全部声明中的能力。
-         * @return 仅替换身份与能力、其余行为委托给 [NomiDesignSystem.Default] 的新实现。
+         * @return 仅替换身份、其余行为委托给 [NomiDesignSystem.Default] 的新实现。
          */
-        fun fakeSystem(
-            id: NomiDesignSystemId,
-            capabilities: NomiComponentCapabilities = NomiComponentCapabilities(),
-        ): NomiDesignSystem = object : NomiDesignSystem by NomiDesignSystem.Default {
-            /**
-             * 测试候选身份。
-             */
-            override val id: NomiDesignSystemId = id
-
-            /**
-             * 测试候选声明的真实覆盖能力。
-             */
-            override val capabilities: NomiComponentCapabilities = capabilities
-        }
+        fun fakeSystem(id: NomiDesignSystemId): NomiDesignSystem =
+            object : NomiDesignSystem by NomiDesignSystem.Default {
+                /**
+                 * 测试候选身份。
+                 */
+                override val id: NomiDesignSystemId = id
+            }
     }
 }

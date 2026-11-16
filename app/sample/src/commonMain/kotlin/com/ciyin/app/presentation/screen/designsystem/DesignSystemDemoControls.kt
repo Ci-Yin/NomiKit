@@ -30,8 +30,6 @@ import com.ciyin.app.sample.design_system_demo_size
 import com.ciyin.app.sample.design_system_demo_variant
 import com.ciyin.app.sample.design_system_demo_enabled
 import com.ciyin.app.sample.design_system_demo_disabled
-import com.ciyin.app.sample.design_system_demo_custom_colors_on
-import com.ciyin.app.sample.design_system_demo_custom_colors_off
 import com.ciyin.app.sample.design_system_demo_override_on
 import com.ciyin.app.sample.design_system_demo_override_off
 import com.ciyin.app.sample.design_system_demo_reset
@@ -60,7 +58,6 @@ internal fun DesignSystemDemoControls(
     onAction: (DesignSystemDemoAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val capabilities = systems.single { it.id == state.designSystemId }.capabilities
     NomiCard(
         modifier = modifier.fillMaxWidth().testTag(DesignSystemDemoTags.Controls),
         contentPadding = PaddingValues(NomiTheme.spacings.large),
@@ -103,22 +100,20 @@ internal fun DesignSystemDemoControls(
                     )
                 }
             }
-            if (capabilities.buttonSize) {
-                DemoControlGroup(title = stringResource(Res.string.design_system_demo_size)) {
+            DemoControlGroup(title = stringResource(Res.string.design_system_demo_size)) {
+                DemoChoice(
+                    label = stringResource(Res.string.design_system_demo_native_default),
+                    selected = state.size == null,
+                    tag = "design-system-demo-size-default",
+                    onClick = { onAction(DesignSystemDemoAction.SelectSize(null)) },
+                )
+                NomiControlSize.entries.forEach { size ->
                     DemoChoice(
-                        label = stringResource(Res.string.design_system_demo_native_default),
-                        selected = state.size == null,
-                        tag = "design-system-demo-size-default",
-                        onClick = { onAction(DesignSystemDemoAction.SelectSize(null)) },
+                        label = stringResource(designSystemSizeLabel(size)),
+                        selected = state.size == size,
+                        tag = "design-system-demo-size-$size",
+                        onClick = { onAction(DesignSystemDemoAction.SelectSize(size)) },
                     )
-                    NomiControlSize.entries.forEach { size ->
-                        DemoChoice(
-                            label = stringResource(designSystemSizeLabel(size)),
-                            selected = state.size == size,
-                            tag = "design-system-demo-size-$size",
-                            onClick = { onAction(DesignSystemDemoAction.SelectSize(size)) },
-                        )
-                    }
                 }
             }
             DemoControlGroup(title = stringResource(Res.string.design_system_demo_variant)) {
@@ -148,16 +143,6 @@ internal fun DesignSystemDemoControls(
                     val label = if (state.enabled) {
                         Res.string.design_system_demo_enabled
                     } else Res.string.design_system_demo_disabled
-                    NomiText(stringResource(label))
-                }
-                NomiButton(
-                    onClick = { onAction(DesignSystemDemoAction.ToggleCustomTokens) },
-                    modifier = Modifier.testTag(DesignSystemDemoTags.CustomColors),
-                    variant = NomiButtonVariant.Default,
-                ) {
-                    val label = if (state.customTokens) {
-                        Res.string.design_system_demo_custom_colors_on
-                    } else Res.string.design_system_demo_custom_colors_off
                     NomiText(stringResource(label))
                 }
                 NomiButton(

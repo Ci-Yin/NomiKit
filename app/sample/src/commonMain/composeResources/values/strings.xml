@@ -263,8 +263,6 @@
     <string name="design_system_demo_variant_destructive">危险</string>
     <string name="design_system_demo_enabled">按钮可用</string>
     <string name="design_system_demo_disabled">按钮禁用</string>
-    <string name="design_system_demo_custom_colors_on">自定义色：开启</string>
-    <string name="design_system_demo_custom_colors_off">自定义色：关闭</string>
     <string name="design_system_demo_override_on">局部覆盖：开启</string>
     <string name="design_system_demo_override_off">局部覆盖：关闭</string>
     <string name="design_system_demo_reset">重置</string>
@@ -330,17 +328,5 @@
     <string name="design_system_demo_sample_button">按钮 · Button</string>
     <string name="design_system_demo_sample_surface">表面 · Surface</string>
     <string name="design_system_demo_sample_card">卡片 · Card</string>
-    <string name="design_system_demo_restrictions_summary">%1$d 项原生能力限制</string>
-    <string name="design_system_demo_show_details">查看详情</string>
-    <string name="design_system_demo_hide_details">收起详情</string>
     <string name="design_system_demo_explicit_overrides_title">按钮 · 样式与交互</string>
-    <string name="design_system_demo_restrictions_title">当前设计系统限制</string>
-    <string name="design_system_demo_restriction_size">当前设计系统不支持按钮尺寸覆盖，已保留原生默认。</string>
-    <string name="design_system_demo_restriction_shape">当前设计系统不支持按钮形状覆盖。</string>
-    <string name="design_system_demo_restriction_padding">当前设计系统不支持按钮内容内边距覆盖。</string>
-    <string name="design_system_demo_restriction_card_colors">当前设计系统不支持卡片颜色覆盖。</string>
-    <string name="design_system_demo_restriction_card_border">当前设计系统不支持卡片描边覆盖。</string>
-    <string name="design_system_demo_restriction_text_auto_size">当前设计系统不支持文本自动字号缩放。</string>
-    <string name="design_system_demo_supported">支持</string>
-    <string name="design_system_demo_unsupported">不支持</string>
 </resources>

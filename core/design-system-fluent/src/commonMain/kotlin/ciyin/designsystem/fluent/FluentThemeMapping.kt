@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.lerp
 import ciyin.designsystem.runtime.NomiThemeRequest
 import ciyin.designsystem.runtime.ResolvedNomiTheme
 import ciyin.designsystem.theme.NomiColorScheme
-import ciyin.designsystem.theme.NomiThemeOverrides
 import ciyin.designsystem.theme.NomiTypography
 import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import ciyin.designsystem.theme.defaultNomiShapes
@@ -17,22 +16,6 @@ import io.github.composefluent.Colors
 import io.github.composefluent.CornerRadius
 import io.github.composefluent.Shades
 import io.github.composefluent.Typography
-import io.github.composefluent.darkColors
-import io.github.composefluent.lightColors
-
-/**
- * 只有明确指定的强调色才生成自定义色阶，省略时保留原生蓝色色阶。
- *
- * @receiver 显式主题覆盖；此转换仅消费 accentColor，不映射其余主题组。
- * @param isDark 新色板的明暗模式，调用方已处理 typed 色板模式优先级。
- * @return accent 为 Unspecified 时返回原生默认色板，否则返回以该颜色为基础的新色板；透明色仍为显式输入。
- */
-internal fun NomiThemeOverrides.toFluentColors(isDark: Boolean): Colors =
-    if (accentColor == Color.Unspecified) {
-        if (isDark) darkColors() else lightColors()
-    } else {
-        Colors(shades = accentColor.toFluentShades(), darkMode = isDark)
-    }
 
 /**
  * 从中立色板的 primary 构造 Fluent 强调色色板，不表示完整中立颜色组受到支持。

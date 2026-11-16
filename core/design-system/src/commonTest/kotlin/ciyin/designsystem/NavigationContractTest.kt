@@ -8,19 +8,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationSuite
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * 验证导航套件入口按能力分派、保留两个导航项分组，并在不支持时提前失败。
+ * 验证导航套件入口原样透传布局、容器色与两个导航项分组；核心不按能力拦截。
  */
 @OptIn(ExperimentalTestApi::class)
 class NavigationContractTest {
@@ -64,6 +62,7 @@ class NavigationContractTest {
         runOnIdle {
             val suite = recorder.navigations.single()
             assertEquals(NomiNavigationSuiteType.Bar, suite.layoutType)
+            assertEquals(Color.Unspecified, suite.containerColor)
             assertEquals(2, suite.items.size)
             val selectedItem = suite.items[0]
             assertTrue(selectedItem.selected)
@@ -87,10 +86,31 @@ class NavigationContractTest {
     }
 
     /**
-     * 验证默认能力支持 Rail，槽位全空时仍派出空导航项且底部组保持为空列表。
+     * 验证显式容器色原样交给 renderer，由实现映射到原生导航外壳。
      */
     @Test
-    fun railIsSupportedByDefaultAndEmptyFooterStaysEmpty() = runComposeUiTest {
+    fun containerColorIsForwardedToRenderer() = runComposeUiTest {
+        val recorder = RecordingDesignSystem()
+        setContent {
+            NomiTheme(designSystem = recorder) {
+                NomiNavigationSuite(
+                    layoutType = NomiNavigationSuiteType.Bar,
+                    containerColor = Color.Red,
+                    items = { NavigationItem(selected = false, onClick = {}) },
+                    content = {},
+                )
+            }
+        }
+        runOnIdle {
+            assertEquals(Color.Red, recorder.navigations.single().containerColor)
+        }
+    }
+
+    /**
+     * 验证 Rail 布局与空槽位原样派发，底部组保持为空列表。
+     */
+    @Test
+    fun railDispatchesSparseItemAndEmptyFooter() = runComposeUiTest {
         val recorder = RecordingDesignSystem()
         setContent {
             NomiTheme(designSystem = recorder) {
@@ -113,37 +133,11 @@ class NavigationContractTest {
     }
 
     /**
-     * 验证默认能力拒绝 Drawer，且在进入 renderer 前失败。
+     * 验证 Drawer 布局原样交给 renderer，不因能力差异在入口失败。
      */
     @Test
-    fun unsupportedDrawerFailsBeforeRenderer() {
+    fun drawerDispatchesToRenderer() = runComposeUiTest {
         val recorder = RecordingDesignSystem()
-        val failure = assertFailsWith<IllegalArgumentException> {
-            runComposeUiTest {
-                setContent {
-                    NomiTheme(designSystem = recorder) {
-                        NomiNavigationSuite(
-                            layoutType = NomiNavigationSuiteType.Drawer,
-                            items = { NavigationItem(selected = false, onClick = {}) },
-                            content = {},
-                        )
-                    }
-                }
-                waitForIdle()
-            }
-        }
-        assertTrue(failure.message?.contains("Drawer") == true)
-        assertTrue(recorder.navigations.isEmpty())
-    }
-
-    /**
-     * 验证实现显式声明 Drawer 能力后，入口把布局交给 renderer。
-     */
-    @Test
-    fun drawerDispatchesWhenCapabilityDeclared() = runComposeUiTest {
-        val recorder = RecordingDesignSystem(
-            capabilities = NomiComponentCapabilities(navigationDrawer = true),
-        )
         setContent {
             NomiTheme(designSystem = recorder) {
                 NomiNavigationSuite(

@@ -35,11 +35,6 @@ internal object DesignSystemDemoTags {
     const val Reset = "design-system-demo-reset"
 
     /**
-     * 自定义颜色开关。
-     */
-    const val CustomColors = "design-system-demo-custom-colors"
-
-    /**
      * 局部覆盖开关。
      */
     const val Override = "design-system-demo-override"

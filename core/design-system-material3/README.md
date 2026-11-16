@@ -8,7 +8,8 @@ Material 3 设计系统适配器，将中立主题、六类组件（含列表项
 - Material 3 由 Version Catalog 的既有 `libs.compose.material3` 提供。
 - 六个 SPI 族实现 Text、Button、Surface、独立 Card、导航套件、页面脚手架与列表项；各组件分别调用官方原生组件，不共享外观配方。
 - 导航套件直接使用原生 NavigationBar、NavigationRail 与 PermanentNavigationDrawer，Bar/Rail/Drawer
-  均声明支持。
+  均声明支持；外壳容器色可通过 `containerColor` 覆盖（Bar/Rail 未指定回退 `surfaceLow`，Drawer 未指定保留
+  原生 `DrawerDefaults.standardContainerColor`）。
 - 输入框、图标按钮、弹窗等属于二期，不提供空实现或占位 SPI。
 - 不引入 Fluent、不读取平台设置、不维护第二份设计令牌。
 
@@ -44,12 +45,11 @@ NomiTheme(designSystem = NomiDesignSystem.Material3) {
 
 ## 原生默认与显式覆盖
 
-NomiTheme 保留旧式参数组织：darkMode、colorScheme、typography、shapes、spacings、sizes，随后是 designSystem
-与 overrides。 五组可空参数的 null 表示本层未指定；新根继承父层明确设置的排版/形状/间距/尺寸，但清除父颜色与
-accent，按当前系统和模式重选。 默认 designSystem 继承当前上下文，且必须已由祖先显式提供（无隐式回退，未提供时入口报错）；darkMode
-同样继承当前上下文；不把父级 resolved 原生默认重新写成显式输入。 NomiThemeOverride 继承全部明确覆盖；子完整颜色替换清除父
-accent，子 accent 可仅修改继承颜色的 primary。 同层 direct 参数与 overrides 重复提供同一组、同层完整
-colorScheme 与 accent 同时提供均由核心拒绝。
+NomiTheme 只接受 `NomiThemeOverrides` 作为本层显式输入：darkMode、designSystem、overrides 与 content。
+五组可空 字段的 null 表示本层未指定；新根继承父层明确设置的排版/形状/间距/尺寸，但不继承父颜色，按当前系统和模式重选。
+默认 designSystem 继承当前上下文，且必须已由祖先显式提供（无隐式回退，未提供时入口报错）；darkMode
+同样继承当前上下文；不把父级 resolved 原生默认重新写成显式输入。 NomiThemeOverride 继承全部明确覆盖；子层完整色板整组
+替换继承颜色。 颜色覆盖只经完整的 `NomiColorScheme` 表达，不提供单色强调色入口。
 
 完整中立颜色/排版/形状覆盖作用于当前 Material 基线；颜色通过 base.copy 保留 tertiary、container
 等未映射原生角色， 排版覆盖十五个公开角色并保留原生额外强调角色。投影最终原样保留显式完整组，不丢
@@ -92,13 +92,13 @@ Android/Desktop/iOS 专有 API。api 导出中立核心与 Material 3；公开�
 
 ## 验证
 
-当前 Desktop 回归 32 项：上一轮 26 项、导航 4 项加本轮脚手架 2 项；本轮 metadata 编译通过，Desktop
-回归零失败、零跳过。联合回归和未验证范围见[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
+当前 Desktop 回归 33 项；本轮 metadata 编译通过，Desktop 回归零失败、零跳过。联合回归和未验证范围见
+[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
 
 [映射测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ConversionsTest.kt>)
 覆盖十五排版角色往返、表面层级及旧圆角映射。
 [导航测试](<src/commonTest/kotlin/ciyin/designsystem/material3/navigation/Material3NavigationTest.kt>)
-覆盖 Bar/Rail/Drawer 三种原生布局、选中与点击语义、分组顺序及导航能力声明。
+覆盖 Bar/Rail/Drawer 三种原生布局、选中与点击语义与分组顺序。
 [脚手架测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ScaffoldTest.kt>)
 覆盖顶栏/主体/底栏顺序与显式颜色透传。
 [组件测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ComponentsTest.kt>)
@@ -116,10 +116,10 @@ Surface 与 Card 的内容颜色继承。
 与
 [独立原生对照测试](<src/desktopTest/kotlin/ciyin/designsystem/material3/Material3NativeParityTest.kt>)
 ，验证默认主题、 跨系统稀疏覆盖、尺寸、像素及部分样式/颜色。原生参照使用独立 MaterialTheme，不经过
-NomiTheme。 前一轮 native-first 的 19 项原生主题、组件对照、显式覆盖与 slot 来源回归已通过；不是直接主题参数的复验。
-此前新增[直接主题参数测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ThemeParametersTest.kt>)，
-覆盖五组映射、父明确排版继承与颜色重选、原生额外角色保留、完整组投影及局部恢复。此前直接主题参数改造的
-23 项 Desktop 测试、metadata/Android 依赖与 Desktop 宿主编译记录见设计说明。
+NomiTheme。 前一轮 native-first 的 19 项原生主题、组件对照、显式覆盖与 slot 来源回归已通过；不是主题覆盖输入的复验。
+此前新增[主题覆盖参数测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ThemeParametersTest.kt>)，
+覆盖五组映射、父明确排版继承与颜色重选、原生额外角色保留、完整组投影及局部恢复。此前主题参数改造的 23 项
+Desktop 测试、metadata/Android 依赖与 Desktop 宿主编译记录见设计说明。
 
 ## 相关资料
 

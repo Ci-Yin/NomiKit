@@ -14,6 +14,7 @@ import ciyin.designsystem.material3.toMaterial3Typography
 import ciyin.designsystem.runtime.LocalNomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiThemeOverrides
+import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import ciyin.designsystem.theme.defaultNomiShapes
 import ciyin.designsystem.theme.defaultNomiSizes
 import ciyin.designsystem.theme.defaultNomiTypography
@@ -141,9 +142,11 @@ class LegacyThemeCompatibilityTest {
         var observed: Typography? = null
         setContent {
             DesignSystemTheme(
-                typography = parentTypography,
-                shapes = parentShapes,
-                spacings = parentSpacings,
+                overrides = NomiThemeOverrides(
+                    typography = parentTypography,
+                    shapes = parentShapes,
+                    spacings = parentSpacings,
+                ),
                 designSystem = NomiDesignSystem.Material3,
             ) {
                 AppTheme(
@@ -179,8 +182,10 @@ class LegacyThemeCompatibilityTest {
         setContent {
             DesignSystemTheme(
                 darkMode = DesignSystemDarkMode.Dark,
-                typography = parentTypography,
-                shapes = parentShapes,
+                overrides = NomiThemeOverrides(
+                    typography = parentTypography,
+                    shapes = parentShapes,
+                ),
                 designSystem = NomiDesignSystem.Material3,
             ) {
                 parentNativeTypography = MaterialTheme.typography
@@ -203,7 +208,10 @@ class LegacyThemeCompatibilityTest {
     @Test
     fun legacyGettersReadNewMaterialRootWithoutBridgeGate() = runComposeUiTest {
         val spacings = defaultSpacings().copy(large = 29.dp)
-        val overrides = NomiThemeOverrides(accentColor = Color.Cyan, spacings = spacings)
+        val overrides = NomiThemeOverrides(
+            colorScheme = defaultLightNomiColorScheme().copy(primary = Color.Cyan),
+            spacings = spacings,
+        )
         val actualTypography = Typography(bodyMedium = TextStyle(fontSize = 31.sp))
         var observedTypography: Typography? = null
         setContent {

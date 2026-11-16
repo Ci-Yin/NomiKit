@@ -13,7 +13,6 @@ import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
 import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoTags
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.design_system_demo_inherited_content
@@ -25,7 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 /**
- * 展示局部设计系统与 accent 稀疏覆盖，外层主题不复制完整 tokens。
+ * 展示局部设计系统覆盖，外层主题不复制完整 tokens。
  *
  * @param enabled 是否启用中间样例的局部覆盖；仅在备用系统非空时生效。
  * @param alternateDesignSystem 中间样例切换到的设计系统；null 时不创建覆盖边界，沿用外层主题。
@@ -45,10 +44,7 @@ internal fun DesignSystemOverrideShowcase(
             tag = DesignSystemDemoTags.OuterBefore
         )
         if (enabled && alternateDesignSystem != null) {
-            NomiThemeOverride(
-                designSystem = alternateDesignSystem,
-                overrides = NomiThemeOverrides(accentColor = NomiTheme.colorScheme.info),
-            ) {
+            NomiThemeOverride(designSystem = alternateDesignSystem) {
                 OverrideSample(
                     text = stringResource(Res.string.design_system_demo_override_inner),
                     tag = DesignSystemDemoTags.InnerOverride
@@ -68,7 +64,7 @@ internal fun DesignSystemOverrideShowcase(
 }
 
 /**
- * 用显式表面强调色验证局部作用域前后仍可恢复。
+ * 用显式表面主色验证局部作用域前后仍可恢复。
  *
  * @param text 显示在表面内的作用域说明，继承当前表面内容样式。
  * @param tag 标记覆盖前、覆盖内或覆盖后表面的测试标签。

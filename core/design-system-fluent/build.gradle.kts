@@ -8,6 +8,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(projects.core.designSystem)
         api(libs.compose.fluent)
+        implementation(projects.core.platform)
     }
 
     sourceSets.commonTest.dependencies {

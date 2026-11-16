@@ -5,7 +5,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.staticCompositionLocalOf
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import kotlin.jvm.JvmInline
 
@@ -21,15 +20,14 @@ value class NomiDesignSystemId(
 )
 
 /**
- * 设计系统的原生主题与组件扩展契约，负责原生默认值、只读投影与显式覆盖能力。
+ * 设计系统的原生主题与组件扩展契约，负责原生默认值与只读投影；无法承载的显式覆盖由实现自行降级。
  */
 @Stable
 interface NomiDesignSystem {
     /**
      * 设计系统实现的绑定命名空间。
      *
-     * adapter 模块用扩展属性把自身实现挂到这里，调用方通过 `NomiDesignSystem.Default`、
-     * `NomiDesignSystem.Material3`、`NomiDesignSystem.Fluent` 取得实例，核心因此不反向依赖任何 adapter。
+     * adapter 模块用扩展属性把自身实现挂到这里，核心因此不反向依赖任何 adapter。
      * 扩展属性必须导入对应模块的声明，IDE 会在 `NomiDesignSystem.` 后补全。
      */
     companion object
@@ -45,15 +43,10 @@ interface NomiDesignSystem {
     val components: NomiDesignSystemComponents
 
     /**
-     * 允许调用方显式覆盖的组件能力；不支持项必须拒绝。
-     */
-    val capabilities: NomiComponentCapabilities get() = NomiComponentCapabilities()
-
-    /**
      * 先建立原生主题，再通过回调提供中立只读投影。
      *
      * 只应用请求中的显式增量，不能把另一设计系统的已解析默认值作为本系统默认。
-     * 不支持的显式覆盖应明确拒绝，而非静默忽略。
+     * 无法承载的显式覆盖由实现自行降级并保留原生默认，不重绘伪造支持；结构性输入冲突仍明确失败。
      *
      * @param request 外层主题边界解析的模式、实际深色状态与显式覆盖；不包含预先填充的默认令牌。
      * @param content 在原生主题环境内组合的子树，接收直接包含五组结果的运行时主题；

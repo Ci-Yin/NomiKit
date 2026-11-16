@@ -11,9 +11,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.runtime.requireNomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.component.NomiControlSize
 
 /**
  * 按钮原生渲染契约；可空参数表示调用方未指定，不能提前套用统一外观。
@@ -187,7 +187,7 @@ object NomiButtonDefaults {
 
 
 /**
- * 默认调用对应原生按钮；明确不支持的视觉覆盖在边界拒绝，不重绘或静默忽略。
+ * 默认调用对应原生按钮；核心不按能力拦截视觉覆盖，适配器可自行降级为原生默认或记录日志，但不重绘伪造外观。
  *
  * @param onClick 启用状态下用户激活按钮时调用；业务状态由调用方更新。
  * @param modifier 应用于按钮根节点的修饰符。
@@ -199,7 +199,6 @@ object NomiButtonDefaults {
  * @param contentPadding 内容内边距；null 保留原生间距。
  * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
  * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
- * @throws IllegalArgumentException 当前设计系统不支持传入的 size、shape 或 contentPadding 覆盖时抛出。
  */
 @Composable
 fun NomiButton(
@@ -213,22 +212,15 @@ fun NomiButton(
     contentPadding: PaddingValues? = null,
     textStyle: TextStyle? = null,
     content: @Composable RowScope.() -> Unit,
-) {
-    val designSystem = requireNomiDesignSystem()
-    val capabilities = designSystem.capabilities
-    require(size == null || capabilities.buttonSize) { designSystem.id.value + " NomiButton 不支持 size 覆盖" }
-    require(shape == null || capabilities.buttonShape) { designSystem.id.value + " NomiButton 不支持 shape 覆盖" }
-    require(contentPadding == null || capabilities.buttonContentPadding) { designSystem.id.value + " NomiButton 不支持 contentPadding 覆盖" }
-    designSystem.components.actions.Button(
-        onClick = onClick,
-        modifier = modifier,
-        enabled = enabled,
-        variant = variant,
-        size = size,
-        colors = colors,
-        shape = shape,
-        contentPadding = contentPadding,
-        textStyle = textStyle,
-        content = content,
-    )
-}
+) = requireNomiDesignSystem().components.actions.Button(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    variant = variant,
+    size = size,
+    colors = colors,
+    shape = shape,
+    contentPadding = contentPadding,
+    textStyle = textStyle,
+    content = content,
+)

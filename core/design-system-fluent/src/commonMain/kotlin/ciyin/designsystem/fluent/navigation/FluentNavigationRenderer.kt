@@ -10,6 +10,7 @@ import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
+import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.MenuItem
 import io.github.composefluent.component.NavigationDefaults
@@ -18,23 +19,27 @@ import io.github.composefluent.component.NavigationItemColor
 import io.github.composefluent.component.NavigationItemColorScheme
 import io.github.composefluent.component.NavigationMenuScope
 import io.github.composefluent.component.NavigationView
+import io.github.composefluent.component.rememberNavigationState
 
 /**
  * Fluent 导航套件适配。
  *
  * 导航项以槽位形式在组合阶段记录，再按声明顺序交给原生菜单重建，颜色只在调用方显式覆盖时
- * 改写原生方案，不重建排版或尺寸配方。顶部与紧凑抽屉布局交由原生 [NavigationView]；
- * 左置布局改用公开 SideNav 组合（原生 footer 上方固定插入分割线且无关闭入口，无法直接复用）。
+ * 改写原生方案，不重建排版或尺寸配方。三种布局都交由原生 [NavigationView]，只关闭上游默认的
+ * 内容面板描边，使导航栏与内容之间不出现分割线。
+ * 导航外壳容器色没有原生覆盖入口（`NavigationView` 的 `color` 作用于内容面板），因此显式
+ * `containerColor` 会被忽略并记录警告，而不是改写错误表面。
  */
 internal object FluentNavigationRenderer : NomiNavigationRenderer {
     /**
      * 按布局类型建立原生 Fluent 导航外壳，并把页面内容交给原生导航布局排布。
      *
      * 主导航项与底部项分别进入原生菜单区与底部区，不交换、不合并、不丢弃分组；
-     * 顶部与紧凑抽屉使用原生 NavigationView，左置布局使用公开 SideNav 重组且不绘制任何分割线。
+     * 三种布局都使用原生 NavigationView，并关闭内容面板描边，避免导航栏与内容之间出现分割线。
      *
-     * @param layoutType 调用方选择的导航布局；Bar 映射顶部、Drawer 映射紧凑侧边，Rail 使用左置外壳。
+     * @param layoutType 调用方选择的导航布局；Bar 映射折叠侧边、Rail 映射紧凑侧边、Drawer 映射完整侧边。
      * @param modifier 应用于原生导航外壳根节点的修饰符。
+     * @param containerColor 导航外壳容器底色；无原生入口，显式颜色被忽略并记录警告。
      * @param items 主导航项声明；按声明顺序进入原生菜单项区域。
      * @param footerItems 底部导航项声明；空 lambda 时原生导航自然省略底部区域。
      * @param content 被导航外壳包裹的页面内容。
@@ -43,33 +48,30 @@ internal object FluentNavigationRenderer : NomiNavigationRenderer {
     override fun NavigationSuite(
         layoutType: NomiNavigationSuiteType,
         modifier: Modifier,
+        containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
         content: @Composable () -> Unit,
     ) {
+        rememberFluentWarning(containerColor != Color.Unspecified, containerColor) {
+            "NomiNavigationSuite 的 containerColor 覆盖无原生入口，已保留原生导航容器色"
+        }
         val mainItems = rememberFluentNavigationItemDeclarations(items)
         val footerDeclarations = rememberFluentNavigationItemDeclarations(footerItems)
         val paneColor = fluentNavigationPaneColor()
-        when (layoutType) {
-            NomiNavigationSuiteType.Rail -> FluentSideNavigationShell(
-                modifier = modifier,
-                paneColor = paneColor,
-                mainItems = mainItems,
-                footerItems = footerDeclarations,
-                pane = content,
-            )
-
-            NomiNavigationSuiteType.Bar, NomiNavigationSuiteType.Drawer -> NavigationView(
-                menuItems = mainItems.toFluentNavigationMenu(),
-                modifier = modifier,
-                displayMode = layoutType.toFluentDisplayMode(),
-                footerItems = footerDeclarations.toFluentNavigationMenu(),
-                // 上游默认给内容面板加 1dp 描边，这里显式关闭，避免导航栏与内容之间出现分割线。
-                border = null,
-                color = paneColor,
-                pane = content,
-            )
-        }
+        NavigationView(
+            modifier = modifier,
+            state = rememberNavigationState(
+                initialExpanded = layoutType == NomiNavigationSuiteType.Drawer
+            ),
+            menuItems = mainItems.toFluentNavigationMenu(),
+            displayMode = layoutType.toFluentDisplayMode(),
+            footerItems = footerDeclarations.toFluentNavigationMenu(),
+            // 上游默认给内容面板加 1dp 描边，这里显式关闭，避免导航栏与内容之间出现分割线。
+            border = null,
+            color = paneColor,
+            pane = content,
+        )
     }
 }
 
@@ -97,17 +99,17 @@ private fun fluentNavigationPaneColor(): Color =
 /**
  * 把中立导航布局映射为 Fluent 原生显示模式。
  *
- * Bar 使用顶部导航，Rail 使用完整侧边导航，Drawer 使用可展开的紧凑侧边导航；
- * Rail 的左置外壳由适配层按公开 SideNav 组合（原生 Left 布局无法关闭 footer 分割线与内容描边），
- * 其余布局直接交给原生 NavigationView；映射只决定外壳形态，选中状态与路由仍由调用方持有。
+ * Fluent 没有底部导航栏，因此三种布局都映射到左置导航：Bar 折叠侧边（导航项收在浮出层里，
+ * 只保留展开按钮），Rail 紧凑侧边（常驻图标栏，展开后浮出完整菜单），Drawer 完整侧边（常驻展开的
+ * 左侧栏）。三种布局都交给原生 NavigationView；映射只决定外壳形态，选中状态与路由仍由调用方持有。
  *
  * @receiver 调用方选择的导航布局。
  * @return 与该布局语义最接近的原生显示模式。
  */
 internal fun NomiNavigationSuiteType.toFluentDisplayMode(): NavigationDisplayMode = when (this) {
-    NomiNavigationSuiteType.Bar -> NavigationDisplayMode.Top
-    NomiNavigationSuiteType.Rail -> NavigationDisplayMode.Left
-    NomiNavigationSuiteType.Drawer -> NavigationDisplayMode.LeftCompact
+    NomiNavigationSuiteType.Bar -> NavigationDisplayMode.LeftCollapsed
+    NomiNavigationSuiteType.Rail -> NavigationDisplayMode.LeftCompact
+    NomiNavigationSuiteType.Drawer -> NavigationDisplayMode.Left
 }
 
 /**
@@ -129,7 +131,7 @@ private fun rememberFluentNavigationItemDeclarations(
 }
 
 /**
- * 把已记录声明重放为原生菜单 DSL；顶部与紧凑抽屉布局仍由原生 NavigationView 排布。
+ * 把已记录声明重放为原生菜单 DSL；导航项由原生 NavigationView 排布。
  *
  * @receiver 本次组合记录到的导航项声明，按声明顺序输出。
  * @return 供原生菜单作用域调用的 DSL，每次调用都按当前声明重建菜单项。
@@ -248,13 +250,12 @@ private class FluentNavigationItemRecorder(
      *
      * @param selected 是否为当前选中项。
      * @param onClick 点击回调。
-     * @param modifier 应用于原生导航项的修饰符；必须保持默认值。
+     * @param modifier 无项级入口；忽略覆盖并保留原生布局，请使用套件级 modifier。
      * @param icon 图标槽；null 表示不显示图标。
      * @param badge 徽标槽；null 表示不显示徽标。
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 中立稀疏颜色覆盖。
      * @param interactionSource 调用方提供的交互源；null 时由原生菜单项自行创建。
-     * @throws IllegalArgumentException modifier 不是默认 [Modifier] 时抛出。
      */
     @Composable
     override fun NavigationItem(
@@ -267,7 +268,9 @@ private class FluentNavigationItemRecorder(
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
     ) {
-        require(modifier == Modifier) { "fluent NavigationItem 不支持 modifier；请使用容器级修饰" }
+        rememberFluentWarning(modifier != Modifier, modifier) {
+            "NavigationItem 的 modifier 无原生入口，已忽略；请使用套件级 modifier"
+        }
         declarations += FluentNavigationItemDeclaration(
             selected = selected,
             onClick = onClick,

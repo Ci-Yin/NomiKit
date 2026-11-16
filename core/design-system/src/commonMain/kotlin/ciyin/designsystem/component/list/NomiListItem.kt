@@ -43,26 +43,24 @@ interface NomiListItemRenderer {
  *
  * @param title 标题槽，必须提供。
  * @param modifier 应用于列表项根节点的修饰符。
- * @param onClick 点击回调；null 表示静态行。
  * @param leading 前导槽；null 表示不占位。
  * @param subtitle 副标题槽；null 表示不占位。
  * @param trailing 尾部槽；null 表示不占位。
+ * @param onClick 点击回调；null 表示静态行。
  */
 @Composable
 fun NomiListItem(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
     leading: (@Composable () -> Unit)? = null,
     subtitle: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
-) {
-    requireNomiDesignSystem().components.listItems.ListItem(
-        modifier = modifier,
-        onClick = onClick,
-        leading = leading,
-        title = title,
-        subtitle = subtitle,
-        trailing = trailing,
-    )
-}
+    onClick: (() -> Unit)? = null,
+) = requireNomiDesignSystem().components.listItems.ListItem(
+    modifier = modifier,
+    onClick = onClick,
+    leading = leading,
+    title = title,
+    subtitle = subtitle,
+    trailing = trailing,
+)

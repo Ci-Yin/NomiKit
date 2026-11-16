@@ -15,45 +15,26 @@ import ciyin.designsystem.runtime.LocalResolvedNomiTheme
 import ciyin.designsystem.runtime.requireNomiDesignSystem
 
 /**
- * 旧式直接参数主题入口。未指定的颜色按当前设计系统与模式重新解析；其它组只继承父层明确设置。
+ * 设计系统主题根入口。未指定的颜色按当前设计系统与模式重新解析；其它组只继承父层明确设置。
  *
- * nullable 参数保留未指定来源，不能直接以 NomiTheme 的完整投影作默认值，避免跨系统污染。
+ * 本层显式输入只来自 [overrides]；可空字段的 null 表示未指定，不表示清除父级。
  * 根边界重置内容 slot；需要继承显式颜色与 slot 的局部调整使用 [NomiThemeOverride]。
  * 非空对象表示完整主题组，不推断 copy 修改的字段；退出分支后恢复父级环境。
- * 五组直接参数为 null 时先采用 overrides 对应字段；本层两个来源都未指定时才应用下述继承规则。
+ * 适配器无法承载的完整组由实现自行降级并记录警告，主题入口不按能力拦截。
  *
  * @param darkMode 明暗请求，默认继承当前请求模式；System 在本组合边界读取系统明暗。
- * @param colorScheme 本层完整色板；null 时采用 overrides.colorScheme。本层未指定颜色时不继承父色板或 accent。
- * @param typography 本层完整十五角色排版；null 时采用 overrides.typography，再回退父显式排版或目标系统默认。
- * @param shapes 本层完整九级圆角；null 时采用 overrides.shapes，再回退父显式形状或目标系统默认。
- * @param spacings 本层完整页面间距；null 时采用 overrides.spacings，再回退父显式值；不改写原生控件内部留白。
- * @param sizes 本层完整布局尺寸；null 时采用 overrides.sizes，再回退父显式值；不强制原生控件统一高度。
  * @param designSystem 建立原生主题的实现；默认读取祖先显式提供的设计系统，无提供者时抛出带指引的 [IllegalStateException]。
- * @param overrides 本层显式增量；不能与直接参数重复指定同组，也不能同层并用完整色板与 accent。
+ * @param overrides 本层显式增量；未指定的颜色不继承父层色板，其它组继承父层明确设置。
  * @param content 在新原生主题与中立投影下组合的内容，进入时清空父级显式内容颜色和文本样式。
  * @throws IllegalStateException [designSystem] 未显式提供且祖先也没有提供设计系统时抛出。
- * @throws IllegalArgumentException 同层同组重复指定、完整色板与 accent 同层并用，或适配器拒绝不支持的主题输入时抛出。
  */
 @Composable
 fun NomiTheme(
     darkMode: DarkMode = NomiTheme.darkMode,
-    colorScheme: NomiColorScheme? = null,
-    typography: NomiTypography? = null,
-    shapes: NomiShapes? = null,
-    spacings: Spacings? = null,
-    sizes: NomiSizes? = null,
     designSystem: NomiDesignSystem = requireNomiDesignSystem(),
     overrides: NomiThemeOverrides = NomiThemeOverrides(),
     content: @Composable () -> Unit,
 ) {
-    val local = explicitThemeOverrides(
-        colorScheme = colorScheme,
-        typography = typography,
-        shapes = shapes,
-        spacings = spacings,
-        sizes = sizes,
-        overrides = overrides,
-    )
     val parent = LocalResolvedNomiTheme.current.overrides
     val inherited = NomiThemeOverrides(
         typography = parent.typography,
@@ -64,7 +45,7 @@ fun NomiTheme(
     val request = NomiThemeRequest(
         requestedMode = darkMode,
         isDark = resolveDarkMode(darkMode),
-        overrides = inherited.merge(local),
+        overrides = inherited.merge(overrides),
     )
     CompositionLocalProvider(
         LocalNomiContentColor provides Color.Unspecified,
@@ -75,92 +56,33 @@ fun NomiTheme(
 }
 
 /**
- * 局部主题继承全部显式组及内容 slot，只叠加本层传值，不携带父级原生默认投影。
+ * 局部主题继承全部显式组及内容 slot，只叠加本层 [overrides]，不携带父级原生默认投影。
  *
- * null 表示本层未指定而非清除父值；非空对象作为完整组替换，不推断其中哪些字段发生变化。
- * 子层完整色板替换会清除继承的 accent，子层仅指定 accent 则叠加父层显式色板。
+ * null 字段表示本层未指定而非清除父值；非空对象作为完整组替换，不推断其中哪些字段发生变化。
+ * 子层完整色板替换继承的父层显式色板。
  * 切换设计系统仍只继承明确输入；离开此组合分支后恢复父主题与 slot。
- * 五组直接参数为 null 时先采用 overrides 对应字段；本层两个来源都未指定时才继承父显式组。
- * 父级也没有显式值的组由目标设计系统解析默认值；适配器仍可拒绝无法表达的完整主题组。
+ * 父级也没有显式值的组由目标设计系统解析默认值；适配器无法表达时降级并记录警告。
  *
  * @param designSystem 用于建立本分支原生主题的实现；默认读取祖先显式提供的设计系统，无提供者时抛出带指引的 [IllegalStateException]。
  * @param darkMode 本层明暗请求；null 继承父请求和已解析明暗，非 null 在本边界重新解析。
- * @param overrides 本层显式增量；未指定字段继续继承，不能与直接参数重复指定同组。
- * @param colorScheme 本层完整色板；null 时先采用 overrides.colorScheme，再继承父显式色板；本层色板清除父 accent。
- * @param typography 本层完整十五角色排版；null 时先采用 overrides.typography，再继承父显式排版。
- * @param shapes 本层完整九级圆角；null 时先采用 overrides.shapes，再继承父显式形状；不支持该组时适配器拒绝。
- * @param spacings 本层完整页面间距；null 时先采用 overrides.spacings，再继承父显式值；不改写控件内部留白。
- * @param sizes 本层完整布局尺寸；null 时先采用 overrides.sizes，再继承父显式值；不强制原生控件统一高度。
+ * @param overrides 本层显式增量；未指定字段继续继承父显式组。
  * @param content 在目标原生主题和中立投影下组合的内容，保留父级明确的内容颜色与文本样式。
  * @throws IllegalStateException [designSystem] 未显式提供且祖先也没有提供设计系统时抛出。
- * @throws IllegalArgumentException 同层同组重复指定、完整色板与 accent 同层并用，或适配器拒绝不支持的主题输入时抛出。
  */
 @Composable
 fun NomiThemeOverride(
     designSystem: NomiDesignSystem = requireNomiDesignSystem(),
     darkMode: DarkMode? = null,
     overrides: NomiThemeOverrides = NomiThemeOverrides(),
-    colorScheme: NomiColorScheme? = null,
-    typography: NomiTypography? = null,
-    shapes: NomiShapes? = null,
-    spacings: Spacings? = null,
-    sizes: NomiSizes? = null,
     content: @Composable () -> Unit,
 ) {
-    val local = explicitThemeOverrides(
-        colorScheme = colorScheme,
-        typography = typography,
-        shapes = shapes,
-        spacings = spacings,
-        sizes = sizes,
-        overrides = overrides,
-    )
     val parent = LocalResolvedNomiTheme.current
     val request = NomiThemeRequest(
         requestedMode = darkMode ?: parent.requestedMode,
         isDark = if (darkMode == null) parent.isDark else resolveDarkMode(darkMode),
-        overrides = parent.overrides.merge(local),
+        overrides = parent.overrides.merge(overrides),
     )
     ProvideResolvedTheme(designSystem = designSystem, request = request, content = content)
-}
-
-/**
- * 将本层五组直接参数归一化为显式请求，不读取父主题或补齐原生默认值。
- *
- * @param colorScheme 直接指定的完整色板；null 时采用 overrides 中的色板。
- * @param typography 直接指定的完整排版；null 时采用 overrides 中的排版。
- * @param shapes 直接指定的完整形状组；null 时采用 overrides 中的形状组。
- * @param spacings 直接指定的完整间距组；null 时采用 overrides 中的间距组。
- * @param sizes 直接指定的完整尺寸组；null 时采用 overrides 中的尺寸组。
- * @param overrides 本层另一组输入来源，携带 accent 及未通过直接参数指定的主题组。
- * @return 仅包含本层明确输入的新对象；两种来源均未指定的组仍为 null。
- * @throws IllegalArgumentException 同一组在两种来源中均非 null，或完整色板与非 Unspecified accent 同层并用时抛出。
- */
-private fun explicitThemeOverrides(
-    colorScheme: NomiColorScheme?,
-    typography: NomiTypography?,
-    shapes: NomiShapes?,
-    spacings: Spacings?,
-    sizes: NomiSizes?,
-    overrides: NomiThemeOverrides,
-): NomiThemeOverrides {
-    require(colorScheme == null || overrides.colorScheme == null) { "NomiTheme colorScheme 与 overrides.colorScheme 不能同时指定" }
-    require(typography == null || overrides.typography == null) { "NomiTheme typography 与 overrides.typography 不能同时指定" }
-    require(shapes == null || overrides.shapes == null) { "NomiTheme shapes 与 overrides.shapes 不能同时指定" }
-    require(spacings == null || overrides.spacings == null) { "NomiTheme spacings 与 overrides.spacings 不能同时指定" }
-    require(sizes == null || overrides.sizes == null) { "NomiTheme sizes 与 overrides.sizes 不能同时指定" }
-    val actualColorScheme = colorScheme ?: overrides.colorScheme
-    require(actualColorScheme == null || overrides.accentColor == Color.Unspecified) {
-        "NomiTheme colorScheme 与 accentColor 不能在同一层同时指定"
-    }
-    return NomiThemeOverrides(
-        accentColor = overrides.accentColor,
-        spacings = spacings ?: overrides.spacings,
-        sizes = sizes ?: overrides.sizes,
-        colorScheme = actualColorScheme,
-        typography = typography ?: overrides.typography,
-        shapes = shapes ?: overrides.shapes,
-    )
 }
 
 /**

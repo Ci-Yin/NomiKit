@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -25,41 +26,41 @@ import ciyin.designsystem.theme.NomiTheme
 import io.github.composefluent.component.NavigationDisplayMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import io.github.composefluent.component.Icon as NativeIcon
 import io.github.composefluent.component.Text as NativeText
 
 /**
- * Fluent 导航套件回归：显示模式映射、槽位组合、点击分发、分组与不支持能力。
+ * Fluent 导航套件回归：显示模式映射、槽位组合、点击分发与分组。
  *
  * 颜色与像素断言留给原生主题测试，这里只验证布局形态、槽位内容与交互是否按中立契约落地。
  */
 @OptIn(ExperimentalTestApi::class)
 class FluentNavigationTest {
     /**
-     * 三种中立布局映射到约定的原生显示模式，并声明 Fluent 能力边界。
+     * 三种中立布局映射到约定的原生显示模式。
      */
     @Test
-    fun layoutTypeAndCapabilitiesMatchFluentLimits() {
-        assertEquals(NavigationDisplayMode.Top, NomiNavigationSuiteType.Bar.toFluentDisplayMode())
-        assertEquals(NavigationDisplayMode.Left, NomiNavigationSuiteType.Rail.toFluentDisplayMode())
+    fun layoutTypesMapToFluentDisplayModes() {
+        assertEquals(
+            NavigationDisplayMode.LeftCollapsed,
+            NomiNavigationSuiteType.Bar.toFluentDisplayMode(),
+        )
         assertEquals(
             NavigationDisplayMode.LeftCompact,
-            NomiNavigationSuiteType.Drawer.toFluentDisplayMode(),
+            NomiNavigationSuiteType.Rail.toFluentDisplayMode(),
         )
-        assertTrue(NomiDesignSystem.Fluent.capabilities.navigationDrawer)
-        assertFalse(NomiDesignSystem.Fluent.capabilities.navigationItemModifier)
+        assertEquals(
+            NavigationDisplayMode.Left,
+            NomiNavigationSuiteType.Drawer.toFluentDisplayMode()
+        )
     }
 
     /**
-     * Bar 布局使用顶部导航栏：图标、徽标与文案槽进入原生项，页面内容位于导航栏下方。
-     *
-     * 顶部导航的原生底部项只显示图标与徽标、不显示可见文案，因此用点击区域确认分组存在。
+     * Bar 布局映射折叠侧边：默认收起且页面内容全幅，点击展开按钮后导航项进入可见语义树并可分发点击。
      */
     @Test
-    fun barLayoutRendersSlotsAndDispatchesClick() = runComposeUiTest {
+    fun barLayoutExpandsCollapsedShellAndDispatchesClick() = runComposeUiTest {
         var clicks = 0
         setContent {
             NomiTheme(designSystem = NomiDesignSystem.Fluent) {
@@ -98,30 +99,83 @@ class FluentNavigationTest {
                 )
             }
         }
+        val paneBounds = onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot
+        assertEquals(0f, paneBounds.left)
+        assertEquals(0f, paneBounds.top)
+        // 折叠侧边默认收起：导航项不进入可见语义树，只保留展开按钮。
+        onNodeWithText("首页").assertDoesNotExist()
+        onNodeWithTag("icon-首页", useUnmergedTree = true).assertDoesNotExist()
+
+        onAllNodes(hasClickAction()).onFirst().performClick()
+        waitForIdle()
         onNodeWithText("首页").assertExists()
         onNodeWithText("设置").assertExists()
         onNodeWithTag("icon-首页", useUnmergedTree = true).assertExists()
         onNodeWithTag("badge-首页", useUnmergedTree = true).assertExists()
-        onNodeWithText("账户").assertDoesNotExist()
-        assertTrue(onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot.top > 0f)
-        assertTrue(
-            onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3,
-            "顶部导航应渲染两个主导航项与一个底部项的点击区域",
-        )
+        onNodeWithText("账户").assertExists()
         onNodeWithText("首页").performClick()
         runOnIdle { assertEquals(1, clicks) }
     }
 
     /**
-     * Rail 布局使用完整侧边导航：槽位与可见文案都进入原生项，页面内容位于导航栏右侧。
+     * Rail 布局映射紧凑侧边：默认折叠为常驻图标栏，文案收在浮出菜单里。
+     *
+     * 折叠状态下内容按图标栏宽度起始内缩，图标与徽标槽仍组合，点击图标即可分发导航。
      */
     @Test
-    fun railLayoutRendersSlotsExpandedAndDispatchesClick() = runComposeUiTest {
+    fun railLayoutRendersCompactIconsAndDispatchesClick() = runComposeUiTest {
         var clicks = 0
         setContent {
             NomiTheme(designSystem = NomiDesignSystem.Fluent) {
                 NomiNavigationSuite(
                     layoutType = NomiNavigationSuiteType.Rail,
+                    items = {
+                        NavigationItem(
+                            selected = true,
+                            onClick = {},
+                            icon = { TestIconSlot(tag = "icon-首页") },
+                            badge = { TestBadgeSlot(tag = "badge-首页") },
+                            label = { NativeText("首页") },
+                        )
+                        NavigationItem(
+                            selected = false,
+                            onClick = { clicks++ },
+                            icon = { TestIconSlot(tag = "icon-设置") },
+                            label = { NativeText("设置") },
+                        )
+                    },
+                    footerItems = {
+                        NavigationItem(
+                            selected = false,
+                            onClick = {},
+                            icon = { TestIconSlot(tag = "icon-账户") },
+                            label = { NativeText("账户") },
+                        )
+                    },
+                    content = {
+                        Box(modifier = Modifier.fillMaxSize().testTag("pane"))
+                    },
+                )
+            }
+        }
+        assertTrue(onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot.left > 0f)
+        onNodeWithTag("icon-首页", useUnmergedTree = true).assertExists()
+        onNodeWithTag("badge-首页", useUnmergedTree = true).assertExists()
+        onNodeWithText("首页").assertDoesNotExist()
+        onNodeWithTag("icon-设置", useUnmergedTree = true).performClick()
+        runOnIdle { assertEquals(1, clicks) }
+    }
+
+    /**
+     * Drawer 布局映射完整侧边：图标、徽标、文案与底部项都进入左侧栏，页面内容右移。
+     */
+    @Test
+    fun drawerLayoutRendersExpandedSlotsWithLabels() = runComposeUiTest {
+        var clicks = 0
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Fluent) {
+                NomiNavigationSuite(
+                    layoutType = NomiNavigationSuiteType.Drawer,
                     items = {
                         NavigationItem(
                             selected = true,
@@ -150,124 +204,42 @@ class FluentNavigationTest {
                 )
             }
         }
+        assertTrue(onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot.left > 0f)
         onNodeWithText("首页").assertExists()
         onNodeWithText("账户").assertExists()
         onNodeWithTag("icon-首页", useUnmergedTree = true).assertExists()
         onNodeWithTag("badge-首页", useUnmergedTree = true).assertExists()
-        assertTrue(onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot.left > 0f)
+        assertTrue(
+            onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3,
+            "完整侧边应为主导航项与底部项保留点击区域",
+        )
         onNodeWithText("设置").performClick()
         runOnIdle { assertEquals(1, clicks) }
     }
 
     /**
-     * 左置布局的底部项由适配层组合在 SideNav 之外，仍必须保留文案并分发点击。
+     * Fluent 原生导航项没有项级修饰符入口：忽略 modifier 并正常渲染。
      */
     @Test
-    fun railFooterItemKeepsLabelAndDispatchesClick() = runComposeUiTest {
-        var footerClicks = 0
+    fun itemModifierIsIgnoredAndSuiteRenders() = runComposeUiTest {
         setContent {
             NomiTheme(designSystem = NomiDesignSystem.Fluent) {
                 NomiNavigationSuite(
                     layoutType = NomiNavigationSuiteType.Rail,
                     items = {
                         NavigationItem(
-                            selected = true,
-                            onClick = {},
-                            icon = { TestIconSlot(tag = "icon-首页") },
-                        )
-                    },
-                    footerItems = {
-                        NavigationItem(
                             selected = false,
-                            onClick = { footerClicks++ },
-                            icon = { TestIconSlot(tag = "icon-底部项") },
-                            label = { NativeText("底部项") },
-                        )
-                    },
-                    content = {
-                        Box(modifier = Modifier.fillMaxSize().testTag("pane"))
-                    },
-                )
-            }
-        }
-        onNodeWithText("底部项").assertExists()
-        onNodeWithTag("icon-底部项", useUnmergedTree = true).assertExists()
-        onNodeWithText("底部项").performClick()
-        runOnIdle { assertEquals(1, footerClicks) }
-    }
-
-    /**
-     * Drawer 布局使用紧凑侧边导航：折叠时只组合图标与徽标槽，页面内容右移出导航宽度。
-     */
-    @Test
-    fun drawerLayoutRendersCompactSlotsWithoutLabels() = runComposeUiTest {
-        setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Fluent) {
-                NomiNavigationSuite(
-                    layoutType = NomiNavigationSuiteType.Drawer,
-                    items = {
-                        NavigationItem(
-                            selected = true,
                             onClick = {},
-                            icon = { TestIconSlot(tag = "icon-首页") },
-                            badge = { TestBadgeSlot(tag = "badge-首页") },
+                            modifier = Modifier.testTag("item"),
                             label = { NativeText("首页") },
                         )
-                        NavigationItem(
-                            selected = false,
-                            onClick = {},
-                            label = { NativeText("设置") },
-                        )
                     },
-                    footerItems = {
-                        NavigationItem(
-                            selected = false,
-                            onClick = {},
-                            icon = { TestIconSlot(tag = "icon-账户") },
-                            label = { NativeText("账户") },
-                        )
-                    },
-                    content = {
-                        Box(modifier = Modifier.fillMaxSize().testTag("pane"))
-                    },
+                    content = { Box(modifier = Modifier.fillMaxSize().testTag("pane")) },
                 )
             }
         }
-        assertTrue(onNodeWithTag("pane").fetchSemanticsNode().boundsInRoot.left > 0f)
-        onNodeWithText("首页").assertDoesNotExist()
-        onNodeWithTag("icon-首页", useUnmergedTree = true).assertExists()
-        onNodeWithTag("badge-首页", useUnmergedTree = true).assertExists()
-        assertTrue(
-            onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3,
-            "折叠抽屉应为主导航项与底部项保留点击区域",
-        )
-    }
-
-    /**
-     * Fluent 原生导航项没有项级修饰符入口：能力声明为 false，非默认 modifier 明确失败。
-     */
-    @Test
-    fun itemModifierIsRejected() {
-        assertFalse(NomiDesignSystem.Fluent.capabilities.navigationItemModifier)
-        assertFailsWith<IllegalArgumentException> {
-            runComposeUiTest {
-                setContent {
-                    NomiTheme(designSystem = NomiDesignSystem.Fluent) {
-                        NomiNavigationSuite(
-                            layoutType = NomiNavigationSuiteType.Rail,
-                            items = {
-                                NavigationItem(
-                                    selected = false,
-                                    onClick = {},
-                                    modifier = Modifier.testTag("item"),
-                                )
-                            },
-                            content = {},
-                        )
-                    }
-                }
-            }
-        }
+        onNodeWithTag("pane").assertExists()
+        onNodeWithTag("item", useUnmergedTree = true).assertDoesNotExist()
     }
 }
 

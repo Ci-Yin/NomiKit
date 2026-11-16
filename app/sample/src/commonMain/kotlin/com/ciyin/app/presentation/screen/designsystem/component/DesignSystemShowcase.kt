@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.card.NomiCard
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.theme.NomiTheme
@@ -31,9 +30,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 /**
- * 首期四组件及限制与覆盖区域的纯展示编排，不持有页面 Action 或状态机。
+ * 首期四组件及覆盖区域的纯展示编排，不持有页面 Action 或状态机。
  *
- * @param model 各展示分区共用的配置、能力、计数和局部覆盖输入。
+ * @param model 各展示分区共用的配置、计数和局部覆盖输入。
  * @param onButtonClick 可用展示按钮被点击时调用，计数与状态更新由调用方负责。
  * @param modifier 应用于展示区域根 Column 的布局与语义修饰符。
  */
@@ -59,7 +58,6 @@ internal fun DesignSystemShowcase(
                 onButtonClick = onButtonClick
             )
         }
-        DesignSystemRestrictionShowcase(model)
         DesignSystemSection { DesignSystemTextShowcase() }
         DesignSystemSection { DesignSystemSurfaceShowcase() }
         DesignSystemSection {
@@ -159,7 +157,6 @@ private fun DesignSystemShowcasePreview() {
                 enabled = true,
                 override = true,
                 clickCount = 3,
-                capabilities = NomiComponentCapabilities(),
                 alternateDesignSystem = null,
             ),
             onButtonClick = {},

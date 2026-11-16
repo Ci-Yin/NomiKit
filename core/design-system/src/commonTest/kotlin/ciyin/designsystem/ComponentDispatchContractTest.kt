@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ciyin.designsystem.component.NomiBorder
-import ciyin.designsystem.component.NomiComponentCapabilities
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.button.NomiButtonColors
@@ -84,7 +83,6 @@ class ComponentDispatchContractTest {
             }
         }
         runOnIdle {
-            assertEquals(NomiComponentCapabilities(), designSystem.capabilities)
             assertEquals(
                 setOf("plain", "button-slot", "surface-slot", "card-slot"),
                 designSystem.texts.keys

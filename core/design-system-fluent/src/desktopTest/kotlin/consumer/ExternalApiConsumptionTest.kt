@@ -160,7 +160,6 @@ class ExternalApiConsumptionTest {
             NomiTheme(
                 designSystem = customSystem,
                 darkMode = DarkMode.Light,
-                overrides = NomiThemeOverrides(accentColor = Color(0xFF32745A)),
             ) {
                 NomiButton(onClick = {}) { NomiText("External SPI") }
             }

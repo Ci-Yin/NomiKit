@@ -29,33 +29,40 @@ import androidx.compose.material3.darkColorScheme as nativeDarkColorScheme
 import androidx.compose.material3.lightColorScheme as nativeLightColorScheme
 
 /**
- * 直接五组主题参数与原生基线的映射、继承和无损读模型回归。
+ * 显式五组主题参数与原生基线的映射、继承和无损读模型回归。
  */
 @OptIn(ExperimentalTestApi::class)
 class Material3ThemeParametersTest {
     /**
-     * 父层完整色板与子层强调色合法合并，透明强调色也同时作用于原生主题和中立结果。
+     * 子层完整色板整组替换父层色板，透明色仍是有效覆盖而非清除信号，退出后恢复父层色板；
+     * 中立投影与原生 primary 始终同步。
      *
      * @return 当前平台的 Compose 测试完成结果。
      */
     @Test
-    fun inheritedPaletteAndChildAccentStayAligned() = runComposeUiTest {
+    fun inheritedPaletteAndChildPaletteStayAligned() = runComposeUiTest {
         val palette =
             defaultLightNomiColorScheme().copy(primary = Color.Red, warning = Color.Yellow)
         val seen = mutableListOf<Color>()
         setContent {
             NomiTheme(
-                colorScheme = palette,
                 darkMode = DarkMode.Light,
                 designSystem = NomiDesignSystem.Material3,
+                overrides = NomiThemeOverrides(colorScheme = palette),
             ) {
                 assertSame(palette, NomiTheme.colorScheme)
-                NomiThemeOverride(overrides = NomiThemeOverrides(accentColor = Color.Transparent)) {
+                NomiThemeOverride(
+                    overrides = NomiThemeOverrides(
+                        colorScheme = palette.copy(primary = Color.Transparent)
+                    )
+                ) {
                     assertEquals(Color.Transparent, NomiTheme.colorScheme.primary)
                     assertEquals(Color.Transparent, MaterialTheme.colorScheme.primary)
                     assertEquals(palette.copy(primary = Color.Transparent), NomiTheme.colorScheme)
                     seen += NomiTheme.colorScheme.primary
-                    NomiThemeOverride(colorScheme = palette.copy(primary = Color.Blue)) {
+                    NomiThemeOverride(
+                        overrides = NomiThemeOverrides(colorScheme = palette.copy(primary = Color.Blue))
+                    ) {
                         assertEquals(Color.Blue, NomiTheme.colorScheme.primary)
                         assertEquals(Color.Blue, MaterialTheme.colorScheme.primary)
                     }
@@ -69,7 +76,7 @@ class Material3ThemeParametersTest {
     }
 
     /**
-     * 五组直接参数全部映射，同时保留没有原生对应角色的完整中立字段。
+     * 五组显式覆盖全部映射，同时保留没有原生对应角色的完整中立字段。
      *
      * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
      */
@@ -91,12 +98,14 @@ class Material3ThemeParametersTest {
         setContent {
             NomiTheme(
                 darkMode = DarkMode.Light,
-                colorScheme = colors,
-                typography = typography,
-                shapes = shapes,
-                spacings = spacings,
-                sizes = sizes,
                 designSystem = NomiDesignSystem.Material3,
+                overrides = NomiThemeOverrides(
+                    colorScheme = colors,
+                    typography = typography,
+                    shapes = shapes,
+                    spacings = spacings,
+                    sizes = sizes,
+                ),
             ) {
                 assertSame(colors, NomiTheme.colorScheme)
                 assertSame(typography, NomiTheme.typography)
@@ -117,7 +126,9 @@ class Material3ThemeParametersTest {
      */
     @Test
     fun flatResolvedThemeRetainsRequestMetadata() = runComposeUiTest {
-        val overrides = NomiThemeOverrides(accentColor = Color.Cyan)
+        val overrides = NomiThemeOverrides(
+            colorScheme = defaultLightNomiColorScheme().copy(primary = Color.Cyan),
+        )
         val request = NomiThemeRequest(
             requestedMode = DarkMode.Dark,
             isDark = true,
@@ -138,7 +149,7 @@ class Material3ThemeParametersTest {
     }
 
     /**
-     * 新根继承明确排版、形状及页面度量，但颜色根据当前模式重新选择，不继承父 accent 或色板。
+     * 新根继承明确排版、形状及页面度量，但颜色根据当前模式重新选择，不继承父显式色板；退出后恢复父层。
      *
      * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
      */
@@ -151,29 +162,28 @@ class Material3ThemeParametersTest {
         setContent {
             NomiTheme(
                 darkMode = DarkMode.Light,
-                colorScheme = defaultLightNomiColorScheme().copy(primary = Color.Red),
-                typography = typography,
-                shapes = shapes,
-                spacings = spacings,
-                sizes = sizes,
                 designSystem = NomiDesignSystem.Material3,
+                overrides = NomiThemeOverrides(
+                    colorScheme = defaultLightNomiColorScheme().copy(primary = Color.Red),
+                    typography = typography,
+                    shapes = shapes,
+                    spacings = spacings,
+                    sizes = sizes,
+                ),
             ) {
-                NomiThemeOverride(overrides = NomiThemeOverrides(accentColor = Color.Magenta)) {
-                    NomiTheme(darkMode = DarkMode.Dark) {
-                        assertEquals(
-                            nativeDarkColorScheme().primary,
-                            MaterialTheme.colorScheme.primary
-                        )
-                        assertEquals(
-                            nativeDarkColorScheme().surface,
-                            MaterialTheme.colorScheme.surface
-                        )
-                        assertSame(typography, NomiTheme.typography)
-                        assertSame(shapes, NomiTheme.shapes)
-                        assertEquals(spacings, NomiTheme.spacings)
-                        assertEquals(sizes, NomiTheme.sizes)
-                    }
-                    assertEquals(Color.Magenta, MaterialTheme.colorScheme.primary)
+                NomiTheme(darkMode = DarkMode.Dark) {
+                    assertEquals(
+                        nativeDarkColorScheme().primary,
+                        MaterialTheme.colorScheme.primary
+                    )
+                    assertEquals(
+                        nativeDarkColorScheme().surface,
+                        MaterialTheme.colorScheme.surface
+                    )
+                    assertSame(typography, NomiTheme.typography)
+                    assertSame(shapes, NomiTheme.shapes)
+                    assertEquals(spacings, NomiTheme.spacings)
+                    assertEquals(sizes, NomiTheme.sizes)
                 }
                 assertEquals(Color.Red, MaterialTheme.colorScheme.primary)
             }
@@ -202,7 +212,10 @@ class Material3ThemeParametersTest {
                 colorScheme = nativeColors,
                 typography = nativeTypography
             )
-            NomiTheme(designSystem = designSystem, colorScheme = colors, typography = typography) {
+            NomiTheme(
+                designSystem = designSystem,
+                overrides = NomiThemeOverrides(colorScheme = colors, typography = typography),
+            ) {
                 val actual = MaterialTheme.colorScheme
                 assertEquals(Color.Cyan, actual.primary)
                 assertEquals(nativeColors.tertiary, actual.tertiary)
@@ -221,7 +234,7 @@ class Material3ThemeParametersTest {
     }
 
     /**
-     * 子 accent 仅叠加父完整颜色 primary，子完整颜色又清除父 accent；其它语义字段及退出恢复不丢失。
+     * 局部覆盖以完整色板与排版整组替换父组，原生 primary 与中立投影同步，退出后父层完整组恢复。
      *
      * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
      */
@@ -235,22 +248,25 @@ class Material3ThemeParametersTest {
         val childTypography = parentTypography.copy(labelSmall = TextStyle(fontSize = 17.sp))
         setContent {
             NomiTheme(
-                colorScheme = parentColors,
-                typography = parentTypography,
                 designSystem = NomiDesignSystem.Material3,
+                overrides = NomiThemeOverrides(
+                    colorScheme = parentColors,
+                    typography = parentTypography,
+                ),
             ) {
-                NomiThemeOverride(overrides = NomiThemeOverrides(accentColor = Color.Green)) {
-                    assertEquals(parentColors.copy(primary = Color.Green), NomiTheme.colorScheme)
-                    assertEquals(Color.Green, MaterialTheme.colorScheme.primary)
-                    NomiThemeOverride(colorScheme = childColors, typography = childTypography) {
-                        assertSame(childColors, NomiTheme.colorScheme)
-                        assertSame(childTypography, NomiTheme.typography)
-                        assertEquals(Color.Blue, MaterialTheme.colorScheme.primary)
-                    }
-                    assertSame(parentTypography, NomiTheme.typography)
-                    assertEquals(parentColors.copy(primary = Color.Green), NomiTheme.colorScheme)
+                NomiThemeOverride(
+                    overrides = NomiThemeOverrides(
+                        colorScheme = childColors,
+                        typography = childTypography,
+                    )
+                ) {
+                    assertSame(childColors, NomiTheme.colorScheme)
+                    assertSame(childTypography, NomiTheme.typography)
+                    assertEquals(Color.Blue, MaterialTheme.colorScheme.primary)
                 }
+                assertSame(parentTypography, NomiTheme.typography)
                 assertSame(parentColors, NomiTheme.colorScheme)
+                assertEquals(Color.Red, MaterialTheme.colorScheme.primary)
             }
         }
     }

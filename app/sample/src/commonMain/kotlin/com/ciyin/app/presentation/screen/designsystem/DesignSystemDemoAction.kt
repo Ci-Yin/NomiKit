@@ -52,11 +52,6 @@ internal sealed interface DesignSystemDemoAction {
     data object ToggleEnabled : DesignSystemDemoAction
 
     /**
-     * 切换强调色覆盖。
-     */
-    data object ToggleCustomTokens : DesignSystemDemoAction
-
-    /**
      * 切换局部主题覆盖。
      */
     data object ToggleOverride : DesignSystemDemoAction

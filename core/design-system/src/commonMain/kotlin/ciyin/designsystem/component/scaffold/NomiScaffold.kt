@@ -66,12 +66,10 @@ fun NomiScaffold(
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
-) {
-    requireNomiDesignSystem().components.scaffold.Scaffold(
-        modifier = modifier,
-        colors = colors,
-        topBar = topBar,
-        bottomBar = bottomBar,
-        content = content,
-    )
-}
+) = requireNomiDesignSystem().components.scaffold.Scaffold(
+    modifier = modifier,
+    colors = colors,
+    topBar = topBar,
+    bottomBar = bottomBar,
+    content = content,
+)

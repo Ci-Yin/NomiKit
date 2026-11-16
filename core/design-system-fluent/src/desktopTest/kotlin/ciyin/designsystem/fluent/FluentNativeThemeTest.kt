@@ -23,6 +23,7 @@ import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.theme.NomiThemeOverride
 import ciyin.designsystem.theme.NomiThemeOverrides
+import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import io.github.composefluent.Colors
 import io.github.composefluent.CornerRadius
 import io.github.composefluent.ExperimentalFluentApi
@@ -42,16 +43,16 @@ import io.github.composefluent.component.Button as NativeButton
 @OptIn(ExperimentalTestApi::class, ExperimentalFluentApi::class)
 class FluentNativeThemeTest {
     /**
-     * A-B-A 不继承中间系统默认，显式 accent 请求合并并恢复，完整八角色排版保留原生祖先实例。
+     * A-B-A 不继承中间系统默认，显式完整色板请求合并并恢复，完整八角色排版保留原生祖先实例。
      */
     @Test
     fun aToBToAPreservesNativeBaselineAndExplicitRequests() = runComposeUiTest {
-        var outerAccent by mutableStateOf(Color.Cyan)
+        var outerPrimary by mutableStateOf(Color.Cyan)
         var expectedTypography: Typography? = null
         var outerTypography: Typography? = null
         var childTypography: Typography? = null
-        var restoredAccent = Color.Unspecified
-        var nestedAccent = Color.Unspecified
+        var restoredBase = Color.Unspecified
+        var nestedBase = Color.Unspecified
         var expectedCorners: CornerRadius? = null
         var childCorners: CornerRadius? = null
         setContent {
@@ -62,28 +63,35 @@ class FluentNativeThemeTest {
                 NomiTheme(
                     designSystem = NomiDesignSystem.Fluent,
                     darkMode = DarkMode.Light,
-                    overrides = NomiThemeOverrides(accentColor = outerAccent),
+                    overrides = NomiThemeOverrides(
+                        colorScheme = defaultLightNomiColorScheme().copy(primary = outerPrimary)
+                    ),
                 ) {
                     outerTypography = FluentTheme.typography
                     NomiThemeOverride(designSystem = NomiDesignSystem.Material3) {
                         NomiThemeOverride(designSystem = NomiDesignSystem.Fluent) {
                             childTypography = FluentTheme.typography
                             childCorners = FluentTheme.cornerRadius
-                            nestedAccent = FluentTheme.colors.shades.base
-                            NomiThemeOverride(overrides = NomiThemeOverrides(accentColor = Color.Magenta)) {
+                            nestedBase = FluentTheme.colors.shades.base
+                            NomiThemeOverride(
+                                overrides = NomiThemeOverrides(
+                                    colorScheme = defaultLightNomiColorScheme()
+                                        .copy(primary = Color.Magenta)
+                                )
+                            ) {
                                 assertEquals(Color.Magenta, FluentTheme.colors.shades.base)
                             }
-                            restoredAccent = FluentTheme.colors.shades.base
+                            restoredBase = FluentTheme.colors.shades.base
                         }
                     }
                 }
             }
         }
-        for (accent in listOf(Color.Cyan, Color.Green)) {
-            runOnIdle { outerAccent = accent }
+        for (primary in listOf(Color.Cyan, Color.Green)) {
+            runOnIdle { outerPrimary = primary }
             waitForIdle()
-            assertEquals(accent, nestedAccent)
-            assertEquals(accent, restoredAccent)
+            assertEquals(primary, nestedBase)
+            assertEquals(primary, restoredBase)
             assertSame(expectedTypography, outerTypography)
             assertSame(expectedTypography, childTypography)
             assertEquals(expectedCorners, childCorners)
@@ -91,13 +99,15 @@ class FluentNativeThemeTest {
     }
 
     /**
-     * 显式原生配置高于默认基线，显式请求 accent 再覆盖颜色配置，不重置完整排版。
+     * 显式原生配置高于默认基线，请求中的完整色板按 primary 再覆盖强调色阶，不重置完整排版。
      */
     @Test
     fun typedConfigurationAndRequestOverridesHaveStablePriority() = runComposeUiTest {
-        var accent by mutableStateOf(Color.Unspecified)
+        var requestPrimary by mutableStateOf<Color?>(null)
         var configuredTypography: Typography? = null
-        var expectedColors: Colors? = null
+        val expectedColors = defaultLightNomiColorScheme()
+            .copy(primary = Color.Blue)
+            .toFluentColors(isDark = false)
         var actualTypography: Typography? = null
         var actualColors: Colors? = null
         var expectedCorners: CornerRadius? = null
@@ -106,19 +116,21 @@ class FluentNativeThemeTest {
             val base = FluentTheme.typography
             val typography = base.withBody(TextStyle(fontSize = 26.sp, lineHeight = 34.sp))
             configuredTypography = typography
-            val colors = NomiThemeOverrides(accentColor = Color.Blue).toFluentColors(isDark = false)
-            expectedColors = colors
             val corners = FluentTheme.cornerRadius
             expectedCorners = corners
             val designSystem = rememberFluentDesignSystem(
-                colors = colors,
+                colors = expectedColors,
                 typography = typography,
                 cornerRadius = corners
             )
             NomiTheme(
                 designSystem = designSystem,
                 darkMode = DarkMode.Light,
-                overrides = NomiThemeOverrides(accentColor = accent),
+                overrides = NomiThemeOverrides(
+                    colorScheme = requestPrimary?.let {
+                        defaultLightNomiColorScheme().copy(primary = it)
+                    }
+                ),
             ) {
                 actualTypography = FluentTheme.typography
                 actualColors = FluentTheme.colors
@@ -133,51 +145,43 @@ class FluentNativeThemeTest {
         assertSame(expectedColors, actualColors)
         assertSame(configuredTypography, actualTypography)
         assertEquals(expectedCorners, actualCorners)
-        runOnIdle { accent = Color.Red }
+        runOnIdle { requestPrimary = Color.Red }
         waitForIdle()
         assertEquals(Color.Red, actualColors?.shades?.base)
         assertSame(configuredTypography, actualTypography)
-        runOnIdle { accent = Color.Unspecified }
+        runOnIdle { requestPrimary = null }
         waitForIdle()
         assertSame(expectedColors, actualColors)
     }
 
     /**
-     * 仅覆盖 accent 不改变显式原生色板的深色模式与非强调色角色。
+     * 完整中立色板只按 primary 重建强调色阶，显式 typed 色板的深色模式不被请求改写。
      */
     @Test
-    fun accentOverridePreservesConfiguredPaletteModeAndNeutralRoles() = runComposeUiTest {
+    fun neutralPaletteRebuildsAccentWhileKeepingTypedPaletteMode() = runComposeUiTest {
         val configured = darkColors()
-        var accent by mutableStateOf(Color.Unspecified)
+        var requestPrimary by mutableStateOf<Color?>(null)
         var observed: Colors? = null
         setContent {
             val designSystem = rememberFluentDesignSystem(colors = configured)
             NomiTheme(
                 designSystem = designSystem,
                 darkMode = DarkMode.Light,
-                overrides = NomiThemeOverrides(accentColor = accent),
+                overrides = NomiThemeOverrides(
+                    colorScheme = requestPrimary?.let {
+                        defaultLightNomiColorScheme().copy(primary = it)
+                    }
+                ),
             ) { observed = FluentTheme.colors }
         }
         waitForIdle()
         assertSame(configured, observed)
-        runOnIdle { accent = Color.Red }
+        runOnIdle { requestPrimary = Color.Red }
         waitForIdle()
         val actual = requireNotNull(observed)
         assertEquals(Color.Red, actual.shades.base)
         assertEquals(configured.darkMode, actual.darkMode)
-        // accentAcrylic 按定义依赖 Shades；这里只要求非强调色背景保持不变。
-        assertEquals(configured.background.card, actual.background.card)
-        assertEquals(configured.background.solid, actual.background.solid)
-        assertEquals(configured.background.layer, actual.background.layer)
-        assertEquals(configured.background.mica, actual.background.mica)
-        assertEquals(configured.background.acrylic, actual.background.acrylic)
-        assertEquals(configured.background.smoke, actual.background.smoke)
-        assertEquals(configured.text.text, actual.text.text)
-        assertEquals(configured.control, actual.control)
-        assertEquals(configured.controlAlt, actual.controlAlt)
-        assertEquals(configured.stroke, actual.stroke)
-        assertEquals(configured.system, actual.system)
-        runOnIdle { accent = Color.Unspecified }
+        runOnIdle { requestPrimary = null }
         waitForIdle()
         assertSame(configured, observed)
     }

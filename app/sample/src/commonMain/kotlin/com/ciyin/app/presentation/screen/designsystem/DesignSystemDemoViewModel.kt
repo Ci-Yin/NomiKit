@@ -52,37 +52,28 @@ internal class DesignSystemDemoViewModel(
     /**
      * 注册展示配置的同步动作处理；返回通过一次性副作用交给宿主。
      *
-     * 无效候选、字体比例及不受支持的尺寸不修改状态；重置恢复首项候选及默认配置。
+     * 无效候选与字体比例不修改状态；重置恢复首项候选及默认配置。
      *
      * @receiver 当前 ViewModel 的状态机规则构建器。
      */
     override fun FlowReduxBuilder<DesignSystemDemoUiState, DesignSystemDemoAction>.spec() {
         inState<DesignSystemDemoUiState> {
-            // 切换设计系统并在边界清理不支持的尺寸覆盖。
+            // 切换设计系统；尺寸覆盖保持不变，由新实现的适配器自行降级。
             on<DesignSystemDemoAction.SelectDesignSystem> { action ->
                 val selected = designSystems[action.id]
                 if (selected == null) {
                     noChange()
                 } else {
-                    mutate {
-                        copy(
-                            designSystemId = selected.id,
-                            size = size.takeIf { selected.capabilities.buttonSize },
-                        )
-                    }
+                    mutate { copy(designSystemId = selected.id) }
                 }
             }
             // 切换当前展示页的深浅色请求。
             on<DesignSystemDemoAction.SelectDarkMode> { action ->
                 mutate { copy(darkMode = action.value) }
             }
-            // 仅在当前设计系统支持尺寸时保存显式尺寸覆盖。
+            // 保存显式尺寸覆盖；不支持时由当前适配器降级为原生默认。
             on<DesignSystemDemoAction.SelectSize> { action ->
-                if (action.value == null || designSystems[snapshot.designSystemId]?.capabilities?.buttonSize == true) {
-                    mutate { copy(size = action.value) }
-                } else {
-                    noChange()
-                }
+                mutate { copy(size = action.value) }
             }
             // 按钮样式所有候选实现均支持，null 用于恢复原生默认。
             on<DesignSystemDemoAction.SelectVariant> { action ->
@@ -98,9 +89,7 @@ internal class DesignSystemDemoViewModel(
             }
             // 切换展示按钮的可用状态，不影响控制面板。
             on<DesignSystemDemoAction.ToggleEnabled> { mutate { copy(enabled = !enabled) } }
-            // 切换稀疏强调色覆盖，不生成完整主题令牌。
-            on<DesignSystemDemoAction.ToggleCustomTokens> { mutate { copy(customTokens = !customTokens) } }
-            // 切换局部设计系统与强调色覆盖示例。
+            // 切换局部设计系统覆盖示例。
             on<DesignSystemDemoAction.ToggleOverride> { mutate { copy(override = !override) } }
             // 只有启用状态下的展示按钮才增加有效点击次数。
             on<DesignSystemDemoAction.ButtonClick> {

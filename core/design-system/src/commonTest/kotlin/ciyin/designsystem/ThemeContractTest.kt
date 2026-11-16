@@ -95,13 +95,15 @@ class ThemeContractTest {
      */
     @Test
     fun flattenNormalizesAdapterMetadataToRequest() = runComposeUiTest {
+        val adapterSpacings = defaultSpacings().copy(medium = 3.dp)
         val wrongTheme = ResolvedNomiTheme(
             requestedMode = DarkMode.Light,
             isDark = false,
-            overrides = NomiThemeOverrides(accentColor = Color.Green),
+            overrides = NomiThemeOverrides(spacings = adapterSpacings),
         )
         val designSystem = RecordingDesignSystem(nativeTheme = wrongTheme)
-        val requestOverrides = NomiThemeOverrides(accentColor = Color.Red)
+        val requestSpacings = defaultSpacings().copy(medium = 5.dp)
+        val requestOverrides = NomiThemeOverrides(spacings = requestSpacings)
         val snapshots = mutableListOf<ResolvedNomiTheme>()
         setContent {
             NomiTheme(
@@ -117,7 +119,7 @@ class ThemeContractTest {
             assertEquals(DarkMode.Light, callback.requestedMode)
             assertEquals(false, callback.isDark)
             assertSame(wrongTheme.overrides, callback.overrides)
-            assertEquals(Color.Green, callback.overrides.accentColor)
+            assertSame(adapterSpacings, callback.overrides.spacings)
             val resolved = snapshots.single()
             assertSame(callback.colorScheme, resolved.colorScheme)
             assertSame(callback.typography, resolved.typography)
@@ -138,12 +140,12 @@ class ThemeContractTest {
                 ),
                 designSystem.requests,
             )
-            assertEquals(Color.Red, resolved.colorScheme.primary)
+            assertSame(requestSpacings, resolved.spacings)
         }
     }
 
     /**
-     * 空覆盖继承父值；只有子级明确提供的字段参与覆盖，包括透明强调色。
+     * 空覆盖继承父值；只有子级明确提供的组参与覆盖，完整色板中的透明色仍是有效值。
      */
     @Test
     fun sparseOverridesMergeOnlyExplicitChildFields() {
@@ -155,12 +157,14 @@ class ThemeContractTest {
                 thick = 5.dp
             )
         )
-        val parent = NomiThemeOverrides(accentColor = Color.Red, spacings = spacing, sizes = sizes)
+        val parent = NomiThemeOverrides(spacings = spacing, sizes = sizes)
         assertEquals(parent, parent.merge(NomiThemeOverrides()))
         assertEquals(parent, NomiThemeOverrides().merge(parent))
+        val transparentColors =
+            defaultLightNomiColorScheme().copy(primary = Color.Transparent)
         assertEquals(
-            parent.copy(accentColor = Color.Transparent),
-            parent.merge(NomiThemeOverrides(accentColor = Color.Transparent)),
+            parent.copy(colorScheme = transparentColors),
+            parent.merge(NomiThemeOverrides(colorScheme = transparentColors)),
         )
         val childSpacing = defaultSpacings().copy(medium = 23.dp)
         assertEquals(
@@ -255,7 +259,9 @@ class ThemeContractTest {
         )
         val parent = RecordingDesignSystem(name = "parent", nativeTheme = parentTheme)
         val child = RecordingDesignSystem(name = "child", nativeTheme = childTheme)
-        val explicit = NomiThemeOverrides(accentColor = Color.Magenta)
+        val explicit = NomiThemeOverrides(
+            typography = defaultNomiTypography().copy(bodySmall = TextStyle(fontSize = 9.sp))
+        )
         val snapshots = mutableListOf<ResolvedNomiTheme>()
         val systems = mutableListOf<String>()
         setContent {
@@ -288,8 +294,9 @@ class ThemeContractTest {
                 snapshots.map { it.colorScheme.surface })
             assertEquals(listOf(29.dp, 7.dp, 29.dp), snapshots.map { it.spacings.large })
             assertEquals(
-                listOf(Color.Magenta, Color.Magenta, Color.Magenta),
+                listOf(Color.Red, Color.Blue, Color.Red),
                 snapshots.map { it.colorScheme.primary })
+            snapshots.forEach { assertSame(explicit.typography, it.typography) }
             assertEquals(snapshots.first(), snapshots.last())
         }
     }
@@ -303,8 +310,9 @@ class ThemeContractTest {
     fun explicitModeOverrideMergesSparseValuesAndRestoresParent() = runComposeUiTest {
         val designSystem = RecordingDesignSystem()
         val spacing = defaultSpacings().copy(large = 21.dp)
-        val parent = NomiThemeOverrides(accentColor = Color.Red, spacings = spacing)
-        val child = NomiThemeOverrides(accentColor = Color.Blue)
+        val childTypography = defaultNomiTypography().copy(bodySmall = TextStyle(fontSize = 13.sp))
+        val parent = NomiThemeOverrides(spacings = spacing)
+        val child = NomiThemeOverrides(typography = childTypography)
         val snapshots = mutableListOf<ResolvedNomiTheme>()
         setContent {
             NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light, overrides = parent) {
@@ -324,6 +332,7 @@ class ThemeContractTest {
                 listOf(parent, parent.merge(child), parent),
                 snapshots.map { it.overrides })
             assertEquals(listOf(spacing, spacing, spacing), snapshots.map { it.spacings })
+            assertSame(childTypography, snapshots[1].typography)
             assertEquals(defaultDarkNomiColorScheme().surface, snapshots[1].colorScheme.surface)
             assertEquals(snapshots.first(), snapshots.last())
         }
@@ -343,7 +352,7 @@ class ThemeContractTest {
             NomiTheme(designSystem = designSystem) {
                 ProvideNomiContentStyle(color = Color.Magenta, textStyle = inherited) {
                     RecordSlots(snapshots)
-                    NomiThemeOverride(overrides = NomiThemeOverrides(accentColor = Color.Blue)) {
+                    NomiThemeOverride {
                         RecordSlots(snapshots)
                         NomiTheme(designSystem = designSystem) { RecordSlots(snapshots) }
                         RecordSlots(snapshots)
