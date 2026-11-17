@@ -65,23 +65,22 @@ private const val DefaultTextRoleIndex = 10
  */
 @Composable
 internal fun DesignSystemTextShowcase() {
-    val typography = NomiTheme.typography
     val roles = listOf(
-        Res.string.design_system_demo_role_display_large to typography.displayLarge,
-        Res.string.design_system_demo_role_display_medium to typography.displayMedium,
-        Res.string.design_system_demo_role_display_small to typography.displaySmall,
-        Res.string.design_system_demo_role_headline_large to typography.headlineLarge,
-        Res.string.design_system_demo_role_headline_medium to typography.headlineMedium,
-        Res.string.design_system_demo_role_headline_small to typography.headlineSmall,
-        Res.string.design_system_demo_role_title_large to typography.titleLarge,
-        Res.string.design_system_demo_role_title_medium to typography.titleMedium,
-        Res.string.design_system_demo_role_title_small to typography.titleSmall,
-        Res.string.design_system_demo_role_body_large to typography.bodyLarge,
-        Res.string.design_system_demo_role_body_medium to typography.bodyMedium,
-        Res.string.design_system_demo_role_body_small to typography.bodySmall,
-        Res.string.design_system_demo_role_label_large to typography.labelLarge,
-        Res.string.design_system_demo_role_label_medium to typography.labelMedium,
-        Res.string.design_system_demo_role_label_small to typography.labelSmall,
+        Res.string.design_system_demo_role_display_large to nativeTextStyle(ShowcaseTextRole.DisplayLarge),
+        Res.string.design_system_demo_role_display_medium to nativeTextStyle(ShowcaseTextRole.DisplayMedium),
+        Res.string.design_system_demo_role_display_small to nativeTextStyle(ShowcaseTextRole.DisplaySmall),
+        Res.string.design_system_demo_role_headline_large to nativeTextStyle(ShowcaseTextRole.HeadlineLarge),
+        Res.string.design_system_demo_role_headline_medium to nativeTextStyle(ShowcaseTextRole.HeadlineMedium),
+        Res.string.design_system_demo_role_headline_small to nativeTextStyle(ShowcaseTextRole.HeadlineSmall),
+        Res.string.design_system_demo_role_title_large to nativeTextStyle(ShowcaseTextRole.TitleLarge),
+        Res.string.design_system_demo_role_title_medium to nativeTextStyle(ShowcaseTextRole.TitleMedium),
+        Res.string.design_system_demo_role_title_small to nativeTextStyle(ShowcaseTextRole.TitleSmall),
+        Res.string.design_system_demo_role_body_large to nativeTextStyle(ShowcaseTextRole.BodyLarge),
+        Res.string.design_system_demo_role_body_medium to nativeTextStyle(ShowcaseTextRole.BodyMedium),
+        Res.string.design_system_demo_role_body_small to nativeTextStyle(ShowcaseTextRole.BodySmall),
+        Res.string.design_system_demo_role_label_large to nativeTextStyle(ShowcaseTextRole.LabelLarge),
+        Res.string.design_system_demo_role_label_medium to nativeTextStyle(ShowcaseTextRole.LabelMedium),
+        Res.string.design_system_demo_role_label_small to nativeTextStyle(ShowcaseTextRole.LabelSmall),
     )
     var selectedIndex by rememberSaveable { mutableIntStateOf(DefaultTextRoleIndex) }
     val (selectedLabel, selectedStyle) = roles[selectedIndex]
@@ -89,7 +88,7 @@ internal fun DesignSystemTextShowcase() {
     Column(verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium)) {
         NomiText(
             text = stringResource(Res.string.design_system_demo_text_title),
-            style = typography.titleLarge,
+            style = nativeTextStyle(ShowcaseTextRole.TitleLarge),
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small),

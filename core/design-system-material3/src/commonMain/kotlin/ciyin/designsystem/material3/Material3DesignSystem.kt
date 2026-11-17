@@ -1,215 +1,102 @@
 package ciyin.designsystem.material3
 
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.runtime.LocalNomiContentColor
+import ciyin.designsystem.runtime.LocalNomiDesignSystem
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystemId
-import ciyin.designsystem.runtime.NomiThemeRequest
-import ciyin.designsystem.runtime.ResolvedNomiTheme
-import ciyin.designsystem.theme.NomiColorScheme
-import ciyin.designsystem.theme.NomiShapes
-import ciyin.designsystem.theme.NomiSizes
-import ciyin.designsystem.theme.NomiTypography
-import ciyin.designsystem.theme.Spacings
-import ciyin.designsystem.theme.defaultNomiSizes
-import ciyin.designsystem.theme.defaultSpacings
-
-/**
- * Material 3 原生适配设计系统，绑定在 [NomiDesignSystem.Companion] 上。
- *
- * 通过 `NomiDesignSystem.Material3` 访问；实现对象不对外暴露，调用方只依赖核心契约。
- */
-val NomiDesignSystem.Companion.Material3: NomiDesignSystem get() = Material3System
+import ciyin.designsystem.theme.NomiTheme
 
 
 /**
- * 无配置时使用 Material 3 原生调色板、排版和形状，不反向套用中立默认令牌的唯一实现。
+ * 使用原生默认映射的共享 Material 3 设计系统。
+ *
+ * @return 稳定单例，避免无参调用在每次组合中更换 [LocalNomiDesignSystem]。
  */
-private object Material3System : NomiDesignSystem by ConfiguredMaterial3DesignSystem()
+val NomiDesignSystem.Companion.Material3: NomiDesignSystem get() = nativeMaterial3System
 
 /**
- * 记忆显式 Material 3 主题配置；未指定项使用原生基线而非祖先的投影。
+ * 返回按 [map] 把中立主题映射为 Material 3 原生主题的设计系统。
  *
- * 中立形状读模型仍为 RoundedCornerShape，因此主题级五个标准角色必须为圆角；
- * 组件级 shape 不受此限制，可精确传入任意 Shape。
+ * 默认 [toNativeMaterial3Theme] 返回与 `NomiDesignSystem.Material3` 属性相同的共享实例；其他映射每次新建，
+ * 需要稳定身份时由调用方在组合外保存或使用 remember。
  *
- * @param colorScheme 完整原生色板；null 时按每次请求的明暗模式选择 Material 默认色板。
- * @param typography 完整原生排版；null 使用新建的 Typography 基线，不采样父主题。
- * @param shapes 完整原生形状；null 使用新建的 Shapes 基线。
- * @param spacings 中立页面间距扩展；null 使用 defaultSpacings，不改写组件内边距。
- * @param sizes 中立页面尺寸扩展；null 使用 defaultNomiSizes，不强制组件尺寸。
- * @return 在这些配置值不变时复用的设计系统实例；请求中的显式主题组仍可覆盖配置。
- * @throws IllegalArgumentException shapes 的任一标准角色不是 RoundedCornerShape 时抛出。
+ * @param map 每次安装主题时执行的纯映射函数，决定原生色板、排版、形状与明暗模式。
+ * @return 默认映射的共享实例，或使用该映射函数的新设计系统实例，标识为 material3。
  */
-@Composable
-fun rememberMaterial3DesignSystem(
-    colorScheme: ColorScheme? = null,
-    typography: Typography? = null,
-    shapes: Shapes? = null,
-    spacings: Spacings? = null,
-    sizes: NomiSizes? = null,
-): NomiDesignSystem = remember(colorScheme, typography, shapes, spacings, sizes) {
-    ConfiguredMaterial3DesignSystem(
-        colorScheme = colorScheme,
-        typography = typography ?: Typography(),
-        shapes = shapes ?: Shapes(),
-        spacings = spacings ?: defaultSpacings(),
-        sizes = sizes ?: defaultNomiSizes(),
-    )
+fun NomiDesignSystem.Companion.Material3(
+    map: NomiTheme.() -> Material3Theme = nativeMaterial3Map
+): NomiDesignSystem {
+    return if (map === nativeMaterial3Map) nativeMaterial3System else Material3System(map)
 }
 
 /**
- * 为旧门面建立 Material 3 配置并保留其五组中立读取结果，不创建聚合主题包装。
- *
- * 原生排版实例直接交给 MaterialTheme，全部 Material 专属角色保持不变；中立排版仅作为
- * 旧 getter 的对应读取组保存。颜色和形状同时保存中立组与其原生映射所需的个别基线。
- *
- * @param colorScheme 旧门面提供的完整中立色板，原生可映射角色由此建立 Material 基线。
- * @param typography 旧调用方提供的完整原生排版，不经中立角色往返替换原生实例。
- * @param shapes 旧门面提供的完整中立形状，标准 Material 角色由其对应等级建立。
- * @param spacings 旧门面提供的中立间距组。
- * @param sizes 旧门面提供的中立尺寸组。
- * @return 按五组参数记忆的旧门面设计系统；后续请求的显式覆盖仍可生效。
+ * 原生默认映射；属性与带默认参数的函数共用同一实例。
  */
-@Composable
-fun rememberLegacyMaterial3DesignSystem(
-    colorScheme: NomiColorScheme,
-    typography: Typography,
-    shapes: NomiShapes,
-    spacings: Spacings,
-    sizes: NomiSizes,
-): NomiDesignSystem = remember(colorScheme, typography, shapes, spacings, sizes) {
-    ConfiguredMaterial3DesignSystem(
-        typography = typography,
-        shapes = shapes.toMaterial3Shapes(),
-        spacings = spacings,
-        sizes = sizes,
-        legacyColorScheme = colorScheme,
-        legacyTypography = typography.toNomiTypography(),
-        legacyShapes = shapes,
-    )
-}
+private val nativeMaterial3Map: NomiTheme.() -> Material3Theme = { toNativeMaterial3Theme() }
 
 /**
- * 保存原生基线和旧门面所需的个别中立基线字段。
- *
- * @property colorScheme 显式原生色板；null 时按请求明暗选择原生默认。
- * @property typography 完整原生排版基线，保留中立模型未表示的专属角色。
- * @property shapes 完整原生形状基线，五个标准角色必须均为 RoundedCornerShape。
- * @property spacings 中立间距扩展，不作为原生组件默认内边距。
- * @property sizes 中立尺寸扩展，不作为原生组件默认尺寸。
- * @property legacyColorScheme 旧门面完整中立色板；null 时从实际原生主题按角色映射。
- * @property legacyTypography 旧门面中立排版；null 时从实际原生排版按角色映射。
- * @property legacyShapes 旧门面完整中立形状；null 时从实际原生标准形状按角色映射。
- * @throws IllegalArgumentException shapes 的任一标准角色不是 RoundedCornerShape 时抛出。
+ * [toNativeMaterial3Theme] 的共享实现；属性与带默认参数的函数共用，避免逐次更换身份。
  */
-private class ConfiguredMaterial3DesignSystem(
-    private val colorScheme: ColorScheme? = null,
-    private val typography: Typography = Typography(),
-    private val shapes: Shapes = Shapes(),
-    private val spacings: Spacings = defaultSpacings(),
-    private val sizes: NomiSizes = defaultNomiSizes(),
-    private val legacyColorScheme: NomiColorScheme? = null,
-    private val legacyTypography: NomiTypography? = null,
-    private val legacyShapes: NomiShapes? = null,
+private val nativeMaterial3System: NomiDesignSystem = Material3System(nativeMaterial3Map)
+
+/**
+ * 按映射函数安装 Material 3 主题的设计系统实现。
+ *
+ * 实现本身无状态，映射结果只影响本次 [ProvideTheme] 建立的子树。
+ *
+ * @property map 每次安装主题时执行的纯映射函数。
+ */
+private class Material3System(
+    private val map: NomiTheme.() -> Material3Theme,
 ) : NomiDesignSystem {
-    init {
-        require(
-            listOf(
-                shapes.extraSmall,
-                shapes.small,
-                shapes.medium,
-                shapes.large,
-                shapes.extraLarge
-            ).all { it is RoundedCornerShape }) {
-            "中立 NomiShapes 读模型只支持 RoundedCornerShape；请使用组件级 shape 传入其他形状。"
-        }
-    }
-
     /**
-     * 与默认 Material 设计系统共用稳定标识。
+     * 稳定标识，所有映射变体共用 material3。
      */
     override val id: NomiDesignSystemId = NomiDesignSystemId("material3")
 
     /**
-     * 与默认实现共用组件集合。
+     * Material 3 六族组件实现。
      */
-    override val components: NomiDesignSystemComponents = Material3DesignSystemComponents
+    override val components: NomiDesignSystemComponents = Material3Components
 
     /**
-     * 只将明确覆盖作用于原生配置，再生成扁平运行时主题结果。
+     * 安装映射得到的原生主题，只建立原生内容环境，不发布或投影中立主题。
      *
-     * 完整中立组在结果中原样保留；颜色只由完整 [NomiColorScheme] 表达，未提供时沿用原生基线。
-     * 原生内容环境只合入显式 slot 增量，不把原生默认发布为中立显式样式。
+     * 色板为 null 时按已解析明暗取原生默认；排版与形状为 null 时继承当前 MaterialTheme。
+     * 中立主题由主题入口原样发布，组件视觉直接读取原生主题。显式内容 slot 颜色优先于原生内容色，
+     * 未指定时不重造原生默认值。
      *
-     * @param request 已解析模式及显式主题组；请求组优先于配置和旧门面基线。
-     * @param content 在实际 MaterialTheme 中执行并接收对应运行时主题结果的内容。
+     * @param theme 本层入口提供的中立主题，仅作为映射输入。
+     * @param content 在实际 Material 3 主题环境中组合的子树。
      */
     @Composable
-    override fun ProvideTheme(
-        request: NomiThemeRequest,
-        content: @Composable (ResolvedNomiTheme) -> Unit,
-    ) {
-        val overrides = request.overrides
-        val baseColors = legacyColorScheme?.toMaterial3ColorScheme(isDark = request.isDark)
-            ?: colorScheme ?: if (request.isDark) darkColorScheme() else lightColorScheme()
-        val overriddenColors =
-            overrides.colorScheme?.toMaterial3ColorScheme(base = baseColors) ?: baseColors
-        val actualTypography =
-            overrides.typography?.toMaterial3Typography(base = typography) ?: typography
-        val actualShapes = overrides.shapes?.toMaterial3Shapes() ?: shapes
-        val actualSpacings = overrides.spacings ?: spacings
-        val actualSizes = overrides.sizes ?: sizes
+    override fun ProvideTheme(theme: NomiTheme, content: @Composable () -> Unit) {
+        val spec = remember(theme, map) { map(theme) }
         MaterialTheme(
-            colorScheme = overriddenColors,
-            typography = actualTypography,
-            shapes = actualShapes,
+            colorScheme = spec.colorScheme ?: nativeMaterial3ColorScheme(spec.isDark),
+            typography = spec.typography ?: MaterialTheme.typography,
+            shapes = spec.shapes ?: MaterialTheme.shapes,
         ) {
-            val nativeProjection = material3ResolvedTheme(
-                request = request,
-                colorScheme = MaterialTheme.colorScheme,
-                typography = MaterialTheme.typography,
-                shapes = MaterialTheme.shapes,
-                spacings = actualSpacings,
-                sizes = actualSizes,
-            )
-            val baseProjection = nativeProjection.copy(
-                colorScheme = legacyColorScheme ?: nativeProjection.colorScheme,
-                typography = legacyTypography ?: nativeProjection.typography,
-                shapes = legacyShapes ?: nativeProjection.shapes,
-            )
-            val projection = baseProjection.copy(
-                colorScheme = overrides.colorScheme ?: baseProjection.colorScheme,
-                typography = overrides.typography ?: baseProjection.typography,
-                shapes = overrides.shapes ?: baseProjection.shapes,
-                spacings = actualSpacings,
-                sizes = actualSizes,
-                requestedMode = request.requestedMode,
-                isDark = request.isDark,
-                overrides = request.overrides,
-            )
-            val explicitSlotColor = LocalNomiContentColor.current
-            val actualContentColor =
-                if (explicitSlotColor == Color.Unspecified) LocalContentColor.current else explicitSlotColor
+            val explicitContentColor = LocalNomiContentColor.current
+            val contentColor = if (explicitContentColor == Color.Unspecified) {
+                LocalContentColor.current
+            } else {
+                explicitContentColor
+            }
             CompositionLocalProvider(
-                LocalContentColor provides actualContentColor,
+                LocalContentColor provides contentColor,
                 LocalTextStyle provides LocalTextStyle.current.merge(LocalNomiTextStyle.current),
             ) {
-                content(projection)
+                content()
             }
         }
     }

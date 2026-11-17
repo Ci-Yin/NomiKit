@@ -20,8 +20,8 @@ import ciyin.designsystem.icon.Home
 import ciyin.designsystem.icon.IconPack
 import ciyin.designsystem.icon.Settings
 import ciyin.designsystem.material3.Material3
-import ciyin.designsystem.material3.rememberMaterial3DesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,7 +42,7 @@ class Material3NavigationTest {
         var mainClicks = 0
         var footerClicks = 0
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NomiNavigationSuite(
                     layoutType = NomiNavigationSuiteType.Bar,
                     items = {
@@ -110,7 +110,7 @@ class Material3NavigationTest {
     @Test
     fun railRendersSlotItemsAndSpacerSeparatesFooter() = runComposeUiTest {
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NomiNavigationSuite(
                     layoutType = NomiNavigationSuiteType.Rail,
                     items = {
@@ -175,7 +175,7 @@ class Material3NavigationTest {
     fun drawerRendersSlotItemsAndComposesBadgeSlot() = runComposeUiTest {
         var clicks = 0
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NomiNavigationSuite(
                     layoutType = NomiNavigationSuiteType.Drawer,
                     containerColor = Color(0xFF112233),

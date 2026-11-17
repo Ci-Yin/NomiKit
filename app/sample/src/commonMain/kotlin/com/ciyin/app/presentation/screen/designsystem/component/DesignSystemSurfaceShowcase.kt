@@ -31,18 +31,17 @@ import org.jetbrains.compose.ui.tooling.preview.AppPreview
  */
 @Composable
 internal fun DesignSystemSurfaceShowcase() {
-    val colors = NomiTheme.colorScheme
     val levels = listOf(
-        Res.string.design_system_demo_surface_lower to colors.surfaceLower,
-        Res.string.design_system_demo_surface_low to colors.surfaceLow,
-        Res.string.design_system_demo_surface_default to colors.surface,
-        Res.string.design_system_demo_surface_high to colors.surfaceHigh,
-        Res.string.design_system_demo_surface_higher to colors.surfaceHigher,
+        Res.string.design_system_demo_surface_lower to nativeSurfaceColor(ShowcaseSurfaceLevel.Lower),
+        Res.string.design_system_demo_surface_low to nativeSurfaceColor(ShowcaseSurfaceLevel.Low),
+        Res.string.design_system_demo_surface_default to nativeSurfaceColor(ShowcaseSurfaceLevel.Default),
+        Res.string.design_system_demo_surface_high to nativeSurfaceColor(ShowcaseSurfaceLevel.High),
+        Res.string.design_system_demo_surface_higher to nativeSurfaceColor(ShowcaseSurfaceLevel.Higher),
     )
     Column(verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small)) {
         NomiText(
             text = stringResource(Res.string.design_system_demo_surfaces_title),
-            style = NomiTheme.typography.titleLarge
+            style = nativeTextStyle(ShowcaseTextRole.TitleLarge)
         )
         VerticalGrid(
             columns = SimpleGridCells.Adaptive(NomiTheme.sizes.layoutConstraints.cardMinWidth * LocalDensity.current.fontScale),

@@ -3,10 +3,10 @@ package com.ciyin.app.presentation.screen.sample
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.fluent.Fluent
-import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.nomi.Default
+import ciyin.designsystem.runtime.NomiDesignSystem
 
 /**
  * 全平台样例默认候选，按 Nomi、Material 3、Fluent 排列；首项为默认选择和重置目标，宿主可覆盖完整目录。
@@ -34,7 +34,7 @@ internal val LocalSampleDesignSystems = staticCompositionLocalOf { DefaultSample
  * @throws IllegalArgumentException 候选列表为空或标识重复时抛出。
  */
 @Composable
-public fun ProvideSampleDesignSystems(
+fun ProvideSampleDesignSystems(
     systems: List<NomiDesignSystem> = DefaultSampleDesignSystems,
     content: @Composable () -> Unit,
 ) {

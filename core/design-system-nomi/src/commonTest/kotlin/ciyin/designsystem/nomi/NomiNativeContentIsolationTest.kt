@@ -31,12 +31,8 @@ import ciyin.designsystem.runtime.LocalNomiContentColor
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystemId
-import ciyin.designsystem.runtime.NomiThemeRequest
-import ciyin.designsystem.runtime.ResolvedNomiTheme
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
 import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -65,7 +61,7 @@ class NomiNativeContentIsolationTest {
                     val nativeColor = LocalNomiNativeContentColor.current
                     SideEffect { nativeColors += nativeColor }
                     RecordSlots(slots)
-                    NomiThemeOverride(designSystem = recorder) {
+                    NomiTheme(designSystem = recorder) {
                         RecordSlots(slots)
                         NomiText("other-renderer-default")
                     }
@@ -86,7 +82,7 @@ class NomiNativeContentIsolationTest {
             val text = recorder.texts.getValue("other-renderer-default")
             assertNull(text.first)
             assertEquals(Color.Unspecified, text.second)
-            assertEquals(NomiThemeOverrides(), recorder.requests.single().overrides)
+            assertEquals(NomiTheme.light(), recorder.themes.single())
         }
     }
 }
@@ -240,29 +236,20 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
     val texts: MutableMap<String, Pair<TextStyle?, Color>> = mutableMapOf()
 
     /**
-     * 按提交顺序记录的请求列表。
+     * 按提交顺序记录的显式主题列表。
      */
-    val requests: MutableList<NomiThemeRequest> = mutableListOf()
+    val themes: MutableList<NomiTheme> = mutableListOf()
 
     /**
-     * 记录请求并发布按请求明暗解析的默认五组结果。
+     * 记录本层主题；中立主题由入口发布，本夹具不再回写。
      *
-     * @param request 外部主题边界解析后的请求。
-     * @param content 接收五组结果的内容。
+     * @param theme 本层显式提供的中立主题。
+     * @param content 原样组合的内容。
      */
     @Composable
-    override fun ProvideTheme(
-        request: NomiThemeRequest,
-        content: @Composable (ResolvedNomiTheme) -> Unit
-    ) {
-        SideEffect { requests += request }
-        content(
-            ResolvedNomiTheme(
-                requestedMode = request.requestedMode,
-                isDark = request.isDark,
-                overrides = request.overrides,
-            ),
-        )
+    override fun ProvideTheme(theme: NomiTheme, content: @Composable () -> Unit) {
+        SideEffect { themes += theme }
+        content()
     }
 }
 

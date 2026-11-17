@@ -1,12 +1,9 @@
 package ciyin.designsystem.material3
 
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,124 +15,82 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ciyin.designsystem.nomi.Default
 import ciyin.designsystem.runtime.NomiDesignSystem
-import ciyin.designsystem.theme.NomiColorScheme
-import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
 import ciyin.designsystem.theme.DarkMode
+import ciyin.designsystem.theme.LocalNomiTheme
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.theme.Spacings
-import ciyin.designsystem.theme.defaultDarkNomiColorScheme
 import ciyin.designsystem.theme.defaultSpacings
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
+import androidx.compose.material3.darkColorScheme as nativeDarkColorScheme
+import androidx.compose.material3.lightColorScheme as nativeLightColorScheme
 
 /**
- * 原生主题基线、稀疏覆盖与读模型的严格回归，不以同一包装器作为原生参照。
+ * 原生主题基线、自定义映射与跨设计系统稀疏切换的严格回归。
  */
 @OptIn(ExperimentalTestApi::class)
 class Material3NativeThemeTest {
     /**
-     * 浅深色均取独立原生工厂，排版与圆角保留完整原生对象语义。
+     * 浅深色均取独立原生色板；未映射的排版与形状继承外层 MaterialTheme。
      *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
-    fun defaultsMatchNativeThemeAndNeverInheritForeignBaseline() = runComposeUiTest {
+    fun defaultsUseNativePaletteAndInheritCurrentTypographyAndShapes() = runComposeUiTest {
         var dark by mutableStateOf(false)
-        var colors: ColorScheme? = null
-        var typography: Typography? = null
-        var shapes: Shapes? = null
+        val designSystem = NomiDesignSystem.Material3
+        val outerTypography = Typography(bodyLarge = TextStyle(fontSize = 41.sp))
+        val outerShapes = Shapes(medium = CutCornerShape(9.dp))
         setContent {
             MaterialTheme(
-                colorScheme = lightColorScheme(primary = Color.Red),
-                typography = Typography(bodyLarge = TextStyle(fontSize = 41.sp)),
-                shapes = Shapes(medium = CutCornerShape(9.dp)),
+                colorScheme = nativeLightColorScheme(primary = Color.Red),
+                typography = outerTypography,
+                shapes = outerShapes,
             ) {
                 NomiTheme(
-                    designSystem = NomiDesignSystem.Material3,
                     darkMode = if (dark) DarkMode.Dark else DarkMode.Light,
+                    designSystem = designSystem,
                 ) {
-                    colors = MaterialTheme.colorScheme
-                    typography = MaterialTheme.typography
-                    shapes = MaterialTheme.shapes
-                    assertEquals(MaterialTheme.colorScheme.primary, NomiTheme.colorScheme.primary)
-                    assertEquals(MaterialTheme.typography.toNomiTypography(), NomiTheme.typography)
+                    val expected = if (dark) nativeDarkColorScheme() else nativeLightColorScheme()
+                    assertEquals(expected.primary, MaterialTheme.colorScheme.primary)
+                    assertEquals(expected.surface, MaterialTheme.colorScheme.surface)
+                    assertEquals(expected.tertiary, MaterialTheme.colorScheme.tertiary)
+                    assertEquals(outerTypography, MaterialTheme.typography)
+                    assertEquals(outerShapes, MaterialTheme.shapes)
                 }
             }
         }
         for (isDark in listOf(false, true)) {
             runOnIdle { dark = isDark }
             waitForIdle()
-            val expected = if (isDark) darkColorScheme() else lightColorScheme()
-            assertEquals(expected.primary, colors?.primary)
-            assertEquals(expected.surface, colors?.surface)
-            assertEquals(expected.tertiary, colors?.tertiary)
-            assertEquals(Typography(), typography)
-            assertEquals(Shapes(), shapes)
         }
     }
 
     /**
-     * 局部只合并明确间距，不继承外层 Nomi 的默认排版、色板与形状；退出后回到父系统解析结果。
+     * 自定义映射显式提供的原生实例按引用安装，不写入中立主题。
      *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
-    fun overridesRemainSparseAcrossSystemsAndRestoreParent() = runComposeUiTest {
-        val spacings = defaultSpacings().copy(large = 27.dp)
-        var childPrimary = Color.Unspecified
-        var childTypography: Typography? = null
-        var restoredColors: NomiColorScheme? = null
-        var restoredSpacings: Spacings? = null
-        setContent {
-            NomiTheme(
-                designSystem = NomiDesignSystem.Default,
-                darkMode = DarkMode.Dark,
-                overrides = NomiThemeOverrides(spacings = spacings),
-            ) {
-                NomiThemeOverride(designSystem = NomiDesignSystem.Material3) {
-                    childPrimary = MaterialTheme.colorScheme.primary
-                    childTypography = MaterialTheme.typography
-                    assertEquals(darkColorScheme().primary, MaterialTheme.colorScheme.primary)
-                    assertEquals(darkColorScheme().secondary, MaterialTheme.colorScheme.secondary)
-                    assertEquals(spacings, NomiTheme.spacings)
-                    assertEquals(Shapes(), MaterialTheme.shapes)
-                }
-                restoredColors = NomiTheme.colorScheme
-                restoredSpacings = NomiTheme.spacings
-            }
+    fun customMapKeepsExplicitNativeInstances() = runComposeUiTest {
+        val colors = nativeLightColorScheme(primary = Color.Blue, tertiary = Color.Yellow)
+        val nativeTypography = Typography(bodyMedium = TextStyle(fontSize = 29.sp))
+        val nativeShapes = Shapes()
+        val map: NomiTheme.() -> Material3Theme = {
+            Material3Theme(
+                isDark = isDark,
+                colorScheme = colors,
+                typography = nativeTypography,
+                shapes = nativeShapes,
+            )
         }
-        assertEquals(darkColorScheme().primary, childPrimary)
-        assertEquals(Typography(), childTypography)
-        assertEquals(defaultDarkNomiColorScheme(), restoredColors)
-        assertEquals(spacings, restoredSpacings)
-    }
-
-    /**
-     * 无请求颜色覆盖时，适配器配置的完整原生色板、排版与形状实例及逐字段值全部保留，
-     * 不按模式回退原生默认，也不重建排版对象。
-     *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
-     */
-    @Test
-    fun explicitNativeConfigurationPreservesInstances() = runComposeUiTest {
-        val colors = lightColorScheme(primary = Color.Blue, tertiary = Color.Yellow)
-        val typography = Typography(bodyMedium = TextStyle(fontSize = 29.sp))
-        val shapes = Shapes()
         var actualTypography: Typography? = null
         var actualShapes: Shapes? = null
         setContent {
-            val designSystem = rememberMaterial3DesignSystem(
-                colorScheme = colors,
-                typography = typography,
-                shapes = shapes,
-            )
             NomiTheme(
-                designSystem = designSystem,
                 darkMode = DarkMode.Dark,
-                overrides = NomiThemeOverrides(),
+                designSystem = NomiDesignSystem.Material3(map),
             ) {
                 actualTypography = MaterialTheme.typography
                 actualShapes = MaterialTheme.shapes
@@ -145,21 +100,51 @@ class Material3NativeThemeTest {
                 assertEquals(colors.background, MaterialTheme.colorScheme.background)
             }
         }
-        assertSame(typography, actualTypography)
-        assertSame(shapes, actualShapes)
+        assertSame(nativeTypography, actualTypography)
+        assertSame(nativeShapes, actualShapes)
     }
 
     /**
-     * 不可表示的主题级切角必须明确拒绝，不能静默伪装成圆角投影。
+     * 从 Nomi 默认系统切到 Material 3 时只继承入口主题的度量，色板取 Material 3 默认，
+     * 未映射的排版与形状继承当前 MaterialTheme；退出后恢复父层主题。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
-    fun nonRoundedThemeShapeFailsFast() {
-        assertFailsWith<IllegalArgumentException> {
-            runComposeUiTest {
-                setContent {
-                    rememberMaterial3DesignSystem(shapes = Shapes(medium = CutCornerShape(9.dp)))
+    fun sparseSwitchAcrossSystemsKeepsMeasuresAndRestoresParent() = runComposeUiTest {
+        val spacings = defaultSpacings().copy(large = 27.dp)
+        val parentTheme = NomiTheme.dark().copy(spacings = spacings)
+        var childPrimary = Color.Unspecified
+        var childTypography: Typography? = null
+        var childShapes: Shapes? = null
+        var childSpacings: Spacings? = null
+        var restoredSpacings: Spacings? = null
+        setContent {
+            NomiTheme(theme = parentTheme, designSystem = NomiDesignSystem.Default) {
+                NomiTheme(
+                    theme = LocalNomiTheme.current,
+                    designSystem = NomiDesignSystem.Material3
+                ) {
+                    childPrimary = MaterialTheme.colorScheme.primary
+                    childTypography = MaterialTheme.typography
+                    childShapes = MaterialTheme.shapes
+                    childSpacings = NomiTheme.spacings
+                    assertEquals(nativeDarkColorScheme().primary, MaterialTheme.colorScheme.primary)
+                    assertEquals(
+                        nativeDarkColorScheme().secondary,
+                        MaterialTheme.colorScheme.secondary,
+                    )
+                    assertEquals(Typography(), MaterialTheme.typography)
+                    assertEquals(Shapes(), MaterialTheme.shapes)
+                    assertEquals(spacings, NomiTheme.spacings)
                 }
+                restoredSpacings = NomiTheme.spacings
             }
         }
+        assertEquals(nativeDarkColorScheme().primary, childPrimary)
+        assertEquals(Typography(), childTypography)
+        assertEquals(Shapes(), childShapes)
+        assertEquals(spacings, childSpacings)
+        assertEquals(spacings, restoredSpacings)
     }
 }

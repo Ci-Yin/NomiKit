@@ -11,8 +11,8 @@ import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.LocalNomiTheme
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
 import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoTags
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.design_system_demo_inherited_content
@@ -37,14 +37,14 @@ internal fun DesignSystemOverrideShowcase(
     Column(verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium)) {
         NomiText(
             text = stringResource(Res.string.design_system_demo_override_title),
-            style = NomiTheme.typography.titleLarge
+            style = nativeTextStyle(ShowcaseTextRole.TitleLarge)
         )
         OverrideSample(
             text = stringResource(Res.string.design_system_demo_outer_before),
             tag = DesignSystemDemoTags.OuterBefore
         )
         if (enabled && alternateDesignSystem != null) {
-            NomiThemeOverride(designSystem = alternateDesignSystem) {
+            NomiTheme(theme = LocalNomiTheme.current, designSystem = alternateDesignSystem) {
                 OverrideSample(
                     text = stringResource(Res.string.design_system_demo_override_inner),
                     tag = DesignSystemDemoTags.InnerOverride
@@ -73,7 +73,7 @@ internal fun DesignSystemOverrideShowcase(
 private fun OverrideSample(text: String, tag: String) {
     NomiSurface(
         modifier = Modifier.fillMaxWidth().testTag(tag),
-        colors = NomiSurfaceColors(containerColor = NomiTheme.colorScheme.primary),
+        colors = NomiSurfaceColors(containerColor = nativePrimaryColor()),
     ) {
         NomiText(text = text, modifier = Modifier.padding(NomiTheme.spacings.medium))
     }

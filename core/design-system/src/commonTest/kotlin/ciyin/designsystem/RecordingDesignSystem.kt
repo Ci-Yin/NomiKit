@@ -42,8 +42,7 @@ import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystemId
-import ciyin.designsystem.runtime.NomiThemeRequest
-import ciyin.designsystem.runtime.ResolvedNomiTheme
+import ciyin.designsystem.theme.NomiTheme
 
 /**
  * 记录中立层传给文本 renderer 的真实参数，不补任何默认样式。
@@ -192,26 +191,19 @@ internal data class RecordedListItem(
 )
 
 /**
- * 不依赖任何原生 adapter 的录制型设计系统；主题投影由夹具自身生成。
+ * 不依赖任何原生 adapter 的录制型设计系统。
  *
  * 派发记录在 SideEffect 提交，列表在实例生命周期内累积，不在重组时自动清空。
  *
  * @property name 构造设计系统标识的名称，用于区分嵌套实例。
- * @property nativeTheme 可选的自有主题基线；null 时按请求的实际明暗生成五组 Nomi 默认值。
  */
 internal class RecordingDesignSystem(
     private val name: String = "recording",
-    private val nativeTheme: ResolvedNomiTheme? = null,
 ) : NomiDesignSystem {
     /**
-     * 收到的稀疏主题请求。
+     * 按组合提交顺序记录入口传入的主题。
      */
-    val requests: MutableList<NomiThemeRequest> = mutableListOf()
-
-    /**
-     * 按组合提交顺序记录实际传入 content 的结果，用于对照核心发布前后的来源与五组引用。
-     */
-    val callbackThemes: MutableList<ResolvedNomiTheme> = mutableListOf()
+    val received: MutableList<NomiTheme> = mutableListOf()
 
     /**
      * 按文本标识记录最后一次已提交的派发。
@@ -602,33 +594,15 @@ internal class RecordingDesignSystem(
     }
 
     /**
-     * 接收稀疏请求，在自有基线上应用显式覆盖后回调投影，并在组合提交后追加请求记录。
+     * 记录入口传入的主题并组合内容；夹具不建立额外原生环境或发布主题。
      *
-     * @param request 要记录的主题请求；按实际明暗选择缺省基线，非空覆盖组整体替换对应组。
-     * @param content 接收已解析五组主题的组合内容；夹具不另外建立原生库主题环境。
+     * @param theme 本层显式主题值。
+     * @param content 在录制环境中组合的内容。
      */
     @Composable
-    override fun ProvideTheme(
-        request: NomiThemeRequest,
-        content: @Composable (ResolvedNomiTheme) -> Unit
-    ) {
-        val baseline = nativeTheme ?: ResolvedNomiTheme(
-            requestedMode = request.requestedMode,
-            isDark = request.isDark,
-        )
-        val overrides = request.overrides
-        val projected = baseline.copy(
-            colorScheme = overrides.colorScheme ?: baseline.colorScheme,
-            typography = overrides.typography ?: baseline.typography,
-            shapes = overrides.shapes ?: baseline.shapes,
-            spacings = overrides.spacings ?: baseline.spacings,
-            sizes = overrides.sizes ?: baseline.sizes,
-        )
-        SideEffect {
-            requests += request
-            callbackThemes += projected
-        }
-        content(projected)
+    override fun ProvideTheme(theme: NomiTheme, content: @Composable () -> Unit) {
+        SideEffect { received += theme }
+        content()
     }
 }
 

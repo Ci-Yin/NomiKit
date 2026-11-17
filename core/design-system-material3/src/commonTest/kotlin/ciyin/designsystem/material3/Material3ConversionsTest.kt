@@ -1,24 +1,24 @@
 package ciyin.designsystem.material3
 
-import androidx.compose.material3.darkColorScheme as materialDarkColorScheme
-import androidx.compose.material3.lightColorScheme as materialLightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import ciyin.designsystem.theme.NomiShapes
-import ciyin.designsystem.theme.defaultNomiShapes
-import ciyin.designsystem.theme.defaultNomiTypography
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.defaultDarkNomiColorScheme
 import ciyin.designsystem.theme.defaultLightNomiColorScheme
+import ciyin.designsystem.theme.defaultNomiShapes
+import ciyin.designsystem.theme.defaultNomiTypography
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import androidx.compose.material3.darkColorScheme as materialDarkColorScheme
+import androidx.compose.material3.lightColorScheme as materialLightColorScheme
 
 /**
- * 验证中立令牌到 Material 3 的完整映射和历史默认行为。
+ * 验证中立令牌到 Material 3 的完整映射及原生排版到中立排版的转换。
  */
 class Material3ConversionsTest {
     /**
-     * 十五个排版角色必须逐个参与映射，不能遗漏小标签或标题。
+     * 十五个排版角色必须逐个参与映射与逆转换，不能遗漏小标签或标题。
      */
     @Test
     fun typographyRoundTripPreservesEveryPublicRole() {
@@ -71,7 +71,7 @@ class Material3ConversionsTest {
     }
 
     /**
-     * Material 最大标准圆角仍映射旧主题 huge，不改变现有组件外观。
+     * Material 最大标准圆角仍映射中立 huge。
      */
     @Test
     fun shapesKeepLegacyMapping() {

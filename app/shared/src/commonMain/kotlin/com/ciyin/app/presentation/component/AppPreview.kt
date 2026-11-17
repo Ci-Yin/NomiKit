@@ -8,20 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import ciyin.designsystem.material3.Material3
+import ciyin.designsystem.nomi.Default
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.extension.thenIf
 
-
-/**
- *
- * kotlin文件作用描述
- *
- * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
- * @since 2025/10/26 17:37
- */
 
 /**
  * 应用通用预览容器。
@@ -39,11 +31,16 @@ fun AppPreview(
     darkMode: DarkMode = DarkMode.System,
     backgroundColor: Color = Color.Unspecified,
     content: @Composable ColumnScope.() -> Unit
-) = NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = darkMode) {
-    Column(
-        modifier = Modifier
-            .thenIf(maxSize) { fillMaxSize() }
-            .background(backgroundColor.takeOrElse { NomiTheme.colorScheme.background }),
-        content = content
-    )
+) {
+    NomiTheme(
+        darkMode = darkMode,
+        designSystem = NomiDesignSystem.Default,
+    ) {
+        Column(
+            modifier = Modifier
+                .thenIf(maxSize) { fillMaxSize() }
+                .background(backgroundColor.takeOrElse { NomiTheme.colorScheme.background }),
+            content = content
+        )
+    }
 }

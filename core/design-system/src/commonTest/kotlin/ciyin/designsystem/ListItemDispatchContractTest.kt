@@ -6,7 +6,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +22,7 @@ class ListItemDispatchContractTest {
     fun defaultsRemainSparseAndOptionalSlotsStayNull() = runComposeUiTest {
         val designSystem = RecordingDesignSystem()
         setContent {
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
+            NomiTheme(designSystem = designSystem) {
                 NomiListItem(title = { NomiText("标题") })
             }
         }
@@ -51,7 +50,7 @@ class ListItemDispatchContractTest {
     fun explicitParametersAreDispatchedUnchanged() = runComposeUiTest {
         val designSystem = RecordingDesignSystem()
         setContent {
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
+            NomiTheme(designSystem = designSystem) {
                 NomiListItem(
                     title = { NomiText("标题") },
                     modifier = Modifier.testTag("list-item"),

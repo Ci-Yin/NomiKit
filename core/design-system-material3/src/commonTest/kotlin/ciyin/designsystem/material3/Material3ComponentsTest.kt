@@ -37,6 +37,7 @@ import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.LocalNomiContentColor
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -71,7 +72,7 @@ class Material3ComponentsTest {
             disabledContentColor = Color.Cyan,
         )
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 expectedStyle = NomiButtonDefaults.metrics(size).textStyle
                 NomiButton(
                     onClick = { clicks++ },
@@ -125,7 +126,7 @@ class Material3ComponentsTest {
     @Test
     fun textReadsActualNativeContentColorAndExplicitOverrides() = runComposeUiTest {
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NativeButton(
                     onClick = {},
                     enabled = false,
@@ -171,7 +172,7 @@ class Material3ComponentsTest {
     fun partialButtonTextStyleKeepsSizeMetrics() = runComposeUiTest {
         var expectedStyle = TextStyle.Default
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 expectedStyle = NomiButtonDefaults.metrics(NomiControlSize.Small).textStyle
                 NomiButton(
                     onClick = {},
@@ -203,7 +204,7 @@ class Material3ComponentsTest {
         var defaultEnabled = Color.Unspecified
         var defaultDisabled = Color.Unspecified
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 val defaults = ButtonDefaults.buttonColors()
                 defaultEnabled = defaults.contentColor
                 defaultDisabled = defaults.disabledContentColor
@@ -283,7 +284,7 @@ class Material3ComponentsTest {
         val colors = NomiSurfaceColors(containerColor = Color.Blue, contentColor = Color.Yellow)
         val border = NomiBorder.Stroke(BorderStroke(width = 2.dp, color = Color.Red))
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 Column {
                     NomiSurface(shape = shape, colors = colors, border = border) {
                         surfaceNativeColor = LocalContentColor.current

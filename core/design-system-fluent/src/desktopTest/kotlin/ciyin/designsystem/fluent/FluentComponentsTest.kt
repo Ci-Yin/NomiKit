@@ -35,13 +35,13 @@ import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalTextStyle
 import io.github.composefluent.background.Layer
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import io.github.composefluent.FluentTheme as NativeFluentTheme
 import io.github.composefluent.component.Button as NativeButton
 import io.github.composefluent.component.Text as NativeText
 import io.github.composefluent.surface.Card as NativeCard
@@ -62,7 +62,7 @@ class FluentComponentsTest {
         var adapterClicks = 0
         setContent {
             Row {
-                FluentTheme(colors = if (dark) darkColors() else lightColors()) {
+                NativeFluentTheme(colors = if (dark) darkColors() else lightColors()) {
                     Column(modifier = Modifier.width(280.dp)) {
                         NativeButton(
                             onClick = { nativeClicks++ },
@@ -92,8 +92,8 @@ class FluentComponentsTest {
                     }
                 }
                 NomiTheme(
+                    theme = if (dark) NomiTheme.dark() else NomiTheme.light(),
                     designSystem = NomiDesignSystem.Fluent,
-                    darkMode = if (dark) DarkMode.Dark else DarkMode.Light
                 ) {
                     Column(modifier = Modifier.width(280.dp)) {
                         NomiButton(
@@ -168,7 +168,7 @@ class FluentComponentsTest {
         val style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 30.sp)
         setContent {
             Row {
-                FluentTheme(colors = darkColors()) {
+                NativeFluentTheme(colors = darkColors()) {
                     Layer {
                         NativeText(
                             text = "长中文与 English overflow 对照",
@@ -213,7 +213,7 @@ class FluentComponentsTest {
         val padding = PaddingValues(horizontal = 17.dp, vertical = 11.dp)
         setContent {
             Row {
-                FluentTheme(colors = lightColors()) {
+                NativeFluentTheme(colors = lightColors()) {
                     Column {
                         Layer(
                             modifier = Modifier.testTag("native-surface"),

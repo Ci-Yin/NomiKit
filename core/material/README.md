@@ -20,7 +20,7 @@ App* 别名。
 | `AppTheme(...)`                                        | 保留全部参数名、参数顺序、默认选择行为和 Material `Typography` 参数 |
 | `AppTheme.typography`                                  | 在 M3 环境读取实际 `MaterialTheme.typography`，仍为 Material 类型   |
 | `AppTheme.colorScheme/shapes/spacings/sizes`           | 通过 NomiTheme 只读 getter 读取当前五组结果，不维护第二套 locals    |
-| `AppTheme.darkMode`                                    | 返回旧枚举，显式映射中立配置                                        |
+| `AppTheme.darkMode`                                    | 返回已解析明暗映射的旧枚举；不会返回 `System`                       |
 | `DarkMode.Light/Dark/System`                           | 保留真实枚举，支持旧的枚举项 import                                 |
 | `AppColorScheme/AppShapes/Spacings/AppSizes`           | 中立数据类型别名；公开构造与生成的成员 copy，默认入口为中立核心工厂 |
 | `SizeScale/Strokes/ComponentHeights/LayoutConstraints` | 中立嵌套类型别名；公开构造仍需全部参数，成员 copy 无需导入          |
@@ -52,23 +52,23 @@ AppTheme(
 }
 ```
 
-旧函数通过 `rememberLegacyMaterial3DesignSystem(colorScheme, typography, shapes, spacings, sizes)`
-保存完整旧颜色、Material Typography、形状、间距和尺寸， 再建立中立主题和原生 Material3
-环境；不使用已删除的主题聚合输入。显式颜色不会因 darkMode 被改写； 省略颜色仍按 darkMode
-选择旧的浅色/深色默认；其他参数继续继承当前值。 旧默认参数先在父环境求值，随后仅清空兼容调用边界的父
-overrides 来源，再调用新根。 这避免父中立显式排版/形状二次覆盖旧参数，同时保留完整 Material Typography
-原实例。 旧 colorScheme/shapes/spacings/sizes getter 通过 NomiTheme 读取当前解析结果；typography 在
-Material3 环境保留原生 MaterialTheme.typography 实例，在其他环境从 NomiTheme.typography
-映射。未建立主题时的旧默认排版由中立默认排版转换产生，不回退到不同数值的 M3 原生默认。 M3 环境判定读取可空
-`LocalNomiDesignSystem.current?.id` 并与 `NomiDesignSystem.Material3.id` 比较；需导入扩展属性
+旧函数先把旧 `DarkMode` 解析为实际明暗，再用完整参数组装中立 `NomiTheme`，并通过
+`NomiTheme.() -> Material3Theme` 接收者映射把中立色板、九级形状与完整 Material Typography 映射为原生主题；
+`NomiDesignSystem.Material3(map)` 不读取系统设置。显式颜色不会因 darkMode 被改写；省略颜色仍按
+darkMode 选择旧的浅色/深色默认；其他参数继续继承当前值。旧默认参数先在父环境求值，因此省略的排版、形状、间距与尺寸
+继承父主题当前值。适配器不把原生主题投影回中立值；`LocalNomiTheme` 由入口发布，读取的即旧参数原值。旧
+colorScheme/shapes/spacings/sizes getter 通过 `NomiTheme` 读取入口值；typography 在 Material3 环境保留原生
+`MaterialTheme.typography` 实例，在其他环境从 `NomiTheme.typography` 映射。未建立主题时的旧默认排版由中立
+默认排版转换产生，不回退到不同数值的 M3 原生默认。M3 环境判定读取可空
+`LocalNomiDesignSystem.current?.id` 并与 `NomiDesignSystem.Material3.id` 比较；需导入扩展函数
 `ciyin.designsystem.material3.Material3` 与核心 `NomiDesignSystem`。未提供设计系统时走中立排版映射，不抛错。
 
 ## 完整 Typography 兼容
 
 Material3 1.9 除十五个公开角色外还包含十五个内部强调角色。 旧 `AppTheme(typography = ...)`
-保留调用方的完整实例，不以十五角色往返转换取代该实例。 兼容配置原样投影旧颜色、九级形状、间距及尺寸，不会经原生读模型往返丢失旧值。
-该配置只作用于旧函数，不是应用根的全局 Legacy 双主题桥，也不要求 gate。 新 Material3 根下旧令牌 getter
-直接读取中立主题，旧排版 getter 读取实际 MaterialTheme。
+保留调用方的完整实例，不以十五角色往返转换取代该实例；原生专属角色不会回写中立主题。 间距与尺寸原样保留，
+颜色与圆角按 Material 3 可映射角色投影。 该配置只作用于旧函数，不是应用根的全局 Legacy 双主题桥，也不要求
+gate。 新 Material3 根下旧令牌 getter 直接读取中立主题，旧排版 getter 读取实际 MaterialTheme。
 
 ## 默认对象与复制
 
@@ -92,7 +92,7 @@ val directSpacings = Spacings(large = sectionSpacing)
 从独立消费包验证保留的旧 import、命名参数、中立默认工厂、通过类型别名公开构造和无扩展导入的成员
 copy、形状和图标。
 [主题兼容测试](<src/commonTest/kotlin/ciyin/material/compat/LegacyThemeCompatibilityTest.kt>)
-验证完整旧函数命名参数、原 Typography 实例、嵌套默认行为、新 Material3 根下的旧 getter。
+验证完整旧函数命名参数、原 Typography 实例、嵌套默认行为、父主题隔离与新 Material3 根下的旧 getter。
 
 使用仓库 `multiplatform-lib-targets` 平台约定；生产兼容 API 位于 commonMain， 不新增平台资源、生命周期或设备调用。
 
@@ -103,10 +103,8 @@ copy、形状和图标。
 .\gradlew.bat :app:shared:compileKotlinDesktop --console=plain
 ```
 
-本轮主题聚合层删除后，19 项 Desktop 回归重新执行并通过，覆盖 legacy factory、getter、原生 Typography
-实例身份与旧类型别名；sample Android 依赖编译通过。 历史记录：2026-11-11 native-first 改造前及早期重构各有
-9 项 Desktop 源码/主题兼容测试通过； 后续直接主题参数改造增加父中立排版/形状与旧完整 Typography
-身份隔离回归，11 项通过，之后包迁移也已复验。 这些记录仅供追溯。旧浅深色 27 参数工厂继续直接转发中立
+迁移到映射函数模型后，Desktop 回归覆盖 legacy factory、getter、原生 Typography 实例身份、父主题隔离
+与旧类型别名；本轮由主集成流程统一验证，不在文档记录未经运行的通过数。 旧浅深色 27 参数工厂继续直接转发中立
 defaultLightNomiColorScheme/defaultDarkNomiColorScheme，默认值来源只有一处。
 
 ## 相关资料

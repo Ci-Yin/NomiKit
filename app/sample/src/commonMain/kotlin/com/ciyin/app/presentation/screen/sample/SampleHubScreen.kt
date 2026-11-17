@@ -24,6 +24,7 @@ import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
 import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.design_system_demo_hub_description
@@ -273,7 +274,7 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
 @AppPreview
 @Composable
 private fun SampleHubContentPreview() {
-    NomiTheme(designSystem = NomiDesignSystem.Material3) {
+    NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
         SampleHubScreen(toNavigate = {})
     }
 }

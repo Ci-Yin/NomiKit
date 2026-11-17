@@ -16,7 +16,6 @@ kotlin {
     }
 
     sourceSets.findByName("desktopTest")?.dependencies {
-        implementation(projects.core.designSystemMaterial3)
         @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
         implementation(compose.uiTest)
         implementation(compose.desktop.currentOs)

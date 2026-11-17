@@ -68,6 +68,8 @@ import androidx.compose.material3.Text as NativeText
 class Material3NativeParityTest {
     /**
      * 默认 Button/Card/Surface/Text 在浅深色中保留原生外观，不注入统一高度或内边距。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun omittedParametersMatchNativeComponents() = runComposeUiTest {
@@ -97,8 +99,8 @@ class Material3NativeParityTest {
                     }
                 }
                 NomiTheme(
-                    designSystem = NomiDesignSystem.Material3,
                     darkMode = if (dark) DarkMode.Dark else DarkMode.Light,
+                    designSystem = NomiDesignSystem.Material3,
                 ) {
                     Column {
                         NomiButton(
@@ -135,6 +137,8 @@ class Material3NativeParityTest {
 
     /**
      * 所有变体的原生默认及只覆盖内容色的禁用态与独立原生按钮一致。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun variantsAndSparseColorsMatchTheirNativeCounterparts() = runComposeUiTest {
@@ -181,6 +185,8 @@ class Material3NativeParityTest {
 
     /**
      * 组件级任意形状、padding、单个颜色覆盖精确传入，显式文字样式优先尺寸预设。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun explicitOverridesMatchNativeAndTextStyleOverridesSizePreset() = runComposeUiTest {
@@ -243,6 +249,8 @@ class Material3NativeParityTest {
 
     /**
      * 原生按钮内的中立文字部分样式不能重置原生 labelLarge 的字号、行高与内容色。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun partialTextStyleMergesWithNativeSlot() = runComposeUiTest {
@@ -280,6 +288,8 @@ class Material3NativeParityTest {
 
     /**
      * 逐字段文本覆盖与自动字号在适配器与原生 Text 间产生相同布局样式。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun fieldOverridesAndAutoSizeMatchNativeText() = runComposeUiTest {
@@ -304,7 +314,7 @@ class Material3NativeParityTest {
                         fontWeight = FontWeight.Medium,
                     )
                 }
-                NomiTheme(designSystem = NomiDesignSystem.Material3) {
+                NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                     Column {
                         NomiText(
                             text = "逐字段",

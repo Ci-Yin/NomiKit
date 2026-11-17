@@ -17,6 +17,7 @@ import ciyin.designsystem.component.scaffold.NomiScaffold
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -28,11 +29,13 @@ import kotlin.test.assertTrue
 class Material3ScaffoldTest {
     /**
      * 主体内容位于顶栏与底栏之间，不被原生悬浮栏覆盖。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun contentSitsBetweenTopAndBottomBars() = runComposeUiTest {
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NomiScaffold(
                     topBar = {
                         Box(Modifier.fillMaxWidth().height(48.dp).testTag("top"))
@@ -54,11 +57,13 @@ class Material3ScaffoldTest {
 
     /**
      * 显式容器色与内容色（含透明）直接交给原生 Scaffold，不做能力校验也不补默认值。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun explicitColorsAreAcceptedWithoutValidation() = runComposeUiTest {
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 NomiScaffold(
                     modifier = Modifier.testTag("scaffold"),
                     colors = NomiScaffoldColors(

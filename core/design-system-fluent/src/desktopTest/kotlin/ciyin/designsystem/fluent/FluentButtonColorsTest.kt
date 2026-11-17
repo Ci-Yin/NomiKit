@@ -18,7 +18,6 @@ import ciyin.designsystem.fluent.button.toFluentButtonColors
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.component.ButtonColorScheme
 import io.github.composefluent.component.ButtonDefaults
@@ -26,6 +25,7 @@ import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import io.github.composefluent.FluentTheme as NativeFluentTheme
 import io.github.composefluent.component.Text as NativeText
 
 /**
@@ -46,7 +46,7 @@ class FluentButtonColorsTest {
         var criticalFill = Color.Unspecified
         var criticalText = Color.Unspecified
         setContent {
-            FluentTheme(colors = if (dark) darkColors() else lightColors()) {
+            NativeFluentTheme(colors = if (dark) darkColors() else lightColors()) {
                 native = when (variant) {
                     NomiButtonVariant.Primary -> ButtonDefaults.accentButtonColors()
                     NomiButtonVariant.Subtle -> ButtonDefaults.subtleButtonColors()
@@ -54,8 +54,8 @@ class FluentButtonColorsTest {
                     else -> ButtonDefaults.buttonColors()
                 }
                 actual = override.toFluentButtonColors(variant)
-                criticalFill = FluentTheme.colors.system.criticalBackground
-                criticalText = FluentTheme.colors.system.critical
+                criticalFill = NativeFluentTheme.colors.system.criticalBackground
+                criticalText = NativeFluentTheme.colors.system.critical
             }
         }
         val cases = listOf(

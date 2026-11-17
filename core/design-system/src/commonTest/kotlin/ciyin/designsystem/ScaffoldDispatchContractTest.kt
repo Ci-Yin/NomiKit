@@ -6,7 +6,6 @@ import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.scaffold.NomiScaffold
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +22,7 @@ class ScaffoldDispatchContractTest {
     fun defaultsRemainSparseAndSlotsAreComposed() = runComposeUiTest {
         val designSystem = RecordingDesignSystem()
         setContent {
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
+            NomiTheme(designSystem = designSystem) {
                 NomiScaffold(
                     topBar = { NomiText("top") },
                     bottomBar = { NomiText("bottom") },
@@ -52,7 +51,7 @@ class ScaffoldDispatchContractTest {
             contentColor = Color.Transparent,
         )
         setContent {
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
+            NomiTheme(designSystem = designSystem) {
                 NomiScaffold(colors = colors) {
                     NomiText("body")
                 }

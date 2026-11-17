@@ -5,12 +5,14 @@ import androidx.compose.runtime.remember
 import ciyin.platform.logger
 
 /**
- * Fluent 适配器日志；降级告警统一从这里输出。
+ * Fluent 适配器日志；组件无法承载的显式覆盖统一从这里输出。
  */
 internal val fluentLogger = logger(tag = "NomiFluent")
 
 /**
- * 无法表达的覆盖首次出现时记录一次警告，避免逐帧刷屏。
+ * 组件无法承载的显式覆盖首次出现时记录一次警告，避免逐帧刷屏。
+ *
+ * 只在原生没有对应入口时使用，不用于表达主题映射；未传入的覆盖不产生日志。
  *
  * @param overridden 本次调用是否真的携带了该覆盖。
  * @param key 覆盖值；同值重组不重复记录。

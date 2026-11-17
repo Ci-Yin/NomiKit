@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DrawerDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -31,14 +32,13 @@ import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
-import ciyin.designsystem.theme.NomiTheme
 
 /**
  * Material 3 原生导航套件适配。
  *
  * 三种布局都直接使用 Material 3 原生组件，只按能力声明可用的布局；
  * 图标、文案与徽标由调用方以槽位组合，适配器不规定槽内容尺寸或排版，
- * 外壳容器色优先使用调用方覆盖，Unspecified 时读取当前 [NomiTheme] 或 Material 3 原生默认，
+ * 外壳容器色优先使用调用方覆盖，Unspecified 时回退 MaterialTheme 的 surfaceContainerLow，
  * 导航项颜色只做稀疏覆盖。
  */
 internal object Material3NavigationRenderer : NomiNavigationRenderer {
@@ -96,7 +96,7 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
  * Bar 布局：页面内容使用剩余高度，原生底部导航栏固定在其下方。
  *
  * @param modifier 应用于外层 Column 的修饰符。
- * @param containerColor 底部导航栏容器色；Unspecified 回退 Nomi surfaceLow。
+ * @param containerColor 底部导航栏容器色；Unspecified 回退 MaterialTheme 的 surfaceContainerLow。
  * @param items 主导航项声明。
  * @param footerItems 底部导航项声明，与主导航项同处一条原生导航栏。
  * @param content 导航栏上方的页面内容。
@@ -114,7 +114,7 @@ private fun Material3BarNavigationSuite(
             content()
         }
         NavigationBar(
-            containerColor = containerColor.takeOrElse { NomiTheme.colorScheme.surfaceLow },
+            containerColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow },
         ) {
             val scope = Material3BarNavigationItemScope(rowScope = this)
             scope.items()
@@ -127,7 +127,7 @@ private fun Material3BarNavigationSuite(
  * Rail 布局：导航栏占满高度并把底部项推到最低处，页面内容位于导航栏右侧。
  *
  * @param modifier 应用于外层 Row 的修饰符。
- * @param containerColor 侧边导航栏容器色；Unspecified 回退 Nomi surfaceLow。
+ * @param containerColor 侧边导航栏容器色；Unspecified 回退 MaterialTheme 的 surfaceContainerLow。
  * @param items 主导航项声明。
  * @param footerItems 底部导航项声明，通过弹性占位与主导航项分开。
  * @param content 导航栏右侧的页面内容。
@@ -143,7 +143,7 @@ private fun Material3RailNavigationSuite(
     Row(modifier = modifier) {
         NavigationRail(
             modifier = Modifier.fillMaxHeight(),
-            containerColor = containerColor.takeOrElse { NomiTheme.colorScheme.surfaceLow },
+            containerColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow },
         ) {
             val scope = Material3RailNavigationItemScope
             scope.items()

@@ -32,6 +32,7 @@ import com.ciyin.app.presentation.screen.setting.SettingScreen
  *
  * 主题与导航树由纯内容层装配。
  *
+ * @param windowBackdropActive 当前窗口是否启用系统背景材质，原样传给内容层。
  * @author <a href="https://github.com/Ci-Yin">次音(CiYin)</a>
  * @since 2024/10/23 下午5:52
  */
@@ -40,7 +41,7 @@ fun App(windowBackdropActive: Boolean = false) {
     val viewModel = viewModel(::AppViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
     CompositionLocalProvider(LocalFluentSystemBackdropActive provides windowBackdropActive) {
-        NomiTheme(designSystem = NomiDesignSystem.Default) {
+        NomiTheme(NomiDesignSystem.Default) {
             AppContent(state, viewModel.dispatchAction)
         }
     }
@@ -93,4 +94,3 @@ private fun AppContent(
         )
     }
 }
-

@@ -1,6 +1,7 @@
 package ciyin.designsystem.fluent
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,22 +13,19 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.card.NomiCard
 import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.runtime.LocalNomiContentColor
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.runtime.NomiDesignSystemId
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
-import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import io.github.composefluent.Colors
 import io.github.composefluent.CornerRadius
 import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
 import io.github.composefluent.Typography
 import io.github.composefluent.component.ButtonDefaults
 import io.github.composefluent.darkColors
@@ -35,155 +33,126 @@ import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
+import io.github.composefluent.FluentTheme as NativeFluentTheme
 import io.github.composefluent.component.Button as NativeButton
 
 /**
- * 原生 Fluent 祖先基线、配置优先级及嵌套原生 slot 的严格回归。
+ * 原生 Fluent 基线捕获、映射优先级及嵌套原生 slot 的严格回归。
  */
 @OptIn(ExperimentalTestApi::class, ExperimentalFluentApi::class)
 class FluentNativeThemeTest {
     /**
-     * A-B-A 不继承中间系统默认，显式完整色板请求合并并恢复，完整八角色排版保留原生祖先实例。
+     * A-B-A 切换复用当前原生主题的排版与圆角，而不是首次进入时捕获的基线。
      */
     @Test
-    fun aToBToAPreservesNativeBaselineAndExplicitRequests() = runComposeUiTest {
-        var outerPrimary by mutableStateOf(Color.Cyan)
-        var expectedTypography: Typography? = null
+    fun aToBToAReusesCurrentNativeThemeInsteadOfCapturedBaseline() = runComposeUiTest {
+        var override: Typography? = null
         var outerTypography: Typography? = null
-        var childTypography: Typography? = null
-        var restoredBase = Color.Unspecified
-        var nestedBase = Color.Unspecified
-        var expectedCorners: CornerRadius? = null
-        var childCorners: CornerRadius? = null
+        var innerTypography: Typography? = null
+        var baselineCorners: CornerRadius? = null
+        var innerCorners: CornerRadius? = null
         setContent {
-            val upstream = FluentTheme.typography
-            FluentTheme(colors = lightColors(), typography = upstream) {
-                expectedTypography = FluentTheme.typography
-                expectedCorners = FluentTheme.cornerRadius
+            val upstream = NativeFluentTheme.typography
+            NativeFluentTheme(
+                colors = lightColors(),
+                typography = upstream.withBody(TextStyle(fontSize = 11.sp, lineHeight = 15.sp)),
+            ) {
+                baselineCorners = NativeFluentTheme.cornerRadius
+                val covered = NativeFluentTheme.typography
+                    .withBody(TextStyle(fontSize = 25.sp, lineHeight = 33.sp))
+                override = covered
                 NomiTheme(
-                    designSystem = NomiDesignSystem.Fluent,
                     darkMode = DarkMode.Light,
-                    overrides = NomiThemeOverrides(
-                        colorScheme = defaultLightNomiColorScheme().copy(primary = outerPrimary)
-                    ),
+                    designSystem = NomiDesignSystem.Fluent {
+                        FluentTheme(isDark = isDark, typography = covered)
+                    },
                 ) {
-                    outerTypography = FluentTheme.typography
-                    NomiThemeOverride(designSystem = NomiDesignSystem.Material3) {
-                        NomiThemeOverride(designSystem = NomiDesignSystem.Fluent) {
-                            childTypography = FluentTheme.typography
-                            childCorners = FluentTheme.cornerRadius
-                            nestedBase = FluentTheme.colors.shades.base
-                            NomiThemeOverride(
-                                overrides = NomiThemeOverrides(
-                                    colorScheme = defaultLightNomiColorScheme()
-                                        .copy(primary = Color.Magenta)
-                                )
-                            ) {
-                                assertEquals(Color.Magenta, FluentTheme.colors.shades.base)
-                            }
-                            restoredBase = FluentTheme.colors.shades.base
+                    outerTypography = NativeFluentTheme.typography
+                    NomiTheme(darkMode = DarkMode.Light, designSystem = PassthroughSystem) {
+                        NomiTheme(
+                            darkMode = DarkMode.Light,
+                            designSystem = NomiDesignSystem.Fluent
+                        ) {
+                            innerTypography = NativeFluentTheme.typography
+                            innerCorners = NativeFluentTheme.cornerRadius
                         }
                     }
                 }
             }
         }
-        for (primary in listOf(Color.Cyan, Color.Green)) {
-            runOnIdle { outerPrimary = primary }
-            waitForIdle()
-            assertEquals(primary, nestedBase)
-            assertEquals(primary, restoredBase)
-            assertSame(expectedTypography, outerTypography)
-            assertSame(expectedTypography, childTypography)
-            assertEquals(expectedCorners, childCorners)
+        runOnIdle {
+            assertEquals(25.sp, requireNotNull(outerTypography).body.fontSize)
+            assertEquals(requireNotNull(override).body, requireNotNull(innerTypography).body)
+            assertEquals(
+                requireNotNull(baselineCorners).overlay,
+                requireNotNull(innerCorners).overlay,
+            )
         }
     }
 
     /**
-     * 显式原生配置高于默认基线，请求中的完整色板按 primary 再覆盖强调色阶，不重置完整排版。
+     * 显式 typed 色板原样安装并保留自身明暗，未指定的排版与圆角回退到捕获的基线。
      */
     @Test
-    fun typedConfigurationAndRequestOverridesHaveStablePriority() = runComposeUiTest {
-        var requestPrimary by mutableStateOf<Color?>(null)
-        var configuredTypography: Typography? = null
-        val expectedColors = defaultLightNomiColorScheme()
-            .copy(primary = Color.Blue)
-            .toFluentColors(isDark = false)
-        var actualTypography: Typography? = null
-        var actualColors: Colors? = null
-        var expectedCorners: CornerRadius? = null
-        var actualCorners: CornerRadius? = null
+    fun typedPaletteKeepsItsOwnDarkModeWhileTypographyFallsBackToBaseline() = runComposeUiTest {
+        val configured = darkColors()
+        var baseline: Typography? = null
+        var observedColors: Colors? = null
+        var observedTypography: Typography? = null
         setContent {
-            val base = FluentTheme.typography
-            val typography = base.withBody(TextStyle(fontSize = 26.sp, lineHeight = 34.sp))
-            configuredTypography = typography
-            val corners = FluentTheme.cornerRadius
-            expectedCorners = corners
-            val designSystem = rememberFluentDesignSystem(
-                colors = expectedColors,
-                typography = typography,
-                cornerRadius = corners
-            )
+            baseline = NativeFluentTheme.typography
             NomiTheme(
-                designSystem = designSystem,
                 darkMode = DarkMode.Light,
-                overrides = NomiThemeOverrides(
-                    colorScheme = requestPrimary?.let {
-                        defaultLightNomiColorScheme().copy(primary = it)
-                    }
-                ),
+                designSystem = NomiDesignSystem.Fluent {
+                    FluentTheme(isDark = isDark, colors = configured)
+                },
             ) {
-                actualTypography = FluentTheme.typography
-                actualColors = FluentTheme.colors
-                actualCorners = FluentTheme.cornerRadius
-                assertEquals(typography.body, NomiTheme.typography.bodyMedium)
-                assertEquals(typography.caption, NomiTheme.typography.bodySmall)
-                assertEquals(typography.display, NomiTheme.typography.displayLarge)
-                assertEquals(typography.titleLarge, NomiTheme.typography.headlineLarge)
+                observedColors = NativeFluentTheme.colors
+                observedTypography = NativeFluentTheme.typography
             }
         }
-        waitForIdle()
-        assertSame(expectedColors, actualColors)
-        assertSame(configuredTypography, actualTypography)
-        assertEquals(expectedCorners, actualCorners)
-        runOnIdle { requestPrimary = Color.Red }
-        waitForIdle()
-        assertEquals(Color.Red, actualColors?.shades?.base)
-        assertSame(configuredTypography, actualTypography)
-        runOnIdle { requestPrimary = null }
-        waitForIdle()
-        assertSame(expectedColors, actualColors)
+        runOnIdle {
+            val colors = requireNotNull(observedColors)
+            assertSame(configured, colors)
+            assertEquals(true, colors.darkMode)
+            assertEquals(
+                requireNotNull(baseline).body,
+                requireNotNull(observedTypography).body,
+            )
+        }
     }
 
     /**
-     * 完整中立色板只按 primary 重建强调色阶，显式 typed 色板的深色模式不被请求改写。
+     * 切换已解析明暗模式时替换原生色板，但基线排版保持首次捕获的实例。
      */
     @Test
-    fun neutralPaletteRebuildsAccentWhileKeepingTypedPaletteMode() = runComposeUiTest {
-        val configured = darkColors()
-        var requestPrimary by mutableStateOf<Color?>(null)
-        var observed: Colors? = null
+    fun switchingResolvedModeSwapsPaletteWithoutResamplingBaseline() = runComposeUiTest {
+        var dark by mutableStateOf(false)
+        var nativeColors: Colors? = null
+        var nativeTypography: Typography? = null
         setContent {
-            val designSystem = rememberFluentDesignSystem(colors = configured)
-            NomiTheme(
-                designSystem = designSystem,
-                darkMode = DarkMode.Light,
-                overrides = NomiThemeOverrides(
-                    colorScheme = requestPrimary?.let {
-                        defaultLightNomiColorScheme().copy(primary = it)
-                    }
-                ),
-            ) { observed = FluentTheme.colors }
+            val upstream = NativeFluentTheme.typography
+                .withBody(TextStyle(fontSize = 12.sp, lineHeight = 16.sp))
+            NativeFluentTheme(colors = lightColors(), typography = upstream) {
+                NomiTheme(
+                    theme = if (dark) NomiTheme.dark() else NomiTheme.light(),
+                    designSystem = NomiDesignSystem.Fluent,
+                ) {
+                    nativeColors = NativeFluentTheme.colors
+                    nativeTypography = NativeFluentTheme.typography
+                }
+            }
         }
+        runOnIdle {
+            assertEquals(false, requireNotNull(nativeColors).darkMode)
+            assertEquals(12.sp, requireNotNull(nativeTypography).body.fontSize)
+        }
+        runOnIdle { dark = true }
         waitForIdle()
-        assertSame(configured, observed)
-        runOnIdle { requestPrimary = Color.Red }
-        waitForIdle()
-        val actual = requireNotNull(observed)
-        assertEquals(Color.Red, actual.shades.base)
-        assertEquals(configured.darkMode, actual.darkMode)
-        runOnIdle { requestPrimary = null }
-        waitForIdle()
-        assertSame(configured, observed)
+        runOnIdle {
+            assertEquals(true, requireNotNull(nativeColors).darkMode)
+            assertEquals(12.sp, requireNotNull(nativeTypography).body.fontSize)
+        }
     }
 
     /**
@@ -193,11 +162,15 @@ class FluentNativeThemeTest {
     fun containersDoNotShadowNestedNativeDisabledButton() = runComposeUiTest {
         var expectedBody = TextStyle.Default
         setContent {
-            val typography =
-                FluentTheme.typography.withBody(TextStyle(fontSize = 24.sp, lineHeight = 32.sp))
-            expectedBody = typography.body
-            val designSystem = rememberFluentDesignSystem(typography = typography)
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
+            val nativeTypography = NativeFluentTheme.typography
+                .withBody(TextStyle(fontSize = 24.sp, lineHeight = 32.sp))
+            expectedBody = nativeTypography.body
+            NomiTheme(
+                darkMode = DarkMode.Light,
+                designSystem = NomiDesignSystem.Fluent {
+                    FluentTheme(isDark = isDark, typography = nativeTypography)
+                },
+            ) {
                 Column {
                     NomiCard {
                         assertEquals(Color.Unspecified, LocalNomiContentColor.current)
@@ -236,6 +209,32 @@ class FluentNativeThemeTest {
             assertEquals(expectedBody.lineHeight, style.lineHeight)
         }
     }
+}
+
+/**
+ * 测试用「其它设计系统」边界：不安装原生主题，只把内容放回当前原生环境。
+ *
+ * 用于构造 A-B-A 切换，让上一步 Fluent 的覆盖仍留在原生环境中。
+ */
+private object PassthroughSystem : NomiDesignSystem {
+    /**
+     * 测试标识，与 Fluent 本身区分。
+     */
+    override val id = NomiDesignSystemId("fluent-test-passthrough")
+
+    /**
+     * 沿用 Fluent 组件族；本对象只承担主题边界。
+     */
+    override val components: NomiDesignSystemComponents = NomiDesignSystem.Fluent.components
+
+    /**
+     * 不安装原生主题，直接组合内容。
+     *
+     * @param theme 本层中立主题；本对象不读取也不改写它。
+     * @param content 在父原生环境中组合的子树。
+     */
+    @Composable
+    override fun ProvideTheme(theme: NomiTheme, content: @Composable () -> Unit) = content()
 }
 
 /**

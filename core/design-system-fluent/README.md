@@ -8,17 +8,21 @@ Text、Button、Surface、独立原生非点击 Card、导航套件与列表项�
 - 使用仓库 `multiplatform-lib-targets`，Android 与按项目开关注册的 Desktop/iOS/JS/Wasm 共用
   commonMain。
 - 不为本模块打开项目关闭的平台；sample commonMain 默认候选包含 Nomi/M3/Fluent。
-- [构建](<build.gradle.kts>) api 导出中立核心与 Fluent；公开 typed 配置工厂签名使用 Fluent 类型。
-- 原生类型不进入中立 SPI；普通业务只消费中立组件，专属原生配置留在装配层。
+- [构建](<build.gradle.kts>) api 导出中立核心与 Fluent；公开映射函数签名使用 Fluent 类型。
+- 原生类型不进入中立 SPI；普通业务只消费中立组件，专属原生映射留在装配层。
 - 不添加全局双主题桥，不依据平台静默选择设计系统。
 
 ## 实现入口
 
-- [FluentSystem](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentDesignSystem.kt>)：internal
-  原生主题基线、typed 配置及降级行为，经 `NomiDesignSystem.Fluent`（导入
-  `ciyin.designsystem.fluent.Fluent`）暴露。
-- [主题投影](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentThemeMapping.kt>)
-  ：稀疏强调色、原生八角色排版和中立只读投影。
+- [FluentDesignSystem](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentDesignSystem.kt>)
+  ：映射求值与原生主题安装，经 `NomiDesignSystem.Fluent` /
+  `NomiDesignSystem.Fluent(map)`（导入 `ciyin.designsystem.fluent.Fluent`）暴露；只安装原生主题，不发布中立主题。
+- [FluentTheme](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentTheme.kt>)：原生主题规格。
+- [主题映射](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentMapper.kt>)：三个预置扩展
+  `NomiTheme.toNativeFluentTheme()` / `toPrimaryFluentTheme()` / `toFullFluentTheme()`，以及强调色阶重建、
+  中立色板/排版/圆角到原生主题的单向换算。
+- [组件告警](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentWarnings.kt>)：原生无法承载的显式
+  组件覆盖只记录一次日志。
 - [组件装配](<src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)只组装六族。
 - [Text](<src/commonMain/kotlin/ciyin/designsystem/fluent/text/FluentText.kt>)、[Button](<src/commonMain/kotlin/ciyin/designsystem/fluent/button/FluentButton.kt>)、[Surface](<src/commonMain/kotlin/ciyin/designsystem/fluent/surface/FluentSurface.kt>)、[Card](<src/commonMain/kotlin/ciyin/designsystem/fluent/card/FluentCard.kt>)
   分别实现原生组件调用。
@@ -32,7 +36,7 @@ Text、Button、Surface、独立原生非点击 Card、导航套件与列表项�
   `dropdown` 保持 null，不绘制展开箭头，也不映射 enabled/selected。
 
 四组件分别归入 fluent 根下的 text/button/surface/card 子目录，package 与目录一致；FluentButtonColors 随
-Button 进入 button。 主题、投影和四族装配留在原位置，Card 仍由 surfaces 派发，导航套件归入 fluent 根下的
+Button 进入 button。 主题、映射和四族装配留在原位置，Card 仍由 surfaces 派发，导航套件归入 fluent 根下的
 navigation 子目录；不保留旧 package 转发或 typealias。
 
 ## 最小接入
@@ -54,29 +58,53 @@ NomiTheme(designSystem = NomiDesignSystem.Fluent) {
 ```
 
 示例文字仅展示 API，产品文案应走宿主资源系统。未指定 variant/size/shape/padding/colors/style
-的调用保留原生默认， 不会从中立投影反向填入 Nomi 排版、48dp、圆角或内边距。
+的调用保留原生默认， 不会把中立主题的排版、48dp、圆角或内边距反向填入原生组件。
 
-## 主题输入与只读投影
+## 主题映射函数模型
 
-主题入口只接受 `NomiThemeOverrides`；其五组显式覆盖统一归入
-`NomiThemeRequest` 的显式组，未指定时仍采用原生默认。 请求未提供完整中立色板时使用原生
-`lightColors()` / `darkColors()` 或 `rememberFluentDesignSystem` 配置的 typed 色板；提供完整
-`colorScheme` 时只取 primary 生成完整 Shades，其余颜色字段忽略并记录一次警告。
-`rememberFluentDesignSystem(colors, typography, cornerRadius)` 可配置完整原生对象。 请求中的完整色板
-按 typed Colors.darkMode 确定明暗（无配置才用请求模式），因此只替换强调色阶不会切换背景、文本或描边的深浅色。
-未指定时保留配置色板，排版与圆角不受颜色请求改写。
+主题入口仍是核心的 `NomiTheme(designSystem, darkMode, theme, content)`；Fluent 只负责把收到的
+`ciyin.designsystem.theme.NomiTheme` 翻译成原生主题并安装，不再发布或投影中立主题：
 
-默认排版与圆角来自首次进入分支的真实上游 Fluent 环境，分支保存原生基线； A-B-A
-局部切换不会从已覆盖的主题反复采样。八角色排版按语义投影为中立角色； spacings/sizes
-是中立页面度量扩展，不用来重写原生控件默认。 直接 `typography` 将
+```kotlin
+data class FluentTheme(
+    val isDark: Boolean = false,
+    val colors: Colors? = null,          // io.github.composefluent.Colors
+    val typography: Typography? = null,  // 八角色原生排版
+    val cornerRadius: CornerRadius? = null,
+    val useAcrylicPopup: Boolean = true, // 弹层 acrylic
+    val compactMode: Boolean = true,     // 紧凑密度
+)
+```
+
+- `NomiDesignSystem.Fluent`：使用 `toNativeFluentTheme()`，只跟随 `isDark`，原生色板、排版与圆角沿用当前环境。
+- `NomiDesignSystem.Fluent(map)`：按 `NomiTheme.() -> FluentTheme` 安装原生主题；`Fluent` 是扩展属性、
+  `Fluent(map)` 是普通函数，都不是 `@Composable`；默认 `toNativeFluentTheme()` 与属性共用同一共享实例。
+- `useAcrylicPopup` / `compactMode`：默认 `true` / `true`，对应原生 FluentTheme 默认；需要关闭 acrylic
+  弹层或切换舒展密度时在映射里显式指定；嵌套 Fluent 边界的规格未指定时回到默认值。
+- `toPrimaryFluentTheme()`：在原生 `lightColors()` / `darkColors()` 上只替换强调色阶。完整中立色板只取
+  `primary` 重建 base 与三阶深浅色，其余角色和色板自带的 typed 明暗保持不变。
+- `toFullFluentTheme()`：强调色、八角色排版与三档圆角都取中立主题。Fluent 没有完整色板入口，也没有九级圆角
+  概念，因此颜色只走 `primary`，圆角按 tiny→intersectionEdge、small→control、large→overlay 取三个代表档位；
+  其余颜色字段与档位不参与原生映射，也不被伪造。
+
+安装顺序：先调用 `NomiTheme.() -> FluentTheme` 映射得到规格，再
+`colors ?: lightColors()/darkColors()`、
+`typography ?: 当前原生排版`、`cornerRadius ?: 当前原生圆角`，然后以规格的 `useAcrylicPopup` /
+`compactMode`
+建立原生 FluentTheme， 最后组合 `content()`。 中立主题由核心
+`NomiTheme` 入口发布，伴生 getter 读到的始终是本层显式传入值，不是原生解析结果； spacings 与 sizes
+只是入口主题里的页面度量，不用来重写原生控件默认。
+
+未指定的排版与圆角继承当前原生 Fluent 环境，不再捕获首次进入基线； A-B-A 局部切换直接复用当前原生值。原生视觉由组件直接读取
+`FluentTheme` 原生值，不做反向投影；
+`toFullFluentTheme()` 把
 bodySmall/bodyMedium/labelLarge/bodyLarge/titleLarge/headlineMedium/headlineLarge/displayLarge 分别映射到
-caption/body/bodyStrong/bodyLarge/subtitle/title/titleLarge/display；十五角色读模型完整保留。 九级
-`shapes` 无法由原生 API 表达，忽略覆盖并保留原生圆角、记录警告；需要精确圆角时使用专属
-`cornerRadius` 配置。
+caption/body/bodyStrong/bodyLarge/subtitle/title/titleLarge/display，其余中立角色保留在入口主题中。
+`isDark` 是已解析布尔，适配器不读系统状态；System 由主题入口在 `theme` 省略时解析。
 
-根 NomiTheme 重置显式 slot 与继承颜色，只继承父层明确的非颜色主题组；NomiThemeOverride 继承全部明确覆盖，不传父
-resolved 默认结果。组件通过 NomiTheme 只读 getter 读取五组结果。 adapter 只把明确的 colors/textStyle
-增量传给中立 slot，原生默认留在 native locals。 默认 Card 内的原生按钮因此仍能提供自己的禁用颜色与字号。
+映射函数建议提升为稳定引用（顶层 `val` 或 `remember`）；内联 lambda 每次重组都会重建原生色板实例。
+组件视觉直接读取 `FluentTheme.colors/typography/cornerRadius` 原生值，不读中立投影。 adapter 只把明确的
+colors/textStyle 增量传给中立 slot，原生默认留在 native locals。 默认 Card 内的原生按钮因此仍能提供自己的禁用颜色与字号。
 
 ## 原生限制与降级
 
@@ -115,34 +143,31 @@ NomiSurface。Default 表示保留原生描边，不等于 None。原生 Text �
 按钮四色逐字段覆盖 default/hovered/pressed/focused/disabled；未指定通道及原生描边保持原样。
 当前状态的显式内容色优先于 textStyle.color，再回退原生实际状态色；透明色是有效显式覆盖。
 
-中立 9 个主题 data class 已公开构造；主题投影可直接构造，也可从 default 工厂取得实例后调用生成的成员
+中立 9 个主题 data class 已公开构造；主题映射可直接构造，也可从 default 工厂取得实例后调用生成的成员
 `copy`，无需 copy import。
-默认值、必填参数与共享/新对象身份语义保持不变，详见[核心主题数据说明](<../design-system/README.md#默认对象与复制>)
-；不恢复手写复制扩展。
+默认值、必填参数与共享/新对象身份语义保持不变，详见[核心主题数据说明](<../design-system/README.md>)；
+不恢复手写复制扩展。
 
 ## 验证入口
 
-上一轮删除主题聚合层时，metadata、Android 依赖编译及 40 项 Desktop
-回归通过；新增直接适配器回调与真实外部模块扁平主题发布测试。联合回归与未验证范围见[设计说明](<../../.docs/design/design-system-模块化方案.md>)。
-
 测试依赖按 [build.gradle.kts](<build.gradle.kts>)：`commonTest` 仅 `libs.kotlin.test`；`desktopTest`
-额外 `projects.core.designSystemMaterial3`、`compose.uiTest`、`compose.desktop.currentOs` 与
-`compose.desktop.uiTestJUnit4`。 测试一律用 `NomiTheme(designSystem = NomiDesignSystem.Fluent, ...)`
-或 `NomiThemeOverride(designSystem = ...)` 显式提供实现（需导入 `ciyin.designsystem.fluent.Fluent`），
-不依赖已移除的隐式默认。导航项槽位化后 metadata 编译通过，Desktop 回归 46 项通过（零失败、零跳过）。
+额外 `compose.uiTest`、`compose.desktop.currentOs` 与 `compose.desktop.uiTestJUnit4`。 测试一律用
+`NomiTheme(designSystem = NomiDesignSystem.Fluent, ...)` 或 `NomiDesignSystem.Fluent(map)`
+显式提供实现（需导入 `ciyin.designsystem.fluent.Fluent`），不依赖已移除的隐式默认。
 
 - [四组件原生对照](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentComponentsTest.kt>)：独立
   raw FluentTheme，不经过 NomiTheme；精确尺寸、逐像素、完整 TextLayout、触摸启禁用、支持的显式覆盖。
 - [五态颜色](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentButtonColorsTest.kt>)
   ：全部变体和深浅色的逐通道覆盖、五态原生描边、文字颜色优先级。
-- [降级渲染](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentDegradationTest.kt>)：独立
-  Compose 环境验证不支持的覆盖被忽略且不抛异常。
-- [原生主题及嵌套](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentNativeThemeTest.kt>)
-  ：上游真实排版基线、A-B-A、typed 配置优先级、嵌套原生禁用按钮。
+- [组件降级渲染](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentDegradationTest.kt>)：独立
+  Compose 环境验证不支持的组件覆盖被忽略且不抛异常。
+- [原生主题与继承](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentNativeThemeTest.kt>)
+  ：当前原生排版/圆角继承、A-B-A、typed 色板明暗、明暗切换与嵌套原生禁用按钮。
 - [主题入口](<src/desktopTest/kotlin/ciyin/designsystem/fluent/FluentThemeEntryTest.kt>)
-  验证八角色映射、完整读模型、嵌套规则及不支持组降级。
+  验证零参数工厂安装、Primary 只换强调色、Full 八角色与三档圆角、自定义映射消费与入口主题原样发布。
 - [主题映射](<src/commonTest/kotlin/ciyin/designsystem/fluent/FluentThemeMappingTest.kt>)
-  与[外部 SPI 消费](<src/desktopTest/kotlin/consumer/ExternalApiConsumptionTest.kt>)补充公开契约回归。
+  覆盖中立到原生换算与三个预置映射的原生组声明；[外部 SPI 消费](<src/desktopTest/kotlin/consumer/ExternalApiConsumptionTest.kt>)
+  在 adapter 外验证包装边界、公开映射函数与组件族替换。
 - [独立主题数据消费](<src/desktopTest/kotlin/consumer/ThemeFactoryCopyConsumptionTest.kt>)：在非核心模块验证
   9 类公开构造、无扩展导入的成员 copy、默认值与身份语义。
 - [导航套件](<src/desktopTest/kotlin/ciyin/designsystem/fluent/navigation/FluentNavigationTest.kt>)
@@ -154,12 +179,8 @@ NomiSurface。Default 表示保留原生描边，不等于 None。原生 Text �
 .\gradlew.bat :core:design-system-fluent:desktopTest --console=plain
 ```
 
-历史 internal 构造方案当时有 27 项 Desktop 测试及 metadata、Android 依赖和 Desktop
-宿主编译通过；该方案现已被公开构造与生成成员 copy 替代，旧测试结果不是本轮验证。设备、iOS/Web 与发布验收仍未完成。
-
-历史记录：native-first 之前的跨平台迁移曾有 17 项 Desktop 测试及 sample/APK 构建通过；更早
-Desktop-only 阶段也有 17 项测试。 这些不是当前原生默认重构的验证结果。前轮 WSA 仅覆盖 Nomi/M3，不证明
-Android Fluent 已实机运行。 Android Fluent 设备、iOS native/link、Web 构建仍需独立验收；Release 的
+历史 internal 构造方案与 request/overrides 主题模型的结果不代表当前契约；当前映射函数模型须独立编译与回归。
+设备、iOS/Web 与发布验收仍未完成。 Android Fluent 设备、iOS native/link、Web 构建仍需独立验收； Release 的
 Fluent/haze/FileKit 与 Compose/Skia 缺失 API 问题仍保留，不使用 ignorewarnings。
 
 ## 相关资料

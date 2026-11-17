@@ -25,6 +25,8 @@ import kotlin.test.assertEquals
 class Material3ListItemTest {
     /**
      * 可点击行渲染标题、副标题与两个内容槽，点击回调命中一次。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun clickableRowRendersSlotsAndDispatchesClick() = runComposeUiTest {
@@ -51,6 +53,8 @@ class Material3ListItemTest {
 
     /**
      * 静态行不附加点击语义，未提供的槽不进入组合。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun staticRowHasNoClickActionAndOmittedSlotsStayAbsent() = runComposeUiTest {

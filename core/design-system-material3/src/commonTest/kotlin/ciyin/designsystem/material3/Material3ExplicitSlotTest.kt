@@ -27,7 +27,6 @@ import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
 import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import ciyin.designsystem.theme.defaultNomiTypography
 import kotlin.test.Test
@@ -42,16 +41,18 @@ class Material3ExplicitSlotTest {
     /**
      * 默认 Card/Surface 不得向中立显式 locals 投影原生默认正文色及字号。
      *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun defaultContainersDoNotShadowNestedNativeButtonStateOrTypography() = runComposeUiTest {
-        val typography = Typography(
+        val nativeTypography = Typography(
             bodyLarge = TextStyle(fontSize = 33.sp),
             labelLarge = TextStyle(fontSize = 22.sp),
         )
+        val designSystem = NomiDesignSystem.Material3 {
+            Material3Theme(isDark = isDark, typography = nativeTypography)
+        }
         setContent {
-            val designSystem = rememberMaterial3DesignSystem(typography = typography)
             NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
                 Column {
                     NomiCard { NestedNativeButton("card-native") }
@@ -67,25 +68,30 @@ class Material3ExplicitSlotTest {
         for (tag in listOf("card-native", "surface-native")) {
             val actual = onNodeWithTag(tag, useUnmergedTree = true).layoutStyle()
             assertEquals(Color.Magenta, actual.color)
-            assertEquals(typography.labelLarge.fontSize, actual.fontSize)
+            assertEquals(nativeTypography.labelLarge.fontSize, actual.fontSize)
         }
     }
 
     /**
-     * 默认 Material Card 内切到 Nomi 使用 Nomi 本身的默认正文，退出后恢复 Material 正文。
+     * 默认 Material Card 内切回 Nomi 默认系统时使用 Nomi 本身的正文，退出后恢复 Material 正文。
      *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun defaultCardDoesNotCarryNativeDefaultsIntoNomiOverride() = runComposeUiTest {
-        val typography = Typography(bodyLarge = TextStyle(fontSize = 33.sp))
+        val nativeTypography = Typography(bodyLarge = TextStyle(fontSize = 33.sp))
         val nomiTypography = defaultNomiTypography()
         val nomiColors = defaultLightNomiColorScheme()
+        val designSystem = NomiDesignSystem.Material3 {
+            Material3Theme(isDark = isDark, typography = nativeTypography)
+        }
         setContent {
-            val designSystem = rememberMaterial3DesignSystem(typography = typography)
             NomiTheme(designSystem = designSystem, darkMode = DarkMode.Light) {
                 NomiCard {
-                    NomiThemeOverride(designSystem = NomiDesignSystem.Default) {
+                    NomiTheme(
+                        designSystem = NomiDesignSystem.Default,
+                        darkMode = DarkMode.Light,
+                    ) {
                         NomiText("Nomi正文", modifier = Modifier.testTag("nomi-body"))
                     }
                     NomiText("恢复正文", modifier = Modifier.testTag("restored-body"))
@@ -101,27 +107,27 @@ class Material3ExplicitSlotTest {
     /**
      * 默认容器不新增显式值，但必须保留调用方已经建立的显式 slot。
      *
-     * @return 本回归的跨平台测试完成结果；Web 由测试运行器等待其 Promise，JVM/Native 同步完成。
+     * @return 当前平台的 Compose 测试执行结果。
      */
     @Test
     fun defaultContainersPreserveExplicitOuterSlot() = runComposeUiTest {
         setContent {
-            NomiTheme(designSystem = NomiDesignSystem.Material3) {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
                 ProvideNomiContentStyle(
                     color = Color.Green,
-                    textStyle = TextStyle(fontSize = 27.sp)
+                    textStyle = TextStyle(fontSize = 27.sp),
                 ) {
                     Column {
                         NomiCard {
                             NomiText(
                                 "显式卡片",
-                                modifier = Modifier.testTag("explicit-card")
+                                modifier = Modifier.testTag("explicit-card"),
                             )
                         }
                         NomiSurface {
                             NomiText(
                                 "显式表面",
-                                modifier = Modifier.testTag("explicit-surface")
+                                modifier = Modifier.testTag("explicit-surface"),
                             )
                         }
                     }

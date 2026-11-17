@@ -8,28 +8,17 @@ import ciyin.designsystem.component.card.NomiCard
 import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * 验证未显式提供 [ciyin.designsystem.runtime.NomiDesignSystem] 时主题入口与各组件明确失败。
+ * 验证未显式提供 [ciyin.designsystem.runtime.NomiDesignSystem] 时各组件明确失败。
  *
  * 覆盖无隐式默认契约：应用根、测试与 Preview 必须显式提供实现，缺省装配问题不能被静默回退掩盖。
  */
 @OptIn(ExperimentalTestApi::class)
 class NoImplicitDesignSystemContractTest {
-    /**
-     * 验证裸 NomiTheme 在未提供设计系统时以带指引的 IllegalStateException 失败。
-     */
-    @Test
-    fun bareThemeFailsWithGuidance() {
-        assertMissingDesignSystemFails {
-            NomiTheme(content = {})
-        }
-    }
-
     /**
      * 验证未提供设计系统时 NomiText 在组合阶段明确失败。
      */

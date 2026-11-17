@@ -1,5 +1,6 @@
 package ciyin.designsystem.fluent
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
@@ -7,87 +8,109 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ciyin.designsystem.runtime.NomiDesignSystem
-import ciyin.designsystem.runtime.NomiThemeRequest
-import ciyin.designsystem.runtime.ResolvedNomiTheme
-import ciyin.designsystem.theme.DarkMode
-import ciyin.designsystem.theme.NomiSizes
+import ciyin.designsystem.theme.LocalNomiTheme
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverride
-import ciyin.designsystem.theme.NomiThemeOverrides
-import ciyin.designsystem.theme.NomiTypography
-import ciyin.designsystem.theme.Spacings
-import ciyin.designsystem.theme.defaultLightNomiColorScheme
 import ciyin.designsystem.theme.defaultNomiShapes
 import ciyin.designsystem.theme.defaultNomiSizes
 import ciyin.designsystem.theme.defaultNomiTypography
 import ciyin.designsystem.theme.defaultSpacings
 import io.github.composefluent.Colors
-import io.github.composefluent.FluentTheme
+import io.github.composefluent.CornerRadius
 import io.github.composefluent.Typography
+import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import io.github.composefluent.FluentTheme as NativeFluentTheme
 
 /**
- * Fluent 主题入口基于 [NomiThemeOverrides] 的映射、继承及降级边界。
+ * Fluent 主题入口的映射函数模型：预置映射、自定义映射与原生主题安装。
  */
 @OptIn(ExperimentalTestApi::class)
 class FluentThemeEntryTest {
     /**
-     * Fluent 直接回调五组结果与原请求来源，不把原生默认回填为明确覆盖。
+     * 零参数工厂只跟随明暗模式，安装原生浅色板，中立主题原样保留入口传入值。
      */
     @Test
-    fun providerPublishesFlatResultsAndExplicitSources() = runComposeUiTest {
-        val typography = defaultNomiTypography().copy(bodyMedium = TextStyle(fontSize = 23.sp))
+    fun nativeFactoryInstallsPaletteAndKeepsExplicitTheme() = runComposeUiTest {
         val spacings = defaultSpacings().copy(large = 27.dp)
         val sizes = defaultNomiSizes()
-        val overrides = NomiThemeOverrides(
-            typography = typography,
-            spacings = spacings,
-            sizes = sizes,
-        )
-        val request = NomiThemeRequest(
-            requestedMode = DarkMode.Dark,
-            isDark = true,
-            overrides = overrides,
-        )
-        var published: ResolvedNomiTheme? = null
+        val theme = NomiTheme.light().copy(spacings = spacings, sizes = sizes)
         var nativeColors: Colors? = null
-        var nativeBody: TextStyle? = null
+        var published: NomiTheme? = null
         setContent {
-            NomiDesignSystem.Fluent.ProvideTheme(request = request) { resolved ->
-                published = resolved
-                nativeColors = FluentTheme.colors
-                nativeBody = FluentTheme.typography.body
+            NomiTheme(theme = theme, designSystem = NomiDesignSystem.Fluent) {
+                nativeColors = NativeFluentTheme.colors
+                published = LocalNomiTheme.current
             }
         }
         runOnIdle {
-            val result = requireNotNull(published)
-            val native = requireNotNull(nativeColors)
-            assertEquals(DarkMode.Dark, result.requestedMode)
-            assertTrue(result.isDark)
-            assertSame(overrides, result.overrides)
-            assertSame(typography, result.typography)
-            assertSame(spacings, result.spacings)
-            assertSame(sizes, result.sizes)
-            assertEquals(native.shades.base, result.colorScheme.primary)
-            assertEquals(native.background.layer.default, result.colorScheme.surface)
-            assertEquals(typography.bodyMedium, nativeBody)
-            assertEquals(null, result.overrides.colorScheme)
-            assertEquals(null, result.overrides.shapes)
+            assertEquals(false, requireNotNull(nativeColors).darkMode)
+            assertSame(theme, requireNotNull(published))
         }
     }
 
     /**
-     * 八个原生角色按既定映射生效，中立十五角色及布局组完整保留。
+     * 深色中立主题安装深色原生色板，不读取系统状态。
      */
     @Test
-    fun explicitTypographyAndLayoutGroupsKeepExactReadModel() = runComposeUiTest {
-        val input = defaultNomiTypography().copy(
+    fun darkThemeInstallsDarkPalette() = runComposeUiTest {
+        val theme = NomiTheme.dark()
+        var nativeColors: Colors? = null
+        var published: NomiTheme? = null
+        setContent {
+            NomiTheme(theme = theme, designSystem = NomiDesignSystem.Fluent) {
+                nativeColors = NativeFluentTheme.colors
+                published = LocalNomiTheme.current
+            }
+        }
+        runOnIdle {
+            assertTrue(requireNotNull(nativeColors).darkMode)
+            assertSame(theme, requireNotNull(published))
+        }
+    }
+
+    /**
+     * Primary 映射只替换强调色阶，非强调色角色与原生浅色明暗保持不变。
+     */
+    @Test
+    fun primaryMapOnlyReplacesAccentRamp() = runComposeUiTest {
+        val accent = Color(0xFF123456)
+        val theme = NomiTheme.light().copy(
+            colorScheme = NomiTheme.light().colorScheme.copy(primary = accent),
+        )
+        var nativeColors: Colors? = null
+        var published: NomiTheme? = null
+        setContent {
+            NomiTheme(
+                theme = theme,
+                designSystem = NomiDesignSystem.Fluent { toPrimaryFluentTheme() }) {
+                nativeColors = NativeFluentTheme.colors
+                published = LocalNomiTheme.current
+            }
+        }
+        runOnIdle {
+            val colors = requireNotNull(nativeColors)
+            val defaults = lightColors()
+            assertEquals(accent, colors.shades.base)
+            assertEquals(false, colors.darkMode)
+            assertEquals(defaults.background.solid.base, colors.background.solid.base)
+            assertEquals(defaults.text.text.primary, colors.text.text.primary)
+            assertEquals(defaults.stroke.control.default, colors.stroke.control.default)
+            assertEquals(defaults.system.critical, colors.system.critical)
+            assertSame(theme, requireNotNull(published))
+        }
+    }
+
+    /**
+     * Full 映射把八角色排版与三档圆角写入原生主题，中立主题仍保持入口传入值。
+     */
+    @Test
+    fun fullMapTranslatesEightTypeRolesAndThreeCornerRadii() = runComposeUiTest {
+        val typography = defaultNomiTypography().copy(
             displayLarge = TextStyle(fontSize = 61.sp),
-            displayMedium = TextStyle(fontSize = 53.sp),
             headlineLarge = TextStyle(fontSize = 39.sp),
             headlineMedium = TextStyle(fontSize = 29.sp),
             titleLarge = TextStyle(fontSize = 23.sp),
@@ -96,104 +119,66 @@ class FluentThemeEntryTest {
             bodySmall = TextStyle(fontSize = 13.sp),
             labelLarge = TextStyle(fontSize = 15.sp),
         )
-        val spacing = defaultSpacings().copy(large = 31.dp)
-        val sizes = defaultNomiSizes().copy(
-            layoutConstraints = defaultNomiSizes().layoutConstraints.copy(cardMinWidth = 310.dp)
+        val shapes = defaultNomiShapes().copy(
+            tiny = RoundedCornerShape(9.dp),
+            small = RoundedCornerShape(11.dp),
+            large = RoundedCornerShape(13.dp),
         )
-        var actual: Typography? = null
-        var projectedTypography: NomiTypography? = null
-        var projectedSpacings: Spacings? = null
-        var projectedSizes: NomiSizes? = null
+        val theme = NomiTheme.light().copy(typography = typography, shapes = shapes)
+        var nativeTypography: Typography? = null
+        var nativeCorners: CornerRadius? = null
+        var published: NomiTheme? = null
         setContent {
             NomiTheme(
-                darkMode = DarkMode.Light,
-                designSystem = NomiDesignSystem.Fluent,
-                overrides = NomiThemeOverrides(
-                    typography = input,
-                    spacings = spacing,
-                    sizes = sizes,
-                ),
-            ) {
-                actual = FluentTheme.typography
-                projectedTypography = NomiTheme.typography
-                projectedSpacings = NomiTheme.spacings
-                projectedSizes = NomiTheme.sizes
+                theme = theme,
+                designSystem = NomiDesignSystem.Fluent { toFullFluentTheme() }) {
+                nativeTypography = NativeFluentTheme.typography
+                nativeCorners = NativeFluentTheme.cornerRadius
+                published = LocalNomiTheme.current
             }
         }
-        val native = requireNotNull(actual)
-        assertEquals(input.bodySmall, native.caption)
-        assertEquals(input.bodyMedium, native.body)
-        assertEquals(input.labelLarge, native.bodyStrong)
-        assertEquals(input.bodyLarge, native.bodyLarge)
-        assertEquals(input.titleLarge, native.subtitle)
-        assertEquals(input.headlineMedium, native.title)
-        assertEquals(input.headlineLarge, native.titleLarge)
-        assertEquals(input.displayLarge, native.display)
-        assertSame(input, projectedTypography)
-        assertSame(spacing, projectedSpacings)
-        assertSame(sizes, projectedSizes)
+        runOnIdle {
+            val native = requireNotNull(nativeTypography)
+            assertEquals(typography.bodySmall, native.caption)
+            assertEquals(typography.bodyMedium, native.body)
+            assertEquals(typography.labelLarge, native.bodyStrong)
+            assertEquals(typography.bodyLarge, native.bodyLarge)
+            assertEquals(typography.titleLarge, native.subtitle)
+            assertEquals(typography.headlineMedium, native.title)
+            assertEquals(typography.headlineLarge, native.titleLarge)
+            assertEquals(typography.displayLarge, native.display)
+            val corners = requireNotNull(nativeCorners)
+            assertEquals(9.dp, corners.intersectionEdge)
+            assertEquals(11.dp, corners.control)
+            assertEquals(13.dp, corners.overlay)
+            assertSame(theme, requireNotNull(published))
+        }
     }
 
     /**
-     * 嵌套根保留明确排版而重新选原生颜色，Override 则保留明确的完整色板。
+     * 自定义映射函数能读到本层中立主题，显式原生色板原样安装而不被工厂改写。
      */
     @Test
-    fun nestedRootRechoosesColorsWhileOverrideInheritsPalette() = runComposeUiTest {
-        val input = defaultNomiTypography().copy(bodyMedium = TextStyle(fontSize = 24.sp))
-        val palette = defaultLightNomiColorScheme().copy(primary = Color.Red)
-        var nestedColors: Colors? = null
-        var nestedBody: TextStyle? = null
-        var overriddenBase = Color.Unspecified
+    fun customMapReceivesNeutralThemeAndExplicitValuesWin() = runComposeUiTest {
+        val explicitColors = darkColors()
+        var seenMode: Boolean? = null
+        val map: NomiTheme.() -> FluentTheme = {
+            seenMode = isDark
+            FluentTheme(isDark = isDark, colors = explicitColors)
+        }
+        val theme = NomiTheme.dark()
+        var nativeColors: Colors? = null
+        var published: NomiTheme? = null
         setContent {
-            NomiTheme(
-                darkMode = DarkMode.Light,
-                designSystem = NomiDesignSystem.Fluent,
-                overrides = NomiThemeOverrides(typography = input, colorScheme = palette),
-            ) {
-                NomiTheme {
-                    nestedColors = FluentTheme.colors
-                    nestedBody = FluentTheme.typography.body
-                }
-                NomiThemeOverride { overriddenBase = FluentTheme.colors.shades.base }
+            NomiTheme(theme = theme, designSystem = NomiDesignSystem.Fluent(map)) {
+                nativeColors = NativeFluentTheme.colors
+                published = LocalNomiTheme.current
             }
         }
-        assertEquals(lightColors().shades.base, requireNotNull(nestedColors).shades.base)
-        assertEquals(input.bodyMedium, nestedBody)
-        assertEquals(Color.Red, overriddenBase)
-    }
-
-    /**
-     * Fluent 没有完整色板入口：完整色板只取 primary 作为强调色，其余字段忽略。
-     */
-    @Test
-    fun completeColorSchemeFallsBackToPrimaryAccent() = runComposeUiTest {
-        val scheme = defaultLightNomiColorScheme().copy(primary = Color(0xFF123456))
-        var accent = Color.Unspecified
-        setContent {
-            NomiTheme(
-                designSystem = NomiDesignSystem.Fluent,
-                overrides = NomiThemeOverrides(colorScheme = scheme),
-            ) {
-                accent = FluentTheme.colors.shades.base
-            }
+        runOnIdle {
+            assertEquals(true, seenMode)
+            assertSame(explicitColors, nativeColors)
+            assertSame(theme, requireNotNull(published))
         }
-        runOnIdle { assertEquals(Color(0xFF123456), accent) }
-    }
-
-    /**
-     * 九级圆角无法表示为原生 Dp CornerRadius：忽略覆盖并正常渲染。
-     */
-    @Test
-    fun completeShapesAreIgnored() = runComposeUiTest {
-        var rendered = false
-        setContent {
-            NomiTheme(
-                designSystem = NomiDesignSystem.Fluent,
-                overrides = NomiThemeOverrides(shapes = defaultNomiShapes()),
-            ) {
-                rendered = true
-            }
-        }
-        runOnIdle { assertTrue(rendered) }
     }
 }

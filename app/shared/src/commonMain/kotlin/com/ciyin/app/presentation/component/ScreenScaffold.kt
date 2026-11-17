@@ -22,8 +22,6 @@ import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.scaffold.NomiScaffold
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.material3.Material3
-import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.extension.thenIf
 import com.ciyin.app.shared.Res
@@ -107,13 +105,11 @@ fun ScreenScaffold(
  */
 @Preview
 @Composable
-private fun ScreenPreview() {
-    NomiTheme(designSystem = NomiDesignSystem.Material3) {
-        ScreenScaffold(
-            title = stringResource(Res.string.app_name),
-            topBar = {}
-        ) {
+private fun ScreenPreview() = AppPreview {
+    ScreenScaffold(
+        title = stringResource(Res.string.app_name),
+        topBar = {}
+    ) {
 
-        }
     }
 }

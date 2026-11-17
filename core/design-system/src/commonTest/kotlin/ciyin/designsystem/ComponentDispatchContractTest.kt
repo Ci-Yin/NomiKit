@@ -33,7 +33,6 @@ import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.runtime.LocalNomiContentColor
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
-import ciyin.designsystem.runtime.ResolvedNomiTheme
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.theme.defaultDarkNomiColorScheme
@@ -60,22 +59,17 @@ class ComponentDispatchContractTest {
      */
     @Test
     fun defaultsRemainSparseAndCardHasIndependentDispatch() = runComposeUiTest {
-        val defaults = ResolvedNomiTheme(
-            requestedMode = DarkMode.Dark,
-            isDark = true,
+        val defaults = NomiTheme(
             colorScheme = defaultDarkNomiColorScheme(),
+            isDark = true,
             typography = defaultNomiTypography(),
             shapes = defaultNomiShapes(),
             spacings = defaultSpacings(),
             sizes = defaultNomiSizes(),
         )
-        val nativeTheme = defaults.copy(
-            colorScheme = defaults.colorScheme.copy(primary = Color.Red),
-            typography = defaults.typography.copy(bodyMedium = TextStyle(fontSize = 37.sp)),
-        )
-        val designSystem = RecordingDesignSystem(nativeTheme = nativeTheme)
+        val designSystem = RecordingDesignSystem()
         setContent {
-            NomiTheme(designSystem = designSystem, darkMode = DarkMode.Dark) {
+            NomiTheme(theme = defaults, designSystem = designSystem) {
                 NomiText("plain")
                 NomiButton(onClick = {}) { NomiText("button-slot") }
                 NomiSurface { NomiText("surface-slot") }

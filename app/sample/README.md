@@ -37,11 +37,12 @@ UiState。返回使用 Effect。 没有加载、失败、网络、数据库或�
 
 [ProvideSampleDesignSystems](src/commonMain/kotlin/com/ciyin/app/presentation/screen/sample/SampleDesignSystems.kt)
 提供 `List<NomiDesignSystem>` 候选目录，commonMain 缺省为 Nomi + Material 3 + Fluent（对应
-`NomiDesignSystem.Default` / `NomiDesignSystem.Material3` / `NomiDesignSystem.Fluent`，需分别导入
+`NomiDesignSystem.Default` 属性与 `NomiDesignSystem.Material3` / `NomiDesignSystem.Fluent` 工厂，需分别导入
 `ciyin.designsystem.nomi.Default`、`ciyin.designsystem.material3.Material3`、
-`ciyin.designsystem.fluent.Fluent`）。 所有已启用目标共用此默认目录，不使用 expect/actual 或 Desktop
-特殊包装维护不同列表。 provider 保留为可选覆盖入口；需要覆盖时，在样例导航栈上方传入稳定、非空且 ID
-唯一的完整列表， 首项为页面默认值和重置目标。候选覆盖不改变应用根的 Material 3 主题。
+`ciyin.designsystem.fluent.Fluent`）。页面按当前明暗构造 `NomiTheme.light()` 或 `NomiTheme.dark()`
+，再交给选中的设计系统。 所有已启用目标共用此默认目录，不使用 expect/actual 或 Desktop 特殊包装维护不同列表。
+provider 保留为可选覆盖入口；需要覆盖时，在样例导航栈上方传入稳定、非空且 ID 唯一的完整列表，
+首项为页面默认值和重置目标。候选覆盖不改变应用根的 Material 3 主题。
 
 公开 provider 的签名依赖设计系统接口，因此 [构建配置](<build.gradle.kts>) 使用
 `api(projects.core.designSystem)`；Material 3 / Fluent adapter 都是 commonMain 的 implementation 依赖。

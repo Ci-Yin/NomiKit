@@ -89,7 +89,10 @@ internal fun DesignSystemDemoContent(
     val system = systems.single { it.id == state.designSystemId }
     val alternate = systems.firstOrNull { it.id != system.id }
     val density = LocalDensity.current
-    NomiTheme(designSystem = system, darkMode = state.darkMode) {
+    NomiTheme(
+        darkMode = state.darkMode,
+        designSystem = system,
+    ) {
         CompositionLocalProvider(
             LocalDensity provides Density(
                 density = density.density,
@@ -111,7 +114,6 @@ internal fun DesignSystemDemoContent(
  * 按可用宽度事实选择上下或左右排布，两个模式都保持一条完整的纵向滚动链。
  *
  * @param state 用于配置控件和组件展示的页面快照。
- * @param system 当前选中的设计系统。
  * @param systems 控制面板列出的候选实现，包含当前选中系统。
  * @param alternateDesignSystem 局部覆盖示例的另一实现；null 时保留当前系统。
  * @param onAction 用户操作的分发入口，状态仍由调用方持有。

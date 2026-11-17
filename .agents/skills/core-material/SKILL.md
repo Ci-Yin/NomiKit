@@ -18,12 +18,13 @@ API，新增中立能力转[core-design-system](<../core-design-system/SKILL.md>
 ## 原生默认重构后的兼容方式
 
 - 旧 `AppTheme(...)` 保留参数名、顺序和默认选择行为；省略颜色按请求模式选择旧默认，其余参数继承当前值。
-- `rememberLegacyMaterial3DesignSystem(colorScheme, typography, shapes, spacings, sizes)` 直接保存旧颜色、原生
-  Material Typography、形状、间距和尺寸，再建立 Nomi/M3 原生环境；不把主题聚合对象重新引入核心入口。
+- `AppTheme` 内部组装 `NomiTheme` 值，再用 `Material3Map` 把旧颜色/原生 Typography/形状映射为
+  `Material3Theme`，交给 `NomiDesignSystem.Material3(map)`；不把主题聚合对象或 request/overrides
+  重新引入核心入口。
 - `AppTheme.typography` 仍是 Material 类型；M3 环境读取实际实例，不能用十五角色往返转换丢失库专属角色。
 - 旧 colorScheme/shapes/spacings/sizes getter 通过 `NomiTheme` 读取；typography 在 Material3 环境保留原生
   `MaterialTheme.typography` 实例，其余环境从中立排版映射。分支判定读取可空
-  `LocalNomiDesignSystem.current?.id == NomiDesignSystem.Material3.id`（需导入扩展属性
+  `LocalNomiDesignSystem.current?.id == NomiDesignSystem.Material3.id`（需导入扩展工厂
   `ciyin.designsystem.material3.Material3`），未提供时走中立映射而非抛错。不要复制一套独立
   CompositionLocal；组件通过 `NomiTheme` 读取中立主题。
 - `DarkMode` 保留真实旧枚举与显式映射，不能仅 typealias 而破坏枚举项 import。
@@ -39,11 +40,11 @@ API，新增中立能力转[core-design-system](<../core-design-system/SKILL.md>
 不能让核心/adapter 反向依赖旧门面，也不把 Fluent 依赖塞进兼容包。 应用根已选新 M3，legacy
 配置只服务旧入口；不添加全局双主题桥或延后根迁移 gate。 app/shared 已迁移到中立导航、NomiTheme 与中立
 IconPack，不再 import ciyin.material；旧门面消费者只剩 sample 等显式使用旧 AppTheme 的页面。 不要为
-app/shared 的导航/预览/脚手架恢复 AppTheme、旧 iconpack 或 ui-foundation 的 M3 Title。 新 NomiTheme
-接收五组直接参数，但 typography 是 Type 中的 NomiTypography，不是旧 Material 类型。 只有旧
+app/shared 的导航/预览/脚手架恢复 AppTheme、旧 iconpack 或 ui-foundation 的 M3 Title。 新 `NomiTheme`
+是包含五组与 darkMode 的值类型，typography 是 Type 中的 NomiTypography，不是旧 Material 类型。 只有旧
 ciyin.material 门面继续保留 AppTheme/AppColorScheme/AppShapes/AppSizes
-名称；旧包默认工厂转发已删除，默认入口统一为中立核心工厂。新 API 不提供 App* 别名。 新根只继承非颜色明确组，Override
-继承全部明确组；这不取消旧函数自身的颜色默认选择与完整原生 Typography 身份契约。
+名称；旧包默认工厂转发已删除，默认入口统一为中立核心工厂。新 API 不提供 App* 别名。 这保留旧函数自身的颜色默认选择
+与完整原生 Typography 身份契约，不引入根/Override 双入口。
 
 ## 验证
 

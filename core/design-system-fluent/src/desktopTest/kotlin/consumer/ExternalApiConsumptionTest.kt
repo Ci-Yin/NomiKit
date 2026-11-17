@@ -3,8 +3,6 @@ package consumer
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -20,7 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButton
@@ -31,79 +28,78 @@ import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.fluent.Fluent
-import ciyin.designsystem.runtime.LocalResolvedNomiTheme
+import ciyin.designsystem.fluent.FluentTheme
 import ciyin.designsystem.runtime.NomiDesignSystem
-import ciyin.designsystem.runtime.NomiThemeRequest
-import ciyin.designsystem.runtime.ResolvedNomiTheme
 import ciyin.designsystem.theme.DarkMode
+import ciyin.designsystem.theme.LocalNomiTheme
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverrides
-import ciyin.designsystem.theme.defaultSpacings
+import io.github.composefluent.Colors
+import io.github.composefluent.lightColors
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import io.github.composefluent.FluentTheme as NativeFluentTheme
 
 /**
- * 从 adapter 外部验证公开 SPI 与稀疏主题覆盖消费。
+ * 从 adapter 外部验证公开 SPI、映射函数与显式中立主题消费。
  */
 @OptIn(ExperimentalTestApi::class)
 class ExternalApiConsumptionTest {
     /**
-     * 外部模块可实现扁平主题回调，并把自己的分组结果发布给 NomiTheme 读取。
+     * 外部模块可包装 Fluent 边界并转发主题，中立值仍由主题入口发布。
      */
     @Test
-    fun externalConsumerPublishesFlatThemeResults() = runComposeUiTest {
-        val spacing = defaultSpacings().copy(large = 37.dp)
-        var published: ResolvedNomiTheme? = null
-        var observed: ResolvedNomiTheme? = null
+    fun externalConsumerWrapsFluentBoundaryAndForwardsTheme() = runComposeUiTest {
+        val theme = NomiTheme.dark()
+        var nativeColors: Colors? = null
+        var observed: NomiTheme? = null
         val customSystem = object : NomiDesignSystem by NomiDesignSystem.Fluent {
             /**
-             * 沿用 Fluent 原生环境，仅替换回调结果中的页面间距。
+             * 转发主题，不发布也不改写中立值。
              *
-             * @param request 核心合并后的显式输入，不从结果反推覆盖来源。
-             * @param content 接收五组解析结果的内容，仍在 Fluent 原生环境内执行。
+             * @param theme 本层显式中立主题，只作为原生映射来源。
+             * @param content 在 Fluent 原生主题环境中组合的内容。
              */
             @Composable
-            override fun ProvideTheme(
-                request: NomiThemeRequest,
-                content: @Composable (ResolvedNomiTheme) -> Unit
-            ) {
-                NomiDesignSystem.Fluent.ProvideTheme(request = request) { resolved ->
-                    // 同值重组复用夹具结果，避免将前后两次相等投影的引用交叉比较。
-                    val result = remember(resolved, spacing) { resolved.copy(spacings = spacing) }
-                    SideEffect { published = result }
-                    content(result)
-                }
+            override fun ProvideTheme(theme: NomiTheme, content: @Composable () -> Unit) {
+                NomiDesignSystem.Fluent.ProvideTheme(theme, content)
             }
         }
         setContent {
-            NomiTheme(designSystem = customSystem, darkMode = DarkMode.Dark) {
-                val actual = LocalResolvedNomiTheme.current.copy(
-                    requestedMode = NomiTheme.darkMode,
-                    colorScheme = NomiTheme.colorScheme,
-                    typography = NomiTheme.typography,
-                    shapes = NomiTheme.shapes,
-                    spacings = NomiTheme.spacings,
-                    sizes = NomiTheme.sizes,
-                )
-                SideEffect { observed = actual }
+            NomiTheme(theme = theme, designSystem = customSystem) {
+                nativeColors = NativeFluentTheme.colors
+                observed = LocalNomiTheme.current
             }
         }
         runOnIdle {
-            val result = requireNotNull(published)
-            val actual = requireNotNull(observed)
-            assertEquals(DarkMode.Dark, result.requestedMode)
-            assertTrue(result.isDark)
-            assertEquals(NomiThemeOverrides(), result.overrides)
-            assertEquals(result.requestedMode, actual.requestedMode)
-            assertEquals(result.isDark, actual.isDark)
-            assertSame(result.overrides, actual.overrides)
-            assertSame(result.colorScheme, actual.colorScheme)
-            assertSame(result.typography, actual.typography)
-            assertSame(result.shapes, actual.shapes)
-            assertSame(spacing, actual.spacings)
-            assertSame(result.sizes, actual.sizes)
+            assertTrue(requireNotNull(nativeColors).darkMode)
+            assertEquals(true, requireNotNull(observed).isDark)
+            assertSame(theme, observed)
+        }
+    }
+
+    /**
+     * 外部映射函数只用公开类型构造原生规格，工厂不追加任何未声明的原生组。
+     */
+    @Test
+    fun externalConsumerBuildsFluentMapFromPublicTypes() = runComposeUiTest {
+        val colors = lightColors()
+        val map: NomiTheme.() -> FluentTheme = {
+            FluentTheme(isDark = isDark, colors = colors)
+        }
+        val theme = NomiTheme.light()
+        var installed: Colors? = null
+        var published: NomiTheme? = null
+        setContent {
+            NomiTheme(theme = theme, designSystem = NomiDesignSystem.Fluent(map)) {
+                installed = NativeFluentTheme.colors
+                published = LocalNomiTheme.current
+            }
+        }
+        runOnIdle {
+            assertSame(colors, installed)
+            assertSame(theme, requireNotNull(published))
         }
     }
 
@@ -157,10 +153,7 @@ class ExternalApiConsumptionTest {
                 }
         }
         setContent {
-            NomiTheme(
-                designSystem = customSystem,
-                darkMode = DarkMode.Light,
-            ) {
+            NomiTheme(designSystem = customSystem, darkMode = DarkMode.Light) {
                 NomiButton(onClick = {}) { NomiText("External SPI") }
             }
         }

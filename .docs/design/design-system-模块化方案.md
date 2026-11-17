@@ -1,13 +1,18 @@
 # Design System 模块化方案
 
 > 状态：已实现（编译与桌面回归已核；保留平台与发布验证缺口）；设计系统实现改由 `NomiDesignSystem`
-> 伴生对象上的扩展属性暴露，旧顶层单例名称已删除；新增列表项第六族，旧 `SettingItem` 已删除；Nomi 导航
+> 伴生对象上的扩展声明（属性/工厂）暴露，旧顶层单例名称已删除；新增列表项第六族，旧 `SettingItem`
+> 已删除；Nomi 导航
 > 新增永久抽屉支持；导航套件新增外壳容器色覆盖；移除能力声明与核心能力拦截，不支持的覆盖改由适配器降级并记录日志；
-> 主题入口移除旧式直接参数，五组覆盖统一经 `NomiThemeOverrides` 输入；accentColor 单色覆盖已移除，颜色覆盖只剩完整
-> `colorScheme`（替换方案待定）。
+> 主题 API 改为 `NomiTheme` 值 + 适配器映射函数：单入口接收 `designSystem`、`darkMode` 与可选 `theme`
+> ，Material3 /
+> Fluent 工厂接收
+> `(NomiTheme) -> 原生主题值`；`NomiThemeOverrides`、`NomiThemeRequest`、`ResolvedNomiTheme` 与
+> Override 入口全部删除。
 > 范围：`NomiDesignSystem` 新增空 `companion object` 作为绑定命名空间；三个实现对象降为 internal（
 > `DefaultNomiSystem`/`Material3System`/`FluentSystem`）；对外为
-> `NomiDesignSystem.Default/Material3/Fluent` 扩展属性；29 个文件 128 处引用迁移，6 个 README、设计索引与
+> `NomiDesignSystem.Default` 属性与 `NomiDesignSystem.Material3/Fluent` 工厂；29 个文件 128 处引用迁移，6
+> 个 README、设计索引与
 > 2 个 skill 同步；列表项族新增 `NomiListItem` 与 `listItems` renderer，三端原生映射落地，
 > `:core:ui-foundation` 旧 `SettingItem` 删除；Nomi 导航解除 Drawer 能力禁用，新增 M3 永久抽屉 + Nomi
 > 令牌抽屉项；
@@ -15,16 +20,17 @@
 > Fluent 对无法表达的覆盖降级为原生默认并通过 `ciyin.platform.logger` 记录警告。
 > 相关模块：`:core:design-system`、`:core:design-system-nomi`、`:core:design-system-material3`、
 > `:core:design-system-fluent`、`:core:ui-foundation`、`:core:material`、`:app:shared`、`:app:sample`。
-> 最近核对：2026-11-16；master 未提交工作树（主题入口改用 `NomiThemeOverrides` 并移除 accentColor、Nomi
-> Bar 只渲染主导航项）。
-> 验证记录：本轮四模块与 sample 共 167 项 Desktop 回归（核心 39、M3 33、Fluent 47、Nomi 23、sample 25）、
-> `core:material` 19 项、四模块 metadata 与 `:app:shared` 编译通过；上一轮 166 项 Desktop 回归与
+> 最近核对：2026-11-17；master 未提交工作树（NomiTheme 收敛为单入口，darkMode 选择默认主题，浅/暗切换迁移到
+> darkMode）。
+> 验证记录：本轮六模块 Desktop 回归 226 项（核心 31、M3 35、Fluent 52、Nomi 23、material 19、sample 66）、
+> 四模块 metadata 与 `:app:shared` 编译通过；上一轮四模块与 sample 165 项、
 > 命名空间轮 218 项、导航轮 180 项见下方历史条目。
 
 本文沿原路径演进，不新增分支、版本号或归档副本。原设计有 Git 历史可追溯； 此前确立原生默认优先、单组默认工厂、Nomi
-品牌命名、独立 nomi 包及公开构造/生成成员 copy；上一轮删除主题聚合包装，保留现有运行时结果模型并将五组字段扁平化；本轮在上一轮基础上移除
-accentColor：五组覆盖统一经 NomiThemeOverrides 输入，颜色覆盖只剩完整
-colorScheme（替换方式后续再定）。源码存在、测试通过、视觉和平台发布是不同结论。
+品牌命名、独立 nomi 包及公开构造/生成成员 copy；上一轮删除主题聚合包装并将五组字段扁平化；本轮把主题输入收敛为
+`NomiTheme` 值，原生映射交给
+`NomiDesignSystem.Material3` / `NomiDesignSystem.Fluent` 属性与 `Material3(map)` / `Fluent(map)`
+函数，不再保留 request/overrides/Override 入口。 源码存在、测试通过、视觉和平台发布是不同结论。
 
 ## 背景与目标
 
@@ -34,8 +40,8 @@ Material / Fluent 的原生默认视觉。
 
 已确认原则仍是： **调用 API 统一，默认外观和交互由各设计系统自身决定；只应用调用方明确指定的覆盖。**
 此前已在此前提下恢复旧 Theme 的文件职责、工厂名称和直接参数调用，并整理内置实现包职责。
-上一轮按授权删除主题聚合类型和聚合默认工厂；已有 ResolvedNomiTheme
-直接持有五组结果，适配器回调随之迁移，不新增替代包装、CompositionLocal 或兼容入口。
+本轮按授权删除主题聚合类型、请求模型与覆盖入口；`NomiTheme` 直接持有五组结果，适配器通过映射函数建立
+原生主题，不新增替代包装、CompositionLocal 或兼容入口。
 
 - 零视觉参数调用应对应当前库的真实原生组件，而不是把 Nomi 默认颜色、字体、形状、padding 投给所有
   adapter。
@@ -93,46 +99,34 @@ snapshot 仓库。
 与[项目开关](<../../gradle.properties>)
 决定 Android、Desktop、iOS、JS/Wasm 的注册；本轮不改开关。上游有平台产物不等于本仓全部实测。
 
-## 主题：稀疏输入、原生建立、只读投影
+## 主题：值 + 映射函数
 
-| 实际入口                                                                                                              | 职责                                                                                        |
-|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| [NomiThemeRequest](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/NomiThemeRequest.kt>)   | requestedMode、已解析 isDark、显式 overrides                                                |
-| [ThemeOverrides](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/theme/ThemeOverrides.kt>)         | 可空 colorScheme/typography/shapes/spacings/sizes 的显式覆盖输入                            |
-| [NomiDesignSystem](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>)   | `ProvideTheme(request: NomiThemeRequest, content: @Composable (ResolvedNomiTheme) -> Unit)` |
-| [Theme](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/theme/Theme.kt>)                           | 根/局部边界，系统模式解析，规范化请求并发布回调结果                                         |
-| [ResolvedNomiTheme](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/ResolvedNomiTheme.kt>) | 五组原生结果、请求模式、实际明暗与显式 overrides 来源；前两个构造参数必填                   |
-| [ContentStyle](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/ContentStyle.kt>)           | 显式 slot 颜色与文本样式增量                                                                |
+| 实际入口                                                                                                            | 职责                                                                        |
+|---------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [NomiTheme](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/theme/NomiTheme.kt>)                 | 不可变主题值、`LocalNomiTheme`、伴生只读 getter 与唯一入口                  |
+| [NomiDesignSystem](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>) | `ProvideTheme(theme, content)` 映射契约、`LocalNomiDesignSystem` 与 require |
+| [ContentStyle](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/runtime/ContentStyle.kt>)         | 显式 slot 颜色与文本样式增量                                                |
 
 ```text
-NomiTheme / NomiThemeOverride
-  -> NomiThemeRequest（核心规范化的 requestedMode/isDark/overrides）
-  -> adapter 在原生环境内建立自己的主题
-  -> content(ResolvedNomiTheme) 回调五组当前原生结果
-  -> 核心以 request 规范化请求字段，组件通过 NomiTheme.colorScheme / typography / shapes / spacings / sizes 只读访问
+NomiTheme(designSystem, darkMode, theme, content)
+  -> theme 省略时：resolveIsDark() -> 选择浅色/深色默认 NomiTheme
+  -> theme 显式传入时：原样使用，忽略 darkMode
+  -> 入口发布 LocalNomiTheme 与 LocalNomiDesignSystem
+  -> designSystem.ProvideTheme(theme, content)
+
+  -> adapter 调用映射函数得到原生组并安装原生主题
+  -> 原生组件直接读取原生主题；NomiTheme.* 读取入口输入值
 ```
 
-当前根签名为 `darkMode = NomiTheme.darkMode`、`designSystem = requireNomiDesignSystem()`、
-`overrides = NomiThemeOverrides()` 和 content；五组主题组只经 `NomiThemeOverrides` 输入。
-`LocalNomiDesignSystem` 为可空且 **无隐式默认**：未显式提供时 `requireNomiDesignSystem()` 抛出带指引的
-`IllegalStateException`；`NomiTheme`/`NomiThemeOverride` 入口与各组件读取共同遵守该契约。
-`NomiThemeOverride` 接收同一 `NomiThemeOverrides`；null 字段表示未指定，不直接以 `NomiTheme` 的完整投影作默认。
-
-| 规则                                | NomiTheme 根                                             | NomiThemeOverride 局部                     |
-|-------------------------------------|----------------------------------------------------------|--------------------------------------------|
-| 默认模式 / 系统                     | 继承当前请求模式与已显式提供的设计系统，边界解析系统明暗 | 继承父已解析模式；显式 darkMode 时重新解析 |
-| 父完整 colorScheme                  | 不继承，未指定时用目标系统当前模式的默认色               | 继承明确色板                               |
-| 父 typography/shapes/spacings/sizes | 仅继承明确设置组                                         | 继承明确设置组                             |
-| 父 resolved 默认投影                | 不继承                                                   | 不继承                                     |
-| 明确 slot                           | 新根重置                                                 | 保留，退出后恢复父级                       |
-
-子层完整 colorScheme 替换父层显式色板。每个非空对象作为完整明确组处理，不猜测 copy 只改变了哪些字段。
-颜色覆盖只有完整 colorScheme 一种来源；单色强调色覆盖（accentColor）已移除，替换方式待定。
-
-`NomiTheme` 仅公开 darkMode 与五组主题属性，不公开 isDark 或任何主题聚合包装。核心运行时保留请求字段与五组结果；不提供聚合主题输入，
-**五组中立主题经 NomiThemeOverrides 传入**。组件只通过 NomiTheme 读取结果。 原生特有类型的完整配置继续使用
-adapter 工厂。页面尺寸不强制统一所有原生按钮内边距或高度。 Nomi 默认工厂仍只服务自身、无主题缺省读取或调用方显式选择，不能自动给
-M3/Fluent 填默认。
+- `NomiTheme` 五组均为完整值，不做字段级合并；`isDark` 是已解析布尔，`DarkMode` 只作为应用层请求枚举。
+- 每次进入 `NomiTheme` 边界都重置显式内容 slot；`designSystem` 必填，`darkMode` 只在 `theme`
+  省略时选择默认主题， 嵌套继承需显式传 `theme = LocalNomiTheme.current`。
+- 适配器函数接收 `(NomiTheme) -> 原生主题值` 映射函数；无参访问用同名扩展属性，返回原生默认映射的共享实例，不把中立值自动写入原生主题。
+- `LocalNomiDesignSystem` 可空且 **无隐式默认**：未显式提供时 `requireNomiDesignSystem()` 抛出带指引的
+  `IllegalStateException`。
+- 不做 native 到中立的反向投影；伴生分组 getter 读取本层显式输入值，原生视觉由原生主题负责。
+- `NomiThemeRequest`、`ResolvedNomiTheme`、`NomiThemeOverrides`、`NomiThemeOverride` 与任何聚合包装都不属于当前
+  API。
 
 ### 旧文件职责与默认颜色工厂
 
@@ -167,7 +161,7 @@ import；调用方删除旧 import 即可调用成员。 内部构造配合 `Con
 和[独立消费模块测试](<../../core/design-system-fluent/src/desktopTest/kotlin/consumer/ThemeFactoryCopyConsumptionTest.kt>)
 ；该轮验证结果见下方记录。
 
-直接调用示例（显式使用旧默认，非全系统默认注入）：
+直接调用示例（显式使用默认值，非全系统默认注入）：
 
 ```kotlin
 import androidx.compose.runtime.Composable
@@ -175,28 +169,27 @@ import androidx.compose.ui.graphics.Color
 import ciyin.designsystem.nomi.Default
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverrides
-import ciyin.designsystem.theme.defaultLightNomiColorScheme as appLightColorScheme
+import ciyin.designsystem.theme.defaultLightNomiColorScheme
 
-/** 通过 NomiThemeOverrides 显式配置 Nomi 色板，其他组按主题继承规则处理。 */
+/** 通过 NomiTheme 值显式配置 Nomi 色板，其他组继承当前主题。 */
 @Composable
 fun ExplicitPaletteTheme(content: @Composable () -> Unit) {
     NomiTheme(
-        designSystem = NomiDesignSystem.Default,
-        overrides = NomiThemeOverrides(
-            colorScheme = appLightColorScheme(primary = Color(0xFF4466AA)),
+        theme = NomiTheme.current.copy(
+            colorScheme = defaultLightNomiColorScheme().copy(primary = Color(0xFF4466AA)),
         ),
+        designSystem = NomiDesignSystem.Default,
         content = content,
     )
 }
 ```
 
-| 主题级输入       | Nomi             | M3                               | Fluent                                       |
-|------------------|------------------|----------------------------------|----------------------------------------------|
-| 完整 colorScheme | 支持             | 映射原生并保留完整中立读模型     | 只取 primary 作为强调色，其余忽略并记警告    |
-| NomiTypography   | 十五角色完整消费 | 映射原生角色并保留完整中立读模型 | 明确传入时映射八角色，完整中立组仍保留作读取 |
-| NomiShapes       | 支持             | 映射原生角色并保留九级中立组     | 忽略并记警告；需要时配 typed CornerRadius    |
-| spacings / sizes | 支持             | 支持页面布局扩展                 | 支持页面布局扩展                             |
+| 映射来源              | Nomi     | M3                                                            | Fluent                        |
+|-----------------------|----------|---------------------------------------------------------------|-------------------------------|
+| NomiTheme.colorScheme | 原样使用 | 可由 `Material3Maps` 整组映射或只映射角色，未映射角色保留原生 | 只能把 primary 映射为强调色阶 |
+| NomiTheme.typography  | 原样使用 | 十五角色映射                                                  | 映射八个原生角色              |
+| NomiTheme.shapes      | 原样使用 | 五个标准角色映射                                              | 映射三个原生圆角值            |
+| spacings / sizes      | 原样使用 | 只发布到中立读模型，不写原生                                  | 只发布到中立读模型，不写原生  |
 
 本表是主题输入边界，和下方 Button/Card 的组件级降级独立；主题 shapes 被 Fluent 忽略不等于所有 Surface
 shape 都不支持。
@@ -378,11 +371,12 @@ Nomi 可以使用自己的 Foundation 样式和交互反馈，它们不再充当
 ### Material 3
 
 [主题配置](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3DesignSystem.kt>)
-默认建立 Material 原生调色板、Typography 和 Shapes；`rememberMaterial3DesignSystem` 提供专属显式配置。
+默认建立 Material 原生调色板、Typography 和 Shapes；`NomiDesignSystem.Material3` 属性提供原生默认实例，
+`NomiDesignSystem.Material3(map)` 接收
+`(NomiTheme) -> Material3Theme` 映射函数，`Material3Maps.Native/Primary/Full` 是预置策略。
 [Material3Projection](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3Projection.kt>)
-负责把当前原生主题转换为中立只读值，而不是把 Nomi defaults 反向灌入原生主题。 明确传入
-colorScheme/typography/shapes 后，M3 映射其原生角色，同时保留完整中立组作读取， 不能让未映射角色经原生往返丢失。旧门面的原始
-Material Typography 身份仍由 legacy 配置保持。
+把当前原生主题转换为中立只读值，而不是把 Nomi defaults 反向灌入原生主题。 映射后的原生角色参与原生主题，
+未映射角色保留原生默认；旧门面的原始 Material Typography 身份仍由 legacy 配置保持。
 
 实际渲染拆为[Text](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/text/Material3Text.kt>)、
 [Button](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/button/Material3Button.kt>)、
@@ -411,13 +405,11 @@ size/padding/role；现在用户选择保留原生默认，代价通过适配器
 [FluentComponents](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)
 仅组装六族，
 [主题配置](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentDesignSystem.kt>)
-负责原生主题和 `rememberFluentDesignSystem`。
+负责原生主题与 `NomiDesignSystem.Fluent` 属性、`NomiDesignSystem.Fluent(map)` 函数。
 完整边界见[Fluent README](<../../core/design-system-fluent/README.md>)。
 
-请求未提供完整中立色板时保留 Fluent 自身默认色阶；提供时只取 primary 生成强调色阶。 Fluent 接受明确的中立
-typography 并映射八个原生角色，未传时不运行该映射；完整 colorScheme 的其余颜色字段忽略、九级 shapes 忽略，
-两处都记录警告，需要完整原生配置时用
-`rememberFluentDesignSystem(colors = ..., cornerRadius = ...)`。
+`FluentMaps.Primary` 只把 primary 生成强调色阶；`FluentMaps.Full` 额外映射八个排版角色与三个圆角值，其余角色保留原生。
+Fluent 没有完整色板入口，因此不提供 FullColors，也没有运行时降级告警；映射函数只能访问真实存在的原生角色。
 原生字体、形状和状态不从父系统的中立投影回填。原生组件自身的限制应显式记录并降级， 不能为通过旧统一外观测试而重新增加
 clickable、强制尺寸或统一 token。导航容器色同理：`NavigationView` 的 `color` 是内容面板底色，导航容器来自窗口
 材质，因此显式 `containerColor` 被忽略并记录警告，不改写内容面板冒充支持。
@@ -441,8 +433,8 @@ copy。上一轮只改旧门面的内部主题配置与读取路径，保留既�
 迁移现有新 API 调用方时：
 
 1. 删除为了“统一外观”补入的默认 size、variant、colors、shape、padding；真有产品意图时才保留为显式覆盖。
-2. 五组覆盖统一经 NomiThemeOverrides 的明确字段传入；颜色只通过完整 colorScheme 表达；库专属完整配置仍用
-   adapter 工厂，不重新引入主题聚合输入或直接参数入口。
+2. 主题值统一经 `NomiTheme` 构造；原生角色由 adapter 映射函数决定，不重新引入
+   request/overrides/Override 入口 或主题聚合输入。
 3. 用 NomiBorder 三态表达意图；显式 null 不是原生默认。
 4. 无需查询能力：不支持的覆盖由当前适配器降级并记录警告；需要 Fluent 卡片颜色/描边时选择 NomiSurface。
 5. 既有请求+回调与真实 Card SPI 保持；旧工厂命名冲突用 import alias，不增加新的主题模型或 locals。
@@ -495,6 +487,96 @@ Material3 应用根
 - 覆盖：Bar 只展示主导航项与页面内容、底部组声明确实被忽略、选中/点击语义保持；Rail tooltip 与 Drawer
   底部组不回归。
 - 未执行：Android/iOS/Web 与设备运行、截图对比；Bar 的最终视觉仍以真机/桌面截图验收。
+
+### 本轮：NomiTheme 双入口，2026-11-17
+
+范围：`NomiTheme` 拆为两个重载——`darkMode` 根入口解析一次明暗并使用浅/深默认主题；显式 `theme` 入口
+安装调用方给定的主题。嵌套继承改为显式 `theme = LocalNomiTheme.current`；`darkMode` 只在根入口读取系统状态。
+
+- 验证：core 30、Material3 35、Fluent 52、nomi 23、material 19、sample 25，共 184 项零失败。
+- 覆盖：模式入口解析、显式主题安装、slot 重置、嵌套显式继承、适配器原生映射。
+
+### 本轮：删除 NomiTheme.current，适配器继承当前原生主题，2026-11-17
+
+范围：删除 `NomiTheme.current`，主题入口默认值改为读取 `LocalNomiTheme.current`，伴生分组 getter 保留；
+文档与测试不再通过整主题 getter 读取。Material3 / Fluent 对未映射的排版与形状/圆角改为继承当前原生主题：
+M3 使用当前 `MaterialTheme.typography/shapes`，Fluent 使用当前 `FluentTheme.typography/cornerRadius`；
+Fluent 删除已无用的首次进入基线捕获（`LocalFluentNativeBaseline`、`FluentNativeBaseline`）。 同时把
+`NomiTheme`、`Material3Theme`、`FluentTheme` 的 `darkMode: DarkMode` 字段改为 `isDark: Boolean`；
+`DarkMode` 只保留为应用层请求枚举与旧门面 `AppTheme.darkMode` 的映射来源。
+
+- 验证：core 30、Material3 35、Fluent 52、nomi 23、material 19、sample 25，共 184 项通过。
+- 覆盖：主题发布/继承、slot 重置、三个主题数据的布尔明暗、M3/Fluent 当前原生组继承、A-B-A 复用当前值。
+
+### 本轮：合并映射文件，2026-11-17
+
+范围：`Material3Conversions.kt` 的全部转换函数并入 `Material3ThemeMapping.kt`，文件更名为
+`Material3Mapper.kt`；
+`FluentThemeMapping.kt` 更名为 `FluentMapper.kt`。包名、公开函数与调用契约不变，只调整文件组织与 README
+链接。
+
+- 验证：Material3 35 项、Fluent 52 项、core:material 19 项通过；全量回归 184 项零失败；改动文件 KDoc 0
+  错误。
+
+### 本轮：预置映射改为接收者扩展函数，2026-11-17
+
+范围：删除 `Material3Map`、`FluentMap` 两个 typealias 与 `Material3Maps`、`FluentMaps` 两个预置对象；
+映射工厂统一接收 `NomiTheme.() -> XxxTheme` 接收者函数，预置映射改为 `toNativeMaterial3Theme` /
+`toPrimaryMaterial3Theme` / `toFullMaterial3Theme` 与 Fluent 同名的三个扩展函数。调用点、测试、README 与
+设计说明同步；M3 与 Fluent 的预设 API 形状保持一致。
+
+- 验证：Material3 35 项、Fluent 52 项、core:material 19 项通过；全量回归见下。
+- 覆盖：预置扩展只声明各自原生组、工厂默认共享实例、自定义映射通过接收者 lambda 组合预置。
+
+### 本轮：Fluent 主题规格开放 acrylic/compactMode，2026-11-17
+
+范围：`FluentTheme` 规格新增 `useAcrylicPopup` 与 `compactMode`，默认取原生 FluentTheme 默认值
+`true` / `true`；
+`ProvideTheme` 不再硬编码 `false` / `true`，而是透传规格字段。开发者可通过自定义 `FluentMap` 单独关闭
+acrylic 弹层或切换舒展密度，`FluentMaps.Native/Primary/Full` 保持默认值。
+
+- 验证：`:core:design-system-fluent:desktopTest` 全绿；新增规格默认值与覆盖用例。
+- 说明：原生 `LocalAcrylicPopupEnabled` / `LocalCompactMode` 为 internal，不能读取父级值，因此两字段是显式布尔，
+  不做 null 继承；嵌套边界未指定时回到默认值。
+
+### 本轮：无参访问改为扩展属性，2026-11-17
+
+范围：Material3 / Fluent 适配器新增同名扩展属性 `NomiDesignSystem.Material3` /
+`NomiDesignSystem.Fluent`， 无参调用点统一改为属性读取；带映射仍用 `Material3(map)` / `Fluent(map)`
+普通函数。属性与函数默认分支共用
+`Material3Maps.Native` / `FluentMaps.Native` 的共享实例，避免逐次组合更换 `LocalNomiDesignSystem` 身份。
+
+- 验证：`:core:design-system-material3:desktopTest` 35 项、`:core:design-system-fluent:desktopTest` 51
+  项通过， identity 用例继续锁定属性与默认函数返回同一实例。
+- 覆盖：属性读取、同名函数共存、默认 Native 共享实例、带映射实例独立。
+
+### 本轮：删除 native 反向投影，2026-11-16
+
+范围：`NomiTheme` 入口自行发布 `LocalNomiTheme`；Material3 / Fluent 适配器不再把原生主题投影回中立值，只安装原生主题。
+删除 `Material3Projection.kt`、Fluent 的 native→中立转换与相关投影测试；M3 导航回退色改读
+`MaterialTheme`； sample 的排版/表面/主色展示改读各系统原生主题（`NativeShowcaseTokens.kt`）。
+`NomiTheme.current` 语义收敛为“本层显式输入值”。
+
+- 四模块与 sample 共 165 项 Desktop 回归通过（核心 30、M3 35、Fluent 52、Nomi 23、sample 25），另
+  `core:material`
+  19 项通过；四模块 metadata 与 `:app:shared` 编译通过，零失败。
+- 覆盖：入口发布主题、适配器不回写中立值、M3/Fluent 原生映射与基线、sample 原生 token 展示与像素恢复。
+- 未执行：Android/iOS/Web 与设备运行、截图对比。
+
+### 本轮：主题 API 改为值 + 映射函数，2026-11-16
+
+范围：删除 `NomiThemeOverride`、`NomiThemeOverrides`、`NomiThemeRequest`、`ResolvedNomiTheme`、
+`LocalResolvedNomiTheme`
+与请求合并/回调投影；`NomiTheme` 变为不可变值（五组 + darkMode），入口只接收 `theme` 与 `designSystem`。
+Material3 / Fluent 工厂接收 `(NomiTheme) -> 原生主题值` 映射函数，无参工厂使用原生默认；适配器把生效原生值投影为
+`LocalNomiTheme` 供读取。`AppTheme` 门面、app/shared 与 sample 同步迁移。
+
+- 四模块与 sample 共 165 项 Desktop 回归通过（核心 30、M3 35、Fluent 52、Nomi 23、sample 25），另
+  `core:material`
+  19 项通过，全部零失败；四模块 metadata 与 `:app:shared` 编译通过。
+- 覆盖：NomiTheme 值与 light/dark、伴生 getter、入口 slot 重置、嵌套继承、原生默认不映射、Primary 单角色、
+  Full 整组、Fluent 色阶与基线、外部自定义实现、legacy 门面与 sample 像素恢复。
+- 未执行：Android/iOS/Web 与设备运行、截图对比；平台与发布缺口保留。
 
 ### 本轮：移除 accentColor 单色覆盖，2026-11-16
 

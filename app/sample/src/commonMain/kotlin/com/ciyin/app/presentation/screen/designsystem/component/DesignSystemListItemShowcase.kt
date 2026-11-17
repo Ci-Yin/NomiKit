@@ -45,7 +45,7 @@ internal fun DesignSystemListItemShowcase(modifier: Modifier = Modifier) {
     ) {
         NomiText(
             text = stringResource(Res.string.design_system_demo_list_items_title),
-            style = NomiTheme.typography.titleLarge,
+            style = nativeTextStyle(ShowcaseTextRole.TitleLarge),
         )
         NomiListItem(
             title = { NomiText(stringResource(Res.string.design_system_demo_list_item_title)) },
@@ -56,7 +56,7 @@ internal fun DesignSystemListItemShowcase(modifier: Modifier = Modifier) {
                     imageVector = IconPack.Settings,
                     contentDescription = null,
                     modifier = Modifier.size(NomiTheme.sizes.icon.large),
-                    tint = NomiTheme.colorScheme.textSecondary,
+                    tint = nativeSecondaryTextColor(),
                 )
             },
             subtitle = { NomiText(stringResource(Res.string.design_system_demo_list_item_subtitle)) },
@@ -70,7 +70,7 @@ internal fun DesignSystemListItemShowcase(modifier: Modifier = Modifier) {
                         imageVector = IconPack.ArrowRight,
                         contentDescription = null,
                         modifier = Modifier.size(NomiTheme.sizes.icon.small),
-                        tint = NomiTheme.colorScheme.textSecondary,
+                        tint = nativeSecondaryTextColor(),
                     )
                 }
             },

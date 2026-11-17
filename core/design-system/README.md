@@ -11,12 +11,12 @@ Nomi 默认只属于 Nomi，不能在核心派发前填入其他 adapter。
 `NomiText`、`NomiButton`、`NomiSurface`、`NomiCard`、`NomiNavigationSuite`、`NomiScaffold` 与
 `NomiListItem`；不负责窗口形态判断、应用路由、平台窗口、持久化设置或全部第三方控件。
 原生默认组件保持不变；旧式主题文件职责、颜色工厂与独立 nomi 包沿用此前实现，主题入口只接受
-`NomiThemeOverrides` 显式输入。 当前 9 个主题 data class 公开构造，复制使用编译器生成的成员 `copy`
+`NomiTheme` 值加映射契约。 当前 9 个主题 data class 公开构造，复制使用编译器生成的成员 `copy`
 ；默认工厂、默认值、必填参数与身份语义不变。 上一轮删除主题聚合层时，核心/M3/Fluent metadata、sample
-Android 编译及 154 项 Desktop 回归通过，零失败、零跳过；导航轮 180 项与命名空间轮 218
-项为历史记录。本轮移除旧式直接参数主题入口后，四模块
-`compileCommonMainKotlinMetadata`、app shared/desktop 与 sample 编译通过，核心 40、M3 33、Fluent 46、Nomi
-23、 sample 24 共 166 项 Desktop 回归零失败、零跳过。完整范围见
+Android 编译及 154 项 Desktop 回归通过，零失败、零跳过；导航轮 180 项与命名空间轮 218 项为历史记录。本轮主题改为
+NomiTheme 值 + 映射函数后，四模块
+`compileCommonMainKotlinMetadata`、app shared/desktop 与 sample 编译通过，核心 30、M3 35、Fluent 52、Nomi
+23、sample 25 共 165 项 Desktop 回归零失败、零跳过；`core:material` 19 项同样通过。完整范围见
 [设计说明](<../../.docs/design/design-system-模块化方案.md>)。
 
 ## 命名边界
@@ -24,63 +24,62 @@ Android 编译及 154 项 Desktop 回归通过，零失败、零跳过；导航�
 Nomi 表示 NomiKit 公共设计体系，不限定当前选用的视觉实现。公开入口统一为
 NomiTheme/NomiText/NomiButton/NomiSurface/NomiCard， 主题数据与默认工厂同样使用 Nomi 前缀；新核心不保留
 App* 别名。根包 ciyin.designsystem 和设计系统标识保持不变，组件 package 按下述子目录细分。
-NomiDesignSystem 是实现契约；Nomi 默认实现与 Material 3/Fluent 适配实现都以扩展属性挂到其伴生对象上，对外只暴露
-`NomiDesignSystem.Default`、`NomiDesignSystem.Material3`、`NomiDesignSystem.Fluent`，实现对象本身为
+NomiDesignSystem 是映射契约；Nomi 默认实现以扩展属性暴露，Material 3 / Fluent 以同名扩展属性与工厂
+`NomiDesignSystem.Material3` / `NomiDesignSystem.Fluent`、`Material3(map)` / `Fluent(map)` 暴露，实现对象本身为
 internal。 默认 renderer 使用 DefaultNomi* 名称，原生解析上下文使用 LocalNomiNative*，不得与公共显式
 slot 的 LocalNomi* 混用。 应用层 App/AppPreview/AppBuildConfig 等名称不变；ciyin.material 的
 AppTheme/AppColorScheme/AppShapes/AppSizes 仅作为旧兼容入口保留。
 
-## 绑定命名空间
+## 绑定命名空间与映射工厂
 
-`NomiDesignSystem` 自带空 `companion object`，仅作为各 adapter 实现的绑定命名空间。adapter
-用扩展属性把自身实现挂上去：
+`NomiDesignSystem` 自带空 `companion object`，只作为 adapter 的绑定命名空间。adapter 用扩展属性或扩展函数把实现挂上去：
 
 ```kotlin
 // :core:design-system-nomi
-val NomiDesignSystem.Companion.Default: NomiDesignSystem get() = DefaultNomiSystem
+val NomiDesignSystem.Companion.Default: NomiDesignSystem
 // :core:design-system-material3
-val NomiDesignSystem.Companion.Material3: NomiDesignSystem get() = Material3System
+val NomiDesignSystem.Companion.Material3: NomiDesignSystem
+fun NomiDesignSystem.Companion.Material3(map: NomiTheme.() -> Material3Theme): NomiDesignSystem
 // :core:design-system-fluent
-val NomiDesignSystem.Companion.Fluent: NomiDesignSystem get() = FluentSystem
+val NomiDesignSystem.Companion.Fluent: NomiDesignSystem
+fun NomiDesignSystem.Companion.Fluent(map: NomiTheme.() -> FluentTheme): NomiDesignSystem
 ```
 
-调用方只依赖核心契约，按 `NomiDesignSystem.` 补全并导入对应扩展属性；扩展属性不是接口成员，
-**必须显式导入**，否则 `NomiDesignSystem.Material3` 无法解析：
+调用方只依赖核心契约，按 `NomiDesignSystem.` 补全并导入对应扩展声明；扩展声明不是接口成员，
+**必须显式导入**：
 
 ```kotlin
-import ciyin.designsystem.material3.Material3 // 提供 NomiDesignSystem.Material3
-import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.material3.Material3
+import ciyin.designsystem.material3.toPrimaryMaterial3Theme
 import ciyin.designsystem.theme.NomiTheme
 
 NomiTheme(designSystem = NomiDesignSystem.Material3) {
-    // 业务内容
+    // 原生默认主题
+}
+NomiTheme(designSystem = NomiDesignSystem.Material3 { toPrimaryMaterial3Theme() }) {
+    // 只让 Nomi 主色覆盖原生主色
 }
 ```
 
-- 伴生对象没有状态和成员：用扩展属性而不是接口成员，可让核心不反向依赖任何 adapter，adapter
-  之间也互不依赖；调用方仍以 `NomiDesignSystem.X` 统一书写。
-- 实现对象 `DefaultNomiSystem` / `Material3System` / `FluentSystem` 为 internal；旧顶层 object
-  名称已删除，不保留别名、typealias 或转发。
-- 扩展属性是无 backing field 的只读 `val`：只有 getter，不能赋值或被覆盖；每次读取返回对应 adapter
-  持有的同一实现实例。
-- 命名空间只负责取得实例，不改变提供方式：`NomiTheme(designSystem = ...)` 与
-  `CompositionLocalProvider(LocalNomiDesignSystem provides ...)` 的显式提供契约不变，未提供时
-  `requireNomiDesignSystem()` 仍明确失败。
+- 伴生对象没有状态：用扩展声明挂实现，核心不反向依赖 adapter，adapter 之间也互不依赖。
+- `Default` 是恒等单例；无参 `Material3` / `Fluent` 返回使用原生默认映射的共享实例，带 `map`
+  的工厂返回配置实例。
+- `NomiTheme(designSystem = ...)` 与 `CompositionLocalProvider(LocalNomiDesignSystem provides ...)`
+  的显式提供契约不变；未提供时 `requireNomiDesignSystem()` 明确失败。
 
 ## 从哪里开始
 
-| 入口                                                                                                                                                                                                                                                                                   | 职责                                                                                 |
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| [Theme](<src/commonMain/kotlin/ciyin/designsystem/theme/Theme.kt>)                                                                                                                                                                                                                     | `NomiTheme` / `NomiThemeOverride` 与只读 `NomiTheme` 对象                            |
-| [ThemeOverrides](<src/commonMain/kotlin/ciyin/designsystem/theme/ThemeOverrides.kt>)                                                                                                                                                                                                   | 主题入口唯一的显式输入：五组覆盖；未指定仍为空                                       |
-| [ColorScheme](<src/commonMain/kotlin/ciyin/designsystem/theme/ColorScheme.kt>) / [Type](<src/commonMain/kotlin/ciyin/designsystem/theme/Type.kt>)                                                                                                                                      | defaultLight/defaultDark 颜色工厂、NomiColorScheme 与中立 NomiTypography             |
-| [NomiThemeRequest](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiThemeRequest.kt>) / [ResolvedNomiTheme](<src/commonMain/kotlin/ciyin/designsystem/runtime/ResolvedNomiTheme.kt>) / [NomiDesignSystem](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>) | 请求模式、实际明暗、五组结果及 overrides；adapter 在原生主题内回调 ResolvedNomiTheme |
-| [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>) / [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)                                                                                                            | 文本与按钮 API、对应 renderer 和参数类型                                             |
-| [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>) / [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>)                                                                                                         | Surface 与实际原生 Card 分开派发                                                     |
-| [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>)                                                                                                                                                                                                       | 描边意图三态                                                                         |
-| [NomiNavigation](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)                                                                                                                                                                                    | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                       |
-| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)                                                                                                                                                                                          | 页面脚手架入口、顶栏/主体/底栏三槽位、容器色与内容色稀疏覆盖                         |
-| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)                                                                                                                                                                                              | 列表项入口、前导/标题/副标题/尾部槽位与原生列表渲染契约                              |
+| 入口                                                                                                                                                                           | 职责                                                                              |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| [NomiTheme](<src/commonMain/kotlin/ciyin/designsystem/theme/NomiTheme.kt>)                                                                                                     | 不可变主题值、`LocalNomiTheme`、伴生只读 getter 与唯一入口                        |
+| [ColorScheme](<src/commonMain/kotlin/ciyin/designsystem/theme/ColorScheme.kt>) / [Type](<src/commonMain/kotlin/ciyin/designsystem/theme/Type.kt>)                              | defaultLight/defaultDark 颜色工厂、NomiColorScheme 与中立 NomiTypography          |
+| [NomiDesignSystem](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>)                                                                                     | 映射契约、`ProvideTheme(theme, content)`、`LocalNomiDesignSystem` 与 require 入口 |
+| [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>) / [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)    | 文本与按钮 API、对应 renderer 和参数类型                                          |
+| [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>) / [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>) | Surface 与实际原生 Card 分开派发                                                  |
+| [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>)                                                                                               | 描边意图三态                                                                      |
+| [NomiNavigation](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)                                                                            | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                    |
+| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)                                                                                  | 页面脚手架入口、顶栏/主体/底栏三槽位、容器色与内容色稀疏覆盖                      |
+| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)                                                                                      | 列表项入口、前导/标题/副标题/尾部槽位与原生列表渲染契约                           |
 
 [组件集合](<src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)组装
 text/actions/surfaces/navigation/scaffold/listItems 六族； 表面族同时有 `Surface` 和 `Card`
@@ -90,7 +89,7 @@ text/actions/surfaces/navigation/scaffold/listItems 六族； 表面族同时有
 公共 `component` 保留公共入口、renderer SPI
 与共享参数；内置实现已拆到独立模块 [core/design-system-nomi](<../design-system-nomi/README.md>)， 包名仍为
 `ciyin.designsystem.nomi`，按 `text/button/surface/card` 组织。公共主题 API 与数据留在 `theme`
-，设计系统契约、请求和显式 slot 留在 `runtime`。
+，设计系统契约与显式 slot 留在 `runtime`。
 `LocalNomiDesignSystem` 为可空且 **无隐式默认**：应用根、测试与 Preview 必须显式提供实现；未提供时组件与
 `NomiTheme` 抛出带指引的 `IllegalStateException`。 消费者直接更新 import 与显式提供点，不保留旧
 package 转发、typealias 或隐式回退。
@@ -220,59 +219,70 @@ fun ExampleContent(
 
 装配层可依赖[Material 3 adapter](<../design-system-material3/README.md>)或
 [Fluent adapter](<../design-system-fluent/README.md>)并通过 `NomiDesignSystem.Material3` /
-`NomiDesignSystem.Fluent` 传入对应实现（需导入对应扩展属性）；`designSystem` 默认取当前上下文，
-**没有隐式回退**： 未显式提供时 `requireNomiDesignSystem()` 抛出带指引的 `IllegalStateException`。
+`NomiDesignSystem.Fluent` 取得实现（需导入对应扩展属性/工厂）；主题入口的 `designSystem` 是必填参数，
+**没有隐式回退**；组件在主题边界之外由 `requireNomiDesignSystem()` 抛出带指引的
+`IllegalStateException`。
 [sample](<../../app/sample/README.md>)的共享候选目录为 Nomi/M3/Fluent，宿主仍可覆盖，不需要 Desktop
 专属注入。
 
-## 请求输入与只读投影分离
+## 主题值与映射分离
 
-`NomiThemeRequest` 携带 requestedMode、核心边界解析后的 isDark 与 `NomiThemeOverrides`。
-`NomiDesignSystem.ProvideTheme(request: NomiThemeRequest, content: @Composable (ResolvedNomiTheme) -> Unit)`
-先建立原生主题，再通过回调发布直接包含五组结果的只读 `ResolvedNomiTheme`。 核心收到 adapter 回调后以
-request 规范化 requestedMode、isDark、overrides，并保留 adapter 返回的
-colorScheme、typography、shapes、spacings、sizes 五组结果；不信任 adapter metadata，也不从结果反推请求字段。
-`NomiTheme` 仅公开 `darkMode` 及 `colorScheme/typography/shapes/spacings/sizes` 六项只读
-getter。五组数据是 **结果投影**，不是下一套设计系统的默认输入；组件必须通过 `NomiTheme` 读取。
-主题聚合类型、聚合默认工厂与主题包装均不属于当前 API；不新增 ThemeData/ThemeSnapshot 别名或兼容入口。
+`NomiTheme` 是不可变主题值（isDark、colorScheme、typography、shapes、spacings、sizes），由唯一入口安装：
+`NomiTheme(designSystem, darkMode = DarkMode.System, theme = rememberNomiTheme(darkMode), content)`。
+省略 `theme` 时按 `darkMode` 解析一次模式并使用浅/深默认主题；显式传入 `theme` 时按原值安装，
+`darkMode` 不再生效。 入口自己发布 `LocalNomiTheme`，
+`NomiDesignSystem.ProvideTheme(theme, content)`
+只把该值映射为原生主题；`NomiTheme.colorScheme` 等伴生 getter 读取的是本层显式传入值，不是原生解析结果。
 
-- `ResolvedNomiTheme` 的前两个构造参数 requestedMode 与 isDark 必填，其余五组带当前契约默认值，overrides
-  默认为空；LocalResolvedNomiTheme 无主题时使用 System + false 的浅色兜底。
-- `NomiTheme` 默认 `darkMode = NomiTheme.darkMode`、`designSystem = requireNomiDesignSystem()`；
-  `LocalNomiDesignSystem` 可空且无隐式默认，`overrides` 默认空。
-- 根重置显式 slot， **不继承父 colorScheme**；仅继承父层明确设置的
-  typography/shapes/spacings/sizes，不复制 resolved defaults。
-- `NomiThemeOverride` 继承全部显式组、父模式与明确 slot，再合并本层输入；换系统仍不带父系统解析出的默认投影。
-- 子层完整 colorScheme 替换父层显式色板；每个非空对象是完整显式组，不推断 copy 改了哪些字段。
-- 不提供主题聚合输入。五组中立参数经 `NomiThemeOverrides` 传入；库专属完整原生类型配置仍使用 adapter
-  工厂。页面度量不自动改写控件内边距。
-- 默认 Nomi 单组工厂只服务自身/缺省读取，不给 M3 或 Fluent 填充默认样式。
+```kotlin
+// 根入口：跟随系统
+NomiTheme(designSystem = NomiDesignSystem.Default) { ... }
+// 固定浅色/深色
+NomiTheme(designSystem = NomiDesignSystem.Default, darkMode = DarkMode.Dark) { ... }
+// 局部/自定义主题；继承父主题时显式传当前值
+NomiTheme(designSystem = NomiDesignSystem.Material3, theme = LocalNomiTheme.current) { ... }
+```
 
-## 显式主题覆盖与默认颜色工厂
+- 五组均为完整值，不做字段级合并；`isDark` 是已解析布尔，`DarkMode.System` 由入口在 `theme` 省略时解析一次。
+- 入口每次进入都重置显式内容 slot；`designSystem` 必填，`darkMode` 只在 `theme` 省略时选择默认主题，
+  嵌套继承需显式传 `theme = LocalNomiTheme.current`。
+- 适配器不读系统状态；Material3 / Fluent 的原生色板基线由映射函数返回的 `isDark` 决定。
+- 不做 native 到中立的反向投影；原生视觉由原生组件读原生主题，中立读取值不回填原生默认。
+- `NomiThemeRequest`、`ResolvedNomiTheme`、`NomiThemeOverrides`、`NomiThemeOverride` 与主题聚合包装都不是当前
+  API。
 
-`NomiTheme` 与 `NomiThemeOverride` 的参数为 `designSystem`、`darkMode`、`overrides` 与
-content；五组主题组统一放进 `NomiThemeOverrides`。根主题与局部 Override 的颜色继承语义不同，但输入模型相同。
+## 主题映射与默认颜色工厂
+
+Material3 / Fluent 工厂接收 `NomiTheme.() -> 原生主题值` 接收者映射函数；不传映射时使用各自原生默认。
+映射函数 是普通 lambda，可以只接管关心的角色：
 
 ```kotlin
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import ciyin.designsystem.nomi.Default
+import androidx.compose.material3.lightColorScheme
+import ciyin.designsystem.material3.Material3
+import ciyin.designsystem.material3.Material3Theme
+import ciyin.designsystem.material3.toPrimaryMaterial3Theme
 import ciyin.designsystem.runtime.NomiDesignSystem
+import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
-import ciyin.designsystem.theme.NomiThemeOverrides
-import ciyin.designsystem.theme.defaultNomiTypography
-import ciyin.designsystem.theme.defaultLightNomiColorScheme
 
-/** 显式选择默认色板与排版；未传的其他主题组仍按继承规则解析。 */
 @Composable
-fun ExplicitTheme(content: @Composable () -> Unit) {
+fun PrimaryMapped(content: @Composable () -> Unit) {
     NomiTheme(
-        designSystem = NomiDesignSystem.Default,
-        overrides = NomiThemeOverrides(
-            colorScheme = defaultLightNomiColorScheme().copy(primary = Color(0xFF4466AA)),
-            typography = defaultNomiTypography(),
-        ),
+        darkMode = DarkMode.Dark,
+        designSystem = NomiDesignSystem.Material3 { toPrimaryMaterial3Theme() },
         content = content,
+    )
+}
+
+// 自定义：只让 Nomi 主色与错误色覆盖原生主题
+val map: NomiTheme.() -> Material3Theme = {
+    Material3Theme(
+        isDark = isDark,
+        colorScheme = lightColorScheme().copy(
+            primary = colorScheme.primary,
+            error = colorScheme.error,
+        ),
     )
 }
 ```
@@ -299,9 +309,12 @@ defaultIconSizeScale/defaultAvatarSizeScale/defaultStrokes/defaultComponentHeigh
 数据类的相等性、解构与不可变浅复制语义不变；曾显式导入扩展的调用方应删除对应 import。 这些默认工厂仅在调用方明确选用或
 Nomi 自身使用时生效，不会覆盖 M3/Fluent 未指定的原生默认。
 
-主题级支持：Nomi/M3 接受五组；M3 映射原生角色并保留中立读模型的完整显式值。 Fluent 只在明确 typography
-时映射到八个原生角色，剩余角色仍保留在中立读模型；拒绝完整 colorScheme 和九级 shapes， 需要其原生
-Colors/CornerRadius 时使用 `rememberFluentDesignSystem`。零参数 Fluent 不调用中立排版映射。
+主题级映射：Nomi 恒等；M3 可映射整组或只映射指定角色；Fluent 的颜色只映射 primary、排版映射八个角色、
+圆角映射三个原生值，其余保留原生主题。映射函数只能访问真实存在的原生角色，因此不需要运行时降级告警。
+预设扩展
+`toNativeMaterial3Theme` / `toPrimaryMaterial3Theme` / `toFullMaterial3Theme` 与
+`toNativeFluentTheme` / `toPrimaryFluentTheme` / `toFullFluentTheme` 覆盖常见用法；自定义 lambda
+应是稳定引用或 `remember` 后的值。
 
 ### 默认对象与复制
 
@@ -363,9 +376,9 @@ internal [DefaultNomiSystem](<../design-system-nomi/src/commonMain/kotlin/ciyin/
 [IconPack](<src/commonMain/kotlin/ciyin/designsystem/icon/IconPack.kt>)
 仍为矢量单一来源，旧入口由[门面](<../material/README.md>)转发。
 
-renderer 是跨模块公开 SPI。新增参数同时更新 adapter 与外部消费测试，不增空二期接口。 显式覆盖统一经
-`NomiThemeOverrides` 传入，沿用既有请求、SPI 和 locals，不另增模型；中立 `NomiTypography` 与原生
-Material 类型仍不同。 旧 `ciyin.material` 源码兼容及原始 Typography 身份由门面和 M3 特定配置保留。
+renderer 是跨模块公开 SPI。新增参数同时更新 adapter 与外部消费测试，不增空二期接口。 主题值统一经
+`NomiTheme` 传入，原生角色由 adapter 映射函数决定；中立 `NomiTypography` 与原生 Material 类型仍不同。 旧
+`ciyin.material` 源码兼容及原始 Typography 身份由门面和 M3 特定配置保留。
 
 [构建](<build.gradle.kts>)
 沿用[目标约定](<../../buildSrc/src/main/kotlin/multiplatform-lib-targets.gradle.kts>)； Android
