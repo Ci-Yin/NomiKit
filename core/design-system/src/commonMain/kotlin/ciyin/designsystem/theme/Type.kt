@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.sp
 /**
  * NomiKit 默认排版的唯一数值来源，保留原主题十五个角色的字体、字重、字号、行高和字距。
  *
- * 此默认对象不依赖 Material 3，也不作为其他设计系统的隐式排版覆盖。
+ * 此默认对象不依赖任何原生主题，也不作为其他设计系统的隐式排版覆盖。
  */
 private object DefaultTypographyTokens {
     /**
@@ -175,7 +175,7 @@ data class NomiTypography(
  * 返回共享的 NomiKit 默认排版对象，不读取当前主题或系统配置。
  *
  * 十五个角色的数值与原主题保持一致。若需要当前设计系统的实际排版，应读取
- * [NomiTheme.typography]；本函数不会因切换 Material 3、Fluent 或明暗模式而改变结果。
+ * [NomiTheme.typography]；本函数不会因切换设计系统或明暗模式而改变结果。
  *
  * @return 不可变的默认排版实例。
  */

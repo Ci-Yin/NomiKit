@@ -32,8 +32,9 @@ Text、Button、Surface、独立原生非点击 Card、导航套件与列表项�
   把槽位式中立导航项与布局映射到原生 NavigationView，只在显式覆盖时改写原生五态颜色，不重建排版或尺寸配方。
 - [列表项](<src/commonMain/kotlin/ciyin/designsystem/fluent/list/FluentListItemRenderer.kt>)
   使用原生 `CardExpanderItem` 的点击/无点击重载：标题注入 bodyStrong，尾部注入 caption 与 secondary
-  内容色；
-  `dropdown` 保持 null，不绘制展开箭头，也不映射 enabled/selected。
+  内容色；默认不传 `dropdown`，不绘制展开箭头。展开槽、交互源与四态配色只经
+  [FluentListItemSpec](<src/commonMain/kotlin/ciyin/designsystem/fluent/list/FluentListItemSpec.kt>)
+  显式提供。
 
 四组件分别归入 fluent 根下的 text/button/surface/card 子目录，package 与目录一致；FluentButtonColors 随
 Button 进入 button。 主题、映射和四族装配留在原位置，Card 仍由 surfaces 派发，导航套件归入 fluent 根下的
@@ -105,6 +106,31 @@ caption/body/bodyStrong/bodyLarge/subtitle/title/titleLarge/display，其余中�
 映射函数建议提升为稳定引用（顶层 `val` 或 `remember`）；内联 lambda 每次重组都会重建原生色板实例。
 组件视觉直接读取 `FluentTheme.colors/typography/cornerRadius` 原生值，不读中立投影。 adapter 只把明确的
 colors/textStyle 增量传给中立 slot，原生默认留在 native locals。 默认 Card 内的原生按钮因此仍能提供自己的禁用颜色与字号。
+
+## 列表项专属参数
+
+`FluentListItemSpec` 承载未进入中立 API 的原生 `CardExpanderItem` 属性，经
+`NomiListItem(nativeSpec = ...)` 传入：
+
+```kotlin
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.fluent.list.FluentListItemSpec
+
+NomiListItem(
+    title = { NomiText("高级选项") },
+    subtitle = { NomiText("点击展开") },
+    onClick = { onExpand() },
+    nativeSpec = FluentListItemSpec(dropdown = { NomiText("▾") }),
+)
+```
+
+- `dropdown` 是尾部箭头槽，渲染在 trailing 之后；null 表示不占位，与原生默认一致。
+- `shape` 默认 `FluentTheme.shapes.control`，`enabled` 默认 true，`colors` 默认
+  `ExpanderDefaults.cardExpanderItemColors()`，`interactionSource` 默认由原生创建。
+- 静态行（无 `onClick`）没有 `enabled` / `colors` / `interactionSource` 入口：携带时忽略并 记录一次警告，只应用
+  `shape` 与 `dropdown`。
+- 其它设计系统的 spec 与 null 一律静默忽略；多个 spec 用核心的 `+` 组合后一次传入。
 
 ## 原生限制与降级
 

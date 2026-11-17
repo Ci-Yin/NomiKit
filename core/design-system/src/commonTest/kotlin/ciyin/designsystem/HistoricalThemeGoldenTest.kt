@@ -116,7 +116,7 @@ class HistoricalThemeGoldenTest {
     }
 
     /**
-     * 九级圆角全部保持历史半径，不仅验证 M3 标准五级。
+     * 九级圆角全部保持历史半径，不只验证常见的五级子集。
      */
     @Test
     fun allNineShapesMatchHistoricalRadii() {

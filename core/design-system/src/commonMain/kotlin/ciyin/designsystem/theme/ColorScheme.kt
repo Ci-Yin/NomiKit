@@ -93,7 +93,7 @@ data class NomiColorScheme(
  * 创建基于 NomiKit 默认浅色色板的完整颜色方案。
  *
  * 未传参数沿用内置浅色值，可通过命名参数替换任意颜色。本函数不读取当前主题或系统明暗模式，
- * 也不代表 Material 3 / Fluent 的原生默认色板；传给 [NomiTheme] 时表示明确提供整组颜色。
+ * 也不代表任何原生设计系统的默认色板；传给 [NomiTheme] 时表示明确提供整组颜色。
  * 显式传入的 [Color.Unspecified] 和 [Color.Transparent] 均原样写入，不触发默认颜色回填。
  *
  * @param primary 主色，用于按钮、链接等主要交互元素
@@ -187,7 +187,7 @@ fun defaultLightNomiColorScheme(
  * 创建基于 NomiKit 默认深色色板的完整颜色方案。
  *
  * 未传参数沿用内置深色值，可通过命名参数替换任意颜色。本函数不读取当前主题或系统明暗模式，
- * 也不代表 Material 3 / Fluent 的原生默认色板；传给 [NomiTheme] 时表示明确提供整组颜色。
+ * 也不代表任何原生设计系统的默认色板；传给 [NomiTheme] 时表示明确提供整组颜色。
  * 显式传入的 [Color.Unspecified] 和 [Color.Transparent] 均原样写入，不触发默认颜色回填。
  *
  * @param primary 主色，用于按钮、链接等主要交互元素

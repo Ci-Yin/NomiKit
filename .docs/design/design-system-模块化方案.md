@@ -25,6 +25,8 @@
 > 验证记录：本轮六模块 Desktop 回归 226 项（核心 31、M3 35、Fluent 52、Nomi 23、material 19、sample 66）、
 > 四模块 metadata 与 `:app:shared` 编译通过；上一轮四模块与 sample 165 项、
 > 命名空间轮 218 项、导航轮 180 项见下方历史条目。
+> 2026-11-18 增补「后续组件缺口清单」：只做现状盘点与优先级记录，未改动任何组件、测试或构建配置；
+> 调用点计数口径为当日工作区的 `import androidx.compose.material3.<符号>` 源码文件数。
 
 本文沿原路径演进，不新增分支、版本号或归档副本。原设计有 Git 历史可追溯； 此前确立原生默认优先、单组默认工厂、Nomi
 品牌命名、独立 nomi 包及公开构造/生成成员 copy；上一轮删除主题聚合包装并将五组字段扁平化；本轮把主题输入收敛为
@@ -51,7 +53,7 @@ Material / Fluent 的原生默认视觉。
 - API、主题、每个组件实现分文件维护，聚合对象仅组装。
 
 非目标：不复刻全部第三方组件，不统一所有系统尺寸；不把窗口 Mica/Acrylic、导航、业务状态或持久化设置放入本模块；
-不一次性重写旧页面；不自动打开项目未启用的平台。首期只有四组件，后续按轮次扩展为六族，后续列表见文末。
+不一次性重写旧页面；不自动打开项目未启用的平台。首期只有四组件，后续按轮次扩展为六族；剩余组件与优先级见「后续组件缺口清单」。
 
 ## Nomi 公共命名
 
@@ -476,7 +478,86 @@ Material3 应用根
 只读投影可供说明和显式示例使用，但不能把全部投影自动填回“原生默认”区。局部覆盖展示必须验证切换新系统
 使用其原生默认，显式增量继承且退出恢复。测试/预览不启动真实设备能力。
 
+## 后续组件缺口清单
+
+> 本节记录 2026-11-18 的盘点结果与优先级建议， **不是已采纳的排期**，也不改变本文「已实现」状态。
+> 落地任一族前须重新核对调用点计数、目标平台与三端原生能力。
+
+### 已落地范围
+
+| 族       | 公共入口                                                                                                                                                        |
+|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 文本     | `NomiText`                                                                                                                                                      |
+| 操作     | `NomiButton`（Primary / Default / Subtle / Text / Destructive）                                                                                                 |
+| 表面     | `NomiSurface` / `NomiCard`                                                                                                                                      |
+| 导航     | `NomiNavigationSuite`（Bar / Rail / Drawer）                                                                                                                    |
+| 页面外壳 | `NomiScaffold`                                                                                                                                                  |
+| 列表项   | `NomiListItem`                                                                                                                                                  |
+| 辅助类型 | `NomiBorder` / `NomiControlSize`                                                                                                                                |
+| 图标     | [IconPack](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/icon/IconPack.kt>) 共 6 个：Home、ArrowRight、LightMode、DarkMode、Settings、Null |
+
+六族由 [NomiDesignSystemComponents](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)
+组装。新增一族须同步三个生产实现（[DefaultNomiDesignSystem](<../../core/design-system-nomi/src/commonMain/kotlin/ciyin/designsystem/nomi/DefaultNomiDesignSystem.kt>)、
+[Material3Components](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)、
+[FluentComponents](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)）
+与三个测试替身（[RecordingDesignSystem](<../../core/design-system/src/commonTest/kotlin/ciyin/designsystem/RecordingDesignSystem.kt>)、
+`NomiNativeContentIsolationTest`、`ExternalApiConsumptionTest` 内的匿名实现）。
+
+### 缺口与优先级
+
+计数口径：`import androidx.compose.material3.<符号>` 的源码文件数，含 `app/sample` 演示页，不含
+`build/`、 测试文件与文档；同一文件多处使用只计一次。未标注计数的行表示当前无外部调用方。
+
+| 优先级 | 组件                                                           | 现有调用方                                      | 依据                                                                                                                                    |
+|--------|----------------------------------------------------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| P0     | `NomiIcon`                                                     | 18（sample 15、shared 1、video-player 2）       | 无中立图标入口，槽位直接组合 M3 `Icon`                                                                                                  |
+| P0     | `NomiIconButton`                                               | 14（sample 13、video-player 1）                 | 纯图标操作无法复用 `NomiButton` 的 variant 与尺寸                                                                                       |
+| P0     | `NomiDivider`                                                  | 横向 10（sample 9、shared 1）、纵向 1（shared） | [Navigation.kt](<../../app/shared/src/commonMain/kotlin/com/ciyin/app/presentation/app/navigation/Navigation.kt>) 自行 import M3 分割线 |
+| P0     | `NomiSwitch` / `NomiCheckbox` / `NomiRadioButton`              | Switch 2（sample）；Checkbox、RadioButton 无    | 列表项文档的「选择控件待控件族落地」依赖本项                                                                                            |
+| P0     | `NomiSlider`                                                   | 1（video-player）                               | 无连续取值控件                                                                                                                          |
+| P0     | `NomiTextField`                                                | 4（sample）                                     | 无中立输入框，表单与搜索只能直连 M3                                                                                                     |
+| P1     | `NomiProgressIndicator`                                        | 线形 5、环形 5（sample 与 video-player）        | 加载与进度状态只能直连 M3                                                                                                               |
+| P1     | `NomiTopAppBar`                                                | 11（sample）                                    | `NomiScaffold` 有 `topBar` 槽但没有中立顶栏，槽内容只能塞 M3 顶栏                                                                       |
+| P1     | `NomiBadge`                                                    | 适配器内部 2（无外部调用方）                    | 导航项已有 `badge` 槽，调用方缺中立徽标可组合                                                                                           |
+| P1     | `NomiTooltip`                                                  | 1（sample）                                     | 无中立提示浮层；Nomi Rail 文案 tooltip 由实现内部处理                                                                                   |
+| P1     | `NomiTabs` / `NomiChip`                                        | 仅 `core/ui-foundation` 旧实现                  | 旧 `ScrollableTabRow`、`FilterChip` 属 Material 门面，不进中立核心                                                                      |
+| P2     | `NomiDialog` / `NomiBottomSheet` / `NomiMenu` / `NomiSnackbar` | 旧实现与 sample 各 1                            | 旧 `AlertDialog2`、`BottomSheetDialog`、`ExposedMenu`、`Toast` 均属 Material 门面                                                       |
+
+### 非组件缺口
+
+- **图标资源**：`IconPack` 只有 6 个矢量，既不够基础页面使用，也没有统一的固有尺寸（`DarkMode` 1024dp、
+  `Home` 与
+  `ArrowRight` 200dp、`LightMode` 与 `Settings` 256dp、`Null` 1dp），导致每个槽位都必须显式
+  `Modifier.size(...)`；
+  [Home.kt](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/icon/Home.kt>) 的
+  KDoc 写 256dp，代码是 200dp。 图标先用 `valkyrie-imagevector` 补充，再讨论中立尺寸默认值是否成为
+  `NomiIcon` 的显式例外。
+- **列表容器**：列表项族只有单行；分组标题、分隔线与容器未提供，列表项文档已列为暂不支持。
+
+### 依赖顺序与建议轮次
+
+```text
+第 1 轮  原子层      NomiIcon（先定尺寸语义） -> NomiIconButton -> NomiDivider
+第 2 轮  控件族      Switch / Checkbox / RadioButton -> Slider -> TextField（复用 NomiControlSize）
+第 3 轮  反馈与结构  ProgressIndicator -> TopAppBar -> Badge / Tooltip -> Tabs / Chip
+第 4 轮  浮层        Dialog -> BottomSheet -> Menu -> Snackbar
+```
+
+- 控件族是列表项尾部槽与设置页的前置：未落地前，设置行只能用 M3 控件，切换设计系统时不跟随外观。
+- 每族固定成本是 `NomiDesignSystemComponents` 扩展 + 三个 adapter + 六个实现点 + 契约测试；Fluent
+  无法表达时按 既有策略降级并记录警告，不重绘伪造支持。
+- 优先级不只看计数：当前 `app/shared` 只有导航与设置占位页，多数调用点在 `app/sample` 演示页；图标族与控件族
+  是任何页面的前置能力，因此不因计数低而下调。
+
 ## 验证记录与验收缺口
+
+### 本轮：增补后续组件缺口清单，2026-11-18
+
+范围：仅在本文件新增「后续组件缺口清单」一节，并在设计索引补摘要；未改动任何组件、测试或构建配置。
+
+- 依据：当日工作区源码盘点——六族入口与 `NomiDesignSystemComponents` 实现点、`IconPack` 图标数量与固有尺寸、
+  `androidx.compose.material3` 符号 import 计数。
+- 未执行：Gradle 编译与测试。本轮无代码改动，文档编辑不触发构建；清单计数需在落地前复核。
 
 ### 本轮：Nomi Bar 只渲染主导航项，2026-11-16
 

@@ -115,8 +115,35 @@ val designSystem = NomiDesignSystem.Material3(branded)
 - Button/Surface/Card 保持原生实际内容环境，中立桥只传播显式 colors/textStyle/size 增量；
   默认容器不会把原生禁用色或原生排版伪装成显式覆盖。
 - 导航套件使用原生 NavigationBar、NavigationRail、PermanentNavigationDrawer，Bar/Rail/Drawer 均声明支持；
-  列表项使用原生 ListItem，行高、文本样式与内容色由原生组件决定；脚手架使用原生 Scaffold，
-  外壳与内容让位由原生实现承担。
+  列表项使用原生 ListItem，行高、文本样式、内容色与两行/三行推断由原生组件决定，仅在有 @BT@onClick@BT@
+  时包装 @BT@Modifier.clickable@BT@，不附加长按或 Role；脚手架使用原生 Scaffold，外壳与内容让位由原生实现承担。
+
+## 列表项专属参数
+
+`Material3ListItemSpec` 承载未进入中立 API 的原生列表项属性，经 `NomiListItem(nativeSpec = ...)` 传入：
+
+```kotlin
+import androidx.compose.ui.unit.dp
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.material3.list.Material3ListItemSpec
+
+NomiListItem(
+    title = { NomiText("高级选项") },
+    subtitle = { NomiText("点击展开") },
+    nativeSpec = Material3ListItemSpec(
+        overlineContent = { NomiText("分组") },
+        tonalElevation = 0.dp,
+    ),
+)
+```
+
+- 字段默认值等于原生默认（`ListItemDefaults.colors()` 与 `ListItemDefaults.Elevation`），未指定的字段
+  回落，传空 spec 不改变外观。
+- `overlineContent` 是 Material 3 独有的第三行槽位；中立 API 只有
+  headline/supporting/leading/trailing 四槽。
+- `colors` / `tonalElevation` / `shadowElevation` 直接对应原生参数，不做中立换算。
+- 其它设计系统的 spec 与 null 一律静默忽略；多个 spec 用核心的 `+` 组合后一次传入。
 
 ## 平台与依赖
 

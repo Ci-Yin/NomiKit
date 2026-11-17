@@ -4,17 +4,16 @@
 
 内置 Nomi 设计系统实现：默认 renderer、原生内容环境与 internal `DefaultNomiSystem` 装配；对外经
 `NomiDesignSystem.Default` 暴露。 它把[中立核心](<../design-system/README.md>)的 SPI
-落地为可直接使用的组件实现，并为后续基于 Material 3 的 Nomi 组件预留依赖位。
+落地为可直接使用的组件实现，并为需要原生工具箱外壳的组件预留依赖位。
 
-非目标：不定义公共组件 API、主题数据或 SPI（均在核心）；不承担 Material 3 / Fluent 的原生适配
-（见 [M3 适配器](<../design-system-material3/README.md>)
-与 [Fluent 适配器](<../design-system-fluent/README.md>)）； 不做应用装配或页面编排。
+非目标：不定义公共组件 API、主题数据或 SPI（均在核心）；不承担其它设计系统的原生适配（由各自 adapter
+模块负责）； 不做应用装配或页面编排。
 
 ## 模块位置与依赖边界
 
 位于 `core` 层，`api(projects.core.designSystem)` 与 `api(libs.compose.material3)`（后者用于导航套件的
 `NavigationBar`/`NavigationRail`/`PermanentNavigationDrawer` 原生外壳与徽标锚点，其它组件仍只使用
-Foundation）。 不依赖 M3/Fluent 适配器模块，也不被核心反向依赖。 核心不再引用本模块：
+Foundation）。 不依赖任何 adapter 模块，也不被核心反向依赖。 核心不再引用本模块：
 `LocalNomiDesignSystem` 无隐式默认，应用根、测试与 Preview 必须显式提供实现。
 
 ## 从哪里开始
@@ -77,8 +76,8 @@ NavigationItem(
 - `colors.indicatorColor` 在 Rail 与 Drawer 的选中容器底色生效；Bar 没有独立指示器。
 - 槽位 API 没有 `enabled`：本实现不提供禁用外观，`colors.disabledContentColor` 不生效；
   需要禁用语义时由调用方在点击回调与项级 `modifier` 上自行表达。
-- Drawer 使用 M3 `PermanentNavigationDrawer` 永久抽屉：文案槽与图标同排直接渲染，选中底色与内容色规则同上；
-  抽屉不消费窗口 inset，宽度沿用 M3 原生永久抽屉范围（240–360dp）。
+- Drawer 使用原生 `PermanentNavigationDrawer` 永久抽屉：文案槽与图标同排直接渲染，选中底色与内容色规则同上；
+  抽屉不消费窗口 inset，宽度沿用原生永久抽屉范围（240–360dp）。
 - 外壳容器色通过 `containerColor` 覆盖：Unspecified 回退 `surfaceLow`，`Transparent` 是有效覆盖；
   Bar/Rail/Drawer 三种布局都生效，项内颜色仍由 `NomiNavigationItemColors` 控制。
 - Bar/Rail/Drawer 三种布局与容器色覆盖都可用；无法承载这些覆盖的其它系统由各自适配器降级，不影响 Nomi
@@ -102,13 +101,13 @@ NavigationItem(
 ## 平台差异与生命周期
 
 沿用仓库 `multiplatform-lib-targets` 约定；文本、按钮与表面族仅使用 Compose Runtime/Foundation，导航套件使用
-`material3` 的 `NavigationBar`/`NavigationRail`/`PermanentNavigationDrawer` 作为原生外壳，无平台专属代码。
+原生工具箱的 `NavigationBar`/`NavigationRail`/`PermanentNavigationDrawer` 作为原生外壳，无平台专属代码。
 renderer 为 internal 单例，状态经组合本地提供，不持有跨组合状态。
 
 ## 依赖与扩展边界
 
-新增 Nomi 组件实现放本模块对应组件子包；需要 M3 原生组件时直接依赖 `libs.compose.material3`， 不依赖
-M3 适配器模块。公共 API 变更仍归核心；本模块只实现既有 SPI。
+新增 Nomi 组件实现放本模块对应组件子包；需要原生工具箱组件时直接依赖 `libs.compose.material3`，不依赖
+任何 adapter 模块。公共 API 变更仍归核心；本模块只实现既有 SPI。
 
 ## 限制与常见误用
 

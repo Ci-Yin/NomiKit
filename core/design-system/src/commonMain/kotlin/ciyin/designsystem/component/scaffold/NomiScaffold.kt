@@ -23,8 +23,8 @@ data class NomiScaffoldColors(
  * 页面脚手架的原生渲染契约。
  *
  * 实现负责建立当前设计系统的页面外壳，并按 topBar、content、bottomBar 的顺序排布三个槽位；
- * content 必须位于顶栏与底栏之间且不被原生栏覆盖（Material 3 用 Scaffold 的内容内边距让出空间，
- * 其余实现用带权重的内容容器排布）。空的 topBar 或 bottomBar 不应保留占位高度。
+ * content 必须位于顶栏与底栏之间且不被原生栏覆盖，让位方式由实现决定：原生内容内边距或带权重的
+ * 内容容器都合法。空的 topBar 或 bottomBar 不应保留占位高度。
  */
 @Stable
 interface NomiScaffoldRenderer {

@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card as NativeCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import ciyin.designsystem.component.NomiBorder
 import ciyin.designsystem.component.surface.NomiSurfaceColors
-import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.material3.surface.toMaterialBorder
+import ciyin.designsystem.runtime.ProvideNomiContentStyle
 
 /**
  * 使用原生 Card 的颜色、圆角、阴影与 Column slot，只有显式 padding 才创建内层布局。
@@ -38,7 +38,7 @@ internal fun Material3Card(
         containerColor = colors.containerColor,
         contentColor = colors.contentColor,
     )
-    NativeCard(
+    Card(
         modifier = modifier,
         shape = shape ?: CardDefaults.shape,
         colors = nativeColors,

@@ -11,7 +11,7 @@ import ciyin.designsystem.component.NomiBorder
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.surface.Card as NativeCard
+import io.github.composefluent.surface.Card
 
 /**
  * 原生静态 Card；上游不支持的颜色与描边忽略并记录警告，绝不伪造点击 Card。
@@ -38,7 +38,7 @@ internal fun FluentCard(
     rememberFluentWarning(border != NomiBorder.Default, border) {
         "NomiCard 的 border 覆盖无原生入口，已保留原生默认；需要描边覆盖时改用 NomiSurface"
     }
-    NativeCard(modifier = modifier, shape = shape ?: FluentTheme.shapes.overlay) {
+    Card(modifier = modifier, shape = shape ?: FluentTheme.shapes.overlay) {
         Column(
             modifier = if (contentPadding == null) Modifier else Modifier.padding(contentPadding),
             content = content,

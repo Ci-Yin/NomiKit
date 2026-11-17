@@ -12,7 +12,7 @@ import kotlin.jvm.JvmInline
 /**
  * 设计系统稳定标识。
  *
- * @property value 标识文本，例如 nomi、material3 或 fluent；本类型不校验唯一性或格式。
+ * @property value 标识文本，内置实现使用 nomi，adapter 模块各自使用自身标识；本类型不校验唯一性或格式。
  */
 @Immutable
 @JvmInline

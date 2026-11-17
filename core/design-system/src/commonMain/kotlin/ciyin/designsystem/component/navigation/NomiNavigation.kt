@@ -32,7 +32,7 @@ enum class NomiNavigationSuiteType {
 /**
  * 导航项的稀疏颜色覆盖；Unspecified 表示保留当前设计系统的原生导航项颜色。
  *
- * 图标、文案与徽标槽内部的内容应读取原生内容环境（M3/Fluent 的原生内容色或 Nomi 槽环境），
+ * 图标、文案与徽标槽内部的内容应读取原生内容环境（当前设计系统的原生内容色或 Nomi 槽环境），
  * 这样悬停、按下、禁用等原生状态色仍然生效；显式颜色只覆盖未指定字段。
  *
  * @property contentColor 未选中项的内容色；Unspecified 保留原生未选中色。
