@@ -22,7 +22,9 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.NomiControlSize
+import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.runtime.findSpec
 
 /**
  * 原生按钮适配；未指定的尺寸、形状、排版和颜色全部保留 Material 默认。
@@ -41,6 +43,7 @@ object Material3ActionRenderer : NomiActionRenderer {
      * @param contentPadding 显式值优先，其次为 size 度量，最后为所选原生按钮默认。
      * @param textStyle null 不追加排版；非 null 按字段覆盖 size 排版和原生 slot，颜色低于当前状态显式内容色。
      * @param content 原生 RowScope 内容，继承原生实际状态色和排版；仅显式颜色/排版增量发布给中立 slot。
+     * @param nativeSpec 按钮专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
      */
     @Composable
     override fun Button(
@@ -53,8 +56,10 @@ object Material3ActionRenderer : NomiActionRenderer {
         shape: Shape?,
         contentPadding: PaddingValues?,
         textStyle: TextStyle?,
+        nativeSpec: NomiButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<Material3ButtonSpec>()
         val metrics = if (size == null) null else NomiButtonDefaults.metrics(size)
         val actualModifier = if (metrics == null) modifier else modifier.defaultMinSize(
             minWidth = metrics.minTouchTarget,
@@ -115,6 +120,9 @@ object Material3ActionRenderer : NomiActionRenderer {
                 enabled = enabled,
                 shape = shape ?: ButtonDefaults.filledTonalShape,
                 colors = nativeColors,
+                elevation = spec?.elevation ?: ButtonDefaults.filledTonalButtonElevation(),
+                border = spec?.border,
+                interactionSource = spec?.interactionSource,
                 contentPadding = contentPadding ?: metrics?.contentPadding
                 ?: ButtonDefaults.ContentPadding,
                 content = buttonContent,
@@ -126,6 +134,9 @@ object Material3ActionRenderer : NomiActionRenderer {
                 enabled = enabled,
                 shape = shape ?: ButtonDefaults.textShape,
                 colors = nativeColors,
+                elevation = spec?.elevation,
+                border = spec?.border,
+                interactionSource = spec?.interactionSource,
                 contentPadding = contentPadding ?: metrics?.contentPadding
                 ?: ButtonDefaults.TextButtonContentPadding,
                 content = buttonContent,
@@ -137,6 +148,9 @@ object Material3ActionRenderer : NomiActionRenderer {
                 enabled = enabled,
                 shape = shape ?: ButtonDefaults.shape,
                 colors = nativeColors,
+                elevation = spec?.elevation ?: ButtonDefaults.buttonElevation(),
+                border = spec?.border,
+                interactionSource = spec?.interactionSource,
                 contentPadding = contentPadding ?: metrics?.contentPadding
                 ?: ButtonDefaults.ContentPadding,
                 content = buttonContent,

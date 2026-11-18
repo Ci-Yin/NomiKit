@@ -32,6 +32,7 @@ import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
+import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.NomiControlSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -58,6 +59,7 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
      * @param contentPadding 内容内边距；null 使用所选尺寸的 Nomi 度量。
      * @param textStyle 合并到尺寸预设文本样式的增量；null 保留预设，显式颜色在未指定状态内容色时生效。
      * @param content 在居中的 RowScope 中组合的内容，读取当前状态内容色及排版；仅显式增量向跨系统 slot 传播。
+     * @param nativeSpec 按钮专属参数；Nomi 外观由令牌决定，本实现忽略它。
      */
     @Composable
     override fun Button(
@@ -70,6 +72,7 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
         shape: Shape?,
         contentPadding: PaddingValues?,
         textStyle: TextStyle?,
+        nativeSpec: NomiButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     ) {
         val metrics = NomiButtonDefaults.metrics(size ?: NomiControlSize.Medium)

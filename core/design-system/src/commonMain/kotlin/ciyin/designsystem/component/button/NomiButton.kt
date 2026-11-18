@@ -34,6 +34,7 @@ interface NomiActionRenderer {
      * @param shape 按钮轮廓；null 保留原生形状。
      * @param contentPadding 内容内边距；null 保留原生间距。
      * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
+     * @param nativeSpec 按钮专属参数；null 或未携带本系统类型时全部沿用原生默认。
      * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
      */
     @Composable
@@ -47,6 +48,7 @@ interface NomiActionRenderer {
         shape: Shape?,
         contentPadding: PaddingValues?,
         textStyle: TextStyle?,
+        nativeSpec: NomiButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     )
 }
@@ -198,6 +200,7 @@ object NomiButtonDefaults {
  * @param shape 按钮轮廓；null 保留原生形状。
  * @param contentPadding 内容内边距；null 保留原生间距。
  * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
+ * @param nativeSpec 按钮专属参数；null 表示不覆盖任何原生属性，多个实现可用 `+` 组合后一次传入。
  * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
  */
 @Composable
@@ -211,6 +214,7 @@ fun NomiButton(
     shape: Shape? = null,
     contentPadding: PaddingValues? = null,
     textStyle: TextStyle? = null,
+    nativeSpec: NomiButtonSpec? = null,
     content: @Composable RowScope.() -> Unit,
 ) = requireNomiDesignSystem().components.actions.Button(
     onClick = onClick,
@@ -222,5 +226,6 @@ fun NomiButton(
     shape = shape,
     contentPadding = contentPadding,
     textStyle = textStyle,
+    nativeSpec = nativeSpec,
     content = content,
 )

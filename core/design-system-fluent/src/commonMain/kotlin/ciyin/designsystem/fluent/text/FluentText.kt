@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import io.github.composefluent.LocalTextStyle
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.component.Text as NativeText
 
@@ -45,6 +46,7 @@ internal object FluentText : NomiTextRenderer {
      * @param minLines 最小占用行数，交由原生文本校验。
      * @param onTextLayout 布局完成回调；null 映射为原生空回调。
      * @param autoSize 自动字号策略；Fluent 原生不支持，忽略覆盖并记录警告。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -66,6 +68,7 @@ internal object FluentText : NomiTextRenderer {
         minLines: Int,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         rememberFluentWarning(autoSize != null, autoSize) {
             "NomiText 的 autoSize 覆盖无原生入口，已保留固定字号"
@@ -113,6 +116,7 @@ internal object FluentText : NomiTextRenderer {
      * @param inlineContent 替换文本区段的内联组合映射，原样交给原生文本。
      * @param onTextLayout 布局完成回调；null 映射为原生空回调。
      * @param autoSize 自动字号策略；Fluent 原生不支持，忽略覆盖并记录警告。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -135,6 +139,7 @@ internal object FluentText : NomiTextRenderer {
         inlineContent: Map<String, InlineTextContent>,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         rememberFluentWarning(autoSize != null, autoSize) {
             "NomiText 的 autoSize 覆盖无原生入口，已保留固定字号"

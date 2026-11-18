@@ -17,6 +17,7 @@ import ciyin.designsystem.runtime.requireNomiDesignSystem
  * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
  * @param border Default 保留原生描边，None 移除描边，Stroke 指定描边。
  * @param contentPadding 卡片内容内边距；null 保留原生间距。
+ * @param nativeSpec 卡片专属参数；null 表示不覆盖任何原生属性。
  * @param content 在卡片 ColumnScope 中组合的内容，继承卡片内容样式。
  */
 @Composable
@@ -26,6 +27,7 @@ fun NomiCard(
     colors: NomiSurfaceColors = NomiSurfaceColors(),
     border: NomiBorder = NomiBorder.Default,
     contentPadding: PaddingValues? = null,
+    nativeSpec: NomiCardSpec? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) = requireNomiDesignSystem().components.surfaces.Card(
     modifier = modifier,
@@ -33,5 +35,6 @@ fun NomiCard(
     colors = colors,
     border = border,
     contentPadding = contentPadding,
+    nativeSpec = nativeSpec,
     content = content,
 )

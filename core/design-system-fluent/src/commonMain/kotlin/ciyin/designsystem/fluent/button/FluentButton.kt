@@ -11,10 +11,12 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
+import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.fluent.rememberFluentWarning
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.runtime.findSpec
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.LocalTextStyle
 import io.github.composefluent.component.AccentButton as NativeAccentButton
@@ -39,6 +41,7 @@ internal object FluentButton : NomiActionRenderer {
      * @param contentPadding 无原生入口；忽略覆盖并保留原生内边距。
      * @param textStyle null 保留原生排版，非 null 按字段合并；样式色低于当前状态显式内容色、高于原生状态色。
      * @param content 原生 RowScope 内容；原生 locals 保留实际状态结果，中立 slot 仅传播显式颜色和样式增量。
+     * @param nativeSpec 按钮专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
      */
     @Composable
     override fun Button(
@@ -51,8 +54,10 @@ internal object FluentButton : NomiActionRenderer {
         shape: Shape?,
         contentPadding: PaddingValues?,
         textStyle: TextStyle?,
+        nativeSpec: NomiButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<FluentButtonSpec>()
         rememberFluentWarning(size != null, size) {
             "NomiButton 的 size 覆盖无原生入口，已保留原生默认"
         }
@@ -62,7 +67,7 @@ internal object FluentButton : NomiActionRenderer {
         rememberFluentWarning(contentPadding != null, contentPadding) {
             "NomiButton 的 contentPadding 覆盖无原生入口，已保留原生默认"
         }
-        val buttonColors = colors.toFluentButtonColors(variant)
+        val buttonColors = spec?.colors ?: colors.toFluentButtonColors(variant)
         val nativeContent: @Composable RowScope.() -> Unit = {
             val stateColor = if (enabled) colors.contentColor else colors.disabledContentColor
             val explicitStyleColor = textStyle?.color ?: Color.Unspecified

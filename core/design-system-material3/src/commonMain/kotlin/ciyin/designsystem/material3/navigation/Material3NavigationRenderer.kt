@@ -12,6 +12,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -19,19 +20,24 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemColors
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemColors
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
+import ciyin.designsystem.component.navigation.NomiNavigationItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.navigation.NomiNavigationSpec
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
+import ciyin.designsystem.runtime.findSpec
 
 /**
  * Material 3 原生导航套件适配。
@@ -53,6 +59,7 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
      * @param containerColor 导航外壳容器底色；Unspecified 保留原生值，Transparent 是有效覆盖。
      * @param items 主导航项声明，按声明顺序进入主导航区域。
      * @param footerItems 底部导航项声明；空 lambda 时原生布局自然省略底部区域。
+     * @param nativeSpec 导航套件专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
      * @param content 被导航外壳包裹的页面内容。
      */
     @Composable
@@ -62,12 +69,15 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
         containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+        nativeSpec: NomiNavigationSpec?,
         content: @Composable () -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<Material3NavigationSpec>()
         when (layoutType) {
             NomiNavigationSuiteType.Bar -> Material3BarNavigationSuite(
                 modifier = modifier,
                 containerColor = containerColor,
+                spec = spec,
                 items = items,
                 footerItems = footerItems,
                 content = content,
@@ -76,6 +86,7 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
             NomiNavigationSuiteType.Rail -> Material3RailNavigationSuite(
                 modifier = modifier,
                 containerColor = containerColor,
+                spec = spec,
                 items = items,
                 footerItems = footerItems,
                 content = content,
@@ -84,6 +95,7 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
             NomiNavigationSuiteType.Drawer -> Material3DrawerNavigationSuite(
                 modifier = modifier,
                 containerColor = containerColor,
+                spec = spec,
                 items = items,
                 footerItems = footerItems,
                 content = content,
@@ -105,6 +117,7 @@ internal object Material3NavigationRenderer : NomiNavigationRenderer {
 private fun Material3BarNavigationSuite(
     modifier: Modifier,
     containerColor: Color,
+    spec: Material3NavigationSpec?,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit,
     content: @Composable () -> Unit,
@@ -113,8 +126,13 @@ private fun Material3BarNavigationSuite(
         Box(modifier = Modifier.weight(1f, fill = false)) {
             content()
         }
+        val barColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow }
         NavigationBar(
-            containerColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow },
+            containerColor = barColor,
+            contentColor = spec?.contentColor
+                ?: MaterialTheme.colorScheme.contentColorFor(barColor),
+            tonalElevation = spec?.tonalElevation ?: NavigationBarDefaults.Elevation,
+            windowInsets = spec?.windowInsets ?: NavigationBarDefaults.windowInsets,
         ) {
             val scope = Material3BarNavigationItemScope(rowScope = this)
             scope.items()
@@ -136,14 +154,20 @@ private fun Material3BarNavigationSuite(
 private fun Material3RailNavigationSuite(
     modifier: Modifier,
     containerColor: Color,
+    spec: Material3NavigationSpec?,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
     Row(modifier = modifier) {
+        val railColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow }
         NavigationRail(
             modifier = Modifier.fillMaxHeight(),
-            containerColor = containerColor.takeOrElse { MaterialTheme.colorScheme.surfaceContainerLow },
+            containerColor = railColor,
+            contentColor = spec?.contentColor
+                ?: MaterialTheme.colorScheme.contentColorFor(railColor),
+            header = spec?.railHeader,
+            windowInsets = spec?.windowInsets ?: NavigationRailDefaults.windowInsets,
         ) {
             val scope = Material3RailNavigationItemScope
             scope.items()
@@ -167,14 +191,21 @@ private fun Material3RailNavigationSuite(
 private fun Material3DrawerNavigationSuite(
     modifier: Modifier,
     containerColor: Color,
+    spec: Material3NavigationSpec?,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
+    val drawerColor = containerColor.takeOrElse { DrawerDefaults.standardContainerColor }
     PermanentNavigationDrawer(
         drawerContent = {
             PermanentDrawerSheet(
-                drawerContainerColor = containerColor.takeOrElse { DrawerDefaults.standardContainerColor },
+                drawerContainerColor = drawerColor,
+                drawerContentColor = spec?.contentColor
+                    ?: MaterialTheme.colorScheme.contentColorFor(drawerColor),
+                drawerTonalElevation = spec?.tonalElevation
+                    ?: DrawerDefaults.PermanentDrawerElevation,
+                windowInsets = spec?.windowInsets ?: DrawerDefaults.windowInsets,
             ) {
                 val scope = Material3DrawerNavigationItemScope
                 scope.items()
@@ -305,6 +336,7 @@ private class Material3BarNavigationItemScope(
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；Unspecified 字段保留原生导航项颜色。
      * @param interactionSource 可选交互源；null 时由原生导航项自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -316,6 +348,7 @@ private class Material3BarNavigationItemScope(
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         with(rowScope) {
             NavigationBarItem(
@@ -346,6 +379,7 @@ private object Material3RailNavigationItemScope : NomiNavigationItemScope {
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；Unspecified 字段保留原生导航项颜色。
      * @param interactionSource 可选交互源；null 时由原生导航项自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -357,6 +391,7 @@ private object Material3RailNavigationItemScope : NomiNavigationItemScope {
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         NavigationRailItem(
             selected = selected,
@@ -385,6 +420,7 @@ private object Material3DrawerNavigationItemScope : NomiNavigationItemScope {
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；Unspecified 字段保留原生导航项颜色。
      * @param interactionSource 可选交互源；null 时由原生导航项自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -396,6 +432,7 @@ private object Material3DrawerNavigationItemScope : NomiNavigationItemScope {
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         NavigationDrawerItem(
             label = label ?: {},

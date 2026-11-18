@@ -29,19 +29,28 @@ import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
+import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.card.NomiCardSpec
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.list.NomiListItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
+import ciyin.designsystem.component.navigation.NomiNavigationItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.navigation.NomiNavigationSpec
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
+import ciyin.designsystem.component.surface.NomiSurfaceSpec
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.runtime.NomiDesignSystemId
+import ciyin.designsystem.runtime.NomiNativeSpec
 import ciyin.designsystem.theme.NomiTheme
 
 /**
@@ -64,6 +73,7 @@ import ciyin.designsystem.theme.NomiTheme
  * @property inlineContentKeys 原样记录的内联内容键集合，空集合表示纯文本或无内联内容。
  * @property hasOnTextLayout 是否传入了非空布局回调。
  * @property autoSize 原样记录的自动字号策略；null 表示未指定。
+ * @property nativeSpec 原样记录的文本专属参数；null 表示未指定。
  */
 @Immutable
 internal data class RecordedText(
@@ -84,6 +94,7 @@ internal data class RecordedText(
     val inlineContentKeys: Set<String> = emptySet(),
     val hasOnTextLayout: Boolean = false,
     val autoSize: TextAutoSize? = null,
+    val nativeSpec: NomiTextSpec? = null,
 )
 
 /**
@@ -96,6 +107,7 @@ internal data class RecordedText(
  * @property shape 显式形状，null 表示未指定。
  * @property contentPadding 显式内边距，null 表示未指定。
  * @property textStyle 显式文本样式增量，null 表示未指定。
+ * @property nativeSpec 原样记录的按钮专属参数；null 表示未指定。
  */
 @Immutable
 internal data class RecordedButton(
@@ -106,6 +118,7 @@ internal data class RecordedButton(
     val shape: Shape?,
     val contentPadding: PaddingValues?,
     val textStyle: TextStyle?,
+    val nativeSpec: NomiButtonSpec? = null,
 )
 
 /**
@@ -115,6 +128,7 @@ internal data class RecordedButton(
  * @property colors 容器色与内容色的稀疏覆盖。
  * @property border 保留默认、无描边及指定描边三种意图。
  * @property contentPadding Card 专用的显式内边距；null 表示未指定，Surface 记录固定保留 null。
+ * @property nativeSpec 原样记录的专属参数；Surface 与 Card 共用该字段，null 表示未指定。
  */
 @Immutable
 internal data class RecordedSurface(
@@ -122,6 +136,7 @@ internal data class RecordedSurface(
     val colors: NomiSurfaceColors,
     val border: NomiBorder,
     val contentPadding: PaddingValues? = null,
+    val nativeSpec: NomiNativeSpec<*>? = null,
 )
 
 /**
@@ -134,6 +149,7 @@ internal data class RecordedSurface(
  * @property hasLabel 是否提供了文案槽。
  * @property colors 原样记录的稀疏颜色覆盖。
  * @property hasInteractionSource 是否传入了交互源。
+ * @property nativeSpec 原样记录的导航项专属参数；null 表示未指定。
  */
 @Immutable
 internal data class RecordedNavigationItem(
@@ -144,6 +160,7 @@ internal data class RecordedNavigationItem(
     val hasLabel: Boolean,
     val colors: NomiNavigationItemColors,
     val hasInteractionSource: Boolean,
+    val nativeSpec: NomiNavigationItemSpec? = null,
 )
 
 /**
@@ -153,6 +170,7 @@ internal data class RecordedNavigationItem(
  * @property containerColor 原样记录的导航外壳容器色；Unspecified 仍表示未指定。
  * @property items 主导航项，按声明顺序记录。
  * @property footerItems 底部导航项，按声明顺序记录。
+ * @property nativeSpec 原样记录的导航套件专属参数；null 表示未指定。
  */
 @Immutable
 internal data class RecordedNavigationSuite(
@@ -160,16 +178,19 @@ internal data class RecordedNavigationSuite(
     val containerColor: Color,
     val items: List<RecordedNavigationItem>,
     val footerItems: List<RecordedNavigationItem>,
+    val nativeSpec: NomiNavigationSpec? = null,
 )
 
 /**
  * 记录中立层传给脚手架的真实颜色参数。
  *
  * @property colors 原样记录的容器色与内容色覆盖；Unspecified 仍表示未指定。
+ * @property nativeSpec 原样记录的脚手架专属参数；null 表示未指定。
  */
 @Immutable
 internal data class RecordedScaffold(
     val colors: NomiScaffoldColors,
+    val nativeSpec: NomiScaffoldSpec? = null,
 )
 
 /**
@@ -180,6 +201,7 @@ internal data class RecordedScaffold(
  * @property hasLeading 是否提供前导槽。
  * @property hasSubtitle 是否提供副标题槽。
  * @property hasTrailing 是否提供尾部槽。
+ * @property nativeSpec 原样记录的专属参数；null 表示调用方未指定任何设计系统的参数。
  */
 @Immutable
 internal data class RecordedListItem(
@@ -188,6 +210,7 @@ internal data class RecordedListItem(
     val hasLeading: Boolean,
     val hasSubtitle: Boolean,
     val hasTrailing: Boolean,
+    val nativeSpec: NomiListItemSpec? = null,
 )
 
 /**
@@ -274,6 +297,7 @@ internal class RecordingDesignSystem(
              * @param minLines 原样记录的最小行数。
              * @param onTextLayout 原样记录是否非空的布局回调。
              * @param autoSize 原样记录的自动字号策略。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              */
             @Composable
             override fun Text(
@@ -295,6 +319,7 @@ internal class RecordingDesignSystem(
                 minLines: Int,
                 onTextLayout: ((TextLayoutResult) -> Unit)?,
                 autoSize: TextAutoSize?,
+                nativeSpec: NomiTextSpec?,
             ) {
                 val call = RecordedText(
                     style = style,
@@ -313,6 +338,7 @@ internal class RecordingDesignSystem(
                     lineHeight = lineHeight,
                     hasOnTextLayout = onTextLayout != null,
                     autoSize = autoSize,
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { texts[text] = call }
             }
@@ -339,6 +365,7 @@ internal class RecordingDesignSystem(
              * @param inlineContent 原样记录键集合的内联内容映射。
              * @param onTextLayout 原样记录是否非空的布局回调。
              * @param autoSize 原样记录的自动字号策略。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              */
             @Composable
             override fun Text(
@@ -361,6 +388,7 @@ internal class RecordingDesignSystem(
                 inlineContent: Map<String, InlineTextContent>,
                 onTextLayout: ((TextLayoutResult) -> Unit)?,
                 autoSize: TextAutoSize?,
+                nativeSpec: NomiTextSpec?,
             ) {
                 val call = RecordedText(
                     style = style,
@@ -380,6 +408,7 @@ internal class RecordingDesignSystem(
                     inlineContentKeys = inlineContent.keys,
                     hasOnTextLayout = onTextLayout != null,
                     autoSize = autoSize,
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { texts[text.text] = call }
             }
@@ -414,6 +443,7 @@ internal class RecordingDesignSystem(
                 shape: Shape?,
                 contentPadding: PaddingValues?,
                 textStyle: TextStyle?,
+                nativeSpec: NomiButtonSpec?,
                 content: @Composable RowScope.() -> Unit,
             ) {
                 val call = RecordedButton(
@@ -424,6 +454,7 @@ internal class RecordingDesignSystem(
                     shape = shape,
                     contentPadding = contentPadding,
                     textStyle = textStyle,
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { buttons += call }
                 Row(content = content)
@@ -441,6 +472,7 @@ internal class RecordingDesignSystem(
              * @param shape 原样记录的可空形状。
              * @param colors 原样记录的稀疏表面颜色，不建立颜色环境。
              * @param border 原样记录的三态描边。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              * @param content 直接组合的内容，不添加额外布局 Scope 或样式。
              */
             @Composable
@@ -449,9 +481,15 @@ internal class RecordingDesignSystem(
                 shape: Shape?,
                 colors: NomiSurfaceColors,
                 border: NomiBorder,
+                nativeSpec: NomiSurfaceSpec?,
                 content: @Composable () -> Unit,
             ) {
-                val call = RecordedSurface(shape = shape, colors = colors, border = border)
+                val call = RecordedSurface(
+                    shape = shape,
+                    colors = colors,
+                    border = border,
+                    nativeSpec = nativeSpec
+                )
                 SideEffect { this@RecordingDesignSystem.surfaces += call }
                 content()
             }
@@ -464,6 +502,7 @@ internal class RecordingDesignSystem(
              * @param colors 原样记录的稀疏颜色，不建立颜色环境。
              * @param border 原样记录的三态描边。
              * @param contentPadding 原样记录的可空内边距，不施加到 Column。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              * @param content 在真实 ColumnScope 中组合的内容，供嵌套派发测试使用。
              */
             @Composable
@@ -473,6 +512,7 @@ internal class RecordingDesignSystem(
                 colors: NomiSurfaceColors,
                 border: NomiBorder,
                 contentPadding: PaddingValues?,
+                nativeSpec: NomiCardSpec?,
                 content: @Composable ColumnScope.() -> Unit,
             ) {
                 val call = RecordedSurface(
@@ -480,6 +520,7 @@ internal class RecordingDesignSystem(
                     colors = colors,
                     border = border,
                     contentPadding = contentPadding,
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { cards += call }
                 Column(content = content)
@@ -498,6 +539,7 @@ internal class RecordingDesignSystem(
              * @param containerColor 原样记录的导航外壳容器色；Unspecified 仍表示未指定。
              * @param items 主导航项声明；在录制作用域中执行以收集参数。
              * @param footerItems 底部导航项声明；在录制作用域中执行以收集参数。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              * @param content 直接组合的页面内容，不添加原生布局。
              */
             @Composable
@@ -507,6 +549,7 @@ internal class RecordingDesignSystem(
                 containerColor: Color,
                 items: @Composable NomiNavigationItemScope.() -> Unit,
                 footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+                nativeSpec: NomiNavigationSpec?,
                 content: @Composable () -> Unit,
             ) {
                 val itemCalls = mutableListOf<RecordedNavigationItem>()
@@ -518,6 +561,7 @@ internal class RecordingDesignSystem(
                     containerColor = containerColor,
                     items = itemCalls.toList(),
                     footerItems = footerCalls.toList(),
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { navigations += call }
                 content()
@@ -535,6 +579,7 @@ internal class RecordingDesignSystem(
              * @param colors 原样记录的容器色与内容色覆盖。
              * @param topBar 顶部栏槽，直接组合。
              * @param bottomBar 底部栏槽，直接组合。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              * @param content 页面主体槽，直接组合。
              */
             @Composable
@@ -543,9 +588,15 @@ internal class RecordingDesignSystem(
                 colors: NomiScaffoldColors,
                 topBar: @Composable () -> Unit,
                 bottomBar: @Composable () -> Unit,
+                nativeSpec: NomiScaffoldSpec?,
                 content: @Composable () -> Unit,
             ) {
-                SideEffect { scaffolds += RecordedScaffold(colors = colors) }
+                SideEffect {
+                    scaffolds += RecordedScaffold(
+                        colors = colors,
+                        nativeSpec = nativeSpec
+                    )
+                }
                 topBar()
                 content()
                 bottomBar()
@@ -565,6 +616,7 @@ internal class RecordingDesignSystem(
              * @param title 标题槽，直接组合。
              * @param subtitle 副标题槽；null 表示不占位。
              * @param trailing 尾部槽；null 表示不占位。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
              */
             @Composable
             override fun ListItem(
@@ -574,6 +626,7 @@ internal class RecordingDesignSystem(
                 title: @Composable () -> Unit,
                 subtitle: (@Composable () -> Unit)?,
                 trailing: (@Composable () -> Unit)?,
+                nativeSpec: NomiListItemSpec?,
             ) {
                 val call = RecordedListItem(
                     hasModifier = modifier != Modifier,
@@ -581,6 +634,7 @@ internal class RecordingDesignSystem(
                     hasLeading = leading != null,
                     hasSubtitle = subtitle != null,
                     hasTrailing = trailing != null,
+                    nativeSpec = nativeSpec,
                 )
                 SideEffect { this@RecordingDesignSystem.listItems += call }
                 Column {
@@ -625,6 +679,7 @@ private class RecordingNavigationItemScope(
      * @param label 文案槽；只记录是否提供。
      * @param colors 原样记录的稀疏颜色覆盖。
      * @param interactionSource 交互源；只记录是否提供。
+     * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
      */
     @Composable
     override fun NavigationItem(
@@ -636,6 +691,7 @@ private class RecordingNavigationItemScope(
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         calls += RecordedNavigationItem(
             selected = selected,
@@ -645,6 +701,7 @@ private class RecordingNavigationItemScope(
             hasLabel = label != null,
             colors = colors,
             hasInteractionSource = interactionSource != null,
+            nativeSpec = nativeSpec,
         )
     }
 }

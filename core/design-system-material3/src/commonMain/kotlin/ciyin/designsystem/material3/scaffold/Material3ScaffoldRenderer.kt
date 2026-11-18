@@ -11,9 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.ScaffoldDefaults
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.runtime.findSpec
 
 /**
  * Material 3 原生 Scaffold 适配；页面外壳、内容让位与系统栏内边距全部交给原生组件。
@@ -28,6 +31,7 @@ object Material3ScaffoldRenderer : NomiScaffoldRenderer {
      * @param colors 逐通道颜色覆盖；容器 Unspecified 使用原生 background，内容 Unspecified 由 contentColorFor 推导，透明色为覆盖。
      * @param topBar 原生顶部栏槽。
      * @param bottomBar 原生底部栏槽。
+     * @param nativeSpec 脚手架专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
      * @param content 让出原生内边距后的页面主体；只有显式内容色发布为中立 slot 增量。
      */
     @Composable
@@ -36,8 +40,10 @@ object Material3ScaffoldRenderer : NomiScaffoldRenderer {
         colors: NomiScaffoldColors,
         topBar: @Composable () -> Unit,
         bottomBar: @Composable () -> Unit,
+        nativeSpec: NomiScaffoldSpec?,
         content: @Composable () -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<Material3ScaffoldSpec>()
         val container = colors.containerColor.takeOrElse { MaterialTheme.colorScheme.background }
         NativeScaffold(
             modifier = modifier,
@@ -45,6 +51,9 @@ object Material3ScaffoldRenderer : NomiScaffoldRenderer {
             contentColor = colors.contentColor.takeOrElse { contentColorFor(container) },
             topBar = topBar,
             bottomBar = bottomBar,
+            snackbarHost = spec?.snackbarHost ?: {},
+            floatingActionButton = spec?.floatingActionButton ?: {},
+            contentWindowInsets = spec?.contentWindowInsets ?: ScaffoldDefaults.contentWindowInsets,
         ) { innerPadding ->
             Box(
                 Modifier

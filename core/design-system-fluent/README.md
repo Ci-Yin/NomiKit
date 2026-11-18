@@ -107,10 +107,25 @@ caption/body/bodyStrong/bodyLarge/subtitle/title/titleLarge/display，其余中�
 组件视觉直接读取 `FluentTheme.colors/typography/cornerRadius` 原生值，不读中立投影。 adapter 只把明确的
 colors/textStyle 增量传给中立 slot，原生默认留在 native locals。 默认 Card 内的原生按钮因此仍能提供自己的禁用颜色与字号。
 
+## 专属参数
+
+各组件族的原生专属参数由独立 `data class` 实现核心对应的族契约，经入口的 `nativeSpec` 参数传入；
+未传入或字段为 null 时全部回落原生默认：
+
+| 族       | spec                   | 覆盖的原生能力                                                     |
+|----------|------------------------|--------------------------------------------------------------------|
+| 按钮     | `FluentButtonSpec`     | 原生五态 `ButtonColorScheme`（中立四字段表达不了悬停/按下/聚焦态） |
+| 表面     | `FluentSurfaceSpec`    | 原生 `Layer` 的 `elevation`                                        |
+| 导航套件 | `FluentNavigationSpec` | 侧栏 `title` 与 `backButton` 槽                                    |
+| 列表项   | `FluentListItemSpec`   | `dropdown`、`shape`、`enabled`、`colors`、`interactionSource`      |
+
+文本与导航项两族的族契约是核心预留插孔；Fluent 静态 Card 与页面外壳没有原生专属入口，一律忽略
+`nativeSpec`。
+
 ## 列表项专属参数
 
-`FluentListItemSpec` 承载未进入中立 API 的原生 `CardExpanderItem` 属性，经
-`NomiListItem(nativeSpec = ...)` 传入：
+`FluentListItemSpec` 实现核心的列表项族契约 `NomiListItemSpec`，承载未进入中立 API 的原生
+`CardExpanderItem` 属性，经 `NomiListItem(nativeSpec = ...)` 传入：
 
 ```kotlin
 import ciyin.designsystem.component.list.NomiListItem

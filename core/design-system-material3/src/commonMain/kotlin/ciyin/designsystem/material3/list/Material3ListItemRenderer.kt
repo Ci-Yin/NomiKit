@@ -1,10 +1,13 @@
 package ciyin.designsystem.material3.list
 
 import androidx.compose.foundation.clickable
-import androidx.compose.material3.ListItem as NativeListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.list.NomiListItemSpec
+import ciyin.designsystem.runtime.findSpec
+import androidx.compose.material3.ListItem as NativeListItem
 
 /**
  * Material 3 原生列表项适配。
@@ -14,7 +17,10 @@ import ciyin.designsystem.component.list.NomiListItemRenderer
  */
 object Material3ListItemRenderer : NomiListItemRenderer {
     /**
-     * 按原生槽位渲染列表项；不传 colors、tonalElevation 或 shadowElevation。
+     * 按原生槽位渲染列表项。
+     *
+     * 未携带 [Material3ListItemSpec] 时只有槽位参与渲染，颜色与阴影全部使用原生默认；
+     * 携带时只应用该 spec 中非 null 的字段，其它设计系统的参数静默忽略。
      *
      * @param modifier 应用于原生列表项的修饰符。
      * @param onClick 点击回调；null 时不附加点击语义，行保持静态。
@@ -22,6 +28,7 @@ object Material3ListItemRenderer : NomiListItemRenderer {
      * @param title 标题槽，进入原生 headlineContent。
      * @param subtitle 副标题槽；null 表示不占位，非 null 时进入原生 supportingContent。
      * @param trailing 尾部槽；null 表示不占位，避免原生尾部槽的起始内边距。
+     * @param nativeSpec 列表项专属参数；只识别 [Material3ListItemSpec]。
      */
     @Composable
     override fun ListItem(
@@ -31,13 +38,19 @@ object Material3ListItemRenderer : NomiListItemRenderer {
         title: @Composable () -> Unit,
         subtitle: (@Composable () -> Unit)?,
         trailing: (@Composable () -> Unit)?,
+        nativeSpec: NomiListItemSpec?,
     ) {
+        val spec = nativeSpec.findSpec<Material3ListItemSpec>()
         NativeListItem(
             headlineContent = title,
             modifier = if (onClick == null) modifier else modifier.clickable(onClick = onClick),
+            overlineContent = spec?.overlineContent,
             supportingContent = subtitle,
             leadingContent = leading,
             trailingContent = trailing,
+            colors = spec?.colors ?: ListItemDefaults.colors(),
+            tonalElevation = spec?.tonalElevation ?: ListItemDefaults.Elevation,
+            shadowElevation = spec?.shadowElevation ?: ListItemDefaults.Elevation,
         )
     }
 }

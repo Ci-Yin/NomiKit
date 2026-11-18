@@ -13,9 +13,11 @@ import androidx.compose.ui.platform.testTag
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.fluent.list.FluentListItemSpec
 import ciyin.designsystem.icon.ArrowRight
 import ciyin.designsystem.icon.IconPack
 import ciyin.designsystem.icon.Settings
+import ciyin.designsystem.material3.list.Material3ListItemSpec
 import ciyin.designsystem.theme.NomiTheme
 import com.ciyin.app.presentation.screen.designsystem.DesignSystemDemoTags
 import com.ciyin.app.sample.Res
@@ -87,6 +89,7 @@ internal fun DesignSystemListItemShowcase(modifier: Modifier = Modifier) {
                     modifier = Modifier.testTag(DesignSystemDemoTags.ListItemAction),
                 ) { NomiText(stringResource(Res.string.design_system_demo_list_item_action)) }
             },
+            nativeSpec = Material3ListItemSpec() + FluentListItemSpec()
         )
     }
 }

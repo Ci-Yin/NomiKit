@@ -12,11 +12,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.card.NomiCardSpec
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
+import ciyin.designsystem.component.surface.NomiSurfaceSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.runtime.findSpec
 import ciyin.designsystem.material3.card.Material3Card
+import ciyin.designsystem.material3.card.Material3CardSpec
 
 /**
  * 原生 Surface/Card 同族 SPI；两个组件各自保留原生默认和独立实现。
@@ -30,6 +35,7 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
      * @param colors 逐通道颜色覆盖；容器 Unspecified 使用 surface，内容 Unspecified 由 contentColorFor 推导，透明色为覆盖。
      * @param border Default 与 None 均无描边；Stroke 精确传入原生表面。
      * @param content 原生表面中的内容；只将显式内容颜色发布为中立 slot 增量。
+     * @param nativeSpec 表面专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
      */
     @Composable
     override fun Surface(
@@ -37,8 +43,10 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
         shape: Shape?,
         colors: NomiSurfaceColors,
         border: NomiBorder,
+        nativeSpec: NomiSurfaceSpec?,
         content: @Composable () -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<Material3SurfaceSpec>()
         val container =
             if (colors.containerColor == Color.Unspecified) MaterialTheme.colorScheme.surface else colors.containerColor
         NativeSurface(
@@ -46,6 +54,8 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
             shape = shape ?: RectangleShape,
             color = container,
             contentColor = if (colors.contentColor == Color.Unspecified) contentColorFor(container) else colors.contentColor,
+            tonalElevation = spec?.tonalElevation ?: 0.dp,
+            shadowElevation = spec?.shadowElevation ?: 0.dp,
             border = border.toMaterialBorder(),
         ) {
             ProvideNomiContentStyle(
@@ -64,6 +74,7 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
      * @param colors 逐通道颜色覆盖；Unspecified 保留原生默认，Transparent 是有效覆盖。
      * @param border Default 与 None 均不加描边，Stroke 使用给定描边。
      * @param contentPadding null 直接使用原生 Column slot；非 null 新建带内边距的内层 Column。
+     * @param nativeSpec 卡片专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
      * @param content ColumnScope 内容，继承原生内容色，仅显式内容色写入中立 slot。
      */
     @Composable
@@ -73,6 +84,7 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
         colors: NomiSurfaceColors,
         border: NomiBorder,
         contentPadding: PaddingValues?,
+        nativeSpec: NomiCardSpec?,
         content: @Composable ColumnScope.() -> Unit,
     ) {
         Material3Card(
@@ -81,6 +93,7 @@ object Material3SurfaceRenderer : NomiSurfaceRenderer {
             colors = colors,
             border = border,
             contentPadding = contentPadding,
+            spec = nativeSpec.findSpec<Material3CardSpec>(),
             content = content,
         )
     }

@@ -70,6 +70,7 @@ interface NomiNavigationItemScope {
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；Unspecified 字段保留原生导航项颜色。
      * @param interactionSource 可选交互源；null 时由原生导航项自行创建。
+     * @param nativeSpec 导航项专属参数；当前预留给未来的布局专属原生能力，实现应原样接受并忽略。
      */
     @Composable
     fun NavigationItem(
@@ -81,6 +82,7 @@ interface NomiNavigationItemScope {
         label: @Composable (() -> Unit)? = null,
         colors: NomiNavigationItemColors = NomiNavigationItemColors(),
         interactionSource: MutableInteractionSource? = null,
+        nativeSpec: NomiNavigationItemSpec? = null,
     )
 }
 
@@ -102,6 +104,7 @@ interface NomiNavigationRenderer {
      * @param containerColor 导航外壳容器底色；[Color.Unspecified] 保留当前设计系统的原生值，显式颜色（含 Transparent）覆盖。
      * @param items 主导航项；按调用顺序渲染。
      * @param footerItems 底部导航项；空 lambda 表示没有底部项，实现应自然省略底部区域，Bar 布局可不展示该组。
+     * @param nativeSpec 导航套件专属参数；null 或未携带本系统类型时全部沿用原生默认。
      * @param content 页面内容；必须与导航外壳共同完成排布。
      */
     @Composable
@@ -111,6 +114,7 @@ interface NomiNavigationRenderer {
         containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+        nativeSpec: NomiNavigationSpec?,
         content: @Composable () -> Unit,
     )
 }
@@ -129,6 +133,7 @@ interface NomiNavigationRenderer {
  * @param containerColor 导航外壳容器底色；Unspecified 保留原生值，Transparent 是有效覆盖。
  * @param items 主导航项声明。
  * @param footerItems 底部导航项声明；空 lambda 表示没有底部项，Bar 布局可不展示该组。
+ * @param nativeSpec 导航套件专属参数；null 表示不覆盖任何原生属性。
  * @param content 被导航外壳包裹的页面内容。
  */
 @Composable
@@ -138,6 +143,7 @@ fun NomiNavigationSuite(
     containerColor: Color = Color.Unspecified,
     items: @Composable NomiNavigationItemScope.() -> Unit,
     footerItems: @Composable NomiNavigationItemScope.() -> Unit = {},
+    nativeSpec: NomiNavigationSpec? = null,
     content: @Composable () -> Unit,
 ) = requireNomiDesignSystem().components.navigation.NavigationSuite(
     layoutType = layoutType,
@@ -145,5 +151,6 @@ fun NomiNavigationSuite(
     containerColor = containerColor,
     items = items,
     footerItems = footerItems,
+    nativeSpec = nativeSpec,
     content = content,
 )

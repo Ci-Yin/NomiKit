@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentAlpha
@@ -32,6 +33,7 @@ internal object FluentScaffoldRenderer : NomiScaffoldRenderer {
      * @param colors 逐通道颜色覆盖；Unspecified 分别回退原生 layer.default 与 text.primary，透明色仍是覆盖。
      * @param topBar 顶部栏槽；空 lambda 时高度为零。
      * @param bottomBar 底部栏槽；空 lambda 时高度为零。
+     * @param nativeSpec 脚手架专属参数；上游没有 Scaffold，Fluent 侧没有实现，一律忽略。
      * @param content 顶栏与底栏之间的页面主体，占据剩余高度并继承原生内容环境。
      */
     @Composable
@@ -40,6 +42,7 @@ internal object FluentScaffoldRenderer : NomiScaffoldRenderer {
         colors: NomiScaffoldColors,
         topBar: @Composable () -> Unit,
         bottomBar: @Composable () -> Unit,
+        @Suppress("UNUSED_PARAMETER") nativeSpec: NomiScaffoldSpec?,
         content: @Composable () -> Unit,
     ) {
         val container =

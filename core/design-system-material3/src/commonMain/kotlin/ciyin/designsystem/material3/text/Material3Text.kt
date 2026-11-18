@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 
 /**
  * 原生文字适配，不把中立正文排版强加给原生 slot。
@@ -44,6 +45,7 @@ object Material3TextRenderer : NomiTextRenderer {
      * @param minLines 最小占用行数，交由原生 Text 校验。
      * @param onTextLayout 布局完成回调，原样交给原生 Text。
      * @param autoSize 自动字号策略，原样交给原生 Text；null 保留固定字号。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -65,6 +67,7 @@ object Material3TextRenderer : NomiTextRenderer {
         minLines: Int,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         NativeText(
             text = text,
@@ -110,6 +113,7 @@ object Material3TextRenderer : NomiTextRenderer {
      * @param inlineContent 替换文本区段的内联组合映射，原样交给原生 Text。
      * @param onTextLayout 布局完成回调，原样交给原生 Text。
      * @param autoSize 自动字号策略，原样交给原生 Text；null 保留固定字号。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -132,6 +136,7 @@ object Material3TextRenderer : NomiTextRenderer {
         inlineContent: Map<String, InlineTextContent>,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         NativeText(
             text = text,

@@ -10,9 +10,12 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.card.NomiCardSpec
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
+import ciyin.designsystem.component.surface.NomiSurfaceSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.runtime.findSpec
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Layer
 import ciyin.designsystem.fluent.card.FluentCard
@@ -29,6 +32,7 @@ internal object FluentSurface : NomiSurfaceRenderer {
      * @param colors 逐通道颜色覆盖；Unspecified 分别回退原生 layer.default 和 text.primary，透明色仍是覆盖。
      * @param border Default 使用原生卡片描边，None 去除描边，Stroke 精确传入。
      * @param content 表面内容，原生局部值提供实际颜色，中立 slot 只增加明确的内容色。
+     * @param nativeSpec 表面专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
      */
     @Composable
     override fun Surface(
@@ -36,14 +40,17 @@ internal object FluentSurface : NomiSurfaceRenderer {
         shape: Shape?,
         colors: NomiSurfaceColors,
         border: NomiBorder,
+        nativeSpec: NomiSurfaceSpec?,
         content: @Composable () -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<FluentSurfaceSpec>()
         Layer(
             modifier = modifier,
             shape = shape ?: FluentTheme.shapes.control,
             color = colors.containerColor.takeOrElse { FluentTheme.colors.background.layer.default },
             contentColor = colors.contentColor.takeOrElse { FluentTheme.colors.text.text.primary },
             border = border.toFluentBorder(),
+            elevation = spec?.elevation ?: 0.dp,
         ) {
             ProvideNomiContentStyle(
                 color = colors.contentColor,
@@ -61,6 +68,7 @@ internal object FluentSurface : NomiSurfaceRenderer {
      * @param colors 必须全部为 Unspecified；包括 Transparent 在内的任何显式颜色均不支持。
      * @param border 仅允许 Default 保留原生描边；None 与 Stroke 均不支持。
      * @param contentPadding null 不给内层 Column 添加内边距，非 null 仅作用于该内容布局。
+     * @param nativeSpec 卡片专属参数；Fluent 静态 Card 没有原生专属入口，一律忽略。
      * @param content ColumnScope 内容，继承原生 Card 内容环境，不新增中立显式 slot。
      * @throws IllegalArgumentException 存在显式 colors 或 border 不是 Default 时抛出，应改用 NomiSurface。
      */
@@ -71,6 +79,7 @@ internal object FluentSurface : NomiSurfaceRenderer {
         colors: NomiSurfaceColors,
         border: NomiBorder,
         contentPadding: PaddingValues?,
+        @Suppress("UNUSED_PARAMETER") nativeSpec: NomiCardSpec?,
         content: @Composable ColumnScope.() -> Unit,
     ) = FluentCard(
         modifier = modifier,

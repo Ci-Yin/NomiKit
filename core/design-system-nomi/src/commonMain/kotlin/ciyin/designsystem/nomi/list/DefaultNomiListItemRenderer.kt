@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.list.NomiListItemSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiTheme
 
@@ -32,6 +33,8 @@ internal object DefaultNomiListItemRenderer : NomiListItemRenderer {
      * @param title 标题槽，使用 titleSmall 加 SemiBold 的 Nomi 原生标题样式与 textPrimary。
      * @param subtitle 副标题槽；null 表示不占位，使用 bodySmall 与 textSecondary。
      * @param trailing 尾部槽；null 表示不占位，使用 textSecondary 内容色。
+     * @param nativeSpec 列表项专属参数；Nomi 外观完全由 [NomiTheme] 令牌决定，本实现忽略它，
+     *   不得因携带任何设计系统的参数而改变视觉或抛出异常。
      */
     @Composable
     override fun ListItem(
@@ -41,6 +44,7 @@ internal object DefaultNomiListItemRenderer : NomiListItemRenderer {
         title: @Composable () -> Unit,
         subtitle: (@Composable () -> Unit)?,
         trailing: (@Composable () -> Unit)?,
+        nativeSpec: NomiListItemSpec?,
     ) {
         val colorScheme = NomiTheme.colorScheme
         val spacings = NomiTheme.spacings

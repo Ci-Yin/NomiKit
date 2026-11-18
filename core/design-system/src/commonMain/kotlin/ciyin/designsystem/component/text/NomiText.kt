@@ -18,8 +18,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.runtime.LocalNomiContentColor
-import ciyin.designsystem.runtime.requireNomiDesignSystem
 import ciyin.designsystem.runtime.LocalNomiTextStyle
+import ciyin.designsystem.runtime.requireNomiDesignSystem
 
 /**
  * 文本原生渲染契约，空样式由原生内容环境决定。
@@ -50,6 +50,7 @@ interface NomiTextRenderer {
      * @param minLines 文本布局的最少行数，须大于零。
      * @param onTextLayout 新文本布局计算完成时的回调；null 表示调用方不需要布局结果。
      * @param autoSize 自动字号策略；null 保留固定字号，不支持的实现必须拒绝而非静默忽略。
+     * @param nativeSpec 文本专属参数；实现应原样接受并忽略。
      */
     @Composable
     fun Text(
@@ -71,6 +72,7 @@ interface NomiTextRenderer {
         minLines: Int,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     )
 
     /**
@@ -117,6 +119,7 @@ interface NomiTextRenderer {
         inlineContent: Map<String, InlineTextContent>,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     )
 }
 
@@ -179,6 +182,7 @@ private fun resolveNomiText(style: TextStyle?, color: Color): ResolvedNomiText {
  * @param minLines 文本布局的最少行数，须大于零。
  * @param onTextLayout 新文本布局计算完成时的回调；null 表示调用方不需要布局结果。
  * @param autoSize 自动字号策略；null 保留固定字号，当前设计系统不支持时明确拒绝。
+ * @param nativeSpec 文本专属参数；当前没有实现，保留给未来的原生文本能力，传 null 即原生默认。
  */
 @Composable
 fun NomiText(
@@ -200,6 +204,7 @@ fun NomiText(
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     autoSize: TextAutoSize? = null,
+    nativeSpec: NomiTextSpec? = null,
 ) {
     val resolved = resolveNomiText(style, color)
     requireNomiDesignSystem().components.text.Text(
@@ -221,6 +226,7 @@ fun NomiText(
         minLines = minLines,
         onTextLayout = onTextLayout,
         autoSize = autoSize,
+        nativeSpec = nativeSpec,
     )
 }
 
@@ -246,6 +252,7 @@ fun NomiText(
  * @param inlineContent 替换文本指定区段的内联组合映射；空映射表示纯富文本。
  * @param onTextLayout 新文本布局计算完成时的回调；null 表示调用方不需要布局结果。
  * @param autoSize 自动字号策略；null 保留固定字号，当前设计系统不支持时明确拒绝。
+ * @param nativeSpec 文本专属参数；当前没有实现，保留给未来的原生文本能力，传 null 即原生默认。
  */
 @Composable
 fun NomiText(
@@ -268,6 +275,7 @@ fun NomiText(
     inlineContent: Map<String, InlineTextContent> = emptyMap(),
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     autoSize: TextAutoSize? = null,
+    nativeSpec: NomiTextSpec? = null,
 ) {
     val resolved = resolveNomiText(style, color)
     requireNomiDesignSystem().components.text.Text(
@@ -290,5 +298,6 @@ fun NomiText(
         inlineContent = inlineContent,
         onTextLayout = onTextLayout,
         autoSize = autoSize,
+        nativeSpec = nativeSpec,
     )
 }

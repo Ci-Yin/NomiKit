@@ -27,6 +27,7 @@ import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.runtime.LocalNomiContentColor
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.NomiDesignSystem
@@ -125,6 +126,7 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
              * @param minLines 接口要求的最小行数，此夹具不记录。
              * @param onTextLayout 接口要求的布局回调，此夹具不调用。
              * @param autoSize 接口要求的自动字号策略，此夹具不记录。
+             * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
              */
             @Composable
             override fun Text(
@@ -146,6 +148,7 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
                 minLines: Int,
                 onTextLayout: ((TextLayoutResult) -> Unit)?,
                 autoSize: TextAutoSize?,
+                nativeSpec: NomiTextSpec?,
             ) {
                 SideEffect { texts[text] = style to color }
             }
@@ -172,6 +175,7 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
              * @param inlineContent 接口要求的内联内容映射，此夹具不记录。
              * @param onTextLayout 接口要求的布局回调，此夹具不调用。
              * @param autoSize 接口要求的自动字号策略，此夹具不记录。
+             * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
              */
             @Composable
             override fun Text(
@@ -194,6 +198,7 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
                 inlineContent: Map<String, InlineTextContent>,
                 onTextLayout: ((TextLayoutResult) -> Unit)?,
                 autoSize: TextAutoSize?,
+                nativeSpec: NomiTextSpec?,
             ) {
                 SideEffect { texts[text.text] = style to color }
             }

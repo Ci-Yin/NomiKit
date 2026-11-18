@@ -27,6 +27,7 @@ import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.fluent.Fluent
 import ciyin.designsystem.fluent.FluentTheme
 import ciyin.designsystem.runtime.NomiDesignSystem
@@ -194,6 +195,7 @@ private class RecordingTextRenderer(
      * @param minLines 最小占用行数，原样交给 Fluent。
      * @param onTextLayout 布局回调，原样交给 Fluent。
      * @param autoSize 自动字号策略，原样交给 Fluent；非 null 时由 Fluent 实现拒绝。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -215,6 +217,7 @@ private class RecordingTextRenderer(
         minLines: Int,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         seen += text
         NomiDesignSystem.Fluent.components.text.Text(
@@ -236,6 +239,7 @@ private class RecordingTextRenderer(
             minLines = minLines,
             onTextLayout = onTextLayout,
             autoSize = autoSize,
+            nativeSpec = nativeSpec,
         )
     }
 
@@ -261,6 +265,7 @@ private class RecordingTextRenderer(
      * @param inlineContent 内联内容映射，原样交给 Fluent。
      * @param onTextLayout 布局回调，原样交给 Fluent。
      * @param autoSize 自动字号策略，原样交给 Fluent；非 null 时由 Fluent 实现拒绝。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -283,6 +288,7 @@ private class RecordingTextRenderer(
         inlineContent: Map<String, InlineTextContent>,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         seen += text.text
         NomiDesignSystem.Fluent.components.text.Text(
@@ -305,6 +311,7 @@ private class RecordingTextRenderer(
             inlineContent = inlineContent,
             onTextLayout = onTextLayout,
             autoSize = autoSize,
+            nativeSpec = nativeSpec,
         )
     }
 }

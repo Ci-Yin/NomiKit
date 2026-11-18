@@ -35,6 +35,7 @@ interface NomiScaffoldRenderer {
      * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留当前设计系统的原生值。
      * @param topBar 顶部栏槽；空 lambda 表示没有顶部栏。
      * @param bottomBar 底部栏槽；空 lambda 表示没有底部栏。
+     * @param nativeSpec 页面脚手架专属参数；null 或未携带本系统类型时全部沿用原生默认。
      * @param content 页面主体内容，由实现放入顶栏与底栏之间。
      */
     @Composable
@@ -43,6 +44,7 @@ interface NomiScaffoldRenderer {
         colors: NomiScaffoldColors,
         topBar: @Composable () -> Unit,
         bottomBar: @Composable () -> Unit,
+        nativeSpec: NomiScaffoldSpec?,
         content: @Composable () -> Unit,
     )
 }
@@ -57,6 +59,7 @@ interface NomiScaffoldRenderer {
  * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
  * @param topBar 顶部栏槽；空 lambda 表示没有顶部栏。
  * @param bottomBar 底部栏槽；空 lambda 表示没有底部栏。
+ * @param nativeSpec 页面脚手架专属参数；null 表示不覆盖任何原生属性。
  * @param content 页面主体内容，位于顶栏与底栏之间。
  */
 @Composable
@@ -65,11 +68,13 @@ fun NomiScaffold(
     colors: NomiScaffoldColors = NomiScaffoldColors(),
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
+    nativeSpec: NomiScaffoldSpec? = null,
     content: @Composable () -> Unit,
 ) = requireNomiDesignSystem().components.scaffold.Scaffold(
     modifier = modifier,
     colors = colors,
     topBar = topBar,
     bottomBar = bottomBar,
+    nativeSpec = nativeSpec,
     content = content,
 )

@@ -8,8 +8,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
+import ciyin.designsystem.component.navigation.NomiNavigationItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.navigation.NomiNavigationSpec
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
+import ciyin.designsystem.runtime.findSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.MenuItem
@@ -42,6 +45,7 @@ internal object FluentNavigationRenderer : NomiNavigationRenderer {
      * @param containerColor 导航外壳容器底色；无原生入口，显式颜色被忽略并记录警告。
      * @param items 主导航项声明；按声明顺序进入原生菜单项区域。
      * @param footerItems 底部导航项声明；空 lambda 时原生导航自然省略底部区域。
+     * @param nativeSpec 导航套件专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
      * @param content 被导航外壳包裹的页面内容。
      */
     @Composable
@@ -51,8 +55,10 @@ internal object FluentNavigationRenderer : NomiNavigationRenderer {
         containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+        nativeSpec: NomiNavigationSpec?,
         content: @Composable () -> Unit,
     ) {
+        val spec = nativeSpec.findSpec<FluentNavigationSpec>()
         rememberFluentWarning(containerColor != Color.Unspecified, containerColor) {
             "NomiNavigationSuite 的 containerColor 覆盖无原生入口，已保留原生导航容器色"
         }
@@ -70,6 +76,8 @@ internal object FluentNavigationRenderer : NomiNavigationRenderer {
             // 上游默认给内容面板加 1dp 描边，这里显式关闭，避免导航栏与内容之间出现分割线。
             border = null,
             color = paneColor,
+            title = { spec?.title?.invoke() },
+            backButton = { spec?.backButton?.invoke() },
             pane = content,
         )
     }
@@ -256,6 +264,7 @@ private class FluentNavigationItemRecorder(
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 中立稀疏颜色覆盖。
      * @param interactionSource 调用方提供的交互源；null 时由原生菜单项自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -267,6 +276,7 @@ private class FluentNavigationItemRecorder(
         label: (@Composable () -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         rememberFluentWarning(modifier != Modifier, modifier) {
             "NavigationItem 的 modifier 无原生入口，已忽略；请使用套件级 modifier"

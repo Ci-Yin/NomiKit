@@ -38,7 +38,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
 import ciyin.designsystem.component.navigation.NomiNavigationItemScope
+import ciyin.designsystem.component.navigation.NomiNavigationItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
+import ciyin.designsystem.component.navigation.NomiNavigationSpec
 import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiTheme
@@ -72,6 +74,7 @@ internal object DefaultNomiNavigationRenderer : NomiNavigationRenderer {
      * @param containerColor 导航外壳容器底色；Unspecified 保留 Nomi surfaceLow，Transparent 是有效覆盖。
      * @param items 主导航项声明，按调用顺序渲染。
      * @param footerItems 底部导航项声明；Rail 与 Drawer 固定到栏底，Bar 不渲染底部组（复刻旧底部栏只展示主导航项）。
+     * @param nativeSpec 导航套件专属参数；Nomi 外观由令牌决定，本实现忽略它。
      * @param content 页面内容，与导航外壳共同完成排布。
      */
     @Composable
@@ -81,6 +84,7 @@ internal object DefaultNomiNavigationRenderer : NomiNavigationRenderer {
         containerColor: Color,
         items: @Composable NomiNavigationItemScope.() -> Unit,
         footerItems: @Composable NomiNavigationItemScope.() -> Unit,
+        nativeSpec: NomiNavigationSpec?,
         content: @Composable () -> Unit,
     ) {
         when (layoutType) {
@@ -181,7 +185,7 @@ private fun RailNavigationSuite(
 /**
  * 抽屉导航布局：永久抽屉固定在起始侧，主导航项从抽屉顶部排列，底部导航项推至抽屉底部。
  *
- * 抽屉宽度与排布沿用 Material 3 [PermanentNavigationDrawer] 的原生实现，容器色读取 Nomi surfaceLow；
+ * 抽屉宽度与排布沿用 [PermanentNavigationDrawer] 的原生实现，容器色读取 Nomi surfaceLow；
  * 抽屉不消费窗口 inset，安全区由调用方页面外壳处理（与 Bar/Rail 一致）。
  *
  * @param modifier 应用于原生永久抽屉根节点的修饰符。
@@ -242,6 +246,7 @@ private object DrawerItemScope : NomiNavigationItemScope {
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；读取 contentColor、selectedContentColor 与 indicatorColor。
      * @param interactionSource 可选交互源；null 时由原生选择语义自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -253,6 +258,7 @@ private object DrawerItemScope : NomiNavigationItemScope {
         label: (@Composable () -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
         val containerColor = resolveNavigationItemContainerColor(
@@ -348,6 +354,7 @@ private class BarItemScope(private val rowScope: RowScope) : NomiNavigationItemS
      * @param label 文案槽；null 表示不显示可见文案。
      * @param colors 稀疏颜色覆盖；Unspecified 字段回退到 Nomi primary/onBackground。
      * @param interactionSource 可选交互源；null 时由原生选择语义自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -359,6 +366,7 @@ private class BarItemScope(private val rowScope: RowScope) : NomiNavigationItemS
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
         Surface(
@@ -406,6 +414,7 @@ private object RailItemScope : NomiNavigationItemScope {
      * @param label 文案槽；null 表示不提供 tooltip 提示，不进入可见内容。
      * @param colors 稀疏颜色覆盖；读取 contentColor、selectedContentColor 与 indicatorColor。
      * @param interactionSource 可选交互源；null 时由原生选择语义自行创建。
+     * @param nativeSpec 导航项专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun NavigationItem(
@@ -417,6 +426,7 @@ private object RailItemScope : NomiNavigationItemScope {
         label: @Composable (() -> Unit)?,
         colors: NomiNavigationItemColors,
         interactionSource: MutableInteractionSource?,
+        nativeSpec: NomiNavigationItemSpec?,
     ) {
         val contentColor = resolveNavigationItemContentColor(selected = selected, colors = colors)
         val containerColor = resolveNavigationItemContainerColor(
@@ -448,7 +458,7 @@ private object RailItemScope : NomiNavigationItemScope {
 }
 
 /**
- * 文案槽的 tooltip 包装：有文案时用 Material 3 [TooltipBox] 在导航项右侧提示，无文案时直接渲染内容。
+ * 文案槽的 tooltip 包装：有文案时用 [TooltipBox] 在导航项右侧提示，无文案时直接渲染内容。
  *
  * 提示内容只在悬停展开时组合，不进入常驻可见语义树；排版沿用原生 tooltip。
  *
@@ -474,7 +484,7 @@ private fun NavigationItemTooltipBoxSlot(
 }
 
 /**
- * 导航项图标槽的统一入口：有徽标槽时用 Material 3 [BadgedBox] 叠加，否则直接渲染图标槽。
+ * 导航项图标槽的统一入口：有徽标槽时用 [BadgedBox] 叠加，否则直接渲染图标槽。
  *
  * 图标尺寸由调用方在槽内约束；实现不插入尺寸或内边距，避免覆盖调用方的槽布局。
  *

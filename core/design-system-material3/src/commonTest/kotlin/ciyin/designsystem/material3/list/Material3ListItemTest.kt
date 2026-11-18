@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.list.NomiListItemSpec
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.runtime.NomiDesignSystem
@@ -69,4 +70,31 @@ class Material3ListItemTest {
         onNodeWithTag("static").assertHasNoClickAction()
         onNodeWithText("静态标题").assertExists()
     }
+
+    /**
+     * 携带专属参数时 overline 槽进入原生渲染，同时携带的其它系统参数被静默忽略。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
+     */
+    @Test
+    fun nativeSpecFeedsOverlineAndIgnoresForeignSpec() = runComposeUiTest {
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Material3, darkMode = DarkMode.Light) {
+                NomiListItem(
+                    title = { NomiText("标题") },
+                    modifier = Modifier.testTag("spec"),
+                    nativeSpec = Material3ListItemSpec(overlineContent = { NomiText("分组") }) +
+                            ForeignListItemSpec(),
+                )
+            }
+        }
+        onNodeWithTag("spec").assertExists()
+        onNodeWithText("分组").assertExists()
+        onNodeWithText("标题").assertExists()
+    }
 }
+
+/**
+ * 其它设计系统的测试专属参数，用于验证跨系统静默忽略。
+ */
+private class ForeignListItemSpec : NomiListItemSpec

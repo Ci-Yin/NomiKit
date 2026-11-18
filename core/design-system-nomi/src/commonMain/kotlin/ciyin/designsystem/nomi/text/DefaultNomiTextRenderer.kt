@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.text.NomiTextRenderer
+import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.nomi.LocalNomiNativeContentColor
 import ciyin.designsystem.nomi.LocalNomiNativeTextStyle
 import ciyin.designsystem.theme.NomiTheme
@@ -97,6 +98,7 @@ internal object DefaultNomiTextRenderer : NomiTextRenderer {
      * @param minLines 最少占用的文本行数，须大于零。
      * @param onTextLayout 布局完成回调，原样交给 BasicText。
      * @param autoSize 自动字号策略，原样交给 BasicText；null 保留固定字号。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -118,6 +120,7 @@ internal object DefaultNomiTextRenderer : NomiTextRenderer {
         minLines: Int,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         val baseStyle =
             NomiTheme.typography.bodyMedium.merge(LocalNomiNativeTextStyle.current).merge(style)
@@ -166,6 +169,7 @@ internal object DefaultNomiTextRenderer : NomiTextRenderer {
      * @param inlineContent 替换文本区段的内联组合映射，原样交给 BasicText。
      * @param onTextLayout 布局完成回调，原样交给 BasicText。
      * @param autoSize 自动字号策略，原样交给 BasicText；null 保留固定字号。
+     * @param nativeSpec 文本专属参数；当前无实现，原样接受并忽略。
      */
     @Composable
     override fun Text(
@@ -188,6 +192,7 @@ internal object DefaultNomiTextRenderer : NomiTextRenderer {
         inlineContent: Map<String, InlineTextContent>,
         onTextLayout: ((TextLayoutResult) -> Unit)?,
         autoSize: TextAutoSize?,
+        nativeSpec: NomiTextSpec?,
     ) {
         val baseStyle =
             NomiTheme.typography.bodyMedium.merge(LocalNomiNativeTextStyle.current).merge(style)

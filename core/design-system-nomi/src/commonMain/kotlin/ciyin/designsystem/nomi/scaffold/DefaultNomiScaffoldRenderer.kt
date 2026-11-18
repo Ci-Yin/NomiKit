@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
+import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
 import ciyin.designsystem.nomi.LocalNomiNativeContentColor
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiTheme
@@ -29,6 +30,7 @@ internal object DefaultNomiScaffoldRenderer : NomiScaffoldRenderer {
      * @param topBar 顶部栏槽；空 lambda 时高度为零。
      * @param bottomBar 底部栏槽；空 lambda 时高度为零。
      * @param content 顶栏与底栏之间的页面主体，占据剩余高度并继承 Nomi 内容色。
+     * @param nativeSpec 脚手架专属参数；Nomi 外观由令牌决定，本实现忽略它。
      */
     @Composable
     override fun Scaffold(
@@ -36,6 +38,7 @@ internal object DefaultNomiScaffoldRenderer : NomiScaffoldRenderer {
         colors: NomiScaffoldColors,
         topBar: @Composable () -> Unit,
         bottomBar: @Composable () -> Unit,
+        nativeSpec: NomiScaffoldSpec?,
         content: @Composable () -> Unit,
     ) {
         val container = colors.containerColor.takeOrElse { NomiTheme.colorScheme.background }

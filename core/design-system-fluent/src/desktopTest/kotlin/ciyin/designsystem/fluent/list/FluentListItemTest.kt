@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.text.TextStyle
 import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.list.NomiListItemSpec
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.fluent.Fluent
 import ciyin.designsystem.runtime.NomiDesignSystem
@@ -106,4 +107,45 @@ class FluentListItemTest {
             assertEquals(expectedTrailingColor, seenTrailingColor)
         }
     }
+
+    /**
+     * 携带专属参数时 dropdown 槽进入原生尾部区域，静态行仍不获得点击语义。
+     */
+    @Test
+    fun nativeSpecFeedsDropdownSlot() = runComposeUiTest {
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Fluent) {
+                NomiListItem(
+                    title = { NomiText("标题") },
+                    modifier = Modifier.testTag("with-dropdown"),
+                    nativeSpec = FluentListItemSpec(dropdown = { NomiText("箭头") }),
+                )
+            }
+        }
+        onNodeWithTag("with-dropdown").assertHasNoClickAction()
+        onNodeWithText("箭头").assertExists()
+    }
+
+    /**
+     * 其它设计系统的列表项参数被静默忽略，行仍渲染默认外观且不抛异常。
+     */
+    @Test
+    fun foreignNativeSpecIsIgnored() = runComposeUiTest {
+        setContent {
+            NomiTheme(designSystem = NomiDesignSystem.Fluent) {
+                NomiListItem(
+                    title = { NomiText("标题") },
+                    modifier = Modifier.testTag("foreign"),
+                    nativeSpec = ForeignListItemSpec(),
+                )
+            }
+        }
+        onNodeWithTag("foreign").assertExists()
+        onNodeWithText("标题").assertExists()
+    }
 }
+
+/**
+ * 其它设计系统的测试专属参数，用于验证跨系统静默忽略。
+ */
+private class ForeignListItemSpec : NomiListItemSpec

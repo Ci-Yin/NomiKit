@@ -23,6 +23,7 @@ import ciyin.designsystem.runtime.ProvideNomiContentStyle
  * @param colors 逐通道颜色覆盖；Unspecified 保留原生默认，Transparent 是有效覆盖。
  * @param border Default 与 None 均不加描边，Stroke 使用给定描边。
  * @param contentPadding null 直接使用原生 Column slot；非 null 新建带内边距的内层 Column。
+ * @param spec 已取用的卡片专属参数；null 保留原生 elevation。
  * @param content ColumnScope 内容，继承原生内容色，仅显式内容色写入中立 slot。
  */
 @Composable
@@ -32,6 +33,7 @@ internal fun Material3Card(
     colors: NomiSurfaceColors,
     border: NomiBorder,
     contentPadding: PaddingValues?,
+    spec: Material3CardSpec?,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val nativeColors = CardDefaults.cardColors().copy(
@@ -42,6 +44,7 @@ internal fun Material3Card(
         modifier = modifier,
         shape = shape ?: CardDefaults.shape,
         colors = nativeColors,
+        elevation = spec?.elevation ?: CardDefaults.cardElevation(),
         border = border.toMaterialBorder(),
     ) {
         val scope = this

@@ -118,9 +118,27 @@ val designSystem = NomiDesignSystem.Material3(branded)
   列表项使用原生 ListItem，行高、文本样式、内容色与两行/三行推断由原生组件决定，仅在有 @BT@onClick@BT@
   时包装 @BT@Modifier.clickable@BT@，不附加长按或 Role；脚手架使用原生 Scaffold，外壳与内容让位由原生实现承担。
 
+## 专属参数
+
+各组件族的原生专属参数由独立 `data class` 实现核心对应的族契约，经入口的 `nativeSpec` 参数传入；
+未传入或字段为 null 时全部回落原生默认：
+
+| 族       | spec                      | 覆盖的原生能力                                                           |
+|----------|---------------------------|--------------------------------------------------------------------------|
+| 按钮     | `Material3ButtonSpec`     | `elevation`、`border`、`interactionSource`                               |
+| 表面     | `Material3SurfaceSpec`    | `tonalElevation`、`shadowElevation`                                      |
+| 卡片     | `Material3CardSpec`       | `elevation`                                                              |
+| 导航套件 | `Material3NavigationSpec` | `contentColor`、`tonalElevation`、`windowInsets`、Rail 专属 `railHeader` |
+| 脚手架   | `Material3ScaffoldSpec`   | `snackbarHost`、`floatingActionButton`、`contentWindowInsets`            |
+| 列表项   | `Material3ListItemSpec`   | `overlineContent`、`colors`、`tonalElevation`、`shadowElevation`         |
+
+文本与导航项两族的族契约是核心预留插孔，Material 3 侧暂未定义 spec。颜色已由中立的
+`NomiButtonColors` / `NomiSurfaceColors` 覆盖，因此不重复进入 spec。
+
 ## 列表项专属参数
 
-`Material3ListItemSpec` 承载未进入中立 API 的原生列表项属性，经 `NomiListItem(nativeSpec = ...)` 传入：
+`Material3ListItemSpec` 实现核心的列表项族契约 `NomiListItemSpec`，承载未进入中立 API 的原生列表项
+属性，经 `NomiListItem(nativeSpec = ...)` 传入：
 
 ```kotlin
 import androidx.compose.ui.unit.dp

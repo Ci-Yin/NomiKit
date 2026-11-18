@@ -36,6 +36,7 @@ internal fun DefaultNomiCard(
         shape = shape ?: NomiTheme.shapes.large,
         colors = colors,
         border = border,
+        nativeSpec = null,
     ) {
         Column(
             modifier = Modifier.padding(contentPadding ?: PaddingValues(NomiTheme.spacings.large)),

@@ -53,7 +53,7 @@ val NomiDesignSystem.Companion.Default: NomiDesignSystem
 | [NomiTheme](<src/commonMain/kotlin/ciyin/designsystem/theme/NomiTheme.kt>)                                                                                                     | 不可变主题值、`LocalNomiTheme`、伴生只读 getter 与唯一入口                        |
 | [ColorScheme](<src/commonMain/kotlin/ciyin/designsystem/theme/ColorScheme.kt>) / [Type](<src/commonMain/kotlin/ciyin/designsystem/theme/Type.kt>)                              | defaultLight/defaultDark 颜色工厂、NomiColorScheme 与中立 NomiTypography          |
 | [NomiDesignSystem](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiDesignSystem.kt>)                                                                                     | 映射契约、`ProvideTheme(theme, content)`、`LocalNomiDesignSystem` 与 require 入口 |
-| [NomiNativeSpec](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiNativeSpec.kt>)                                                                                         | 设计系统专属参数标记、`NomiNativeSpecs` 组合与 `findSpec` 取用                    |
+| [NomiNativeSpec](<src/commonMain/kotlin/ciyin/designsystem/runtime/NomiNativeSpec.kt>)                                                                                         | 专属参数族标记、泛型契约、`NomiNativeSpecs` 组合与 `findSpec` 取用                |
 | [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>) / [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)    | 文本与按钮 API、对应 renderer 和参数类型                                          |
 | [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>) / [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>) | Surface 与实际原生 Card 分开派发                                                  |
 | [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>)                                                                                               | 描边意图三态                                                                      |
@@ -183,11 +183,29 @@ NomiListItem(
 ### 原生透传
 
 `nativeSpec` 承载"当前设计系统原生存在、但没有进入中立 API"的属性。具体 spec 类型由 adapter 模块
-定义，核心只认 `NomiNativeSpec` 标记，不引用也不解析任何原生类型；实现按类型取用自己认识的那个，其余静默
-忽略，共享页面不需要按设计系统分支。各 adapter 的 spec 字段、组合方式与降级行为分别见对应模块的 README。
+定义，核心不引用也不解析任何原生类型；实现按类型取用自己认识的那个，其余静默忽略，共享页面不需要按设计系统分支。
 
-- 单个 spec 直接作为 `nativeSpec` 传入；多套系统的 spec 用 `+` 组合，两侧都是集合时展平，同类型多个
+参数类型是 **族契约**而不是通用桶：每个入口对应一个族标记与类型别名，其它族的 spec 传进来会在
+编译期失败，不需要运行时兜底。各 adapter 的 spec 字段、组合方式与降级行为分别见对应模块的 README。
+
+| 入口                                                                                                         | 族契约                                                             |
+|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiTextSpec.kt>)                        | `NomiTextSpec`（预留：中立 API 已 1:1 暴露原生 Text 参数）         |
+| [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButtonSpec.kt>)                  | `NomiButtonSpec`                                                   |
+| [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurfaceSpec.kt>)               | `NomiSurfaceSpec`                                                  |
+| [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCardSpec.kt>)                        | `NomiCardSpec`                                                     |
+| [NomiNavigationSuite](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSpec.kt>) | `NomiNavigationSpec`                                               |
+| [NavigationItem](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationItemSpec.kt>)  | `NomiNavigationItemSpec`（预留：三种布局的原生项颜色类型互不相同） |
+| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffoldSpec.kt>)            | `NomiScaffoldSpec`                                                 |
+| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItemSpec.kt>)                | `NomiListItemSpec`                                                 |
+
+"预留"表示参数、族标记与类型别名都已就位，但 adapter 暂不定义具体 spec：调用方现在无法构造它们， 未来
+adapter 补实现时公共签名不变。
+
+- 单个 spec 直接作为 `nativeSpec` 传入；同族多个 spec 用成员 `+` 组合，两侧都是集合时展平，同类型多个
   参数以先声明者为准且不去重。
+- `nativeSpec` 统一放在尾部 `content` lambda 之前（无尾随 lambda 的入口放最后），因此现有尾随 lambda
+  调用无需改动。
 - 每个字段的默认值等于原生默认值，传空 spec 不改变外观；未指定的字段一律回落原生默认。
 - 已由槽位或中立参数覆盖的属性不再在 spec 暴露，避免同一外观有两条覆盖路径。
 - 实现无法承载某个已携带的字段时忽略并记录一次警告，不重绘伪造外观。

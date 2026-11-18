@@ -13,8 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.takeOrElse
 import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.card.NomiCardSpec
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
+import ciyin.designsystem.component.surface.NomiSurfaceSpec
 import ciyin.designsystem.runtime.LocalNomiTextStyle
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiTheme
@@ -33,6 +35,7 @@ internal object DefaultNomiSurfaceRenderer : NomiSurfaceRenderer {
      * @param colors 颜色逐字段覆盖；Unspecified 回退到 Nomi surface/onSurface，Transparent 不回退。
      * @param border Stroke 绘制指定描边；Default 和 None 均不绘制描边。
      * @param content Box 内的组合内容，继承解析后的 Nomi 内容色；只有显式内容色发布到跨系统 slot。
+     * @param nativeSpec 表面专属参数；Nomi 外观由令牌决定，本实现忽略它。
      */
     @Composable
     override fun Surface(
@@ -40,6 +43,7 @@ internal object DefaultNomiSurfaceRenderer : NomiSurfaceRenderer {
         shape: Shape?,
         colors: NomiSurfaceColors,
         border: NomiBorder,
+        nativeSpec: NomiSurfaceSpec?,
         content: @Composable () -> Unit,
     ) {
         val resolvedShape = shape ?: NomiTheme.shapes.medium
@@ -70,6 +74,7 @@ internal object DefaultNomiSurfaceRenderer : NomiSurfaceRenderer {
      * @param border Stroke 绘制指定描边；Default 与 None 均不绘制 Nomi 默认描边。
      * @param contentPadding 内容内边距；null 使用当前 Nomi 主题的 large 间距。
      * @param content 在 ColumnScope 中组合的卡片内容，继承 Nomi 内容色及显式 slot 增量。
+     * @param nativeSpec 卡片专属参数；Nomi 外观由令牌决定，本实现忽略它。
      */
     @Composable
     override fun Card(
@@ -78,6 +83,7 @@ internal object DefaultNomiSurfaceRenderer : NomiSurfaceRenderer {
         colors: NomiSurfaceColors,
         border: NomiBorder,
         contentPadding: PaddingValues?,
+        nativeSpec: NomiCardSpec?,
         content: @Composable ColumnScope.() -> Unit,
     ) = DefaultNomiCard(
         modifier = modifier,
