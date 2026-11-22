@@ -82,6 +82,9 @@ NomiNavigationSuite (layoutType, modifier, containerColor, items, footerItems, c
 底部组是否参与布局由实现决定（Nomi Bar 只渲染主导航项，底部组只在 Rail/Drawer 展示）。 页面外壳入口
 NomiScaffold (modifier, colors, topBar, bottomBar, content)：content 必须位于顶栏与底栏之间， 空槽不占位；M3
 委托原生 Scaffold（innerPadding 让位），Fluent/Nomi 用 Column 权重排布，标题/最大宽度/滚动仍归调用方。
+顶栏入口 NomiTopAppBar (title, modifier, navigationIcon, actions, colors, nativeSpec)：只做固定单行栏，
+导航图标为 null 时不占位，颜色四通道稀疏覆盖；Nomi 取 appBar 令牌（56dp），Material 3 用原生 TopAppBar，
+Fluent 用原生色板组装 48dp 行，不暴露居中/折叠/滚动行为。
 列表项入口 NomiListItem (title, modifier, onClick, leading, subtitle, trailing)：槽位为 null
 时不占位，onClick=null 表示静态行； 行高、容器、圆角、悬停/按下/点击外观与文本样式全部由原生实现决定。
 本版不提供 enabled、selected、展开、 overline、分组标题、分隔线与颜色/形状/内边距覆盖；尾部只有一个原生槽位，值文本与箭头由调用方组合；

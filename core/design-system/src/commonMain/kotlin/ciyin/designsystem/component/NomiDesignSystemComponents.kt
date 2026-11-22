@@ -39,7 +39,7 @@ interface NomiDesignSystemComponents {
     val navigation: NomiNavigationRenderer
 
     /**
-     * 页面脚手架；顶栏、主体内容与底栏三个槽位由页面的原生外壳排布。
+     * 页面外壳与顶栏；脚手架负责顶栏、主体内容与底栏三个槽位，顶栏提供标题、导航图标与操作槽。
      */
     val scaffold: NomiScaffoldRenderer
 

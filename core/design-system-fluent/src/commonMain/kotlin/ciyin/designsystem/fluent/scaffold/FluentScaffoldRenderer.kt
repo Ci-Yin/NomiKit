@@ -1,17 +1,27 @@
 package ciyin.designsystem.fluent.scaffold
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
+import ciyin.designsystem.component.scaffold.NomiTopAppBarColors
+import ciyin.designsystem.component.scaffold.NomiTopAppBarSpec
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentAlpha
@@ -71,4 +81,90 @@ internal object FluentScaffoldRenderer : NomiScaffoldRenderer {
             }
         }
     }
+
+    /**
+     * Fluent 上游没有原生顶栏，用原生 Layer 色板与内容环境组装同结构外壳。
+     *
+     * 栏高取与原生命令栏相同的 48dp，标题排版取 bodyStrong；导航图标、标题与操作分别发布原生内容色
+     * 与内容 alpha。导航图标为 null 时不保留占位宽度。
+     *
+     * @param title 标题槽，位于导航图标与操作槽之间并占据剩余宽度。
+     * @param modifier 顶栏根节点的布局修饰符，其后追加行高、容器底色与水平内边距。
+     * @param navigationIcon 导航图标槽；null 时不占位。
+     * @param actions 操作槽，按行排列。
+     * @param colors 逐字段颜色覆盖；Unspecified 回退 layer.default/text.primary/text.secondary，透明色是覆盖。
+     * @param nativeSpec 顶栏专属参数；上游没有原生顶栏，忽略。
+     */
+    @Composable
+    override fun TopAppBar(
+        title: @Composable () -> Unit,
+        modifier: Modifier,
+        navigationIcon: (@Composable () -> Unit)?,
+        actions: @Composable RowScope.() -> Unit,
+        colors: NomiTopAppBarColors,
+        @Suppress("UNUSED_PARAMETER") nativeSpec: NomiTopAppBarSpec?,
+    ) {
+        val container =
+            colors.containerColor.takeOrElse { FluentTheme.colors.background.layer.default }
+        val titleColor =
+            colors.titleContentColor.takeOrElse { FluentTheme.colors.text.text.primary }
+        val navigationColor = colors.navigationIconContentColor.takeOrElse {
+            FluentTheme.colors.text.text.primary
+        }
+        val actionColor = colors.actionIconContentColor.takeOrElse {
+            FluentTheme.colors.text.text.secondary
+        }
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(FluentTopAppBarHeight)
+                .background(container)
+                .padding(horizontal = FluentTopAppBarHorizontalPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(FluentTopAppBarSpacing),
+        ) {
+            navigationIcon?.let {
+                CompositionLocalProvider(
+                    LocalContentColor provides navigationColor,
+                    LocalContentAlpha provides navigationColor.alpha,
+                ) {
+                    it()
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = FluentTopAppBarHorizontalPadding),
+            ) {
+                ProvideTextStyle(FluentTheme.typography.bodyStrong.copy(color = titleColor)) {
+                    CompositionLocalProvider(LocalContentColor provides titleColor) {
+                        title()
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(FluentTopAppBarSpacing)) {
+                CompositionLocalProvider(
+                    LocalContentColor provides actionColor,
+                    LocalContentAlpha provides actionColor.alpha,
+                ) {
+                    actions()
+                }
+            }
+        }
+    }
 }
+
+/**
+ * Fluent 顶栏高度，与原生命令栏标准高度一致。
+ */
+private val FluentTopAppBarHeight = 48.dp
+
+/**
+ * Fluent 顶栏水平内边距。
+ */
+private val FluentTopAppBarHorizontalPadding = 8.dp
+
+/**
+ * Fluent 顶栏槽间距。
+ */
+private val FluentTopAppBarSpacing = 4.dp

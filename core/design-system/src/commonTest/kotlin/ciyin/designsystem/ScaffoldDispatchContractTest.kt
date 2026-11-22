@@ -5,6 +5,9 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.scaffold.NomiScaffold
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
+import ciyin.designsystem.component.scaffold.NomiTopAppBar
+import ciyin.designsystem.component.scaffold.NomiTopAppBarColors
+import ciyin.designsystem.component.scaffold.NomiTopAppBarSpec
 import ciyin.designsystem.component.text.NomiText
 import ciyin.designsystem.theme.NomiTheme
 import kotlin.test.Test
@@ -61,4 +64,75 @@ class ScaffoldDispatchContractTest {
             assertEquals(listOf(RecordedScaffold(colors = colors)), designSystem.scaffolds)
         }
     }
+
+    /**
+     * 顶栏默认调用保留 Unspecified 颜色、不提供导航图标，只组合标题槽。
+     */
+    @Test
+    fun topAppBarDefaultsRemainSparse() = runComposeUiTest {
+        val designSystem = RecordingDesignSystem()
+        setContent {
+            NomiTheme(designSystem = designSystem) {
+                NomiTopAppBar(title = { NomiText("title") })
+            }
+        }
+        runOnIdle {
+            assertEquals(
+                listOf(
+                    RecordedTopAppBar(
+                        colors = NomiTopAppBarColors(),
+                        hasNavigationIcon = false
+                    )
+                ),
+                designSystem.topBars,
+            )
+            assertEquals(setOf("title"), designSystem.texts.keys)
+        }
+    }
+
+    /**
+     * 顶栏显式颜色、导航图标、操作槽与专属参数原样透传。
+     */
+    @Test
+    fun topAppBarExplicitParametersAreDispatchedUnchanged() = runComposeUiTest {
+        val designSystem = RecordingDesignSystem()
+        val colors = NomiTopAppBarColors(
+            containerColor = Color(0xFF102030),
+            titleContentColor = Color.Transparent,
+            navigationIconContentColor = Color(0xFF203040),
+            actionIconContentColor = Color(0xFF304050),
+        )
+        val spec = RecordingTopAppBarSpec(marker = "top")
+        setContent {
+            NomiTheme(designSystem = designSystem) {
+                NomiTopAppBar(
+                    title = { NomiText("title") },
+                    navigationIcon = { NomiText("nav") },
+                    actions = { NomiText("action") },
+                    colors = colors,
+                    nativeSpec = spec,
+                )
+            }
+        }
+        runOnIdle {
+            assertEquals(
+                listOf(
+                    RecordedTopAppBar(
+                        colors = colors,
+                        hasNavigationIcon = true,
+                        nativeSpec = spec,
+                    )
+                ),
+                designSystem.topBars,
+            )
+            assertEquals(setOf("title", "nav", "action"), designSystem.texts.keys)
+        }
+    }
 }
+
+/**
+ * 测试用顶栏专属参数，模拟 adapter 模块定义的具体 spec。
+ *
+ * @property marker 用于区分实例来源的标记，不参与渲染。
+ */
+private data class RecordingTopAppBarSpec(val marker: String) : NomiTopAppBarSpec

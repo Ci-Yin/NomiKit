@@ -37,9 +37,11 @@ Text（含文本输入框）、Button、Surface、独立原生非点击 Card、�
   显式提供。
 - [图标](<src/commonMain/kotlin/ciyin/designsystem/fluent/icon/FluentIcon.kt>)：原生 `Icon`，`tint` 为
   `Unspecified` 时回落 `LocalContentColor` 与 `LocalContentAlpha`。
-- [分割线](<src/commonMain/kotlin/ciyin/designsystem/fluent/divider/FluentDividerRenderer.kt>)：横向使用原生
+- [分割线](<src/commonMain/kotlin/ciyin/designsystem/fluent/divider/FluentDividerRenderer.kt>)
+  ：横向使用原生
   `ListItemSeparator`；上游没有纵向原语，纵向与显式粗细/颜色降级并记录警告。
-- [控件](<src/commonMain/kotlin/ciyin/designsystem/fluent/control/FluentControlRenderer.kt>)：`Switcher`、
+- [控件](<src/commonMain/kotlin/ciyin/designsystem/fluent/control/FluentControlRenderer.kt>)：
+  `Switcher`、
   `CheckBox`、`RadioButton`、`Slider`；开关没有 modifier 参数，修饰符作用在包装节点上。文本输入框随
   [文本族](<src/commonMain/kotlin/ciyin/designsystem/fluent/text/FluentText.kt>)实现。
 - [反馈](<src/commonMain/kotlin/ciyin/designsystem/fluent/feedback/FluentFeedbackRenderer.kt>)：原生
@@ -129,8 +131,8 @@ colors/textStyle 增量传给中立 slot，原生默认留在 native locals。 �
 | 导航套件 | `FluentNavigationSpec` | 侧栏 `title` 与 `backButton` 槽                                    |
 | 列表项   | `FluentListItemSpec`   | `dropdown`、`shape`、`enabled`、`colors`、`interactionSource`      |
 
-文本、导航项、图标、分割线、开关、复选框、单选按钮、输入框与提示浮层的族契约是核心预留插孔；Fluent
-静态 Card 与页面外壳没有原生专属入口，一律忽略 `nativeSpec`。
+文本、导航项、图标、分割线、开关、复选框、单选按钮、输入框与提示浮层的族契约是核心预留插孔；Fluent 静态 Card
+与页面外壳没有原生专属入口，一律忽略 `nativeSpec`。
 
 ## 列表项专属参数
 
@@ -159,35 +161,36 @@ NomiListItem(
 
 ## 原生限制与降级
 
-| 中立调用                  | Fluent 原生调用与限制                                                                                                                                                                                                                             |
-|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| NomiText                  | component.Text 双重载；部分 style 合入原生 LocalTextStyle；autoSize 无原生入口，忽略并记录警告                                                                                                                                                    |
-| 默认 / Default Button     | component.Button                                                                                                                                                                                                                                  |
-| Primary Button            | AccentButton                                                                                                                                                                                                                                      |
-| Subtle Button             | SubtleButton                                                                                                                                                                                                                                      |
-| Text Button               | HyperlinkButton                                                                                                                                                                                                                                   |
-| Destructive Button        | Button + 显式 critical 配方                                                                                                                                                                                                                       |
-| NomiSurface               | background.Layer；任意 shape、显式颜色与三态 border                                                                                                                                                                                               |
-| NomiCard                  | surface.Card 非点击重载；显式 shape 和内容 padding 可用                                                                                                                                                                                           |
-| NomiNavigationSuite       | 显示模式映射 Bar→LeftCollapsed、Rail→LeftCompact、Drawer→Left（Fluent 没有底部导航栏，三种布局都落在左置导航）；三者都用 component.NavigationView，只关闭内容面板描边。图标/徽标/文案为调用方槽位，颜色只覆盖显式通道，排版与折叠动效沿用原生默认 |
-| NavigationItem modifier   | 原生没有项级修饰符入口；忽略 modifier 并记录警告，布局调整使用套件级 modifier                                                                                                                                                                     |
-| Navigation containerColor | 原生没有导航容器色入口：`NavigationView` 的 `color` 是内容面板底色，导航容器来自窗口材质；显式 `containerColor` 被忽略并记录警告，不改写内容面板冒充支持                                                                                          |
-| NomiScaffold              | 上游没有 Scaffold；用 FluentTheme 原生色板与 LocalContentColor/ProvideTextStyle 环境建立 Column 外壳，顶栏/主体/底栏顺序排布，主体占剩余高度                                                                                                      |
-| NomiIcon                  | 原生 `Icon`；Painter 固有尺寸决定大小，未指定着色回落原生内容色与透明度                                                                                                                                                                           |
-| NomiDivider（横向）       | 原生 `ListItemSeparator`：固定 1dp 与描边色，显式 `thickness` / `color` 忽略并记录警告                                                                                                                                                          |
-| NomiDivider（纵向）       | 上游没有纵向分割线原语：不渲染并记录警告，不用自绘线条冒充原生                                                                                                                                                                                     |
-| NomiSwitch                | 原生 `Switcher`：没有 modifier 参数，修饰符作用于包装节点                                                                                                                                                                                          |
-| NomiCheckbox              | 原生 `CheckBox`，label 传 null，标签由调用方在行内组合                                                                                                                                                                                            |
-| NomiRadioButton           | 原生 `RadioButton`，label 传 null                                                                                                                                                                                                                |
-| NomiTextField             | 原生 `TextField`（String 重载）；`label` 映射到字段上方 `header`，`trailingIcon` 映射到 `trailing`；`variant` 与 `isError` 忽略并记录警告                                                                                                         |
-| NomiTooltip               | 原生 `TooltipBox`；悬停触发与位置取原生默认，调用方不感知浮层状态                                                                                                                                                                                |
-| NomiToggleButton          | 原生 `ToggleButton`（含 `iconOnly`）；选中态以强调色板为基线；`size` 无原生入口，忽略并记录警告                                                                                                                                                |
-| NomiDropDownButton        | 原生 `DropDownButton`，箭头动画由原生实现追加；`size` 无原生入口，忽略并记录警告                                                                                                                                                                |
-| NomiComboBox              | 原生 `DropDownButton` + 原生 `DropdownMenu`；浮层宽度对齐收起态容器，展开状态仍由调用方持有                                                                                                                                                     |
-| NomiMenu                  | 原生 `DropdownMenu`，位置与关闭行为由原生实现决定                                                                                                                                                                                               |
-| NomiMenuItem              | 原生 `SubtleButton` 行（`DropdownMenuItem` 没有 enabled/modifier 入口）；选中指示使用内置 `Check` 矢量                                                                                                                                          |
-| NomiSlider                | 原生 `Slider`；`onValueChangeFinished` 为 `(Float) -> Unit`，适配时丢弃参数                                                                                                                                                                     |
-| NomiProgressIndicator（线性） | 原生 `ProgressBar`：确定/不确定两种重载，颜色沿用原生强调色                                                                                                                                                                                     |
+| 中立调用                      | Fluent 原生调用与限制                                                                                                                                                                                                                             |
+|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| NomiText                      | component.Text 双重载；部分 style 合入原生 LocalTextStyle；autoSize 无原生入口，忽略并记录警告                                                                                                                                                    |
+| 默认 / Default Button         | component.Button                                                                                                                                                                                                                                  |
+| Primary Button                | AccentButton                                                                                                                                                                                                                                      |
+| Subtle Button                 | SubtleButton                                                                                                                                                                                                                                      |
+| Text Button                   | HyperlinkButton                                                                                                                                                                                                                                   |
+| Destructive Button            | Button + 显式 critical 配方                                                                                                                                                                                                                       |
+| NomiSurface                   | background.Layer；任意 shape、显式颜色与三态 border                                                                                                                                                                                               |
+| NomiCard                      | surface.Card 非点击重载；显式 shape 和内容 padding 可用                                                                                                                                                                                           |
+| NomiNavigationSuite           | 显示模式映射 Bar→LeftCollapsed、Rail→LeftCompact、Drawer→Left（Fluent 没有底部导航栏，三种布局都落在左置导航）；三者都用 component.NavigationView，只关闭内容面板描边。图标/徽标/文案为调用方槽位，颜色只覆盖显式通道，排版与折叠动效沿用原生默认 |
+| NavigationItem modifier       | 原生没有项级修饰符入口；忽略 modifier 并记录警告，布局调整使用套件级 modifier                                                                                                                                                                     |
+| Navigation containerColor     | 原生没有导航容器色入口：`NavigationView` 的 `color` 是内容面板底色，导航容器来自窗口材质；显式 `containerColor` 被忽略并记录警告，不改写内容面板冒充支持                                                                                          |
+| NomiScaffold                  | 上游没有 Scaffold；用 FluentTheme 原生色板与 LocalContentColor/ProvideTextStyle 环境建立 Column 外壳，顶栏/主体/底栏顺序排布，主体占剩余高度                                                                                                      |
+| NomiTopAppBar                 | 上游没有原生顶栏；用 FluentTheme 色板、ProvideTextStyle 与 LocalContentColor 组装 48dp 行（与原生命令栏同高），标题取 bodyStrong，槽位颜色可逐通道覆盖                                                                                            |
+| NomiIcon                      | 原生 `Icon`；Painter 固有尺寸决定大小，未指定着色回落原生内容色与透明度                                                                                                                                                                           |
+| NomiDivider（横向）           | 原生 `ListItemSeparator`：固定 1dp 与描边色，显式 `thickness` / `color` 忽略并记录警告                                                                                                                                                            |
+| NomiDivider（纵向）           | 上游没有纵向分割线原语：不渲染并记录警告，不用自绘线条冒充原生                                                                                                                                                                                    |
+| NomiSwitch                    | 原生 `Switcher`：没有 modifier 参数，修饰符作用于包装节点                                                                                                                                                                                         |
+| NomiCheckbox                  | 原生 `CheckBox`，label 传 null，标签由调用方在行内组合                                                                                                                                                                                            |
+| NomiRadioButton               | 原生 `RadioButton`，label 传 null                                                                                                                                                                                                                 |
+| NomiTextField                 | 原生 `TextField`（String 重载）；`label` 映射到字段上方 `header`，`trailingIcon` 映射到 `trailing`；`variant` 与 `isError` 忽略并记录警告                                                                                                         |
+| NomiTooltip                   | 原生 `TooltipBox`；悬停触发与位置取原生默认，调用方不感知浮层状态                                                                                                                                                                                 |
+| NomiToggleButton              | 原生 `ToggleButton`（含 `iconOnly`）；选中态以强调色板为基线；`size` 无原生入口，忽略并记录警告                                                                                                                                                   |
+| NomiDropDownButton            | 原生 `DropDownButton`，箭头动画由原生实现追加；`size` 无原生入口，忽略并记录警告                                                                                                                                                                  |
+| NomiComboBox                  | 原生 `DropDownButton` + 原生 `DropdownMenu`；浮层宽度对齐收起态容器，展开状态仍由调用方持有                                                                                                                                                       |
+| NomiMenu                      | 原生 `DropdownMenu`，位置与关闭行为由原生实现决定                                                                                                                                                                                                 |
+| NomiMenuItem                  | 原生 `SubtleButton` 行（`DropdownMenuItem` 没有 enabled/modifier 入口）；选中指示使用内置 `Check` 矢量                                                                                                                                            |
+| NomiSlider                    | 原生 `Slider`；`onValueChangeFinished` 为 `(Float) -> Unit`，适配时丢弃参数                                                                                                                                                                       |
+| NomiProgressIndicator（线性） | 原生 `ProgressBar`：确定/不确定两种重载，颜色沿用原生强调色                                                                                                                                                                                       |
 | NomiProgressIndicator（环形） | 原生 `ProgressRing`：确定/不确定两种重载，默认尺寸 32dp，颜色沿用原生强调色                                                                                                                                                                       |
 
 **不再 Layer + clickable 重绘按钮。** v0.1.0 原生 Button 不支持 size/shape/contentPadding， 非 null
@@ -203,9 +206,9 @@ NomiSurface。Default 表示保留原生描边，不等于 None。原生 Text �
 导航项签名为
 `NavigationItem(selected, onClick, modifier, icon, badge, label, colors, interactionSource)`
 ：icon、badge、label 为槽位，由调用方组合， 图标尺寸与无障碍名称也由调用方负责（中立 IconPack 固有尺寸为
-24dp，需要其它尺寸时在槽内用 `Modifier.size` 约束）。 Fluent 原生导航项没有 modifier 入口，项级 modifier 被忽略并记录警告；
-颜色覆盖只作用于显式字段：未选中/选中内容色、禁用内容色与指示器色， 其余（填充色、悬停/按下/聚焦内容色、trailing
-色）保留对应原生状态值。
+24dp，需要其它尺寸时在槽内用 `Modifier.size` 约束）。 Fluent 原生导航项没有 modifier 入口，项级 modifier
+被忽略并记录警告； 颜色覆盖只作用于显式字段：未选中/选中内容色、禁用内容色与指示器色，
+其余（填充色、悬停/按下/聚焦内容色、trailing 色）保留对应原生状态值。
 
 按钮四色逐字段覆盖 default/hovered/pressed/focused/disabled；未指定通道及原生描边保持原样。
 当前状态的显式内容色优先于 textStyle.color，再回退原生实际状态色；透明色是有效显式覆盖。

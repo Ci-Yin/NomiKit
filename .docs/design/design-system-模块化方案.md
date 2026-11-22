@@ -20,7 +20,8 @@
 > Fluent 对无法表达的覆盖降级为原生默认并通过 `ciyin.platform.logger` 记录警告。
 > 相关模块：`:core:design-system`、`:core:design-system-nomi`、`:core:design-system-material3`、
 > `:core:design-system-fluent`、`:core:ui-foundation`、`:core:material`、`:app:shared`、`:app:sample`。
-> 最近核对：2026-11-19；master 未提交工作树（新增图标/分割线/控件/反馈四族、组件级 spec 契约与 IconPack 24dp）。
+> 最近核对：2026-11-19；master 未提交工作树（新增图标/分割线/控件/反馈四族、组件级 spec 契约与 IconPack
+> 24dp）。
 > 验证记录：六模块 Desktop 回归 273 项（核心 56、M3 42、Fluent 60、Nomi 29、material 19、sample 67）、
 > 四模块 metadata 与 `:app:shared`、`:app:sample` 编译通过；上一轮 226 项、四模块与 sample 165 项、
 > 命名空间轮 218 项、导航轮 180 项见下方历史条目。
@@ -186,12 +187,12 @@ fun ExplicitPaletteTheme(content: @Composable () -> Unit) {
 }
 ```
 
-| 映射来源              | Nomi     | M3                                                            | Fluent                        |
-|-----------------------|----------|---------------------------------------------------------------|-------------------------------|
+| 映射来源              | Nomi     | M3                                                       | Fluent                        |
+|-----------------------|----------|----------------------------------------------------------|-------------------------------|
 | NomiTheme.colorScheme | 原样使用 | 可由预置映射函数整组映射或只映射角色，未映射角色保留原生 | 只能把 primary 映射为强调色阶 |
-| NomiTheme.typography  | 原样使用 | 十五角色映射                                                  | 映射八个原生角色              |
-| NomiTheme.shapes      | 原样使用 | 五个标准角色映射                                              | 映射三个原生圆角值            |
-| spacings / sizes      | 原样使用 | 只发布到中立读模型，不写原生                                  | 只发布到中立读模型，不写原生  |
+| NomiTheme.typography  | 原样使用 | 十五角色映射                                             | 映射八个原生角色              |
+| NomiTheme.shapes      | 原样使用 | 五个标准角色映射                                         | 映射三个原生圆角值            |
+| spacings / sizes      | 原样使用 | 只发布到中立读模型，不写原生                             | 只发布到中立读模型，不写原生  |
 
 本表是主题输入边界，和下方 Button/Card 的组件级降级独立；主题 shapes 被 Fluent 忽略不等于所有 Surface
 shape 都不支持。
@@ -245,7 +246,7 @@ RoundedCornerShape 时明确拒绝；不能写成任意主题形状都能无损�
 
 | 实际入口                                                                                                                                  | 职责                                                                                                                                                                                                                                                                          |
 |-------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [NomiNavigationSuite](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSuite.kt>)              | `NomiNavigationSuite(layoutType, modifier, containerColor, items, footerItems, content)`；`NomiNavigationSuiteType` 为 Bar/Rail/Drawer；`NomiNavigationItemScope.NavigationItem(selected, onClick, modifier, icon, badge, label, colors, interactionSource)` 以槽位声明导航项 |
+| [NomiNavigationSuite](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSuite.kt>)    | `NomiNavigationSuite(layoutType, modifier, containerColor, items, footerItems, content)`；`NomiNavigationSuiteType` 为 Bar/Rail/Drawer；`NomiNavigationItemScope.NavigationItem(selected, onClick, modifier, icon, badge, label, colors, interactionSource)` 以槽位声明导航项 |
 | [NomiDesignSystemComponents](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>) | 新增 `navigation: NomiNavigationRenderer`；与 text/actions/surfaces 并列                                                                                                                                                                                                      |
 
 调用契约：
@@ -347,31 +348,32 @@ M3（透明行，两行 72dp）          Fluent（62dp 卡片行、1dp 描边）
 以及作为文本族新成员的文本输入框。它们沿用同一契约：入口只接收调用方明确给出的值，零参数调用落到当前
 设计系统的真实原生组件；实现无法承载的覆盖降级并记录一次警告，不重绘伪造外观。
 
-| 族         | 公共入口                                                                                                              | 契约要点                                                                                                 |
-|------------|-----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| 图标       | `NomiIcon`                                                                                                            | 没有尺寸参数；`tint` 的 Unspecified 保留原生内容色，透明色是有效覆盖                                    |
-| 分割线     | `NomiDivider`                                                                                                         | `NomiDividerOrientation` 切方向；`thickness = null`、`color = Unspecified` 保留原生粗细与描边色      |
-| 控件       | `NomiSwitch` / `NomiCheckbox` / `NomiRadioButton`                                                                   | 状态由调用方持有；回调非空，禁用只由 `enabled` 表达                                                   |
-| 文本（扩展） | `NomiTextField`                                                                                                      | 与 `NomiText` 共用 `text` renderer；另有 `variant`、`isError` 与键盘配置                          |
-| 反馈       | `NomiTooltip`                                                                                                         | 包裹式入口：`tooltip` 槽放进原生浮层，`content` 是触发内容；不暴露浮层状态、位置或富提示              |
+| 族           | 公共入口                                          | 契约要点                                                                                        |
+|--------------|---------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| 图标         | `NomiIcon`                                        | 没有尺寸参数；`tint` 的 Unspecified 保留原生内容色，透明色是有效覆盖                            |
+| 分割线       | `NomiDivider`                                     | `NomiDividerOrientation` 切方向；`thickness = null`、`color = Unspecified` 保留原生粗细与描边色 |
+| 控件         | `NomiSwitch` / `NomiCheckbox` / `NomiRadioButton` | 状态由调用方持有；回调非空，禁用只由 `enabled` 表达                                             |
+| 文本（扩展） | `NomiTextField`                                   | 与 `NomiText` 共用 `text` renderer；另有 `variant`、`isError` 与键盘配置                        |
+| 反馈         | `NomiTooltip`                                     | 包裹式入口：`tooltip` 槽放进原生浮层，`content` 是触发内容；不暴露浮层状态、位置或富提示        |
 
 三个选择控件共用 [控件族](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/control/NomiControlRenderer.kt>)
-的 renderer；文本输入框归入 [文本族](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>)
-的 renderer，使显示与编辑共用同一个实现替换点（自定义文本策略不会只覆盖显示）。**专属参数仍按入口各自
+的
+renderer；文本输入框归入 [文本族](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>)
+的 renderer，使显示与编辑共用同一个实现替换点（自定义文本策略不会只覆盖显示）。 **专属参数仍按入口各自
 独立**：`NomiSwitchSpec`、`NomiCheckboxSpec`、`NomiRadioButtonSpec`、`NomiTextFieldSpec` 互不兼容，
 跨入口传入编译失败；这与 `surfaces` 族内 `Surface` / `Card` 分属两个 spec 族的既有做法一致。
 
 ### 三端映射与降级
 
-| 入口                          | Nomi                                              | Material 3                                        | Fluent v0.1.0                                                       |
-|-------------------------------|---------------------------------------------------|---------------------------------------------------|---------------------------------------------------------------------|
-| `NomiIcon`                    | `Icon` + Nomi 内容色令牌                          | 原生 `Icon`，Unspecified 回落 `LocalContentColor` | 原生 `Icon`，回落内容色与内容透明度                                |
-| `NomiDivider`                 | 原生水平/垂直分割线 + Nomi 线条令牌                | 原生 `HorizontalDivider` / `VerticalDivider`      | 仅横向：原生 `ListItemSeparator`；纵向、粗细、颜色忽略并告警       |
-| `NomiSwitch`                  | 原生 `Switch` + Nomi 令牌配色                     | 原生 `Switch`                                     | 原生 `Switcher`；上游无 modifier 参数，修饰符作用在包装节点        |
-| `NomiCheckbox`                | 原生 `Checkbox` + Nomi 令牌配色                   | 原生 `Checkbox`                                   | 原生 `CheckBox`，label 为 null                                     |
-| `NomiRadioButton`             | 原生 `RadioButton` + Nomi 令牌配色                | 原生 `RadioButton`                                | 原生 `RadioButton`，label 为 null                                  |
-| `NomiTextField`               | 填充/描边入口 + Nomi 令牌配色                      | `Outlined` → `OutlinedTextField`，否则填充入口    | 原生 `TextField`：label→header、trailingIcon→trailing；variant/isError 忽略并告警 |
-| `NomiTooltip`                 | 原生 `TooltipBox` + Nomi 容器色                   | 原生 `TooltipBox` + `PlainTooltip`               | 原生 `TooltipBox`（实验 API），触发与时长沿用原生默认              |
+| 入口              | Nomi                                | Material 3                                        | Fluent v0.1.0                                                                     |
+|-------------------|-------------------------------------|---------------------------------------------------|-----------------------------------------------------------------------------------|
+| `NomiIcon`        | `Icon` + Nomi 内容色令牌            | 原生 `Icon`，Unspecified 回落 `LocalContentColor` | 原生 `Icon`，回落内容色与内容透明度                                               |
+| `NomiDivider`     | 原生水平/垂直分割线 + Nomi 线条令牌 | 原生 `HorizontalDivider` / `VerticalDivider`      | 仅横向：原生 `ListItemSeparator`；纵向、粗细、颜色忽略并告警                      |
+| `NomiSwitch`      | 原生 `Switch` + Nomi 令牌配色       | 原生 `Switch`                                     | 原生 `Switcher`；上游无 modifier 参数，修饰符作用在包装节点                       |
+| `NomiCheckbox`    | 原生 `Checkbox` + Nomi 令牌配色     | 原生 `Checkbox`                                   | 原生 `CheckBox`，label 为 null                                                    |
+| `NomiRadioButton` | 原生 `RadioButton` + Nomi 令牌配色  | 原生 `RadioButton`                                | 原生 `RadioButton`，label 为 null                                                 |
+| `NomiTextField`   | 填充/描边入口 + Nomi 令牌配色       | `Outlined` → `OutlinedTextField`，否则填充入口    | 原生 `TextField`：label→header、trailingIcon→trailing；variant/isError 忽略并告警 |
+| `NomiTooltip`     | 原生 `TooltipBox` + Nomi 容器色     | 原生 `TooltipBox` + `PlainTooltip`                | 原生 `TooltipBox`（实验 API），触发与时长沿用原生默认                             |
 
 - Nomi 不安装外层原生主题，因此控件、输入框与提示浮层的配色全部显式取自 `NomiTheme.colorScheme`，
   不读取宿主主题；这与导航外壳复用原生工具箱组件的既有做法一致。
@@ -385,25 +387,26 @@ M3（透明行，两行 72dp）          Fluent（62dp 卡片行、1dp 描边）
 在操作族补第二、三个按钮入口，在控件族补组合框，并新增第十一族 `menus`。三个按钮入口共用同一条原生
 绘制路径，只在状态语义、状态色与尾部指示上分叉；浮层位置、菜单项外观与宽度对齐全部交给实现。
 
-| 族   | 公共入口                    | 契约要点                                                                                                 |
-|------|-----------------------------|----------------------------------------------------------------------------------------------------------|
-| 操作 | `NomiToggleButton`         | `checked` / `onCheckedChange` 两态由调用方持有；`colors` 是两组 `NomiButtonColors`；`iconOnly` 收敛为方形并忽略 `size` |
-| 操作 | `NomiDropDownButton`       | 普通按钮 + 实现追加的下拉箭头；不持有展开状态，菜单由调用方用 `NomiMenu` 组合                            |
-| 控件 | `NomiComboBox`             | `expanded` / `onExpandedChange` 由调用方持有；`content` 收起态 + `menuItems` 菜单项；浮层与宽度对齐归实现 |
-| 菜单 | `NomiMenu` / `NomiMenuItem` | `NomiMenu` 以父布局为锚点；`NomiMenuItem` 是行原语，可放进菜单浮层或组合框自带浮层                     |
+| 族   | 公共入口                    | 契约要点                                                                                                               |
+|------|-----------------------------|------------------------------------------------------------------------------------------------------------------------|
+| 操作 | `NomiToggleButton`          | `checked` / `onCheckedChange` 两态由调用方持有；`colors` 是两组 `NomiButtonColors`；`iconOnly` 收敛为方形并忽略 `size` |
+| 操作 | `NomiDropDownButton`        | 普通按钮 + 实现追加的下拉箭头；不持有展开状态，菜单由调用方用 `NomiMenu` 组合                                          |
+| 控件 | `NomiComboBox`              | `expanded` / `onExpandedChange` 由调用方持有；`content` 收起态 + `menuItems` 菜单项；浮层与宽度对齐归实现              |
+| 菜单 | `NomiMenu` / `NomiMenuItem` | `NomiMenu` 以父布局为锚点；`NomiMenuItem` 是行原语，可放进菜单浮层或组合框自带浮层                                     |
 
-专属参数仍按入口独立：`NomiToggleButtonSpec`、`NomiDropDownButtonSpec`、`NomiComboBoxSpec`、`NomiMenuSpec`、
+专属参数仍按入口独立：`NomiToggleButtonSpec`、`NomiDropDownButtonSpec`、`NomiComboBoxSpec`、
+`NomiMenuSpec`、
 `NomiMenuItemSpec` 互不兼容。
 
 ### 三端映射与降级
 
-| 入口                | Nomi                                       | Material 3                                                     | Fluent v0.1.0                          |
-|---------------------|--------------------------------------------|----------------------------------------------------------------|----------------------------------------|
-| `NomiToggleButton`  | Foundation 绘制 + 开关语义 + 令牌            | 文字形态 `FilledTonalButton`/`Button` 切态；图标形态 `IconButton`/`FilledIconButton` | 原生 `ToggleButton`（含 `iconOnly`）  |
-| `NomiDropDownButton`| Foundation 绘制 + 内置 `ChevronDown`        | 原生 `Button` 族 + `ChevronDown` 图标                         | 原生 `DropDownButton`（自带动画箭头）  |
-| `NomiComboBox`      | 描边容器 + 菜单浮层，宽度对齐                | `OutlinedButton` + 原生 `DropdownMenu`，宽度对齐             | 原生 `DropDownButton` + `DropdownMenu`，宽度对齐 |
-| `NomiMenu`          | `Popup` + 令牌容器（下方优先、空间不足翻转） | 原生 `DropdownMenu`                                           | 原生 `DropdownMenu`                   |
-| `NomiMenuItem`      | Foundation 行 + 悬停/按下叠加 + 勾选指示     | 原生 `DropdownMenuItem`                                       | 原生 `SubtleButton` 行                 |
+| 入口                 | Nomi                                         | Material 3                                                                           | Fluent v0.1.0                                    |
+|----------------------|----------------------------------------------|--------------------------------------------------------------------------------------|--------------------------------------------------|
+| `NomiToggleButton`   | Foundation 绘制 + 开关语义 + 令牌            | 文字形态 `FilledTonalButton`/`Button` 切态；图标形态 `IconButton`/`FilledIconButton` | 原生 `ToggleButton`（含 `iconOnly`）             |
+| `NomiDropDownButton` | Foundation 绘制 + 内置 `ChevronDown`         | 原生 `Button` 族 + `ChevronDown` 图标                                                | 原生 `DropDownButton`（自带动画箭头）            |
+| `NomiComboBox`       | 描边容器 + 菜单浮层，宽度对齐                | `OutlinedButton` + 原生 `DropdownMenu`，宽度对齐                                     | 原生 `DropDownButton` + `DropdownMenu`，宽度对齐 |
+| `NomiMenu`           | `Popup` + 令牌容器（下方优先、空间不足翻转） | 原生 `DropdownMenu`                                                                  | 原生 `DropdownMenu`                              |
+| `NomiMenuItem`       | Foundation 行 + 悬停/按下叠加 + 勾选指示     | 原生 `DropdownMenuItem`                                                              | 原生 `SubtleButton` 行                           |
 
 - Material 3 1.9.0 没有原生 `ToggleButton` 与 `SplitButton`：开关按钮由原生填充按钮按状态切换，未重绘外观；
   `SplitButton` / `ToggleSplitButton` 因此不在本轮范围。
@@ -417,45 +420,44 @@ M3（透明行，两行 72dp）          Fluent（62dp 卡片行、1dp 描边）
 控件族补连续取值入口，反馈族补进度入口；两者都沿用同一契约：入口只接收显式值与形态，轨道、拇指、
 刻度、配色与动画交给实现。
 
-| 族   | 公共入口                 | 契约要点                                                                                                   |
-|------|--------------------------|------------------------------------------------------------------------------------------------------------|
-| 控件 | `NomiSlider`             | `value`/`onValueChange` 由调用方持有；`valueRange`、`steps`（负值按 0）、`onValueChangeFinished`；默认外观对齐应用滑块（16dp 胶囊轨道、15dp 描边拇指、轨道两端 coerce、透明刻度、禁用 38%）；不暴露颜色、尺寸、拇指/轨道槽与竖直方向 |
-| 反馈 | `NomiProgressIndicator` | `progress = null` 表示不确定；`NomiProgressIndicatorType` 切线性/环形；线性为 16dp 胶囊轨道，配色与滑块轨道一致（进度 `primary`、轨道 `surfaceHigher`）；环形 32dp / 3dp 仅统一配色；不暴露颜色、尺寸与轨道槽 |
+| 族   | 公共入口                | 契约要点                                                                                                                                                                                                                             |
+|------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 控件 | `NomiSlider`            | `value`/`onValueChange` 由调用方持有；`valueRange`、`steps`（负值按 0）、`onValueChangeFinished`；默认外观对齐应用滑块（16dp 胶囊轨道、15dp 描边拇指、轨道两端 coerce、透明刻度、禁用 38%）；不暴露颜色、尺寸、拇指/轨道槽与竖直方向 |
+| 反馈 | `NomiProgressIndicator` | `progress = null` 表示不确定；`NomiProgressIndicatorType` 切线性/环形；线性为 16dp 胶囊轨道，配色与滑块轨道一致（进度 `primary`、轨道 `surfaceHigher`）；环形 32dp / 3dp 仅统一配色；不暴露颜色、尺寸与轨道槽                        |
 
 专属参数仍按入口独立：`NomiSliderSpec` 与 `NomiProgressIndicatorSpec` 互不兼容。
 
 ### 三端映射与来源
 
-| 入口                | Nomi                                                        | Material 3                                        | Fluent v0.1.0                        |
-|---------------------|-------------------------------------------------------------|---------------------------------------------------|--------------------------------------|
-| `NomiSlider`         | Foundation 绘制（移植并整理 SmartToolFactory 版本）+ 令牌       | 原生 `Slider`                                     | 原生 `Slider`（丢弃 `(Float) -> Unit` 参数） |
-| 线性进度            | Canvas 轨道 + 进度段 + 循环短段                                | 原生 `LinearProgressIndicator`                    | 原生 `ProgressBar`                   |
-| 环形进度            | Canvas 整圈轨道 + 顶部起弧 + 循环旋转弧                        | 原生 `CircularProgressIndicator`                  | 原生 `ProgressRing`（默认 32dp）     |
+| 入口         | Nomi                                                      | Material 3                       | Fluent v0.1.0                                |
+|--------------|-----------------------------------------------------------|----------------------------------|----------------------------------------------|
+| `NomiSlider` | Foundation 绘制（移植并整理 SmartToolFactory 版本）+ 令牌 | 原生 `Slider`                    | 原生 `Slider`（丢弃 `(Float) -> Unit` 参数） |
+| 线性进度     | Canvas 轨道 + 进度段 + 循环短段                           | 原生 `LinearProgressIndicator`   | 原生 `ProgressBar`                           |
+| 环形进度     | Canvas 整圈轨道 + 顶部起弧 + 循环旋转弧                   | 原生 `CircularProgressIndicator` | 原生 `ProgressRing`（默认 32dp）             |
 
 - 滑块保留拖拽、点按、点按吸附、RTL、禁用与 `ProgressBarRangeInfo`/`setProgress` 语义；默认外观对齐应用
   滑块的既有形态（16dp 胶囊轨道、15dp 描边拇指、轨道两端 coerce、透明刻度、禁用 38% 透明度），画刷、
   描边、刻度与拇指测量的绘制路径全部保留在实现内部；公共入口不暴露尺寸、颜色、拇指槽位与标签变体
   （标签仍属应用层组合），不依赖旧 Material 门面。
-- 进度由原 `core/ui-foundation` 的多段进度实现整理而来：保留 Canvas 绘制与目标值动画，新增不确定态；
-  多段 `ProgressData` 模型与旧入口一并删除。线性轨道与滑块一致（16dp 胶囊高度、`primary`/`surfaceHigher`
+- 进度由原 `core/ui-foundation` 的多段进度实现整理而来：保留 Canvas 绘制与目标值动画，新增不确定态； 多段
+  `ProgressData` 模型与旧入口一并删除。线性轨道与滑块一致（16dp 胶囊高度、`primary`/`surfaceHigher`
   配色），环形保持 32dp / 3dp 并只统一配色。
 - 滑块版权头保留 Apache-2.0 与来源说明。
 
 ## 各实现与拆分入口
 
 公共 component 留在核心，内置实现 nomi、material3、fluent 各自模块根下按
-text/button/surface/card/navigation/scaffold/list/icon/divider/control/feedback 组织，package 与目录一致；nomi 为独立 Gradle
-模块但包名不变。 核心 component 只把 SPI 接口拆成 `NomiXxxRenderer.kt`，其余公共声明都随组件文件：入口函数与文件同名
-（如 `NomiButton.kt`、`NomiSwitch.kt`、`NomiNavigationSuite.kt`），颜色/枚举/默认值 object 与导航项作用域同在
-该文件内，族标记与 `XxxSpec` 紧随入口；FluentButtonColors 归 button。共享
-NomiBorder、NomiControlSize、NomiDesignSystemComponents 留在核心 component 根， NomiNativeContentStyle
-与 internal DefaultNomiSystem 位于 nomi 模块根（经
+text/button/surface/card/navigation/scaffold/list/icon/divider/control/feedback 组织，package
+与目录一致；nomi 为独立 Gradle 模块但包名不变。 核心 component 只把 SPI 接口拆成 `NomiXxxRenderer.kt`
+，其余公共声明都随组件文件：入口函数与文件同名 （如 `NomiButton.kt`、`NomiSwitch.kt`、
+`NomiNavigationSuite.kt`），颜色/枚举/默认值 object 与导航项作用域同在 该文件内，族标记与 `XxxSpec`
+紧随入口；FluentButtonColors 归 button。共享 NomiBorder、NomiControlSize、NomiDesignSystemComponents
+留在核心 component 根， NomiNativeContentStyle 与 internal DefaultNomiSystem 位于 nomi 模块根（经
 `NomiDesignSystem.Default` 暴露），集中内置主题及组件装配；公共主题 API/数据留在 theme，通用请求/契约/显式
 slot 留在 runtime。 LocalNomiDesignSystem 为可空且无隐式默认，应用根/测试/Preview 显式提供；M3/Fluent
 的主题、转换与装配位置不变。text/actions/surfaces/navigation/scaffold/listItems/icons/decorations/controls/feedback
 十族 SPI，Card 仍由 surfaces 的独立方法派发，导航套件由 navigation 族派发，文本输入框由 text 族派发。
-消费者直接更新 imports 与显式提供点，不增加旧
-package 转发、typealias、兼容重载或隐式回退。
+消费者直接更新 imports 与显式提供点，不增加旧 package 转发、typealias、兼容重载或隐式回退。
 
 ### Nomi
 
@@ -588,20 +590,20 @@ Material3 应用根
 
 ### 已落地范围
 
-| 族       | 公共入口                                                                                                                                                        |
-|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 文本     | `NomiText` / `NomiTextField`（显示与编辑共用同一 renderer）                                                                                                      |
-| 操作     | `NomiButton`（Primary / Default / Subtle / Text / Destructive）/ `NomiToggleButton` / `NomiDropDownButton`                                                    |
-| 表面     | `NomiSurface` / `NomiCard`                                                                                                                                      |
-| 导航     | `NomiNavigationSuite`（Bar / Rail / Drawer）                                                                                                                    |
-| 页面外壳 | `NomiScaffold`                                                                                                                                                  |
-| 列表项   | `NomiListItem`                                                                                                                                                  |
-| 图标     | `NomiIcon`                                                                                                                                                     |
-| 分割线   | `NomiDivider`（`NomiDividerOrientation.Horizontal` / `Vertical`）                                                                                             |
-| 控件     | `NomiSwitch` / `NomiCheckbox` / `NomiRadioButton` / `NomiComboBox` / `NomiSlider`                                                                        |
-| 反馈     | `NomiTooltip` / `NomiProgressIndicator`                                                                                                                        |
-| 菜单     | `NomiMenu` / `NomiMenuItem`                                                                                                                                   |
-| 辅助类型 | `NomiBorder` / `NomiControlSize` / `NomiTextFieldVariant` / `NomiDividerOrientation` / `NomiToggleButtonColors`                                                                        |
+| 族       | 公共入口                                                                                                                                                                                               |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 文本     | `NomiText` / `NomiTextField`（显示与编辑共用同一 renderer）                                                                                                                                            |
+| 操作     | `NomiButton`（Primary / Default / Subtle / Text / Destructive）/ `NomiToggleButton` / `NomiDropDownButton`                                                                                             |
+| 表面     | `NomiSurface` / `NomiCard`                                                                                                                                                                             |
+| 导航     | `NomiNavigationSuite`（Bar / Rail / Drawer）                                                                                                                                                           |
+| 页面外壳 | `NomiScaffold` / `NomiTopAppBar`                                                                                                                                                                       |
+| 列表项   | `NomiListItem`                                                                                                                                                                                         |
+| 图标     | `NomiIcon`                                                                                                                                                                                             |
+| 分割线   | `NomiDivider`（`NomiDividerOrientation.Horizontal` / `Vertical`）                                                                                                                                      |
+| 控件     | `NomiSwitch` / `NomiCheckbox` / `NomiRadioButton` / `NomiComboBox` / `NomiSlider`                                                                                                                      |
+| 反馈     | `NomiTooltip` / `NomiProgressIndicator`                                                                                                                                                                |
+| 菜单     | `NomiMenu` / `NomiMenuItem`                                                                                                                                                                            |
+| 辅助类型 | `NomiBorder` / `NomiControlSize` / `NomiTextFieldVariant` / `NomiDividerOrientation` / `NomiToggleButtonColors`                                                                                        |
 | 图标资源 | [IconPack](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/icon/IconPack.kt>) 共 8 个：Home、ArrowRight、LightMode、DarkMode、Settings、Null、ChevronDown、Check；固有尺寸统一 24dp |
 
 十一族由 [NomiDesignSystemComponents](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)
@@ -609,35 +611,34 @@ Material3 应用根
 [Material3Components](<../../core/design-system-material3/src/commonMain/kotlin/ciyin/designsystem/material3/Material3Components.kt>)、
 [FluentComponents](<../../core/design-system-fluent/src/commonMain/kotlin/ciyin/designsystem/fluent/FluentComponents.kt>)）
 与三个测试替身（[RecordingDesignSystem](<../../core/design-system/src/commonTest/kotlin/ciyin/designsystem/RecordingDesignSystem.kt>)、
-`NomiNativeContentIsolationTest`、`ExternalApiConsumptionTest` 内的匿名实现）。新增一个**入口**还要补齐
-core 族契约（sealed 族标记 + typealias）、renderer 方法参数与 adapter 专属 spec；spec 族按入口计，
-同一 SPI 族内多个入口不共享 spec 类型。
+`NomiNativeContentIsolationTest`、`ExternalApiConsumptionTest` 内的匿名实现）。新增一个 **入口**还要补齐
+core 族契约（sealed 族标记 + typealias）、renderer 方法参数与 adapter 专属 spec；spec 族按入口计， 同一
+SPI 族内多个入口不共享 spec 类型。
 
 ### 缺口与优先级
 
 计数口径：`import androidx.compose.material3.<符号>` 的源码文件数，含 `app/sample` 演示页，不含
 `build/`、 测试文件与文档；同一文件多处使用只计一次。未标注计数的行表示当前无外部调用方。
 
-| 优先级 | 组件                                                           | 现有调用方                                      | 依据                                                                                                                                    |
-|--------|----------------------------------------------------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| P0     | `NomiIconButton`                                               | 14（sample 13、video-player 1）                 | 纯图标操作无法复用 `NomiButton` 的 variant 与尺寸                                                                                       |
-| P1     | `NomiTopAppBar`                                                | 11（sample）                                    | `NomiScaffold` 有 `topBar` 槽但没有中立顶栏，槽内容只能塞 M3 顶栏                                                                       |
-| P1     | `NomiBadge`                                                    | 适配器内部 2（无外部调用方）                    | 导航项已有 `badge` 槽，调用方缺中立徽标可组合                                                                                           |
-| P1     | `NomiTabs` / `NomiChip`                                        | 仅 `core/ui-foundation` 旧实现                  | 旧 `ScrollableTabRow`、`FilterChip` 属 Material 门面，不进中立核心                                                                      |
-| P1     | 列表分组容器（`NomiListHeader` / 分组标题）                    | 无                                              | 列表项族只有单行；分组标题与容器未提供                                                                                                  |
-| P2     | `NomiDialog` / `NomiBottomSheet` / `NomiSnackbar` | 旧实现与 sample 各 1                            | 旧 `AlertDialog2`、`BottomSheetDialog`、`ExposedMenu`、`Toast` 均属 Material 门面，且涉及窗口或宿主状态；`NomiMenu` 已随按钮轮次落地                                 |
+| 优先级 | 组件                                              | 现有调用方                      | 依据                                                                                                                                 |
+|--------|---------------------------------------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| P0     | `NomiIconButton`                                  | 14（sample 13、video-player 1） | 纯图标操作无法复用 `NomiButton` 的 variant 与尺寸                                                                                    |
+| P1     | `NomiBadge`                                       | 适配器内部 2（无外部调用方）    | 导航项已有 `badge` 槽，调用方缺中立徽标可组合                                                                                        |
+| P1     | `NomiTabs` / `NomiChip`                           | 仅 `core/ui-foundation` 旧实现  | 旧 `ScrollableTabRow`、`FilterChip` 属 Material 门面，不进中立核心                                                                   |
+| P1     | 列表分组容器（`NomiListHeader` / 分组标题）       | 无                              | 列表项族只有单行；分组标题与容器未提供                                                                                               |
+| P2     | `NomiDialog` / `NomiBottomSheet` / `NomiSnackbar` | 旧实现与 sample 各 1            | 旧 `AlertDialog2`、`BottomSheetDialog`、`ExposedMenu`、`Toast` 均属 Material 门面，且涉及窗口或宿主状态；`NomiMenu` 已随按钮轮次落地 |
 
 ### 待迁移调用点（记录）
 
 以下调用点仍直连原生 Material 3 组件；中立入口已经就位，迁移留给后续轮次，避免本轮混入页面行为变更：
 
-| 入口           | 数量与位置                                      |
-|----------------|-------------------------------------------------|
-| `NomiIcon`     | 18（sample 15、shared 1、video-player 2）       |
-| `NomiDivider`  | 横向 10（sample 9、shared 1）+ 纵向 1（shared） |
-| `NomiSwitch`   | 2（sample）                                     |
-| `NomiTextField`| 4（sample，均为 `OutlinedTextField`）           |
-| `NomiTooltip`  | 1（sample）                                     |
+| 入口            | 数量与位置                                      |
+|-----------------|-------------------------------------------------|
+| `NomiIcon`      | 18（sample 15、shared 1、video-player 2）       |
+| `NomiDivider`   | 横向 10（sample 9、shared 1）+ 纵向 1（shared） |
+| `NomiSwitch`    | 2（sample）                                     |
+| `NomiTextField` | 4（sample，均为 `OutlinedTextField`）           |
+| `NomiTooltip`   | 1（sample）                                     |
 
 迁移时删除为「统一外观」补入的参数，只保留调用方真正需要的显式覆盖；分割线的显式 `thickness` / `color`
 与输入框的 `variant` / `isError` 在不支持的系统上会降级并记录警告。
@@ -647,8 +648,8 @@ core 族契约（sealed 族标记 + typealias）、renderer 方法参数与 adap
 - **图标资源**：`IconPack` 目前 8 个矢量，不够基础页面使用；`NomiIcon` 已就位，图标先用
   `valkyrie-imagevector` 补充。固有尺寸在 2026-11-19 统一为 24dp（此前 `DarkMode` 1024dp、`Home` 与
   `ArrowRight` 200dp、`LightMode` 与 `Settings` 256dp、`Null` 1dp），
-  [Home.kt](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/icon/Home.kt>) 的 KDoc
-  同步修正为 24dp，槽位不再必须显式 `Modifier.size`。
+  [Home.kt](<../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/icon/Home.kt>) 的
+  KDoc 同步修正为 24dp，槽位不再必须显式 `Modifier.size`。
 - **列表容器**：列表项族只有单行；分组标题、分隔线与容器未提供，列表项文档已列为暂不支持。
 - **Fluent 纵向分割线**：`NomiDivider` 已提供纵向方向，但 Fluent v0.1.0 没有纵向原语，该实现降级为不渲染
   并记录警告；横向分割线的显式粗细与颜色同样被忽略。
@@ -658,18 +659,30 @@ core 族契约（sealed 族标记 + typealias）、renderer 方法参数与 adap
 ```text
 第 1 轮  原子层      NomiIcon（已落地） -> NomiIconButton -> NomiDivider（已落地，含纵向）
 第 2 轮  控件族      Switch / Checkbox / RadioButton / TextField / Slider（已落地）
-第 3 轮  反馈与结构  ProgressIndicator（已落地） -> TopAppBar -> Badge -> Tabs / Chip（Tooltip 已落地）
+第 3 轮  反馈与结构  ProgressIndicator（已落地） -> TopAppBar（已落地） -> Badge -> Tabs / Chip（Tooltip 已落地）
 第 4 轮  浮层        Dialog -> BottomSheet -> Menu -> Snackbar
 ```
 
 - 图标族与控件族已就位：列表项尾部槽、设置行与表单可以用中立入口组合，不再直连原生控件。
-- 每个入口的固定成本是 `NomiDesignSystemComponents` 扩展 + 三个 adapter + 六个实现点 + 契约测试，
-  外加 core 组件级 spec 契约（sealed 族标记 + typealias）；Fluent 无法表达时按既有策略降级并记录
-  警告，不重绘伪造支持。
+- 每个入口的固定成本是 `NomiDesignSystemComponents` 扩展 + 三个 adapter + 六个实现点 + 契约测试， 外加
+  core 组件级 spec 契约（sealed 族标记 + typealias）；Fluent 无法表达时按既有策略降级并记录 警告，不重绘伪造支持。
 - 优先级不只看计数：当前 `app/shared` 只有导航与设置占位页，多数调用点在 `app/sample` 演示页；图标族与控件族
   是任何页面的前置能力，因此不因计数低而下调。
 
 ## 验证记录与验收缺口
+
+### 本轮：新增顶栏 NomiTopAppBar，2026-11-22
+
+范围：`scaffold` 族新增第二个入口 `NomiTopAppBar`（标题、导航图标、操作槽与四种颜色稀疏覆盖）， 复用
+`NomiScaffoldRenderer` 增加 `TopAppBar` 方法；Nomi 用 appBar 令牌组装 56dp 行，Material 3 使用 原生
+`TopAppBar`，Fluent 用原生色板组装 48dp 行（与原生命令栏同高）。
+
+- 验证：核心 73、Nomi 42、Material 3 45、Fluent 63，共 293 项 Desktop 回归零失败；sample 70 项 Desktop
+  测试零失败；四模块 `compileCommonMainKotlinMetadata` 与
+  `:core:design-system:compileTestKotlinDesktop` 通过。
+- 覆盖：顶栏派发（默认稀疏、显式颜色与 spec 透传）、Nomi 56dp 高度与槽位顺序、Fluent 48dp 高度、 Material 3
+  三槽渲染。
+- 未执行：Android / iOS / Web 与真机运行；sample 的 11 处直连顶栏未迁移（需要先补 `NomiIconButton`）。
 
 ### 本轮：进度指示器外观对齐滑块，2026-11-22
 
@@ -684,9 +697,9 @@ core 族契约（sealed 族标记 + typealias）、renderer 方法参数与 adap
 
 ### 本轮：滑块外观对齐应用滑块，2026-11-22
 
-范围：`core/design-system-nomi` 的滑块实现按应用滑块的既有外观重写（16dp 胶囊轨道、15dp 描边拇指、
-轨道两端 coerce、透明刻度、禁用 38% 透明度），恢复 `SubcomposeLayout` 拇指测量与画刷/描边/刻度绘制
-路径；`NomiSlider` 公共签名、`NomiSliderSpec` 预留状态与核心模块均未改动。
+范围：`core/design-system-nomi` 的滑块实现按应用滑块的既有外观重写（16dp 胶囊轨道、15dp 描边拇指、 轨道两端
+coerce、透明刻度、禁用 38% 透明度），恢复 `SubcomposeLayout` 拇指测量与画刷/描边/刻度绘制 路径；
+`NomiSlider` 公共签名、`NomiSliderSpec` 预留状态与核心模块均未改动。
 
 - 验证：核心 71、Nomi 38、Material 3 43、Fluent 61，共 283 项 Desktop 回归零失败；sample 70 项 Desktop
   测试零失败；四模块 `compileCommonMainKotlinMetadata` 通过。
@@ -727,13 +740,13 @@ SmartToolFactory 滑块移植版），并删除旧 `core/ui-foundation/widget/pr
 ### 本轮：补齐图标 / 分割线 / 控件 / 提示四族，IconPack 统一 24dp，2026-11-19
 
 范围：新增 `icons`（`NomiIcon`）、`decorations`（`NomiDivider`，含横竖方向枚举）、`controls`
-（`NomiSwitch` / `NomiCheckbox` / `NomiRadioButton`）与 `feedback`（`NomiTooltip`）四个族，以及
-文本族新成员 `NomiTextField`：共七个入口、七个组件级 spec 契约；三端实现落地，Fluent 对纵向分割线、分割线
+（`NomiSwitch` / `NomiCheckbox` / `NomiRadioButton`）与 `feedback`（`NomiTooltip`）四个族，以及 文本族新成员
+`NomiTextField`：共七个入口、七个组件级 spec 契约；三端实现落地，Fluent 对纵向分割线、分割线
 粗细/颜色、输入框变体与错误态降级并记录警告；`IconPack` 6 个矢量固有尺寸统一为 24dp 并修正
 `Home` 的 KDoc；sample 新增图标/分割线/控件分区，核心与三个 adapter 补契约测试。
 
-- 验证：六模块 Desktop 回归 273 项零失败（核心 56、M3 42、Fluent 60、Nomi 29、material 19、sample 67）；
-  四模块 `compileCommonMainKotlinMetadata`、`:app:sample:compileKotlinDesktop` 与
+- 验证：六模块 Desktop 回归 273 项零失败（核心 56、M3 42、Fluent 60、Nomi 29、material 19、sample 67）； 四模块
+  `compileCommonMainKotlinMetadata`、`:app:sample:compileKotlinDesktop` 与
   `:app:shared:compileKotlinDesktop` 通过。
 - 覆盖：图标着色回落与稀疏派发、横竖分割线、三个选择控件的状态/回调、文本族输入框的槽位与键盘参数、
   提示浮层双槽组合、三端原生渲染与 Fluent 降级不崩溃、sample 分区可见与开关可点击。

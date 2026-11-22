@@ -70,6 +70,8 @@ import ciyin.designsystem.component.navigation.NomiNavigationSuiteType
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldSpec
+import ciyin.designsystem.component.scaffold.NomiTopAppBarColors
+import ciyin.designsystem.component.scaffold.NomiTopAppBarSpec
 import ciyin.designsystem.component.surface.NomiSurfaceColors
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceSpec
@@ -351,6 +353,20 @@ internal data class RecordedScaffold(
 )
 
 /**
+ * 记录中立层传给顶栏的真实参数与槽位是否提供。
+ *
+ * @property colors 原样记录的容器、标题、导航图标与操作图标颜色覆盖；Unspecified 仍表示未指定。
+ * @property hasNavigationIcon 是否提供导航图标槽。
+ * @property nativeSpec 原样记录的顶栏专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedTopAppBar(
+    val colors: NomiTopAppBarColors,
+    val hasNavigationIcon: Boolean,
+    val nativeSpec: NomiTopAppBarSpec? = null,
+)
+
+/**
  * 记录列表项派发；槽位只记录是否提供，不执行槽内容。
  *
  * @property hasModifier 是否传入非默认修饰符。
@@ -575,6 +591,11 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录页面脚手架派发。
      */
     val scaffolds: MutableList<RecordedScaffold> = mutableListOf()
+
+    /**
+     * 按组合顺序记录顶栏派发。
+     */
+    val topBars: MutableList<RecordedTopAppBar> = mutableListOf()
 
     /**
      * 按组合顺序记录列表项派发。
@@ -1072,6 +1093,37 @@ internal class RecordingDesignSystem(
                 topBar()
                 content()
                 bottomBar()
+            }
+
+            /**
+             * 提交后追加一条顶栏派发记录，并按导航、标题、操作顺序组合内容。
+             *
+             * @param title 标题槽，直接组合。
+             * @param modifier 接口要求的修饰符；录制夹具不应用也不记录。
+             * @param navigationIcon 导航图标槽；null 表示不占位。
+             * @param actions 操作槽，在行作用域中组合。
+             * @param colors 原样记录的颜色覆盖。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun TopAppBar(
+                title: @Composable () -> Unit,
+                modifier: Modifier,
+                navigationIcon: (@Composable () -> Unit)?,
+                actions: @Composable RowScope.() -> Unit,
+                colors: NomiTopAppBarColors,
+                nativeSpec: NomiTopAppBarSpec?,
+            ) {
+                SideEffect {
+                    topBars += RecordedTopAppBar(
+                        colors = colors,
+                        hasNavigationIcon = navigationIcon != null,
+                        nativeSpec = nativeSpec,
+                    )
+                }
+                navigationIcon?.invoke()
+                title()
+                Row { actions() }
             }
         }
 

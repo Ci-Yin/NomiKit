@@ -151,6 +151,9 @@ val designSystem = NomiDesignSystem.Material3(branded)
 Material 3 侧暂未定义 spec；这些入口当前没有"中立 API 表达不了"的原生参数。颜色已由中立的
 `NomiButtonColors` / `NomiSurfaceColors` 覆盖，因此不重复进入 spec。
 
+顶栏 `NomiTopAppBar` 直接使用原生 `TopAppBar`：颜色经 `TopAppBarDefaults.topAppBarColors` 逐字段映射，
+未指定通道由原生 `takeOrElse` 回退；系统栏内边距沿用原生默认值，暂不定义 spec。
+
 ## 列表项专属参数
 
 `Material3ListItemSpec` 实现核心的列表项族契约 `NomiListItemSpec`，承载未进入中立 API 的原生列表项

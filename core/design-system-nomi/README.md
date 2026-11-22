@@ -18,14 +18,14 @@ Foundation）。 不依赖任何 adapter 模块，也不被核心反向依赖。
 
 ## 从哪里开始
 
-| 入口                                                                                                                                                                                                                                                                                                                                                                                            | 职责                                                                                          |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| [DefaultNomiSystem](<src/commonMain/kotlin/ciyin/designsystem/nomi/DefaultNomiDesignSystem.kt>)                                                                                                                                                                                                                                                                                                 | internal 内置实现，经 `NomiDesignSystem.Default` 暴露；发布传入主题并派生原生内容色与正文排版 |
-| [LocalNomiNativeContentColor / LocalNomiNativeTextStyle](<src/commonMain/kotlin/ciyin/designsystem/nomi/NomiNativeContentStyle.kt>)                                                                                                                                                                                                                                                             | Nomi 自身原生内容环境；与公共显式 slot 分离                                                   |
-| [DefaultNomiTextRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/text/DefaultNomiTextRenderer.kt>) / [Button](<src/commonMain/kotlin/ciyin/designsystem/nomi/button/DefaultNomiActionRenderer.kt>) / [Surface](<src/commonMain/kotlin/ciyin/designsystem/nomi/surface/DefaultNomiSurfaceRenderer.kt>) / [Card](<src/commonMain/kotlin/ciyin/designsystem/nomi/card/DefaultNomiCard.kt>) | 四组件 Foundation 实现                                                                        |
-| [DefaultNomiNavigationRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationRenderer.kt>)                                                                                                                                                                                                                                                                    | 导航套件实现；Bar/Rail/Drawer 使用槽位式导航项，Drawer 为永久抽屉                             |
-| [DefaultNomiScaffoldRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/scaffold/DefaultNomiScaffoldRenderer.kt>)                                                                                                                                                                                                                                                                          | 页面脚手架实现；顶栏/主体/底栏顺序排布，主体占剩余高度                                        |
-| [DefaultNomiListItemRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/list/DefaultNomiListItemRenderer.kt>)                                                                                                                                                                                                                                                                              | 列表项实现；透明行 + Nomi 令牌内边距、文本样式与尾部内容色                                    |
+| 入口                                                                                                                                                                                                                                                                                                                                                                                            | 职责                                                                                           |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
+| [DefaultNomiSystem](<src/commonMain/kotlin/ciyin/designsystem/nomi/DefaultNomiDesignSystem.kt>)                                                                                                                                                                                                                                                                                                 | internal 内置实现，经 `NomiDesignSystem.Default` 暴露；发布传入主题并派生原生内容色与正文排版  |
+| [LocalNomiNativeContentColor / LocalNomiNativeTextStyle](<src/commonMain/kotlin/ciyin/designsystem/nomi/NomiNativeContentStyle.kt>)                                                                                                                                                                                                                                                             | Nomi 自身原生内容环境；与公共显式 slot 分离                                                    |
+| [DefaultNomiTextRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/text/DefaultNomiTextRenderer.kt>) / [Button](<src/commonMain/kotlin/ciyin/designsystem/nomi/button/DefaultNomiActionRenderer.kt>) / [Surface](<src/commonMain/kotlin/ciyin/designsystem/nomi/surface/DefaultNomiSurfaceRenderer.kt>) / [Card](<src/commonMain/kotlin/ciyin/designsystem/nomi/card/DefaultNomiCard.kt>) | 四组件 Foundation 实现                                                                         |
+| [DefaultNomiNavigationRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationRenderer.kt>)                                                                                                                                                                                                                                                                    | 导航套件实现；Bar/Rail/Drawer 使用槽位式导航项，Drawer 为永久抽屉                              |
+| [DefaultNomiScaffoldRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/scaffold/DefaultNomiScaffoldRenderer.kt>)                                                                                                                                                                                                                                                                          | 页面脚手架与顶栏实现；脚手架顶栏/主体/底栏顺序排布、主体占剩余高度，顶栏取 appBar 令牌（56dp） |
+| [DefaultNomiListItemRenderer](<src/commonMain/kotlin/ciyin/designsystem/nomi/list/DefaultNomiListItemRenderer.kt>)                                                                                                                                                                                                                                                                              | 列表项实现；透明行 + Nomi 令牌内边距、文本样式与尾部内容色                                     |
 
 ## 最小接入路径
 
@@ -100,15 +100,16 @@ NavigationItem(
 
 ## 图标、分割线、控件与提示
 
-- 图标使用 `Icon` 绘制，着色顺序为显式 tint > `LocalNomiNativeContentColor` > `NomiTheme.colorScheme.textPrimary`；
-  尺寸沿用矢量固有尺寸（内置 IconPack 统一 24dp）或调用方 `Modifier.size`。
+- 图标使用 `Icon` 绘制，着色顺序为显式 tint > `LocalNomiNativeContentColor` >
+  `NomiTheme.colorScheme.textPrimary`； 尺寸沿用矢量固有尺寸（内置 IconPack 统一 24dp）或调用方
+  `Modifier.size`。
 - 分割线按方向使用 `HorizontalDivider` / `VerticalDivider`：粗细默认 `NomiTheme.sizes.strokes.thin`，
   颜色默认 `NomiTheme.colorScheme.divider`。
 - 选择控件与文本输入框都复用原生 `Switch` / `Checkbox` / `RadioButton` / `TextField` 作为交互载体，
   配色全部显式取自 `NomiTheme.colorScheme`（Nomi 不安装外层原生主题，不读宿主主题）；输入框属于文本族，
   `NomiTextFieldVariant.Outlined` 使用 `OutlinedTextField`，其余使用填充入口。
-- 提示浮层使用原生 `TooltipBox` 与 `PlainTooltip`，容器 `surfaceHigher`、内容 `textPrimary`、
-  圆角 `NomiTheme.shapes.small`。
+- 提示浮层使用原生 `TooltipBox` 与 `PlainTooltip`，容器 `surfaceHigher`、内容 `textPrimary`、 圆角
+  `NomiTheme.shapes.small`。
 
 ## 开关按钮、下拉按钮、组合框与菜单
 
