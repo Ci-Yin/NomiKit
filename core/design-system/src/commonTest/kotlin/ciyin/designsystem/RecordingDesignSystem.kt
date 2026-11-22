@@ -43,7 +43,10 @@ import ciyin.designsystem.component.control.NomiCheckboxSpec
 import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
+import ciyin.designsystem.component.control.NomiSliderSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorSpec
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
 import ciyin.designsystem.component.menu.NomiMenuItemSpec
 import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.component.menu.NomiMenuSpec
@@ -201,6 +204,44 @@ internal data class RecordedComboBox(
     val enabled: Boolean,
     val hasModifier: Boolean,
     val nativeSpec: NomiComboBoxSpec? = null,
+)
+
+/**
+ * 记录滑块派发参数。
+ *
+ * @property value 原样记录的当前值。
+ * @property enabled 原样记录的启用状态。
+ * @property valueRange 原样记录的取值区间。
+ * @property steps 原样记录的离散刻度数量。
+ * @property hasOnValueChangeFinished 是否提供结束回调。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的滑块专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedSlider(
+    val value: Float,
+    val enabled: Boolean,
+    val valueRange: ClosedFloatingPointRange<Float>,
+    val steps: Int,
+    val hasOnValueChangeFinished: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiSliderSpec? = null,
+)
+
+/**
+ * 记录进度指示器派发参数。
+ *
+ * @property progress 原样记录的进度值；null 表示不确定进度。
+ * @property type 原样记录的进度形态。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的进度专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedProgress(
+    val progress: Float?,
+    val type: NomiProgressIndicatorType,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiProgressIndicatorSpec? = null,
 )
 
 /**
@@ -494,6 +535,16 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录组合框派发。
      */
     val comboBoxes: MutableList<RecordedComboBox> = mutableListOf()
+
+    /**
+     * 按组合顺序记录滑块派发。
+     */
+    val sliders: MutableList<RecordedSlider> = mutableListOf()
+
+    /**
+     * 按组合顺序记录进度指示器派发。
+     */
+    val progressIndicators: MutableList<RecordedProgress> = mutableListOf()
 
     /**
      * 按组合顺序记录菜单浮层派发。
@@ -1250,6 +1301,40 @@ internal class RecordingDesignSystem(
                 }
             }
 
+            /**
+             * 组合提交后追加滑块记录；录制夹具不绘制轨道，也不建立手势。
+             *
+             * @param value 原样记录的当前值。
+             * @param onValueChange 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param valueRange 原样记录的取值区间。
+             * @param steps 原样记录的离散刻度数量。
+             * @param onValueChangeFinished 接口要求的结束回调；录制夹具只记录是否提供。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun Slider(
+                value: Float,
+                onValueChange: (Float) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                valueRange: ClosedFloatingPointRange<Float>,
+                steps: Int,
+                onValueChangeFinished: (() -> Unit)?,
+                nativeSpec: NomiSliderSpec?,
+            ) {
+                val call = RecordedSlider(
+                    value = value,
+                    enabled = enabled,
+                    valueRange = valueRange,
+                    steps = steps,
+                    hasOnValueChangeFinished = onValueChangeFinished != null,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.sliders += call }
+            }
         }
 
         /**
@@ -1281,6 +1366,29 @@ internal class RecordingDesignSystem(
                 content()
             }
 
+            /**
+             * 组合提交后追加进度指示器记录，不绘制轨道或动画。
+             *
+             * @param progress 原样记录的进度值；null 表示不确定进度。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param type 原样记录的进度形态。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun ProgressIndicator(
+                progress: Float?,
+                modifier: Modifier,
+                type: NomiProgressIndicatorType,
+                nativeSpec: NomiProgressIndicatorSpec?,
+            ) {
+                val call = RecordedProgress(
+                    progress = progress,
+                    type = type,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.progressIndicators += call }
+            }
         }
 
         /**

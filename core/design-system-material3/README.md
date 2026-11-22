@@ -1,13 +1,19 @@
 # :core:design-system-material3
 
 Material 3 设计系统适配器：把中立 `NomiTheme` 经映射函数安装为官方 Compose Material 3 原生主题，
-并实现文本、按钮、表面、导航、脚手架与列表项六族组件 SPI。
+并实现文本、按钮、表面、导航、脚手架、列表项、图标、分割线、控件、反馈与菜单十一族组件 SPI。
 
 ## 职责与边界
 
 - 依赖[中立核心](<../design-system/README.md>)，不依赖旧 material、ui-foundation 或应用模块。
 - Material 3 由 Version Catalog 的既有 `libs.compose.material3` 提供。
-- 六个 SPI 族分别调用官方原生组件，不共享外观配方；输入框、图标按钮、弹窗等属于二期，不提供占位实现。
+- 十一个 SPI 族分别调用官方原生组件，不共享外观配方；图标按钮、滑块、进度、顶栏、徽标、页签、浮层对话框与
+  列表分组尚未提供，也不提供占位实现。
+- `NomiSlider` 与 `NomiProgressIndicator` 分别使用原生 `Slider` 与
+  `LinearProgressIndicator`/`CircularProgressIndicator`，轨道、拇指、刻度与不确定态动画都由原生实现决定。
+- Material 3 1.9.0 没有原生 `ToggleButton` 与 `SplitButton`：开关按钮按状态在原生
+  `FilledTonalButton` / `Button`（图标形态为 `IconButton` / `FilledIconButton`）之间切换，未重绘外观；
+  `SplitButton` / `ToggleSplitButton` 不在本轮范围。
 - 不读取系统明暗或平台设置，不维护第二份设计令牌，也不从祖先 MaterialTheme 采样原生配置。
 - 导航套件直接使用原生 NavigationBar、NavigationRail 与 PermanentNavigationDrawer；外壳容器色可通过
   `containerColor` 覆盖（Bar/Rail 未指定回退 `MaterialTheme.colorScheme.surfaceContainerLow`，Drawer
@@ -115,8 +121,17 @@ val designSystem = NomiDesignSystem.Material3(branded)
 - Button/Surface/Card 保持原生实际内容环境，中立桥只传播显式 colors/textStyle/size 增量；
   默认容器不会把原生禁用色或原生排版伪装成显式覆盖。
 - 导航套件使用原生 NavigationBar、NavigationRail、PermanentNavigationDrawer，Bar/Rail/Drawer 均声明支持；
-  列表项使用原生 ListItem，行高、文本样式、内容色与两行/三行推断由原生组件决定，仅在有 @BT@onClick@BT@
-  时包装 @BT@Modifier.clickable@BT@，不附加长按或 Role；脚手架使用原生 Scaffold，外壳与内容让位由原生实现承担。
+  列表项使用原生 ListItem，行高、文本样式、内容色与两行/三行推断由原生组件决定，仅在有 `onClick`
+  时包装 `Modifier.clickable`，不附加长按或 Role；脚手架使用原生 Scaffold，外壳与内容让位由原生实现承担。
+- 图标使用原生 `Icon`：`tint` 为 `Unspecified` 时回落 `LocalContentColor`，尺寸由矢量固有尺寸与
+  调用方修饰符决定，不提供 size 参数。
+- 分割线按方向使用原生 `HorizontalDivider` / `VerticalDivider`：`thickness = null` 回落
+  `DividerDefaults.Thickness`，`Color.Unspecified` 回落 `DividerDefaults.color`。
+- 控件族三个选择入口使用原生 `Switch` / `Checkbox` / `RadioButton`；文本输入框属于文本族，由
+  `NomiTextRenderer` 实现：`variant = Outlined` 时使用 `OutlinedTextField`，否则使用 `TextField`，
+  标签、占位符、前后置图标与 `isError` 原样交给原生参数。
+- 提示浮层使用原生 `TooltipBox` 与 `PlainTooltip`，状态与位置取 `rememberTooltipState()` 与
+  `TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above)`；调用方不感知浮层状态。
 
 ## 专属参数
 
@@ -132,7 +147,8 @@ val designSystem = NomiDesignSystem.Material3(branded)
 | 脚手架   | `Material3ScaffoldSpec`   | `snackbarHost`、`floatingActionButton`、`contentWindowInsets`            |
 | 列表项   | `Material3ListItemSpec`   | `overlineContent`、`colors`、`tonalElevation`、`shadowElevation`         |
 
-文本与导航项两族的族契约是核心预留插孔，Material 3 侧暂未定义 spec。颜色已由中立的
+文本、导航项、图标、分割线、开关、复选框、单选按钮、输入框与提示浮层的族契约是核心预留插孔，
+Material 3 侧暂未定义 spec；这些入口当前没有"中立 API 表达不了"的原生参数。颜色已由中立的
 `NomiButtonColors` / `NomiSurfaceColors` 覆盖，因此不重复进入 spec。
 
 ## 列表项专属参数
@@ -191,6 +207,10 @@ Android/Desktop/iOS 专有 API。`api` 导出中立核心与 Material 3；公开
 [脚手架测试](<src/commonTest/kotlin/ciyin/designsystem/material3/Material3ScaffoldTest.kt>)、
 [列表项测试](<src/commonTest/kotlin/ciyin/designsystem/material3/list/Material3ListItemTest.kt>)
 覆盖三种原生导航布局、顶栏/主体/底栏顺序与列表项槽位；
+[原子测试](<src/commonTest/kotlin/ciyin/designsystem/material3/icon/Material3AtomsTest.kt>)、
+[控件测试](<src/commonTest/kotlin/ciyin/designsystem/material3/control/Material3ControlsTest.kt>)、
+[提示浮层测试](<src/commonTest/kotlin/ciyin/designsystem/material3/feedback/Material3TooltipTest.kt>)
+覆盖图标无障碍语义、横竖分割线、开关/复选/单选回调与输入框输入；
 [独立原生对照测试](<src/desktopTest/kotlin/ciyin/designsystem/material3/Material3NativeParityTest.kt>)
 使用不经过 NomiTheme 的独立 MaterialTheme 做几何、像素与排版对照。
 

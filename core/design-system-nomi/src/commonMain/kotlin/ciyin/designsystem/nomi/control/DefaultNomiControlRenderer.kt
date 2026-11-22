@@ -32,7 +32,9 @@ import ciyin.designsystem.component.control.NomiCheckboxSpec
 import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
+import ciyin.designsystem.component.control.NomiSliderSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
+import ciyin.designsystem.nomi.control.slider.NomiSliderContent
 import ciyin.designsystem.icon.ChevronDown
 import ciyin.designsystem.icon.IconPack
 import ciyin.designsystem.nomi.menu.NomiMenuPopup
@@ -240,4 +242,37 @@ internal object DefaultNomiControlRenderer : NomiControlRenderer {
         }
     }
 
+    /**
+     * 渲染 Nomi 滑块：轨道、拇指、刻度与手势由 Nomi 自身绘制，取值为中立参数。
+     *
+     * @param value 当前值，由调用方持有。
+     * @param onValueChange 值变化回调，收到夹紧后的新值。
+     * @param modifier 应用于滑块根节点的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param valueRange 取值区间。
+     * @param steps 离散刻度数量；负值按 0 处理。
+     * @param onValueChangeFinished 用户结束交互后的回调；null 表示不关心。
+     * @param nativeSpec 滑块专属参数；Nomi 外观完全由 [NomiTheme] 令牌决定，本实现忽略它。
+     */
+    @Composable
+    override fun Slider(
+        value: Float,
+        onValueChange: (Float) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        valueRange: ClosedFloatingPointRange<Float>,
+        steps: Int,
+        onValueChangeFinished: (() -> Unit)?,
+        nativeSpec: NomiSliderSpec?,
+    ) {
+        NomiSliderContent(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            enabled = enabled,
+            valueRange = valueRange,
+            steps = steps,
+            onValueChangeFinished = onValueChangeFinished,
+        )
+    }
 }

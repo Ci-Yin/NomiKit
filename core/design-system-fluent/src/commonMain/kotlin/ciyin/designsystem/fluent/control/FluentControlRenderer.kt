@@ -20,6 +20,7 @@ import ciyin.designsystem.component.control.NomiCheckboxSpec
 import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
+import ciyin.designsystem.component.control.NomiSliderSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
 import io.github.composefluent.component.CheckBox as NativeCheckBox
@@ -162,4 +163,37 @@ internal object FluentControlRenderer : NomiControlRenderer {
         }
     }
 
+    /**
+     * 使用原生 Fluent 滑块；轨道、拇指、刻度与提示都由原生实现决定。
+     *
+     * @param value 当前值，由调用方持有。
+     * @param onValueChange 值变化回调。
+     * @param modifier 应用于原生滑块的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param valueRange 取值区间。
+     * @param steps 离散刻度数量；负值按 0 处理。
+     * @param onValueChangeFinished 用户结束交互后的回调；null 表示不关心。
+     * @param nativeSpec 滑块专属参数；当前没有实现，原样接受并忽略。
+     */
+    @Composable
+    override fun Slider(
+        value: Float,
+        onValueChange: (Float) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        valueRange: ClosedFloatingPointRange<Float>,
+        steps: Int,
+        onValueChangeFinished: (() -> Unit)?,
+        nativeSpec: NomiSliderSpec?,
+    ) {
+        NativeSlider(
+            value = value.coerceIn(valueRange.start, valueRange.endInclusive),
+            onValueChange = onValueChange,
+            modifier = modifier,
+            enabled = enabled,
+            valueRange = valueRange,
+            steps = steps.coerceAtLeast(0),
+            onValueChangeFinished = { onValueChangeFinished?.invoke() },
+        )
+    }
 }

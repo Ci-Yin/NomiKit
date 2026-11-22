@@ -28,4 +28,22 @@ interface NomiFeedbackRenderer {
         content: @Composable () -> Unit,
     )
 
+    /**
+     * 渲染一个原生进度指示器。
+     *
+     * 实现负责线性/环形两种形态、确定与不确定两种状态，并发布进度条语义；不提供颜色、
+     * 尺寸或自定义轨道，这些能力留给各系统原生默认。
+     *
+     * @param progress 确定进度值，范围 0f..1f；null 表示不确定进度。
+     * @param modifier 应用于进度指示器根节点的修饰符。
+     * @param type 进度形态；由调用方显式选择，核心不做窗口或平台判断。
+     * @param nativeSpec 进度专属参数；null，或未携带本系统定义的类型时，全部沿用原生默认。
+     */
+    @Composable
+    fun ProgressIndicator(
+        progress: Float?,
+        modifier: Modifier,
+        type: NomiProgressIndicatorType,
+        nativeSpec: NomiProgressIndicatorSpec?,
+    )
 }

@@ -61,7 +61,7 @@ NavigationItem(
     selected = selection == 0,
     onClick = { onNavigate(0) },
     modifier = Modifier, // 支持项级修饰符
-    icon = { Icon(IconPack.Home, null, Modifier.size(24.dp)) }, // 图标尺寸与无障碍名由槽内容负责
+    icon = { NomiIcon(IconPack.Home, null, Modifier.size(24.dp)) }, // 图标尺寸与无障碍名由槽内容负责
     badge = { NomiText("9+") }, // 经 BadgedBox 叠加在图标槽上
     label = { NomiText("首页") }, // Bar 与 Drawer 直接渲染；Rail 作为右侧 tooltip 提示，不进入可见内容
     colors = NomiNavigationItemColors(), // 稀疏覆盖，Unspecified 回退 primary/onBackground
@@ -85,8 +85,8 @@ NavigationItem(
 
 ## 源码布局
 
-- `src/commonMain/kotlin/ciyin/designsystem/nomi/`：装配、原生内容环境与七个组件子包的
-  renderer（text/button/surface/card/navigation/scaffold/list）。
+- `src/commonMain/kotlin/ciyin/designsystem/nomi/`：装配、原生内容环境与十二个组件子包的
+  renderer（text/button/surface/card/navigation/scaffold/list/icon/divider/control/feedback/menu）。
 -
 
 `src/commonTest`：[NomiNativeContentIsolationTest](<src/commonTest/kotlin/ciyin/designsystem/nomi/NomiNativeContentIsolationTest.kt>)
@@ -97,6 +97,48 @@ NavigationItem(
 `src/desktopTest`：[NomiComponentsContractTest](<src/desktopTest/kotlin/ciyin/designsystem/NomiComponentsContractTest.kt>) / [NomiCustomizationContractTest](<src/desktopTest/kotlin/ciyin/designsystem/NomiCustomizationContractTest.kt>)
 覆盖默认渲染、像素与定制契约（自核心迁入，包名不变）；[DefaultNomiNavigationTest](<src/desktopTest/kotlin/ciyin/designsystem/nomi/navigation/DefaultNomiNavigationTest.kt>)
 覆盖导航套件的槽位渲染、选中语义、项级修饰符与 Drawer 抽屉渲染。
+
+## 图标、分割线、控件与提示
+
+- 图标使用 `Icon` 绘制，着色顺序为显式 tint > `LocalNomiNativeContentColor` > `NomiTheme.colorScheme.textPrimary`；
+  尺寸沿用矢量固有尺寸（内置 IconPack 统一 24dp）或调用方 `Modifier.size`。
+- 分割线按方向使用 `HorizontalDivider` / `VerticalDivider`：粗细默认 `NomiTheme.sizes.strokes.thin`，
+  颜色默认 `NomiTheme.colorScheme.divider`。
+- 选择控件与文本输入框都复用原生 `Switch` / `Checkbox` / `RadioButton` / `TextField` 作为交互载体，
+  配色全部显式取自 `NomiTheme.colorScheme`（Nomi 不安装外层原生主题，不读宿主主题）；输入框属于文本族，
+  `NomiTextFieldVariant.Outlined` 使用 `OutlinedTextField`，其余使用填充入口。
+- 提示浮层使用原生 `TooltipBox` 与 `PlainTooltip`，容器 `surfaceHigher`、内容 `textPrimary`、
+  圆角 `NomiTheme.shapes.small`。
+
+## 开关按钮、下拉按钮、组合框与菜单
+
+- 三个按钮入口共用同一套 Foundation 绘制：`Button` / `ToggleButton` / `DropDownButton` 只在状态色、
+  开关语义与是否追加下拉箭头上分叉；容器、描边、内边距仍由同一份令牌决定。
+- 开关按钮选中时切换到 `Primary` 配色并发布 `toggleableState` 语义；`iconOnly` 使用方形内边距与 48dp
+  最小交互目标。
+- 下拉按钮在内容之后追加 `IconPack.ChevronDown`，着色跟随当前按钮内容色；不持有展开状态。
+- 菜单浮层使用原生 `Popup` 锚定父布局：优先出现在锚点下方，空间不足时翻转到上方；容器 `surfaceHigher`、
+  描边 `outline`、圆角 `NomiTheme.shapes.medium`，阴影 8dp。
+- 菜单项是透明行 + 悬停/按下叠加，选中项在内容之前追加 `IconPack.Check`；`trailing` 提供时靠右。
+- 组合框收起态是描边容器（`surface` + `outline`，最小高度取按钮最小交互目标），展开时复用同一个菜单浮层
+  并按容器宽度对齐。
+
+## 滑块与进度
+
+- 滑块由 Nomi 自身用 Foundation 绘制，外观对齐应用滑块的既有形态：轨道高 16dp 的胶囊，已选段 `primary`、
+  未选段 `surfaceHigher`；拇指为 15dp 圆形，`onPrimary` 填充 + `primary` 2dp 描边；轨道两端对齐拇指边缘，
+  整体高度 30dp。刻度画刷透明（视觉上不显示刻度），`steps` 只影响点按吸附与进度语义。
+- 拖拽、点按、刻度吸附与 RTL 位于 `nomi/control/slider/NomiSliderInteraction.kt`；尺寸与色板在
+  `NomiSliderStyle.kt`；拇指与轨道绘制在 `NomiSliderDrawing.kt`；`SubcomposeLayout` 先测量拇指再定轨道，
+  编排位于 `NomiSliderContent.kt`。
+- 滑块发布 `ProgressBarRangeInfo` 与 `setProgress` 语义，读屏可以调整数值；禁用时所有颜色通道降到 38%
+  透明度，只绘制、不安装手势。
+- 进度指示器用 Canvas 绘制：线性是 16dp 胶囊轨道，与滑块轨道同高同色（进度 `primary`、轨道
+  `surfaceHigher`）；环形保持 32dp / 描边 3dp，只用同一套配色。确定态发布进度值，不确定态使用循环动画
+  并只发布进度条角色。
+- 来源：滑块移植自 SmartToolFactory Compose-Colorful-Sliders（Apache-2.0，保留版权头）；画刷、描边与
+  刻度的绘制路径保留在实现内部，公共入口不暴露颜色、尺寸、拇指槽位与标签变体；进度由原
+  `core/ui-foundation` 的多段进度实现整理而来，多段模型不再保留。
 
 ## 平台差异与生命周期
 
@@ -122,8 +164,8 @@ renderer 为 internal 单例，状态经组合本地提供，不持有跨组合�
 
 主题 API 迁移后请执行以下任务；Desktop 回归覆盖 `NomiComponentsContractTest`、
 `NomiCustomizationContractTest`、`NomiNativeContentIsolationTest`、`DefaultNomiNavigationTest`
-（含 Bar/Rail/Drawer）、`DefaultNomiListItemTest` 与 `DefaultNomiScaffoldTest`。模块结果不能以核心结果代替；
-本轮迁移由主集成流程统一验证。
+（含 Bar/Rail/Drawer）、`DefaultNomiListItemTest`、`DefaultNomiScaffoldTest`、`NomiAtomsTest`、
+`NomiControlsTest` 与 `NomiTooltipTest`。模块结果不能以核心结果代替；本轮迁移由主集成流程统一验证。
 
 ```powershell
 .\gradlew.bat :core:design-system-nomi:compileCommonMainKotlinMetadata --console=plain

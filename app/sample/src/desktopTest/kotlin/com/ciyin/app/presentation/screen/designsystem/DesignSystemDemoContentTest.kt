@@ -127,6 +127,73 @@ class DesignSystemDemoContentTest {
     }
 
     /**
+     * 控件分区暴露图标、分割线、三个选择控件、输入框与提示浮层，且开关可交互。
+     *
+     * @return 当前平台的 Compose 测试执行结果。
+     */
+    @Test
+    fun controlsSectionExposesNativeWidgets() = runComposeUiTest {
+        setContent { DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {}) }
+        onNodeWithTag(DesignSystemDemoTags.ControlsSection).performScrollTo().assertExists()
+        onNodeWithTag(DesignSystemDemoTags.IconSample).performScrollTo().assertExists()
+        onNodeWithTag(DesignSystemDemoTags.DividerSample).assertExists()
+        onNodeWithTag(DesignSystemDemoTags.Switch)
+            .performScrollTo()
+            .assertHasClickAction()
+            .performClick()
+        onNodeWithTag(DesignSystemDemoTags.Checkbox).assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.Radio).assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.TextField).performScrollTo().assertExists()
+        onNodeWithTag(DesignSystemDemoTags.TextFieldError).assertExists()
+        onNodeWithTag(DesignSystemDemoTags.Tooltip, useUnmergedTree = true)
+            .performScrollTo()
+            .assertExists()
+    }
+
+    /**
+     * 控件分区暴露滑块、线性确定进度与环形不确定进度。
+     */
+    @Test
+    fun controlsSectionExposesSliderAndProgress() = runComposeUiTest {
+        setContent { DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {}) }
+        onNodeWithTag(DesignSystemDemoTags.Slider).performScrollTo().assertExists()
+        onNodeWithTag(DesignSystemDemoTags.ProgressLinear).performScrollTo().assertExists()
+        onNodeWithTag(DesignSystemDemoTags.ProgressCircular).assertExists()
+    }
+
+    /**
+     * 按钮分区暴露开关按钮、图标开关与下拉按钮；菜单只在展开后出现。
+     */
+    @Test
+    fun buttonSectionExposesToggleAndDropDownEntries() = runComposeUiTest {
+        setContent { DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {}) }
+        onNodeWithTag(DesignSystemDemoTags.ToggleButton)
+            .performScrollTo()
+            .assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.ToggleIconButton).assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.DropDownButton)
+            .performScrollTo()
+            .assertHasClickAction()
+        onNodeWithTag(DesignSystemDemoTags.MenuItem).assertDoesNotExist()
+        onNodeWithTag(DesignSystemDemoTags.DropDownButton).performClick()
+        onNodeWithTag(DesignSystemDemoTags.MenuItem).assertExists()
+    }
+
+    /**
+     * 控件分区暴露组合框；收起时不渲染菜单项，展开后可看到选项。
+     */
+    @Test
+    fun controlsSectionExposesComboBox() = runComposeUiTest {
+        setContent { DesignSystemDemoContent(state = DesignSystemDemoUiState(), onAction = {}) }
+        onNodeWithTag(DesignSystemDemoTags.ComboBox)
+            .performScrollTo()
+            .assertExists()
+        onNodeWithTag(DesignSystemDemoTags.ComboBoxOption).assertDoesNotExist()
+        onNodeWithTag(DesignSystemDemoTags.ComboBox).performClick()
+        onNodeWithTag(DesignSystemDemoTags.ComboBoxOption).assertExists()
+    }
+
+    /**
      * 十五种角色均可选择；默认仅预览正文，点击后原样展示所选角色。
      */
     @Test

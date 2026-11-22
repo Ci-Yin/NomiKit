@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorSpec
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
 import ciyin.designsystem.component.feedback.NomiTooltipSpec
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.component.ProgressBar
@@ -39,4 +41,34 @@ internal object FluentFeedbackRenderer : NomiFeedbackRenderer {
         )
     }
 
+    /**
+     * 使用原生进度指示器；确定态传入进度值，不确定态使用原生循环动画。
+     *
+     * @param progress 确定进度值，范围 0f..1f；null 表示不确定进度。
+     * @param modifier 应用于原生进度指示器的修饰符。
+     * @param type 进度形态；线性使用 ProgressBar，环形使用 ProgressRing。
+     * @param nativeSpec 进度专属参数；当前没有实现，原样接受并忽略。
+     */
+    @Composable
+    override fun ProgressIndicator(
+        progress: Float?,
+        modifier: Modifier,
+        type: NomiProgressIndicatorType,
+        nativeSpec: NomiProgressIndicatorSpec?,
+    ) {
+        val coerced = progress?.coerceIn(0f, 1f)
+        when (type) {
+            NomiProgressIndicatorType.Linear -> if (coerced == null) {
+                ProgressBar(modifier = modifier)
+            } else {
+                ProgressBar(progress = coerced, modifier = modifier)
+            }
+
+            NomiProgressIndicatorType.Circular -> if (coerced == null) {
+                ProgressRing(modifier = modifier)
+            } else {
+                ProgressRing(progress = coerced, modifier = modifier)
+            }
+        }
+    }
 }

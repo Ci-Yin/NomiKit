@@ -9,6 +9,8 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorSpec
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
 import ciyin.designsystem.component.feedback.NomiTooltipSpec
 import ciyin.designsystem.theme.NomiTheme
 
@@ -55,4 +57,25 @@ internal object DefaultNomiFeedbackRenderer : NomiFeedbackRenderer {
         )
     }
 
+    /**
+     * 绘制 Nomi 进度指示器。
+     *
+     * @param progress 确定进度值，范围 0f..1f；null 表示不确定进度。
+     * @param modifier 应用于进度指示器根节点的修饰符。
+     * @param type 进度形态；线性与环形都由 Nomi 自身绘制。
+     * @param nativeSpec 进度专属参数；Nomi 外观完全由 [NomiTheme] 令牌决定，本实现忽略它。
+     */
+    @Composable
+    override fun ProgressIndicator(
+        progress: Float?,
+        modifier: Modifier,
+        type: NomiProgressIndicatorType,
+        nativeSpec: NomiProgressIndicatorSpec?,
+    ) {
+        NomiProgressIndicatorContent(
+            progress = progress,
+            modifier = modifier,
+            type = type,
+        )
+    }
 }

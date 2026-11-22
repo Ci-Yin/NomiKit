@@ -57,14 +57,27 @@ val NomiDesignSystem.Companion.Default: NomiDesignSystem
 | [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>) / [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)    | 文本与按钮 API、对应 renderer 和参数类型                                          |
 | [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>) / [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>) | Surface 与实际原生 Card 分开派发                                                  |
 | [NomiBorder](<src/commonMain/kotlin/ciyin/designsystem/component/NomiBorder.kt>)                                                                                               | 描边意图三态                                                                      |
-| [NomiNavigation](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigation.kt>)                                                                            | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                    |
+| [NomiNavigationSuite](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSuite.kt>)                                                                            | 导航套件入口、Bar/Rail/Drawer 布局、导航项作用域与原生渲染契约                    |
 | [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)                                                                                  | 页面脚手架入口、顶栏/主体/底栏三槽位、容器色与内容色稀疏覆盖                      |
 | [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)                                                                                      | 列表项入口、前导/标题/副标题/尾部槽位、`nativeSpec` 与原生列表渲染契约            |
+| [NomiIcon](<src/commonMain/kotlin/ciyin/designsystem/component/icon/NomiIcon.kt>)                                                                                                                                        | 图标入口、着色与原生图标渲染契约                                                  |
+| [NomiDivider](<src/commonMain/kotlin/ciyin/designsystem/component/divider/NomiDivider.kt>)                                                                                                                                | 分割线入口、`NomiDividerOrientation` 与原生分割线渲染契约                        |
+| [NomiSwitch](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSwitch.kt>) / [NomiCheckbox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiCheckbox.kt>) / [NomiRadioButton](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiRadioButton.kt>)                          | 选择控件入口、状态与回调派发                                                      |
+| [NomiTextField](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiTextField.kt>)                                                                                                                             | 文本输入入口、`NomiTextFieldVariant` 与原生输入框渲染契约（属文本族）             |
+| [NomiTooltip](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiTooltip.kt>)                                                                                                                               | 提示浮层入口与原生浮层渲染契约                                                    |
+| [NomiToggleButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiToggleButton.kt>) / [NomiDropDownButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiDropDownButton.kt>)            | 开关按钮（两态颜色）与带下拉指示的按钮                                            |
+| [NomiComboBox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiComboBox.kt>)                                                                                                                             | 组合框入口：收起态内容槽 + 自带浮层的菜单项槽（属控件族）                         |
+| [NomiMenu](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenu.kt>) / [NomiMenuItem](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenuItem.kt>)                                                  | 菜单浮层与可复用菜单项行、菜单渲染契约                                            |
+| [NomiSlider](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSlider.kt>)                                                                                                                                  | 滑块入口、连续与离散取值、原生滑块渲染契约                                        |
+| [NomiProgressIndicator](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiProgressIndicator.kt>)                                                                                                            | 进度入口、线性/环形形态、`NomiProgressIndicatorType` 与原生进度渲染契约          |
 
 [组件集合](<src/commonMain/kotlin/ciyin/designsystem/component/NomiDesignSystemComponents.kt>)组装
-text/actions/surfaces/navigation/scaffold/listItems 六族； 表面族同时有 `Surface` 和 `Card`
-方法，导航族提供套件入口， 脚手架族提供页面外壳入口，列表项族提供原生列表行入口。实现不再集中在一个组件大文件，Nomi
-也按组件子包拆分。
+text/actions/surfaces/navigation/scaffold/listItems/icons/decorations/controls/feedback/menus 十一族； 表面族同时有
+`Surface` 和 `Card` 方法，导航族提供套件入口，脚手架族提供页面外壳入口，列表项族提供原生列表行入口；文本族除显示外
+还承载文本输入框，控件族提供开关/复选框/单选与组合框四个选择入口，操作族在普通按钮之外提供开关按钮与下拉按钮，
+菜单族提供浮层与可复用菜单项行。实现不再集中在一个组件大文件，Nomi 也按组件子包拆分。
+只有 renderer 接口独立成 `NomiXxxRenderer.kt`；其余公共声明都放在与组件同名的文件里：入口函数、
+颜色/枚举/默认值 object 与导航项作用域同在该文件内，入口的 `XxxSpecFamily` 与 `XxxSpec` 类型别名紧随其后。
 
 公共 `component` 保留公共入口、renderer SPI
 与共享参数；内置实现已拆到独立模块 [core/design-system-nomi](<../design-system-nomi/README.md>)， 包名仍为
@@ -80,7 +93,8 @@ package 转发、typealias 或隐式回退。
 是所有设计系统共用的导航入口： 布局类型由调用方按窗口形态选择；主导航项与底部导航项用槽位式的
 `NomiNavigationItemScope.NavigationItem(selected, onClick, modifier, icon, badge, label, colors, interactionSource)`
 声明。 槽位由调用方组合，图标尺寸与无障碍名称也由调用方负责（中立 IconPack 的 ImageVector 固有尺寸为
-256dp，槽内必须显式约束）； 组件本身不读取窗口、不持有选中状态、不补齐统一视觉。 外壳容器色通过
+24dp，需要其它尺寸时在槽内用 `Modifier.size` 约束）； 组件本身不读取窗口、不持有选中状态、不补齐统一视觉。
+外壳容器色通过
 `containerColor: Color = Color.Unspecified` 稀疏覆盖：Unspecified 保留当前设计系统的原生 导航容器色，
 `Color.Transparent` 是有效覆盖；`NomiNavigationItemColors` 只提供导航项的内容色/选中内容色/
 禁用内容色/指示器色四类稀疏覆盖。
@@ -172,12 +186,12 @@ NomiListItem(
 
 - `onClick = null` 表示静态行，不注册点击语义，实现不得添加悬停/按下外观。
 - 标题与副标题建议使用 `NomiText` 以继承原生列表文本样式与内容色；图标尺寸与无障碍名称由调用方负责，
-  中立 `IconPack` 的固有尺寸为 256dp，槽内必须显式约束。
+  中立 `IconPack` 的固有尺寸为 24dp，需要其它尺寸时在槽内用 `Modifier.size` 约束。
 - 尾部只有一个原生槽位，"值文本 + 箭头"等组合由调用方在槽内完成；行内含 `NomiButton` 等交互内容时，
   各自保留原生点击语义。
 - 中立 API 不提供 `enabled`、选中、展开、`overline`、分组标题、分隔线与颜色/形状/内边距覆盖；其中当前
   设计系统原生存在、而中立签名没有入口的属性改由 `nativeSpec` 透传。不可点统一用 `onClick = null` 表达，
-  选择控件（Switch/Radio/Checkbox）待控件族落地后在尾部槽组合。
+  选择控件（Switch/Radio/Checkbox）在尾部槽直接组合；文本输入使用文本族的 `NomiTextField`。
 - 删除 `:core:ui-foundation` 旧 `SettingItem` 后，设置行由本族组合：标题/副标题/前导/尾部槽 + 行点击。
 
 ### 原生透传
@@ -190,17 +204,35 @@ NomiListItem(
 
 | 入口                                                                                                         | 族契约                                                             |
 |--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
-| [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiTextSpec.kt>)                        | `NomiTextSpec`（预留：中立 API 已 1:1 暴露原生 Text 参数）         |
-| [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButtonSpec.kt>)                  | `NomiButtonSpec`                                                   |
-| [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurfaceSpec.kt>)               | `NomiSurfaceSpec`                                                  |
-| [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCardSpec.kt>)                        | `NomiCardSpec`                                                     |
-| [NomiNavigationSuite](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSpec.kt>) | `NomiNavigationSpec`                                               |
-| [NavigationItem](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationItemSpec.kt>)  | `NomiNavigationItemSpec`（预留：三种布局的原生项颜色类型互不相同） |
-| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffoldSpec.kt>)            | `NomiScaffoldSpec`                                                 |
-| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItemSpec.kt>)                | `NomiListItemSpec`                                                 |
+| [NomiText](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>)                        | `NomiTextSpec`（预留：中立 API 已 1:1 暴露原生 Text 参数）         |
+| [NomiButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)                  | `NomiButtonSpec`                                                   |
+| [NomiSurface](<src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>)               | `NomiSurfaceSpec`                                                  |
+| [NomiCard](<src/commonMain/kotlin/ciyin/designsystem/component/card/NomiCard.kt>)                        | `NomiCardSpec`                                                     |
+| [NomiNavigationSuite](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSuite.kt>) | `NomiNavigationSpec`                                               |
+| [NavigationItem](<src/commonMain/kotlin/ciyin/designsystem/component/navigation/NomiNavigationSuite.kt>)  | `NomiNavigationItemSpec`（预留：三种布局的原生项颜色类型互不相同） |
+| [NomiScaffold](<src/commonMain/kotlin/ciyin/designsystem/component/scaffold/NomiScaffold.kt>)            | `NomiScaffoldSpec`                                                 |
+| [NomiListItem](<src/commonMain/kotlin/ciyin/designsystem/component/list/NomiListItem.kt>)                | `NomiListItemSpec`                                                 |
+| [NomiIcon](<src/commonMain/kotlin/ciyin/designsystem/component/icon/NomiIcon.kt>)                        | `NomiIconSpec`（预留）                                                 |
+| [NomiDivider](<src/commonMain/kotlin/ciyin/designsystem/component/divider/NomiDivider.kt>)               | `NomiDividerSpec`（预留）                                              |
+| [NomiSwitch](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSwitch.kt>)                 | `NomiSwitchSpec`（预留）                                               |
+| [NomiCheckbox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiCheckbox.kt>)             | `NomiCheckboxSpec`（预留）                                             |
+| [NomiRadioButton](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiRadioButton.kt>)       | `NomiRadioButtonSpec`（预留）                                          |
+| [NomiTextField](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiTextField.kt>)           | `NomiTextFieldSpec`（预留）                                            |
+| [NomiSlider](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSlider.kt>)                 | `NomiSliderSpec`（预留）                                                |
+| [NomiProgressIndicator](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiProgressIndicator.kt>) | `NomiProgressIndicatorSpec`（预留）                              |
+| [NomiTooltip](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiTooltip.kt>)              | `NomiTooltipSpec`（预留）                                              |
+| [NomiToggleButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiToggleButton.kt>)            | `NomiToggleButtonSpec`（预留）                                          |
+| [NomiDropDownButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiDropDownButton.kt>)          | `NomiDropDownButtonSpec`（预留）                                        |
+| [NomiComboBox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiComboBox.kt>)             | `NomiComboBoxSpec`（预留）                                              |
+| [NomiMenu](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenu.kt>)                        | `NomiMenuSpec`（预留）                                                  |
+| [NomiMenuItem](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenuItem.kt>)                    | `NomiMenuItemSpec`（预留）                                              |
 
 "预留"表示参数、族标记与类型别名都已就位，但 adapter 暂不定义具体 spec：调用方现在无法构造它们， 未来
 adapter 补实现时公共签名不变。
+
+族契约按**入口**划分，不与 SPI 族一一对应：`surfaces` 族里 `Surface` 与 `Card` 分别使用
+`NomiSurfaceSpec` / `NomiCardSpec`；`controls` 族里开关、复选框与单选，以及文本族的输入框各自拥有独立类型，
+把某个入口的 spec 传给另一个入口会在编译期失败。
 
 - 单个 spec 直接作为 `nativeSpec` 传入；同族多个 spec 用成员 `+` 组合，两侧都是集合时展平，同类型多个
   参数以先声明者为准且不去重。
@@ -209,6 +241,80 @@ adapter 补实现时公共签名不变。
 - 每个字段的默认值等于原生默认值，传空 spec 不改变外观；未指定的字段一律回落原生默认。
 - 已由槽位或中立参数覆盖的属性不再在 spec 暴露，避免同一外观有两条覆盖路径。
 - 实现无法承载某个已携带的字段时忽略并记录一次警告，不重绘伪造外观。
+
+## 图标、分割线与控件
+
+新增三个组件族（图标、装饰线、选择控件、反馈提示）与一个文本族成员（文本输入框）。契约与前六族一致：
+入口只接收调用方明确给出的值，零参数调用落到当前设计系统的真实原生组件；实现无法承载的覆盖降级并记录
+一次警告。
+
+| 入口 | 默认与覆盖契约 |
+|---|---|
+| [NomiIcon](<src/commonMain/kotlin/ciyin/designsystem/component/icon/NomiIcon.kt>) | 只接收矢量、无障碍名称、修饰符与着色；**没有尺寸参数**，需要其它尺寸时用 `Modifier.size` |
+| [NomiDivider](<src/commonMain/kotlin/ciyin/designsystem/component/divider/NomiDivider.kt>) | `NomiDividerOrientation` 切横向/纵向；`thickness = null` 与 `Color.Unspecified` 保留原生粗细与描边色 |
+| [NomiSwitch](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSwitch.kt>) / [NomiCheckbox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiCheckbox.kt>) / [NomiRadioButton](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiRadioButton.kt>) | 只暴露状态、回调与 `enabled`；不提供只读态、统一尺寸或分组容器 |
+| [NomiTextField](<src/commonMain/kotlin/ciyin/designsystem/component/text/NomiTextField.kt>)（文本族） | 字符串值 + 标签/占位符/前后置图标槽 + `variant`、`isError` 与键盘配置；与 `NomiText` 共用 `text` renderer，不提供密码遮罩、最大行数或辅助说明 |
+| [NomiSlider](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiSlider.kt>) | `value` + `onValueChange` 由调用方持有；`valueRange`、`steps`（负值按 0）、`onValueChangeFinished`；无颜色、拇指/轨道槽与竖直方向 |
+| [NomiProgressIndicator](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiProgressIndicator.kt>) | `progress = null` 表示不确定；`type` 切线性/环形；不暴露颜色与尺寸 |
+| [NomiTooltip](<src/commonMain/kotlin/ciyin/designsystem/component/feedback/NomiTooltip.kt>) | 包裹式入口：`tooltip` 槽放进原生浮层，`content` 是触发内容；不暴露浮层状态、位置或富提示 |
+
+```kotlin
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import ciyin.designsystem.component.control.NomiSwitch
+import ciyin.designsystem.component.text.NomiTextField
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.divider.NomiDividerOrientation
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.icon.Home
+import ciyin.designsystem.icon.IconPack
+import ciyin.designsystem.theme.NomiTheme
+
+NomiIcon(
+    imageVector = IconPack.Home,
+    contentDescription = null,
+    modifier = Modifier.size(NomiTheme.sizes.icon.large),
+)
+NomiDivider()
+NomiSwitch(checked = enabled, onCheckedChange = onToggle)
+NomiTextField(
+    value = query,
+    onValueChange = onQueryChange,
+    label = { NomiText("搜索") },
+    singleLine = true,
+)
+NomiDivider(
+    orientation = NomiDividerOrientation.Vertical,
+    modifier = Modifier.size(width = 1.dp, height = 24.dp),
+)
+```
+
+- 内置 `IconPack` 的 8 个矢量固有尺寸统一为 24dp，未显式约束时按 24dp 绘制。
+- `NomiTextFieldVariant.Filled` / `Outlined` 只有部分实现支持；不支持的实现保留原生外观并记录警告，
+  纵向分割线同理。
+- 三个选择控件的回调非空，交互恒可触发，禁用只由 `enabled` 表达；同组选中状态由调用方持有。
+- 需要替换文本策略（字体、排版、内容色）时，自定义 `NomiTextRenderer` 同时接管显示与输入框，二者不会分叉。
+- 提示浮层的触发方式（悬停或长按）与出现时长由实现决定，核心不设置延时或位置。
+- 本模块不提供图标按钮、顶栏、徽标、页签、浮层对话框与列表分组容器，见设计文档的缺口清单。
+
+## 开关按钮、下拉按钮、组合框与菜单
+
+第二代按钮与浮层入口沿用同一契约：入口只接收调用方明确给出的状态、槽位与回调，浮层位置、菜单项外观
+与原生交互全部交给当前设计系统。
+
+| 入口 | 默认与覆盖契约 |
+|---|---|
+| [NomiToggleButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiToggleButton.kt>) | `checked` + `onCheckedChange` 两态由调用方持有；`colors` 是两组 `NomiButtonColors`；`iconOnly = true` 收敛为原生方形图标按钮并忽略 `size` |
+| [NomiDropDownButton](<src/commonMain/kotlin/ciyin/designsystem/component/button/NomiDropDownButton.kt>) | 普通按钮 + 实现追加的下拉箭头；不持有展开状态，菜单由调用方用 `NomiMenu` 组合 |
+| [NomiComboBox](<src/commonMain/kotlin/ciyin/designsystem/component/control/NomiComboBox.kt>) | `expanded` + `onExpandedChange` 由调用方持有；`content` 是收起态内容槽，`menuItems` 只放 `NomiMenuItem`，浮层与宽度对齐归实现 |
+| [NomiMenu](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenu.kt>) / [NomiMenuItem](<src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenuItem.kt>) | `NomiMenu` 以**父布局**为锚点，必须与触发元素同处一个父布局；`NomiMenuItem` 是行原语，可放进 `NomiMenu` 或组合框自带的浮层 |
+
+- 菜单项不自动关闭浮层，关闭时机由调用方在 `onClick` 里决定。
+- `selected = true` 由实现追加勾选指示；需要保持文本对齐时，调用方给未选中项传固定宽度的 `leading`。
+- 组合框的展开浮层由实现承载，`menuItems` 里再套 `NomiMenu` 会得到嵌套浮层。
+
 
 ## 最小接入：不要主动补齐默认参数
 
@@ -384,6 +490,12 @@ Nomi 默认渲染与组件契约已随实现迁至 [core/design-system-nomi](<..
 不能被隐式回退掩盖（[契约测试](<src/commonTest/kotlin/ciyin/designsystem/NoImplicitDesignSystemContractTest.kt>)）。
 列表项由 [ListItemDispatchContractTest](<src/commonTest/kotlin/ciyin/designsystem/ListItemDispatchContractTest.kt>)
 验证默认稀疏派发、槽位不占位、显式参数透传与 `nativeSpec` 原样派发及按类型取用。
+图标与分割线由 [AtomsDispatchContractTest](<src/commonTest/kotlin/ciyin/designsystem/AtomsDispatchContractTest.kt>)
+验证着色与方向的稀疏派发，选择与输入控件由
+[ControlsDispatchContractTest](<src/commonTest/kotlin/ciyin/designsystem/ControlsDispatchContractTest.kt>)
+验证三个选择控件的状态与各自的专属参数、文本族输入框的槽位与键盘参数，提示浮层由
+[TooltipDispatchContractTest](<src/commonTest/kotlin/ciyin/designsystem/TooltipDispatchContractTest.kt>)
+验证两个槽位的组合与修饰符派发。
 
 原生 adapter 还须对照真实库组件测量/截图，不能用旧统一外观测试证明 native parity；各 adapter 的用例矩阵
 在其模块 README 中维护。历史轮次的核心 43 项、联合 148 项、导航 180 项与命名空间 218 项结果仅作历史记录，

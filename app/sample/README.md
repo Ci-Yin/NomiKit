@@ -13,7 +13,8 @@
 
 [DesignSystemDemoScreen](src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/DesignSystemDemoScreen.kt)
 通过 [DesignSystemDemoRouter](src/commonMain/kotlin/com/ciyin/app/presentation/screen/sample/NavRouters.kt)
-进入样例子栈。当前展示 Text、Button、Surface、非点击 Card 与列表项；其余控件属于后续范围。
+进入样例子栈。当前展示 Text、Button（含开关按钮、图标开关与下拉按钮）、Surface、非点击 Card、列表项，
+以及图标、分割线、开关/复选框/单选按钮、组合框、滑块、进度、输入框与菜单浮层；其余控件属于后续范围。
 
 - Text：十五种排版角色以紧凑选择器呈现，默认 BodyMedium，每次只预览一个真实字号；保留长中文和显式多行。
 - 原生默认区：带独立标签的 Text/Button/Surface/Card 自适应网格，不给被测组件传视觉参数；行为 enabled
@@ -24,6 +25,12 @@
 - Card：标题、正文与内部按钮；卡片容器不带点击语义。
 - 列表项：可点击行（前导图标、标题/副标题、值文本与箭头）与静态行（尾部设计系统按钮）；行本身不传
   颜色、形状或内边距参数。
+- 图标/分割线/控件：图标分别按固有尺寸与主题等级展示，横竖分割线各一，开关/复选框/单选按钮的状态由
+  分区自己持有，输入框带标签、占位符、尾部图标与错误态，组合框把当前值与菜单项分成两个槽，提示浮层只包住
+  锚点文案；全部不传颜色、形状、内边距或尺寸之外的视觉参数。
+- 开关/下拉/菜单：开关按钮与图标开关的状态由分区自己持有；下拉按钮只负责触发，菜单与按钮放进同一个父
+  布局，菜单项点击后由调用方关闭浮层。
+- 滑块/进度：滑块带四个离散刻度，值由分区自己持有；进度同时展示线性确定态与环形不确定态，不传颜色或尺寸。
 - 配置：三种设计系统、System/Light/Dark、1/1.3/2 倍字体、局部主题覆盖与恢复默认。
 - 降级：不支持的覆盖由当前适配器忽略并保留原生默认，不再按能力隐藏控件；切换设计系统保留已选参数。
 - Compact/Medium 上下排列；Expanded 的控制栏按卡片宽度令牌收紧、右侧填充示例。大字体下按剩余可用宽度退回单列，所有模式保持全页纵向滚动。
@@ -58,9 +65,9 @@ AppPreview/ScreenScaffold，不启动真实导航或 ViewModel。
 
 原生默认优先改造及后续布局优化已完成。26 项设计系统 Desktop
 回归通过，新增列表项分区后覆盖角色切换、限制说明折叠、按钮横排、列表项行原语及宽窄屏/大字体；sample
-Android 编译通过。三系统 native/explicit
-截图已生成，布局代表图见[桌面布局](<../../.docs/design/assets/design-system/layout-refinement/layout-fluent-desktop.png>)
-。前轮 Android APK 仅构建，设备执行仍未进行。
+Android 编译通过。2026-11-19 新增图标、分割线、控件与提示浮层分区后，sample Desktop 回归 67 项通过
+（含布局与截图用例）；共享页面与 feature 模块的调用点迁移仍待办。截图默认写入系统临时目录，需要保留时
+按下方说明设置 `NOMIKIT_DESIGN_SYSTEM_ARTIFACTS`；前轮 Android APK 仅构建，设备执行仍未进行。
 
 跨平台目录扩展阶段曾通过 sample metadata、18 项 Desktop 回归、Desktop 宿主编译与 Android 应用/仪器 APK
 构建；Android Fluent 仪器测试仅编译，未运行设备。该记录不覆盖之后的原生默认优先改造。
@@ -91,7 +98,8 @@ Fluent 已运行，更不等于真机验收。复验入口：
 
 [稳定标签](src/commonMain/kotlin/com/ciyin/app/presentation/screen/designsystem/DesignSystemDemoTags.kt)
 统一使用 `design-system-demo-` 前缀。Android 仪器测试可通过字符串复用 root、controls、showcase、
-back、reset、counter-button、disabled-button、card-button 等标签；实现常量保持 internal。 动态标签为
+back、reset、counter-button、disabled-button、card-button、controls-section、icon、divider、switch、
+checkbox、radio、text-field、tooltip 等标签；实现常量保持 internal。 动态标签为
 `system-{id}`、`mode-{enum}`、`font-{float}`、`size-{enum}`、`variant-{enum}`。
 
 ## 平台与资料

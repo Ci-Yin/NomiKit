@@ -67,6 +67,7 @@ internal fun DesignSystemShowcase(
             )
         }
         DesignSystemSection { DesignSystemListItemShowcase() }
+        DesignSystemSection { DesignSystemControlsShowcase() }
         DesignSystemSection {
             DesignSystemOverrideShowcase(
                 model.override,

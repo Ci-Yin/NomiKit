@@ -110,6 +110,96 @@ internal object DesignSystemDemoTags {
     const val ListItemAction = "design-system-demo-list-item-action"
 
     /**
+     * 图标、分割线与控件展示分区。
+     */
+    const val ControlsSection = "design-system-demo-controls-section"
+
+    /**
+     * 图标示例。
+     */
+    const val IconSample = "design-system-demo-icon"
+
+    /**
+     * 分割线示例。
+     */
+    const val DividerSample = "design-system-demo-divider"
+
+    /**
+     * 开关示例。
+     */
+    const val Switch = "design-system-demo-switch"
+
+    /**
+     * 复选框示例。
+     */
+    const val Checkbox = "design-system-demo-checkbox"
+
+    /**
+     * 单选按钮示例。
+     */
+    const val Radio = "design-system-demo-radio"
+
+    /**
+     * 输入框示例。
+     */
+    const val TextField = "design-system-demo-text-field"
+
+    /**
+     * 错误态输入框示例。
+     */
+    const val TextFieldError = "design-system-demo-text-field-error"
+
+    /**
+     * 提示浮层示例锚点。
+     */
+    const val Tooltip = "design-system-demo-tooltip"
+
+    /**
+     * 开关按钮示例。
+     */
+    const val ToggleButton = "design-system-demo-toggle-button"
+
+    /**
+     * 图标开关按钮示例。
+     */
+    const val ToggleIconButton = "design-system-demo-toggle-icon-button"
+
+    /**
+     * 下拉按钮示例。
+     */
+    const val DropDownButton = "design-system-demo-drop-down-button"
+
+    /**
+     * 下拉菜单中的首个菜单项。
+     */
+    const val MenuItem = "design-system-demo-menu-item"
+
+    /**
+     * 组合框示例。
+     */
+    const val ComboBox = "design-system-demo-combo-box"
+
+    /**
+     * 组合框展开后的首个菜单项。
+     */
+    const val ComboBoxOption = "design-system-demo-combo-box-option"
+
+    /**
+     * 滑块示例。
+     */
+    const val Slider = "design-system-demo-slider"
+
+    /**
+     * 线性进度示例。
+     */
+    const val ProgressLinear = "design-system-demo-progress-linear"
+
+    /**
+     * 环形进度示例。
+     */
+    const val ProgressCircular = "design-system-demo-progress-circular"
+
+    /**
      * 局部覆盖之前的外层节点。
      */
     const val OuterBefore = "design-system-demo-outer-before"
