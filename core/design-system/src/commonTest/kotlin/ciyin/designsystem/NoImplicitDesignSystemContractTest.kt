@@ -5,9 +5,18 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import ciyin.designsystem.component.button.NomiButton
 import ciyin.designsystem.component.card.NomiCard
+import ciyin.designsystem.component.control.NomiCheckbox
+import ciyin.designsystem.component.control.NomiRadioButton
+import ciyin.designsystem.component.control.NomiSwitch
+import ciyin.designsystem.component.text.NomiTextField
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.feedback.NomiTooltip
+import ciyin.designsystem.component.icon.NomiIcon
 import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.surface.NomiSurface
 import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.icon.Home
+import ciyin.designsystem.icon.IconPack
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -72,6 +81,78 @@ class NoImplicitDesignSystemContractTest {
     fun bareListItemFailsWithGuidance() {
         assertMissingDesignSystemFails {
             NomiListItem(title = { NomiText(text = "missing design system") })
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiIcon 在组合阶段明确失败。
+     */
+    @Test
+    fun bareIconFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiIcon(imageVector = IconPack.Home, contentDescription = null)
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiDivider 在组合阶段明确失败。
+     */
+    @Test
+    fun bareDividerFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiDivider()
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiSwitch 在组合阶段明确失败。
+     */
+    @Test
+    fun bareSwitchFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiSwitch(checked = false, onCheckedChange = {})
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiCheckbox 在组合阶段明确失败。
+     */
+    @Test
+    fun bareCheckboxFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiCheckbox(checked = false, onCheckedChange = {})
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiRadioButton 在组合阶段明确失败。
+     */
+    @Test
+    fun bareRadioButtonFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiRadioButton(selected = false, onClick = {})
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiTextField 在组合阶段明确失败。
+     */
+    @Test
+    fun bareTextFieldFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiTextField(value = "", onValueChange = {})
+        }
+    }
+
+    /**
+     * 验证未提供设计系统时 NomiTooltip 在组合阶段明确失败。
+     */
+    @Test
+    fun bareTooltipFailsWithGuidance() {
+        assertMissingDesignSystemFails {
+            NomiTooltip(tooltip = { NomiText(text = "missing design system") }) {
+                NomiText(text = "missing design system")
+            }
         }
     }
 }

@@ -1,8 +1,12 @@
 package ciyin.designsystem.material3.text
 
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField as NativeOutlinedTextField
+import androidx.compose.material3.TextField as NativeTextField
 import androidx.compose.material3.Text as NativeText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,11 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.component.text.NomiTextSpec
 
 /**
- * 原生文字适配，不把中立正文排版强加给原生 slot。
+ * 原生文字适配，不把中立正文排版强加给原生 slot；文本输入框也在此实现。
  */
 object Material3TextRenderer : NomiTextRenderer {
     /**
@@ -159,5 +165,77 @@ object Material3TextRenderer : NomiTextRenderer {
             onTextLayout = onTextLayout ?: {},
             autoSize = autoSize,
         )
+    }
+
+    /**
+     * 渲染原生文本输入框；显式描边变体使用原生描边入口，其余情况使用原生填充入口。
+     *
+     * @param value 当前文本值。
+     * @param onValueChange 文本变化回调。
+     * @param modifier 应用于原生输入框的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param readOnly 是否只读。
+     * @param singleLine 是否限制为单行。
+     * @param variant 显式视觉变体；null 使用原生默认变体。
+     * @param label 标签槽；null 表示没有标签。
+     * @param placeholder 占位符槽；null 表示没有占位符。
+     * @param leadingIcon 前导图标槽；null 表示不占位。
+     * @param trailingIcon 尾部图标槽；null 表示不占位。
+     * @param isError 是否处于错误状态。
+     * @param keyboardOptions 键盘类型与输入法动作配置。
+     * @param keyboardActions 输入法动作回调。
+     * @param nativeSpec 输入框专属参数；当前没有实现，原样接受并忽略。
+     */
+    @Composable
+    override fun TextField(
+        value: String,
+        onValueChange: (String) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        readOnly: Boolean,
+        singleLine: Boolean,
+        variant: NomiTextFieldVariant?,
+        label: (@Composable () -> Unit)?,
+        placeholder: (@Composable () -> Unit)?,
+        leadingIcon: (@Composable () -> Unit)?,
+        trailingIcon: (@Composable () -> Unit)?,
+        isError: Boolean,
+        keyboardOptions: KeyboardOptions,
+        keyboardActions: KeyboardActions,
+        nativeSpec: NomiTextFieldSpec?,
+    ) {
+        if (variant == NomiTextFieldVariant.Outlined) {
+            NativeOutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = modifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                singleLine = singleLine,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+            )
+        } else {
+            NativeTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = modifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                singleLine = singleLine,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+            )
+        }
     }
 }

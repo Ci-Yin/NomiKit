@@ -9,13 +9,13 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 /**
- * 首页矢量图标，固有尺寸为 256.dp × 256.dp；首次读取时构建，后续读取复用文件级缓存。
+ * 首页矢量图标，固有尺寸为 24.dp × 24.dp；首次读取时构建，后续读取复用文件级缓存。
  */
 val IconPack.Home: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
     ImageVector.Builder(
         name = "Home",
-        defaultWidth = 200.dp,
-        defaultHeight = 200.dp,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
         viewportWidth = 200f,
         viewportHeight = 200f
     ).apply {

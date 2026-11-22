@@ -9,11 +9,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
+import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
-import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.fluent.rememberFluentWarning
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.runtime.findSpec
@@ -21,11 +21,15 @@ import io.github.composefluent.LocalContentColor
 import io.github.composefluent.LocalTextStyle
 import io.github.composefluent.component.AccentButton as NativeAccentButton
 import io.github.composefluent.component.Button as NativeButton
+import io.github.composefluent.component.DropDownButton as NativeDropDownButton
 import io.github.composefluent.component.HyperlinkButton as NativeHyperlinkButton
 import io.github.composefluent.component.SubtleButton as NativeSubtleButton
+import io.github.composefluent.component.ToggleButton as NativeToggleButton
 
 /**
  * 直接复用 Fluent v0.1.0 原生按钮族，不以 Layer 重绘按钮或伪造交互语义。
+ *
+ * 普通、开关与下拉按钮都走原生入口；三者只在原生组件选择、状态色与尺寸覆盖告警上分叉。
  */
 internal object FluentButton : NomiActionRenderer {
     /**
@@ -40,8 +44,8 @@ internal object FluentButton : NomiActionRenderer {
      * @param shape 无原生入口；忽略覆盖并保留原生形状。
      * @param contentPadding 无原生入口；忽略覆盖并保留原生内边距。
      * @param textStyle null 保留原生排版，非 null 按字段合并；样式色低于当前状态显式内容色、高于原生状态色。
-     * @param content 原生 RowScope 内容；原生 locals 保留实际状态结果，中立 slot 仅传播显式颜色和样式增量。
      * @param nativeSpec 按钮专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生 RowScope 内容；原生 locals 保留实际状态结果，中立 slot 仅传播显式颜色和样式增量。
      */
     @Composable
     override fun Button(
@@ -68,29 +72,7 @@ internal object FluentButton : NomiActionRenderer {
             "NomiButton 的 contentPadding 覆盖无原生入口，已保留原生默认"
         }
         val buttonColors = spec?.colors ?: colors.toFluentButtonColors(variant)
-        val nativeContent: @Composable RowScope.() -> Unit = {
-            val stateColor = if (enabled) colors.contentColor else colors.disabledContentColor
-            val explicitStyleColor = textStyle?.color ?: Color.Unspecified
-            val explicitColor = stateColor.takeOrElse { explicitStyleColor }
-            val nativeColor = LocalContentColor.current
-            val resolvedColor = explicitColor.takeOrElse { nativeColor }
-            val mergedStyle = LocalTextStyle.current.merge(textStyle)
-            val resolvedStyle =
-                if (explicitColor == Color.Unspecified) mergedStyle else mergedStyle.copy(color = resolvedColor)
-            val scope = this
-            CompositionLocalProvider(
-                LocalContentColor provides resolvedColor,
-                LocalTextStyle provides resolvedStyle,
-            ) {
-                // 原生解析结果留在原生 locals；中立 slot 只携带明确覆盖的增量。
-                ProvideNomiContentStyle(
-                    color = explicitColor,
-                    textStyle = textStyle ?: TextStyle.Default
-                ) {
-                    content(scope)
-                }
-            }
-        }
+        val nativeContent = fluentButtonContent(enabled, colors, textStyle, content)
         when (variant) {
             null, NomiButtonVariant.Default -> NativeButton(
                 onClick = onClick,
@@ -131,6 +113,45 @@ internal object FluentButton : NomiActionRenderer {
                 buttonColors = buttonColors,
                 content = nativeContent,
             )
+        }
+    }
+
+}
+
+/**
+ * 构造原生按钮内容：只把显式颜色与排版增量写进原生环境，未指定时保留原生状态色。
+ *
+ * @param enabled 当前启用状态，决定读取启用还是禁用的中立内容色。
+ * @param colors 中立四字段覆盖；Unspecified 表示未指定。
+ * @param textStyle 中立文本样式增量；null 表示不追加。
+ * @param content 原生 RowScope 内容。
+ * @return 可直接交给原生按钮的 RowScope 内容。
+ */
+private fun fluentButtonContent(
+    enabled: Boolean,
+    colors: NomiButtonColors,
+    textStyle: TextStyle?,
+    content: @Composable RowScope.() -> Unit,
+): @Composable RowScope.() -> Unit = {
+    val stateColor = if (enabled) colors.contentColor else colors.disabledContentColor
+    val explicitStyleColor = textStyle?.color ?: Color.Unspecified
+    val explicitColor = stateColor.takeOrElse { explicitStyleColor }
+    val nativeColor = LocalContentColor.current
+    val resolvedColor = explicitColor.takeOrElse { nativeColor }
+    val mergedStyle = LocalTextStyle.current.merge(textStyle)
+    val resolvedStyle =
+        if (explicitColor == Color.Unspecified) mergedStyle else mergedStyle.copy(color = resolvedColor)
+    val scope = this
+    CompositionLocalProvider(
+        LocalContentColor provides resolvedColor,
+        LocalTextStyle provides resolvedStyle,
+    ) {
+        // 原生解析结果留在原生 locals；中立 slot 只携带明确覆盖的增量。
+        ProvideNomiContentStyle(
+            color = explicitColor,
+            textStyle = textStyle ?: TextStyle.Default
+        ) {
+            content(scope)
         }
     }
 }

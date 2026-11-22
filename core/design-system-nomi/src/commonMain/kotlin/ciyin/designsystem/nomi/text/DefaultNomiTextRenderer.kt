@@ -2,6 +2,8 @@ package ciyin.designsystem.nomi.text
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,14 +18,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.nomi.LocalNomiNativeContentColor
 import ciyin.designsystem.nomi.LocalNomiNativeTextStyle
+import ciyin.designsystem.theme.NomiColorScheme
 import ciyin.designsystem.theme.NomiTheme
+import androidx.compose.material3.OutlinedTextField as NativeOutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField as NativeTextField
+import androidx.compose.material3.TextFieldDefaults
 
 /**
- * Nomi 默认文本渲染器。
+ * Nomi 默认文本渲染器；文本输入框也在此实现，配色读取 Nomi 主题令牌。
  */
 internal object DefaultNomiTextRenderer : NomiTextRenderer {
     /**
@@ -218,5 +227,144 @@ internal object DefaultNomiTextRenderer : NomiTextRenderer {
             inlineContent = inlineContent,
             autoSize = autoSize,
         )
+    }
+
+    /**
+     * 渲染输入框；显式描边变体使用描边入口，其余情况使用填充入口。
+     *
+     * Nomi 不安装外层原生主题，输入框配色显式取自 [NomiColorScheme]，不读取宿主主题。
+     *
+     * @param value 当前文本值。
+     * @param onValueChange 文本变化回调。
+     * @param modifier 应用于原生输入框的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param readOnly 是否只读。
+     * @param singleLine 是否限制为单行。
+     * @param variant 显式视觉变体；null 使用 Nomi 默认的填充外观。
+     * @param label 标签槽；null 表示没有标签。
+     * @param placeholder 占位符槽；null 表示没有占位符。
+     * @param leadingIcon 前导图标槽；null 表示不占位。
+     * @param trailingIcon 尾部图标槽；null 表示不占位。
+     * @param isError 是否处于错误状态。
+     * @param keyboardOptions 键盘类型与输入法动作配置。
+     * @param keyboardActions 输入法动作回调。
+     * @param nativeSpec 输入框专属参数；Nomi 外观完全由 [NomiTheme] 令牌决定，本实现忽略它。
+     */
+    @Composable
+    override fun TextField(
+        value: String,
+        onValueChange: (String) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        readOnly: Boolean,
+        singleLine: Boolean,
+        variant: NomiTextFieldVariant?,
+        label: (@Composable () -> Unit)?,
+        placeholder: (@Composable () -> Unit)?,
+        leadingIcon: (@Composable () -> Unit)?,
+        trailingIcon: (@Composable () -> Unit)?,
+        isError: Boolean,
+        keyboardOptions: KeyboardOptions,
+        keyboardActions: KeyboardActions,
+        nativeSpec: NomiTextFieldSpec?,
+    ) {
+        val scheme = NomiTheme.colorScheme
+        if (variant == NomiTextFieldVariant.Outlined) {
+            NativeOutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = modifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                singleLine = singleLine,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = scheme.textPrimary,
+                    unfocusedTextColor = scheme.textPrimary,
+                    disabledTextColor = scheme.textDisabled,
+                    errorTextColor = scheme.error,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = scheme.primary,
+                    errorCursorColor = scheme.error,
+                    focusedBorderColor = scheme.primary,
+                    unfocusedBorderColor = scheme.outline,
+                    disabledBorderColor = scheme.textDisabled,
+                    errorBorderColor = scheme.error,
+                    focusedLeadingIconColor = scheme.textSecondary,
+                    unfocusedLeadingIconColor = scheme.textSecondary,
+                    disabledLeadingIconColor = scheme.textDisabled,
+                    errorLeadingIconColor = scheme.error,
+                    focusedTrailingIconColor = scheme.textSecondary,
+                    unfocusedTrailingIconColor = scheme.textSecondary,
+                    disabledTrailingIconColor = scheme.textDisabled,
+                    errorTrailingIconColor = scheme.error,
+                    focusedLabelColor = scheme.primary,
+                    unfocusedLabelColor = scheme.textSecondary,
+                    disabledLabelColor = scheme.textDisabled,
+                    errorLabelColor = scheme.error,
+                    focusedPlaceholderColor = scheme.textHint,
+                    unfocusedPlaceholderColor = scheme.textHint,
+                    disabledPlaceholderColor = scheme.textDisabled,
+                    errorPlaceholderColor = scheme.textHint,
+                ),
+            )
+        } else {
+            NativeTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = modifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                singleLine = singleLine,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = scheme.textPrimary,
+                    unfocusedTextColor = scheme.textPrimary,
+                    disabledTextColor = scheme.textDisabled,
+                    errorTextColor = scheme.error,
+                    focusedContainerColor = scheme.surfaceLow,
+                    unfocusedContainerColor = scheme.surfaceLow,
+                    disabledContainerColor = scheme.surfaceLow,
+                    errorContainerColor = scheme.surfaceLow,
+                    cursorColor = scheme.primary,
+                    errorCursorColor = scheme.error,
+                    focusedIndicatorColor = scheme.primary,
+                    unfocusedIndicatorColor = scheme.outline,
+                    disabledIndicatorColor = scheme.textDisabled,
+                    errorIndicatorColor = scheme.error,
+                    focusedLeadingIconColor = scheme.textSecondary,
+                    unfocusedLeadingIconColor = scheme.textSecondary,
+                    disabledLeadingIconColor = scheme.textDisabled,
+                    errorLeadingIconColor = scheme.error,
+                    focusedTrailingIconColor = scheme.textSecondary,
+                    unfocusedTrailingIconColor = scheme.textSecondary,
+                    disabledTrailingIconColor = scheme.textDisabled,
+                    errorTrailingIconColor = scheme.error,
+                    focusedLabelColor = scheme.primary,
+                    unfocusedLabelColor = scheme.textSecondary,
+                    disabledLabelColor = scheme.textDisabled,
+                    errorLabelColor = scheme.error,
+                    focusedPlaceholderColor = scheme.textHint,
+                    unfocusedPlaceholderColor = scheme.textHint,
+                    disabledPlaceholderColor = scheme.textDisabled,
+                    errorPlaceholderColor = scheme.textHint,
+                ),
+            )
+        }
     }
 }

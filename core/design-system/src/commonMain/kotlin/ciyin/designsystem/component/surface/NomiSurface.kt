@@ -1,65 +1,42 @@
 package ciyin.designsystem.component.surface
 
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import ciyin.designsystem.component.NomiBorder
-import ciyin.designsystem.component.card.NomiCardSpec
+import ciyin.designsystem.runtime.NomiNativeSpec
+import ciyin.designsystem.runtime.NomiSpecFamily
 import ciyin.designsystem.runtime.requireNomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 
 /**
- * 容器与非点击卡片分别派发，避免用统一表面配方代替各系统原生 Card。
+ * 原生表面入口；未指定形状、颜色和描边均保留当前库默认。
+ *
+ * @param modifier 应用于表面根节点的修饰符。
+ * @param shape 表面轮廓；null 使用当前设计系统的默认形状。
+ * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
+ * @param border Default 保留原生描边，None 移除描边，Stroke 指定描边。
+ * @param nativeSpec 表面专属参数；null 表示不覆盖任何原生属性。
+ * @param content 表面内组合的内容，继承其内容颜色，不提供额外布局 Scope。
  */
-@Stable
-interface NomiSurfaceRenderer {
-    /**
-     * 使用原生表面默认值，只应用调用方显式指定的参数。
-     *
-     * @param modifier 应用于表面根节点的修饰符。
-     * @param shape 表面轮廓；null 使用当前设计系统的默认形状。
-     * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
-     * @param border Default 保留原生描边，None 移除描边，Stroke 指定描边。
-     * @param nativeSpec 表面专属参数；null 或未携带本系统类型时全部沿用原生默认。
-     * @param content 表面内组合的内容，继承其内容颜色，不提供额外布局 Scope。
-     */
-    @Composable
-    fun Surface(
-        modifier: Modifier,
-        shape: Shape?,
-        colors: NomiSurfaceColors,
-        border: NomiBorder,
-        nativeSpec: NomiSurfaceSpec?,
-        content: @Composable () -> Unit,
-    )
-
-    /**
-     * 使用原生非点击卡片，只应用显式覆盖；实现须遵守声明的卡片颜色与描边能力。
-     *
-     * @param modifier 应用于非点击卡片根节点的修饰符。
-     * @param shape 卡片轮廓；null 保留当前设计系统的原生形状。
-     * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
-     * @param border Default 保留原生描边，None 移除描边，Stroke 指定描边。
-     * @param contentPadding 卡片内容内边距；null 保留原生间距。
-     * @param nativeSpec 卡片专属参数；null 或未携带本系统类型时全部沿用原生默认。
-     * @param content 在卡片 ColumnScope 中组合的内容，继承卡片内容样式。
-     */
-    @Composable
-    fun Card(
-        modifier: Modifier,
-        shape: Shape?,
-        colors: NomiSurfaceColors,
-        border: NomiBorder,
-        contentPadding: PaddingValues?,
-        nativeSpec: NomiCardSpec?,
-        content: @Composable ColumnScope.() -> Unit,
-    )
-}
+@Composable
+fun NomiSurface(
+    modifier: Modifier = Modifier,
+    shape: Shape? = null,
+    colors: NomiSurfaceColors = NomiSurfaceColors(),
+    border: NomiBorder = NomiBorder.Default,
+    nativeSpec: NomiSurfaceSpec? = null,
+    content: @Composable () -> Unit,
+) = requireNomiDesignSystem().components.surfaces.Surface(
+    modifier = modifier,
+    shape = shape,
+    colors = colors,
+    border = border,
+    nativeSpec = nativeSpec,
+    content = content,
+)
 
 /**
  * 表面颜色的稀疏覆盖；Transparent 是有效覆盖，Unspecified 才表示未指定。
@@ -93,28 +70,15 @@ object NomiSurfaceDefaults {
 }
 
 /**
- * 原生表面入口；未指定形状、颜色和描边均保留当前库默认。
+ * 表面专属参数的族标记。
  *
- * @param modifier 应用于表面根节点的修饰符。
- * @param shape 表面轮廓；null 使用当前设计系统的默认形状。
- * @param colors 容器色与内容色的逐字段覆盖；Unspecified 保留原生值，Transparent 是有效覆盖。
- * @param border Default 保留原生描边，None 移除描边，Stroke 指定描边。
- * @param nativeSpec 表面专属参数；null 表示不覆盖任何原生属性。
- * @param content 表面内组合的内容，继承其内容颜色，不提供额外布局 Scope。
+ * 只作为 [NomiNativeSpec] 的类型参数使用；与卡片族的标记互不兼容。
  */
-@Composable
-fun NomiSurface(
-    modifier: Modifier = Modifier,
-    shape: Shape? = null,
-    colors: NomiSurfaceColors = NomiSurfaceColors(),
-    border: NomiBorder = NomiBorder.Default,
-    nativeSpec: NomiSurfaceSpec? = null,
-    content: @Composable () -> Unit,
-) = requireNomiDesignSystem().components.surfaces.Surface(
-    modifier = modifier,
-    shape = shape,
-    colors = colors,
-    border = border,
-    nativeSpec = nativeSpec,
-    content = content,
-)
+sealed interface NomiSurfaceSpecFamily : NomiSpecFamily
+
+/**
+ * 表面专属参数。
+ *
+ * 只承载中立参数没有入口的原生表面能力（色调阴影、投影层级等），具体实现由 adapter 模块定义。
+ */
+typealias NomiSurfaceSpec = NomiNativeSpec<NomiSurfaceSpecFamily>

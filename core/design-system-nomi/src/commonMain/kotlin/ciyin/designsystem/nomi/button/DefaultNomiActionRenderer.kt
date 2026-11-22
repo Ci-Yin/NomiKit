@@ -3,16 +3,18 @@ package ciyin.designsystem.nomi.button
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon as NativeIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -21,33 +23,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Shape
-import ciyin.designsystem.runtime.ProvideNomiContentStyle
-import ciyin.designsystem.theme.NomiTheme
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.TextStyle
+import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
-import ciyin.designsystem.component.NomiControlSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.ui.graphics.takeOrElse
+import ciyin.designsystem.icon.ChevronDown
+import ciyin.designsystem.icon.IconPack
 import ciyin.designsystem.nomi.LocalNomiNativeContentColor
 import ciyin.designsystem.nomi.LocalNomiNativeTextStyle
+import ciyin.designsystem.runtime.ProvideNomiContentStyle
+import ciyin.designsystem.theme.NomiTheme
 
 /**
  * Nomi 默认按钮渲染器。
+ *
+ * 三个入口共用同一套 Foundation 绘制：普通按钮、开关按钮与下拉按钮的差异只体现在状态色、
+ * 交互语义与是否追加下拉箭头，容器、描边和内边距仍由同一份令牌驱动。
  */
 internal object DefaultNomiActionRenderer : NomiActionRenderer {
     /**
      * 使用 Foundation 绘制按钮并提供触摸、键盘和语义支持。
-     *
-     * 交互状态在组合内维护；禁用、按下和悬停状态决定背景，焦点状态绘制描边。
      *
      * @param onClick 按钮启用且被激活时触发，业务状态由调用方更新。
      * @param modifier 按钮根节点修饰符，在其后追加最小交互尺寸、绘制、交互和内边距。
@@ -58,8 +66,8 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
      * @param shape 按钮轮廓；null 使用 Nomi small 形状。
      * @param contentPadding 内容内边距；null 使用所选尺寸的 Nomi 度量。
      * @param textStyle 合并到尺寸预设文本样式的增量；null 保留预设，显式颜色在未指定状态内容色时生效。
-     * @param content 在居中的 RowScope 中组合的内容，读取当前状态内容色及排版；仅显式增量向跨系统 slot 传播。
      * @param nativeSpec 按钮专属参数；Nomi 外观由令牌决定，本实现忽略它。
+     * @param content 在居中的 RowScope 中组合的内容，读取当前状态内容色及排版；仅显式增量向跨系统 slot 传播。
      */
     @Composable
     override fun Button(
@@ -75,67 +83,145 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
         nativeSpec: NomiButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     ) {
-        val metrics = NomiButtonDefaults.metrics(size ?: NomiControlSize.Medium)
-        val defaults = NomiButtonDefaults.colors(variant ?: NomiButtonVariant.Primary)
-        val resolvedColors = NomiButtonColors(
-            containerColor = colors.containerColor.takeOrElse { defaults.containerColor },
-            contentColor = colors.contentColor.takeOrElse { defaults.contentColor },
-            disabledContainerColor = colors.disabledContainerColor.takeOrElse { defaults.disabledContainerColor },
-            disabledContentColor = colors.disabledContentColor.takeOrElse { defaults.disabledContentColor },
+        NomiActionSurface(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            variant = variant,
+            size = size,
+            colors = colors,
+            shape = shape,
+            contentPadding = contentPadding,
+            textStyle = textStyle,
+            role = Role.Button,
+            selected = null,
+            dropDown = false,
+            content = content,
         )
-        val resolvedShape = shape ?: NomiTheme.shapes.small
-        val resolvedStyle = metrics.textStyle.merge(textStyle)
-        val interactionSource = remember { MutableInteractionSource() }
-        val pressed by interactionSource.collectIsPressedAsState()
-        val hovered by interactionSource.collectIsHoveredAsState()
-        var focused by remember { mutableStateOf(false) }
-        val baseColor =
-            if (enabled) resolvedColors.containerColor else resolvedColors.disabledContainerColor
-        val explicitContentColor = if (enabled) colors.contentColor else colors.disabledContentColor
-        val defaultContentColor =
-            if (enabled) defaults.contentColor else defaults.disabledContentColor
-        val contentColor = explicitContentColor.takeOrElse {
-            (textStyle?.color ?: Color.Unspecified).takeOrElse { defaultContentColor }
-        }
-        val stateColor = when {
-            !enabled -> baseColor
-            pressed -> contentColor.copy(alpha = NomiPressedOpacity).compositeOver(baseColor)
-            hovered -> contentColor.copy(alpha = NomiHoveredOpacity).compositeOver(baseColor)
-            else -> baseColor
-        }
-        val stateModifier = modifier
-            .defaultMinSize(minWidth = metrics.minTouchTarget, minHeight = metrics.minTouchTarget)
-            .clip(resolvedShape)
-            .background(stateColor, resolvedShape)
-            .then(
-                if (focused) Modifier.border(
-                    width = NomiTheme.sizes.strokes.medium,
-                    color = contentColor,
-                    shape = resolvedShape,
-                ) else Modifier,
-            )
-            .onFocusChanged { focused = it.isFocused }
-            .clickable(
-                enabled = enabled,
-                role = Role.Button,
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(contentPadding ?: metrics.contentPadding)
-        Box(modifier = stateModifier, contentAlignment = Alignment.Center) {
-            CompositionLocalProvider(
-                LocalNomiNativeContentColor provides contentColor,
-                LocalNomiNativeTextStyle provides resolvedStyle,
+    }
+
+}
+
+/**
+ * 三个按钮入口共用的 Nomi 绘制外壳。
+ *
+ * @param onClick 按钮启用且被激活时触发。
+ * @param modifier 按钮根节点修饰符。
+ * @param enabled 是否接受操作。
+ * @param variant 颜色预设类型；null 使用 Primary。
+ * @param size 尺寸预设；null 使用 Medium。
+ * @param colors 四字段稀疏颜色覆盖。
+ * @param shape 显式轮廓；null 使用 Nomi small 形状。
+ * @param contentPadding 显式内边距；null 使用尺寸度量。
+ * @param textStyle 文本样式增量；null 保留尺寸预设。
+ * @param role 交互语义角色；普通按钮为 Button，开关按钮为 Checkbox。
+ * @param selected 开关状态；null 表示普通按钮，不发布开关语义。
+ * @param dropDown 是否在内容之后追加下拉箭头。
+ * @param content 在居中的 RowScope 中组合的内容。
+ */
+@Composable
+private fun NomiActionSurface(
+    onClick: () -> Unit,
+    modifier: Modifier,
+    enabled: Boolean,
+    variant: NomiButtonVariant?,
+    size: NomiControlSize?,
+    colors: NomiButtonColors,
+    shape: Shape?,
+    contentPadding: PaddingValues?,
+    textStyle: TextStyle?,
+    role: Role,
+    selected: Boolean?,
+    dropDown: Boolean,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val metrics = NomiButtonDefaults.metrics(size ?: NomiControlSize.Medium)
+    val defaults = NomiButtonDefaults.colors(variant ?: NomiButtonVariant.Primary)
+    val resolvedColors = NomiButtonColors(
+        containerColor = colors.containerColor.takeOrElse { defaults.containerColor },
+        contentColor = colors.contentColor.takeOrElse { defaults.contentColor },
+        disabledContainerColor = colors.disabledContainerColor.takeOrElse { defaults.disabledContainerColor },
+        disabledContentColor = colors.disabledContentColor.takeOrElse { defaults.disabledContentColor },
+    )
+    val resolvedShape = shape ?: NomiTheme.shapes.small
+    val resolvedStyle = metrics.textStyle.merge(textStyle)
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hovered by interactionSource.collectIsHoveredAsState()
+    var focused by remember { mutableStateOf(false) }
+    val baseColor =
+        if (enabled) resolvedColors.containerColor else resolvedColors.disabledContainerColor
+    val explicitContentColor = if (enabled) colors.contentColor else colors.disabledContentColor
+    val defaultContentColor =
+        if (enabled) defaults.contentColor else defaults.disabledContentColor
+    val contentColor = explicitContentColor.takeOrElse {
+        (textStyle?.color ?: Color.Unspecified).takeOrElse { defaultContentColor }
+    }
+    val stateColor = when {
+        !enabled -> baseColor
+        pressed -> contentColor.copy(alpha = NomiPressedOpacity).compositeOver(baseColor)
+        hovered -> contentColor.copy(alpha = NomiHoveredOpacity).compositeOver(baseColor)
+        else -> baseColor
+    }
+    val toggleSemantics = if (selected == null) {
+        Modifier
+    } else {
+        Modifier.semantics { toggleableState = ToggleableState(selected) }
+    }
+    val stateModifier = modifier
+        .defaultMinSize(minWidth = metrics.minTouchTarget, minHeight = metrics.minTouchTarget)
+        .clip(resolvedShape)
+        .background(stateColor, resolvedShape)
+        .then(
+            if (focused) Modifier.border(
+                width = NomiTheme.sizes.strokes.medium,
+                color = contentColor,
+                shape = resolvedShape,
+            ) else Modifier,
+        )
+        .onFocusChanged { focused = it.isFocused }
+        .then(toggleSemantics)
+        .clickable(
+            enabled = enabled,
+            role = role,
+            interactionSource = interactionSource,
+            indication = null,
+            onClick = onClick,
+        )
+        .padding(contentPadding ?: metrics.contentPadding)
+    Box(modifier = stateModifier, contentAlignment = Alignment.Center) {
+        CompositionLocalProvider(
+            LocalNomiNativeContentColor provides contentColor,
+            LocalNomiNativeTextStyle provides resolvedStyle,
+        ) {
+            val explicitColor =
+                explicitContentColor.takeOrElse { textStyle?.color ?: Color.Unspecified }
+            val explicitStyle =
+                if (size == null) textStyle else metrics.textStyle.merge(textStyle)
+            ProvideNomiContentStyle(
+                color = explicitColor,
+                textStyle = explicitStyle ?: TextStyle.Default
             ) {
-                val explicitColor =
-                    explicitContentColor.takeOrElse { textStyle?.color ?: Color.Unspecified }
-                val explicitStyle =
-                    if (size == null) textStyle else metrics.textStyle.merge(textStyle)
-                ProvideNomiContentStyle(
-                    color = explicitColor,
-                    textStyle = explicitStyle ?: TextStyle.Default
-                ) {
+                if (dropDown) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(
+                            NomiTheme.spacings.small,
+                            Alignment.CenterHorizontally,
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            content = content,
+                        )
+                        NativeIcon(
+                            imageVector = IconPack.ChevronDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(NomiTheme.sizes.icon.extraSmall),
+                            tint = contentColor,
+                        )
+                    }
+                } else {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,

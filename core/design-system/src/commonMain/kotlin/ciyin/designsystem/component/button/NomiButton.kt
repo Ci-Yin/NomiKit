@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -12,46 +11,52 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.NomiControlSize
+import ciyin.designsystem.runtime.NomiNativeSpec
+import ciyin.designsystem.runtime.NomiSpecFamily
 import ciyin.designsystem.runtime.requireNomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 
 /**
- * 按钮原生渲染契约；可空参数表示调用方未指定，不能提前套用统一外观。
+ * 默认调用对应原生按钮；核心不按能力拦截视觉覆盖，适配器可自行降级为原生默认或记录日志，但不重绘伪造外观。
+ *
+ * @param onClick 启用状态下用户激活按钮时调用；业务状态由调用方更新。
+ * @param modifier 应用于按钮根节点的修饰符。
+ * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
+ * @param variant 按钮语义类型；null 使用当前设计系统的原生默认类型。
+ * @param size 显式中立尺寸预设；null 保留原生尺寸。
+ * @param colors 按启用/禁用状态逐字段覆盖颜色；Unspecified 保留对应原生值，Transparent 是有效覆盖。
+ * @param shape 按钮轮廓；null 保留原生形状。
+ * @param contentPadding 内容内边距；null 保留原生间距。
+ * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
+ * @param nativeSpec 按钮专属参数；null 表示不覆盖任何原生属性，多个实现可用 `+` 组合后一次传入。
+ * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
  */
-@Stable
-interface NomiActionRenderer {
-    /**
-     * 使用原生按钮处理交互及默认样式，只应用显式覆盖。
-     *
-     * 实现须与设计系统的能力声明一致，不支持的覆盖不能静默忽略。
-     *
-     * @param onClick 启用状态下用户激活按钮时调用；业务状态由调用方更新。
-     * @param modifier 应用于按钮根节点的修饰符。
-     * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
-     * @param variant 按钮语义类型；null 使用当前设计系统的原生默认类型。
-     * @param size 显式中立尺寸预设；null 保留原生尺寸。
-     * @param colors 按启用/禁用状态逐字段覆盖颜色；Unspecified 保留对应原生值，Transparent 是有效覆盖。
-     * @param shape 按钮轮廓；null 保留原生形状。
-     * @param contentPadding 内容内边距；null 保留原生间距。
-     * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
-     * @param nativeSpec 按钮专属参数；null 或未携带本系统类型时全部沿用原生默认。
-     * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
-     */
-    @Composable
-    fun Button(
-        onClick: () -> Unit,
-        modifier: Modifier,
-        enabled: Boolean,
-        variant: NomiButtonVariant?,
-        size: NomiControlSize?,
-        colors: NomiButtonColors,
-        shape: Shape?,
-        contentPadding: PaddingValues?,
-        textStyle: TextStyle?,
-        nativeSpec: NomiButtonSpec?,
-        content: @Composable RowScope.() -> Unit,
-    )
-}
+@Composable
+fun NomiButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    variant: NomiButtonVariant? = null,
+    size: NomiControlSize? = null,
+    colors: NomiButtonColors = NomiButtonColors(),
+    shape: Shape? = null,
+    contentPadding: PaddingValues? = null,
+    textStyle: TextStyle? = null,
+    nativeSpec: NomiButtonSpec? = null,
+    content: @Composable RowScope.() -> Unit,
+) = requireNomiDesignSystem().components.actions.Button(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    variant = variant,
+    size = size,
+    colors = colors,
+    shape = shape,
+    contentPadding = contentPadding,
+    textStyle = textStyle,
+    nativeSpec = nativeSpec,
+    content = content,
+)
 
 /**
  * 按钮视觉类型。
@@ -187,45 +192,17 @@ object NomiButtonDefaults {
     }
 }
 
+/**
+ * 按钮专属参数的族标记。
+ *
+ * 只作为 [NomiNativeSpec] 的类型参数使用；其它组件族的标记与它互不兼容。
+ */
+sealed interface NomiButtonSpecFamily : NomiSpecFamily
 
 /**
- * 默认调用对应原生按钮；核心不按能力拦截视觉覆盖，适配器可自行降级为原生默认或记录日志，但不重绘伪造外观。
+ * 按钮专属参数。
  *
- * @param onClick 启用状态下用户激活按钮时调用；业务状态由调用方更新。
- * @param modifier 应用于按钮根节点的修饰符。
- * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
- * @param variant 按钮语义类型；null 使用当前设计系统的原生默认类型。
- * @param size 显式中立尺寸预设；null 保留原生尺寸。
- * @param colors 按启用/禁用状态逐字段覆盖颜色；Unspecified 保留对应原生值，Transparent 是有效覆盖。
- * @param shape 按钮轮廓；null 保留原生形状。
- * @param contentPadding 内容内边距；null 保留原生间距。
- * @param textStyle 内容文本样式增量；null 保留原生按钮排版。
- * @param nativeSpec 按钮专属参数；null 表示不覆盖任何原生属性，多个实现可用 `+` 组合后一次传入。
- * @param content 在按钮 RowScope 中组合的内容，继承按钮内容样式，不负责维护点击状态。
+ * 只承载中立参数没有入口的原生按钮能力（阴影、描边、五态色板等），具体实现由 adapter 模块定义，
+ * 多个 spec 用 `+` 组合后一次传入。
  */
-@Composable
-fun NomiButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    variant: NomiButtonVariant? = null,
-    size: NomiControlSize? = null,
-    colors: NomiButtonColors = NomiButtonColors(),
-    shape: Shape? = null,
-    contentPadding: PaddingValues? = null,
-    textStyle: TextStyle? = null,
-    nativeSpec: NomiButtonSpec? = null,
-    content: @Composable RowScope.() -> Unit,
-) = requireNomiDesignSystem().components.actions.Button(
-    onClick = onClick,
-    modifier = modifier,
-    enabled = enabled,
-    variant = variant,
-    size = size,
-    colors = colors,
-    shape = shape,
-    contentPadding = contentPadding,
-    textStyle = textStyle,
-    nativeSpec = nativeSpec,
-    content = content,
-)
+typealias NomiButtonSpec = NomiNativeSpec<NomiButtonSpecFamily>

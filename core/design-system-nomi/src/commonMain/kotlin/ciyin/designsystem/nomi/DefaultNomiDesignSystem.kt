@@ -4,6 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.nomi.button.DefaultNomiActionRenderer
+import ciyin.designsystem.nomi.control.DefaultNomiControlRenderer
+import ciyin.designsystem.nomi.divider.DefaultNomiDividerRenderer
+import ciyin.designsystem.nomi.feedback.DefaultNomiFeedbackRenderer
+import ciyin.designsystem.nomi.icon.DefaultNomiIconRenderer
 import ciyin.designsystem.nomi.list.DefaultNomiListItemRenderer
 import ciyin.designsystem.nomi.navigation.DefaultNomiNavigationRenderer
 import ciyin.designsystem.nomi.scaffold.DefaultNomiScaffoldRenderer
@@ -62,6 +66,27 @@ private object DefaultNomiSystem : NomiDesignSystem {
          * 列表项实现；行内边距、文本样式与内容色读取 Nomi 令牌。
          */
         override val listItems = DefaultNomiListItemRenderer
+
+        /**
+         * 图标实现；着色读取 Nomi 原生内容色环境与主题令牌。
+         */
+        override val icons = DefaultNomiIconRenderer
+
+        /**
+         * 分割线实现；粗细与颜色读取 Nomi 令牌。
+         */
+        override val decorations = DefaultNomiDividerRenderer
+
+        /**
+         * 选择控件实现；复用原生控件并注入 Nomi 令牌配色，文本输入框由文本实现承载。
+         */
+        override val controls = DefaultNomiControlRenderer
+
+        /**
+         * 提示浮层实现；容器与内容配色读取 Nomi 令牌。
+         */
+        override val feedback = DefaultNomiFeedbackRenderer
+
     }
 
     /**

@@ -1,6 +1,8 @@
 package ciyin.designsystem.nomi
 
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -21,6 +23,12 @@ import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.card.NomiCard
+import ciyin.designsystem.component.control.NomiControlRenderer
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
+import ciyin.designsystem.component.divider.NomiDividerRenderer
+import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
+import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
@@ -98,7 +106,7 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
     override val id: NomiDesignSystemId = NomiDesignSystemId("slot-recording")
 
     /**
-     * 三族组装；只有文本族可用，其余族访问即失败。
+     * 十一族组装；文本族记录参数，未验证的族委托 Nomi 默认实现或直接拒绝访问。
      */
     override val components: NomiDesignSystemComponents = object : NomiDesignSystemComponents {
         /**
@@ -202,6 +210,62 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
             ) {
                 SideEffect { texts[text.text] = style to color }
             }
+
+            /**
+             * 文本输入框委托 Nomi 默认实现，本夹具不记录输入框参数。
+             *
+             * @param value 当前文本值。
+             * @param onValueChange 文本变化回调。
+             * @param modifier 接口要求的修饰符，此夹具委托后不直接处理。
+             * @param enabled 是否接受用户操作。
+             * @param readOnly 是否只读。
+             * @param singleLine 是否限制为单行。
+             * @param variant 显式视觉变体；null 使用原生默认。
+             * @param label 标签槽；null 表示没有标签。
+             * @param placeholder 占位符槽；null 表示没有占位符。
+             * @param leadingIcon 前导图标槽；null 表示不占位。
+             * @param trailingIcon 尾部图标槽；null 表示不占位。
+             * @param isError 是否处于错误状态。
+             * @param keyboardOptions 键盘类型与输入法动作配置。
+             * @param keyboardActions 输入法动作回调。
+             * @param nativeSpec 输入框专属参数；委托默认实现原样接受。
+             */
+            @Composable
+            override fun TextField(
+                value: String,
+                onValueChange: (String) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                readOnly: Boolean,
+                singleLine: Boolean,
+                variant: NomiTextFieldVariant?,
+                label: (@Composable () -> Unit)?,
+                placeholder: (@Composable () -> Unit)?,
+                leadingIcon: (@Composable () -> Unit)?,
+                trailingIcon: (@Composable () -> Unit)?,
+                isError: Boolean,
+                keyboardOptions: KeyboardOptions,
+                keyboardActions: KeyboardActions,
+                nativeSpec: NomiTextFieldSpec?,
+            ) {
+                NomiDesignSystem.Default.components.text.TextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = modifier,
+                    enabled = enabled,
+                    readOnly = readOnly,
+                    singleLine = singleLine,
+                    variant = variant,
+                    label = label,
+                    placeholder = placeholder,
+                    leadingIcon = leadingIcon,
+                    trailingIcon = trailingIcon,
+                    isError = isError,
+                    keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
+                    nativeSpec = nativeSpec,
+                )
+            }
         }
 
         /**
@@ -233,6 +297,30 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
          */
         override val listItems: NomiListItemRenderer =
             NomiDesignSystem.Default.components.listItems
+
+        /**
+         * 图标族委托 Nomi 默认实现，本夹具不验证图标视觉。
+         */
+        override val icons: NomiIconRenderer =
+            NomiDesignSystem.Default.components.icons
+
+        /**
+         * 装饰线族委托 Nomi 默认实现，本夹具不验证分割线视觉。
+         */
+        override val decorations: NomiDividerRenderer =
+            NomiDesignSystem.Default.components.decorations
+
+        /**
+         * 控件族委托 Nomi 默认实现，本夹具不验证控件视觉。
+         */
+        override val controls: NomiControlRenderer =
+            NomiDesignSystem.Default.components.controls
+
+        /**
+         * 反馈族委托 Nomi 默认实现，本夹具不验证提示浮层视觉。
+         */
+        override val feedback: NomiFeedbackRenderer =
+            NomiDesignSystem.Default.components.feedback
     }
 
     /**

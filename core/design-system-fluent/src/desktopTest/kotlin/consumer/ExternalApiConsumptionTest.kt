@@ -1,6 +1,8 @@
 package consumer
 
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +23,12 @@ import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.NomiDesignSystemComponents
 import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.control.NomiControlRenderer
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
+import ciyin.designsystem.component.divider.NomiDividerRenderer
+import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
+import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
@@ -151,6 +159,30 @@ class ExternalApiConsumptionTest {
                      */
                     override val listItems: NomiListItemRenderer =
                         NomiDesignSystem.Fluent.components.listItems
+
+                    /**
+                     * 沿用 Fluent 图标族，不改变本次替换文本族的测试语义。
+                     */
+                    override val icons: NomiIconRenderer =
+                        NomiDesignSystem.Fluent.components.icons
+
+                    /**
+                     * 沿用 Fluent 装饰线族，不改变本次替换文本族的测试语义。
+                     */
+                    override val decorations: NomiDividerRenderer =
+                        NomiDesignSystem.Fluent.components.decorations
+
+                    /**
+                     * 沿用 Fluent 控件族，不改变本次替换文本族的测试语义。
+                     */
+                    override val controls: NomiControlRenderer =
+                        NomiDesignSystem.Fluent.components.controls
+
+                    /**
+                     * 沿用 Fluent 反馈族，不改变本次替换文本族的测试语义。
+                     */
+                    override val feedback: NomiFeedbackRenderer =
+                        NomiDesignSystem.Fluent.components.feedback
                 }
         }
         setContent {
@@ -311,6 +343,62 @@ private class RecordingTextRenderer(
             inlineContent = inlineContent,
             onTextLayout = onTextLayout,
             autoSize = autoSize,
+            nativeSpec = nativeSpec,
+        )
+    }
+
+    /**
+     * 原样转发公开 Fluent 文本输入框 SPI，不记录输入内容。
+     *
+     * @param value 当前文本值。
+     * @param onValueChange 文本变化回调。
+     * @param modifier 转发给原生输入框的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param readOnly 是否只读。
+     * @param singleLine 是否限制为单行。
+     * @param variant 显式视觉变体；null 使用原生默认。
+     * @param label 标签槽；null 表示没有标签。
+     * @param placeholder 占位符槽；null 表示没有占位符。
+     * @param leadingIcon 前导图标槽；null 表示不占位。
+     * @param trailingIcon 尾部图标槽；null 表示不占位。
+     * @param isError 是否处于错误状态；Fluent 忽略并记录警告。
+     * @param keyboardOptions 键盘类型与输入法动作配置。
+     * @param keyboardActions 输入法动作回调。
+     * @param nativeSpec 输入框专属参数；当前无实现，原样接受并忽略。
+     */
+    @Composable
+    override fun TextField(
+        value: String,
+        onValueChange: (String) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        readOnly: Boolean,
+        singleLine: Boolean,
+        variant: NomiTextFieldVariant?,
+        label: (@Composable () -> Unit)?,
+        placeholder: (@Composable () -> Unit)?,
+        leadingIcon: (@Composable () -> Unit)?,
+        trailingIcon: (@Composable () -> Unit)?,
+        isError: Boolean,
+        keyboardOptions: KeyboardOptions,
+        keyboardActions: KeyboardActions,
+        nativeSpec: NomiTextFieldSpec?,
+    ) {
+        NomiDesignSystem.Fluent.components.text.TextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            enabled = enabled,
+            readOnly = readOnly,
+            singleLine = singleLine,
+            variant = variant,
+            label = label,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            isError = isError,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             nativeSpec = nativeSpec,
         )
     }

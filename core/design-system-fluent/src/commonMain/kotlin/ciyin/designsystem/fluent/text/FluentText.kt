@@ -1,6 +1,9 @@
 package ciyin.designsystem.fluent.text
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,14 +18,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import io.github.composefluent.LocalTextStyle
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
 import ciyin.designsystem.component.text.NomiTextRenderer
 import ciyin.designsystem.component.text.NomiTextSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
+import io.github.composefluent.LocalTextStyle
 import io.github.composefluent.component.Text as NativeText
+import io.github.composefluent.component.TextField as NativeTextField
 
 /**
- * Fluent 原生文本适配；未指定 style 保留原生 LocalTextStyle。
+ * Fluent 原生文本适配；未指定 style 保留原生 LocalTextStyle，文本输入框也在此实现。
  */
 internal object FluentText : NomiTextRenderer {
     /**
@@ -163,6 +169,68 @@ internal object FluentText : NomiTextRenderer {
             minLines = minLines,
             inlineContent = inlineContent,
             onTextLayout = onTextLayout ?: {},
+        )
+    }
+
+    /**
+     * 渲染原生输入框；标签映射到字段上方的 header，尾部图标映射到原生尾部槽。
+     *
+     * @param value 当前文本值。
+     * @param onValueChange 文本变化回调。
+     * @param modifier 应用于原生输入框的修饰符。
+     * @param enabled 是否接受用户操作。
+     * @param readOnly 是否只读。
+     * @param singleLine 是否限制为单行。
+     * @param variant 显式视觉变体；上游只有一种外观，非 null 时忽略并记录警告。
+     * @param label 标签槽，映射为原生 header；null 表示没有标签。
+     * @param placeholder 占位符槽；null 表示没有占位符。
+     * @param leadingIcon 前导图标槽；null 表示不占位。
+     * @param trailingIcon 尾部图标槽；null 表示不占位。
+     * @param isError 错误状态；上游没有错误态，忽略并记录警告。
+     * @param keyboardOptions 键盘类型与输入法动作配置。
+     * @param keyboardActions 输入法动作回调。
+     * @param nativeSpec 输入框专属参数；当前没有实现，原样接受并忽略。
+     */
+    @Composable
+    override fun TextField(
+        value: String,
+        onValueChange: (String) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        readOnly: Boolean,
+        singleLine: Boolean,
+        variant: NomiTextFieldVariant?,
+        label: (@Composable () -> Unit)?,
+        placeholder: (@Composable () -> Unit)?,
+        leadingIcon: (@Composable () -> Unit)?,
+        trailingIcon: (@Composable () -> Unit)?,
+        isError: Boolean,
+        keyboardOptions: KeyboardOptions,
+        keyboardActions: KeyboardActions,
+        nativeSpec: NomiTextFieldSpec?,
+    ) {
+        rememberFluentWarning(variant != null, variant) {
+            "Fluent 输入框没有填充/描边变体，已忽略 variant=$variant"
+        }
+        rememberFluentWarning(isError, isError) {
+            "Fluent 输入框没有错误态，已忽略 isError"
+        }
+        val trailing: (@Composable RowScope.() -> Unit)? = trailingIcon?.let { icon ->
+            { icon() }
+        }
+        NativeTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            enabled = enabled,
+            readOnly = readOnly,
+            singleLine = singleLine,
+            header = label,
+            leadingIcon = leadingIcon,
+            trailing = trailing,
+            placeholder = placeholder,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
         )
     }
 }

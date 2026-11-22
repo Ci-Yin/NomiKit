@@ -64,7 +64,7 @@ private class Material3System(
     override val id: NomiDesignSystemId = NomiDesignSystemId("material3")
 
     /**
-     * Material 3 六族组件实现。
+     * Material 3 十族组件实现。
      */
     override val components: NomiDesignSystemComponents = Material3Components
 

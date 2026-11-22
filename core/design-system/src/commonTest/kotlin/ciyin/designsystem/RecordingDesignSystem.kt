@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -14,6 +16,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -23,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import ciyin.designsystem.component.NomiBorder
 import ciyin.designsystem.component.NomiControlSize
@@ -32,6 +36,19 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.card.NomiCardSpec
+import ciyin.designsystem.component.control.NomiCheckboxSpec
+import ciyin.designsystem.component.control.NomiControlRenderer
+import ciyin.designsystem.component.control.NomiRadioButtonSpec
+import ciyin.designsystem.component.control.NomiSwitchSpec
+import ciyin.designsystem.component.text.NomiTextFieldSpec
+import ciyin.designsystem.component.text.NomiTextFieldVariant
+import ciyin.designsystem.component.divider.NomiDividerOrientation
+import ciyin.designsystem.component.divider.NomiDividerRenderer
+import ciyin.designsystem.component.divider.NomiDividerSpec
+import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
+import ciyin.designsystem.component.feedback.NomiTooltipSpec
+import ciyin.designsystem.component.icon.NomiIconRenderer
+import ciyin.designsystem.component.icon.NomiIconSpec
 import ciyin.designsystem.component.list.NomiListItemRenderer
 import ciyin.designsystem.component.list.NomiListItemSpec
 import ciyin.designsystem.component.navigation.NomiNavigationItemColors
@@ -214,6 +231,132 @@ internal data class RecordedListItem(
 )
 
 /**
+ * 记录图标派发参数。
+ *
+ * @property imageVector 原样记录的图标矢量。
+ * @property contentDescription 原样记录的无障碍名称；null 表示装饰性图标。
+ * @property tint 原样记录的着色；Unspecified 仍表示保留原生内容色。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的图标专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedIcon(
+    val imageVector: ImageVector,
+    val contentDescription: String?,
+    val tint: Color,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiIconSpec? = null,
+)
+
+/**
+ * 记录分割线派发参数。
+ *
+ * @property orientation 原样记录的方向。
+ * @property thickness 原样记录的显式粗细；null 表示保留原生粗细。
+ * @property color 原样记录的颜色；Unspecified 仍表示未指定。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的分割线专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedDivider(
+    val orientation: NomiDividerOrientation,
+    val thickness: Dp?,
+    val color: Color,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiDividerSpec? = null,
+)
+
+/**
+ * 选择控件的种类，用于区分同族的三个入口。
+ */
+internal enum class RecordedToggleKind {
+    /**
+     * 开关入口。
+     */
+    Switch,
+
+    /**
+     * 复选框入口。
+     */
+    Checkbox,
+
+    /**
+     * 单选按钮入口。
+     */
+    RadioButton,
+}
+
+/**
+ * 记录开关、复选框与单选按钮的派发参数。
+ *
+ * @property kind 产生本次记录的控件种类。
+ * @property checked 原样记录的选中状态；单选按钮记录 selected。
+ * @property enabled 原样记录的启用状态。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的专属参数；三个入口各自的 spec 类型都落在这里。
+ */
+@Immutable
+internal data class RecordedToggle(
+    val kind: RecordedToggleKind,
+    val checked: Boolean,
+    val enabled: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiNativeSpec<*>? = null,
+)
+
+/**
+ * 记录文本输入框派发参数；槽位只记录是否提供，不执行槽内容。
+ *
+ * @property value 原样记录的文本值。
+ * @property enabled 原样记录的启用状态。
+ * @property readOnly 原样记录的只读状态。
+ * @property singleLine 原样记录的单行设置。
+ * @property variant 原样记录的显式变体；null 表示使用原生默认变体。
+ * @property hasLabel 是否提供标签槽。
+ * @property hasPlaceholder 是否提供占位符槽。
+ * @property hasLeadingIcon 是否提供前导图标槽。
+ * @property hasTrailingIcon 是否提供尾部图标槽。
+ * @property isError 原样记录的错误状态。
+ * @property keyboardOptions 原样记录的键盘配置。
+ * @property keyboardActions 原样记录的输入法动作回调。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的输入框专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedTextField(
+    val value: String,
+    val enabled: Boolean,
+    val readOnly: Boolean,
+    val singleLine: Boolean,
+    val variant: NomiTextFieldVariant?,
+    val hasLabel: Boolean,
+    val hasPlaceholder: Boolean,
+    val hasLeadingIcon: Boolean,
+    val hasTrailingIcon: Boolean,
+    val isError: Boolean,
+    val keyboardOptions: KeyboardOptions,
+    val keyboardActions: KeyboardActions,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiTextFieldSpec? = null,
+)
+
+/**
+ * 记录提示浮层派发参数。
+ *
+ * @property hasTooltip 是否提供提示内容槽。
+ * @property hasContent 是否提供触发内容槽。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的提示专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedTooltip(
+    val hasTooltip: Boolean,
+    val hasContent: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiTooltipSpec? = null,
+)
+
+/**
  * 不依赖任何原生 adapter 的录制型设计系统。
  *
  * 派发记录在 SideEffect 提交，列表在实例生命周期内累积，不在重组时自动清空。
@@ -264,12 +407,37 @@ internal class RecordingDesignSystem(
     val listItems: MutableList<RecordedListItem> = mutableListOf()
 
     /**
+     * 按组合顺序记录图标派发。
+     */
+    val icons: MutableList<RecordedIcon> = mutableListOf()
+
+    /**
+     * 按组合顺序记录分割线派发。
+     */
+    val dividers: MutableList<RecordedDivider> = mutableListOf()
+
+    /**
+     * 按组合顺序记录开关、复选框与单选按钮派发。
+     */
+    val toggles: MutableList<RecordedToggle> = mutableListOf()
+
+    /**
+     * 按组合顺序记录文本输入框派发。
+     */
+    val textFields: MutableList<RecordedTextField> = mutableListOf()
+
+    /**
+     * 按组合顺序记录提示浮层派发。
+     */
+    val tooltips: MutableList<RecordedTooltip> = mutableListOf()
+
+    /**
      * 录制型设计系统标识。
      */
     override val id: NomiDesignSystemId = NomiDesignSystemId(name)
 
     /**
-     * 四族 renderer；其中 surfaces 显式实现 Surface 与 Card 两个入口，navigation 记录导航套件派发。
+     * 十一族 renderer；其中 surfaces 显式实现 Surface 与 Card 两个入口，text 同时实现显示与输入框。
      */
     override val components: NomiDesignSystemComponents = object : NomiDesignSystemComponents {
         /**
@@ -412,6 +580,62 @@ internal class RecordingDesignSystem(
                 )
                 SideEffect { texts[text.text] = call }
             }
+
+            /**
+             * 组合提交后追加输入框记录，只记录槽位是否提供。
+             *
+             * @param value 原样记录的文本值。
+             * @param onValueChange 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param readOnly 原样记录的只读状态。
+             * @param singleLine 原样记录的单行设置。
+             * @param variant 原样记录的显式变体。
+             * @param label 标签槽；只记录是否提供。
+             * @param placeholder 占位符槽；只记录是否提供。
+             * @param leadingIcon 前导图标槽；只记录是否提供。
+             * @param trailingIcon 尾部图标槽；只记录是否提供。
+             * @param isError 原样记录的错误状态。
+             * @param keyboardOptions 原样记录的键盘配置。
+             * @param keyboardActions 原样记录的输入法动作回调。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun TextField(
+                value: String,
+                onValueChange: (String) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                readOnly: Boolean,
+                singleLine: Boolean,
+                variant: NomiTextFieldVariant?,
+                label: (@Composable () -> Unit)?,
+                placeholder: (@Composable () -> Unit)?,
+                leadingIcon: (@Composable () -> Unit)?,
+                trailingIcon: (@Composable () -> Unit)?,
+                isError: Boolean,
+                keyboardOptions: KeyboardOptions,
+                keyboardActions: KeyboardActions,
+                nativeSpec: NomiTextFieldSpec?,
+            ) {
+                val call = RecordedTextField(
+                    value = value,
+                    enabled = enabled,
+                    readOnly = readOnly,
+                    singleLine = singleLine,
+                    variant = variant,
+                    hasLabel = label != null,
+                    hasPlaceholder = placeholder != null,
+                    hasLeadingIcon = leadingIcon != null,
+                    hasTrailingIcon = trailingIcon != null,
+                    isError = isError,
+                    keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.textFields += call }
+            }
         }
 
         /**
@@ -459,6 +683,7 @@ internal class RecordingDesignSystem(
                 SideEffect { buttons += call }
                 Row(content = content)
             }
+
         }
 
         /**
@@ -645,6 +870,189 @@ internal class RecordingDesignSystem(
                 }
             }
         }
+
+        /**
+         * 记录图标参数，不绘制图标。
+         */
+        override val icons: NomiIconRenderer = object : NomiIconRenderer {
+            /**
+             * 组合提交后追加图标记录。
+             *
+             * @param imageVector 原样记录的图标矢量；录制夹具不绘制。
+             * @param contentDescription 原样记录的无障碍名称。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param tint 原样记录的着色；Unspecified 仍表示未指定。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun Icon(
+                imageVector: ImageVector,
+                contentDescription: String?,
+                modifier: Modifier,
+                tint: Color,
+                nativeSpec: NomiIconSpec?,
+            ) {
+                val call = RecordedIcon(
+                    imageVector = imageVector,
+                    contentDescription = contentDescription,
+                    tint = tint,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.icons += call }
+            }
+        }
+
+        /**
+         * 记录分割线参数，不绘制线条。
+         */
+        override val decorations: NomiDividerRenderer = object : NomiDividerRenderer {
+            /**
+             * 组合提交后追加分割线记录。
+             *
+             * @param orientation 原样记录的方向。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param thickness 原样记录的显式粗细；null 表示保留原生粗细。
+             * @param color 原样记录的颜色；Unspecified 仍表示未指定。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun Divider(
+                orientation: NomiDividerOrientation,
+                modifier: Modifier,
+                thickness: Dp?,
+                color: Color,
+                nativeSpec: NomiDividerSpec?,
+            ) {
+                val call = RecordedDivider(
+                    orientation = orientation,
+                    thickness = thickness,
+                    color = color,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.dividers += call }
+            }
+        }
+
+        /**
+         * 记录三个选择控件的参数，不绘制原生控件；文本输入框由文本族记录。
+         */
+        override val controls: NomiControlRenderer = object : NomiControlRenderer {
+            /**
+             * 组合提交后追加开关记录。
+             *
+             * @param checked 原样记录的开关状态。
+             * @param onCheckedChange 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun Switch(
+                checked: Boolean,
+                onCheckedChange: (Boolean) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                nativeSpec: NomiSwitchSpec?,
+            ) {
+                val call = RecordedToggle(
+                    kind = RecordedToggleKind.Switch,
+                    checked = checked,
+                    enabled = enabled,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.toggles += call }
+            }
+
+            /**
+             * 组合提交后追加复选框记录。
+             *
+             * @param checked 原样记录的勾选状态。
+             * @param onCheckedChange 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun Checkbox(
+                checked: Boolean,
+                onCheckedChange: (Boolean) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                nativeSpec: NomiCheckboxSpec?,
+            ) {
+                val call = RecordedToggle(
+                    kind = RecordedToggleKind.Checkbox,
+                    checked = checked,
+                    enabled = enabled,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.toggles += call }
+            }
+
+            /**
+             * 组合提交后追加单选按钮记录。
+             *
+             * @param selected 原样记录的选中状态。
+             * @param onClick 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             */
+            @Composable
+            override fun RadioButton(
+                selected: Boolean,
+                onClick: () -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                nativeSpec: NomiRadioButtonSpec?,
+            ) {
+                val call = RecordedToggle(
+                    kind = RecordedToggleKind.RadioButton,
+                    checked = selected,
+                    enabled = enabled,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.toggles += call }
+            }
+
+        }
+
+        /**
+         * 记录提示浮层参数并组合触发内容，不绘制浮层。
+         */
+        override val feedback: NomiFeedbackRenderer = object : NomiFeedbackRenderer {
+            /**
+             * 组合提交后追加提示记录，并直接组合触发内容以验证嵌套派发。
+             *
+             * @param tooltip 提示内容槽；录制夹具只记录是否提供，不执行。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 触发内容槽，直接组合。
+             */
+            @Composable
+            override fun Tooltip(
+                tooltip: @Composable () -> Unit,
+                modifier: Modifier,
+                nativeSpec: NomiTooltipSpec?,
+                content: @Composable () -> Unit,
+            ) {
+                val call = RecordedTooltip(
+                    hasTooltip = true,
+                    hasContent = true,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.tooltips += call }
+                content()
+            }
+
+        }
+
     }
 
     /**
