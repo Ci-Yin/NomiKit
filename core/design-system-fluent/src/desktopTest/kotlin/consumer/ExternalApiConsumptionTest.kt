@@ -30,6 +30,7 @@ import ciyin.designsystem.component.divider.NomiDividerRenderer
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
 import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -183,6 +184,12 @@ class ExternalApiConsumptionTest {
                      */
                     override val feedback: NomiFeedbackRenderer =
                         NomiDesignSystem.Fluent.components.feedback
+
+                    /**
+                     * 沿用 Fluent 菜单族，不改变本次替换文本族的测试语义。
+                     */
+                    override val menus: NomiMenuRenderer =
+                        NomiDesignSystem.Fluent.components.menus
                 }
         }
         setContent {

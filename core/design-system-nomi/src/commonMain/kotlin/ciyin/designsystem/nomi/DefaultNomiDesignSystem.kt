@@ -9,6 +9,7 @@ import ciyin.designsystem.nomi.divider.DefaultNomiDividerRenderer
 import ciyin.designsystem.nomi.feedback.DefaultNomiFeedbackRenderer
 import ciyin.designsystem.nomi.icon.DefaultNomiIconRenderer
 import ciyin.designsystem.nomi.list.DefaultNomiListItemRenderer
+import ciyin.designsystem.nomi.menu.DefaultNomiMenuRenderer
 import ciyin.designsystem.nomi.navigation.DefaultNomiNavigationRenderer
 import ciyin.designsystem.nomi.scaffold.DefaultNomiScaffoldRenderer
 import ciyin.designsystem.nomi.surface.DefaultNomiSurfaceRenderer
@@ -87,6 +88,10 @@ private object DefaultNomiSystem : NomiDesignSystem {
          */
         override val feedback = DefaultNomiFeedbackRenderer
 
+        /**
+         * 菜单实现；浮层与菜单项外观读取 Nomi 令牌。
+         */
+        override val menus = DefaultNomiMenuRenderer
     }
 
     /**

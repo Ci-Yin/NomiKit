@@ -7,6 +7,7 @@ import ciyin.designsystem.component.divider.NomiDividerRenderer
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
 import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -17,6 +18,7 @@ import ciyin.designsystem.material3.divider.Material3DividerRenderer
 import ciyin.designsystem.material3.feedback.Material3FeedbackRenderer
 import ciyin.designsystem.material3.icon.Material3IconRenderer
 import ciyin.designsystem.material3.list.Material3ListItemRenderer
+import ciyin.designsystem.material3.menu.Material3MenuRenderer
 import ciyin.designsystem.material3.navigation.Material3NavigationRenderer
 import ciyin.designsystem.material3.scaffold.Material3ScaffoldRenderer
 import ciyin.designsystem.material3.surface.Material3SurfaceRenderer
@@ -76,4 +78,8 @@ internal object Material3Components : NomiDesignSystemComponents {
      */
     override val feedback: NomiFeedbackRenderer = Material3FeedbackRenderer
 
+    /**
+     * 菜单的原生适配；浮层与菜单项都由原生 DropdownMenu 承担。
+     */
+    override val menus: NomiMenuRenderer = Material3MenuRenderer
 }

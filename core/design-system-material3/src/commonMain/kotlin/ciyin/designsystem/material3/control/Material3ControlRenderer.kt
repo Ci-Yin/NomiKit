@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import ciyin.designsystem.component.control.NomiCheckboxSpec
+import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
@@ -111,6 +112,59 @@ internal object Material3ControlRenderer : NomiControlRenderer {
             modifier = modifier,
             enabled = enabled,
         )
+    }
+
+    /**
+     * 使用原生描边按钮作收起态容器，展开浮层使用原生下拉菜单并按容器宽度对齐。
+     *
+     * @param expanded 当前是否展开。
+     * @param onExpandedChange 展开状态变化回调。
+     * @param menuItems 展开时显示的菜单项槽，放进原生下拉菜单。
+     * @param modifier 应用于组合框根节点的修饰符；尺寸变化用于同步浮层宽度。
+     * @param enabled 是否接受用户操作。
+     * @param nativeSpec 组合框专属参数；当前没有实现，原样接受并忽略。
+     * @param content 收起态内容槽。
+     */
+    @Composable
+    override fun ComboBox(
+        expanded: Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        menuItems: @Composable () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        nativeSpec: NomiComboBoxSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        var anchorWidth by remember { mutableStateOf(0) }
+        val widthDp = with(LocalDensity.current) { anchorWidth.toDp() }
+        Box(modifier = modifier.onSizeChanged { anchorWidth = it.width }) {
+            OutlinedButton(
+                onClick = { onExpandedChange(true) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    content()
+                }
+                Icon(
+                    imageVector = IconPack.ChevronDown,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(Material3ComboBoxIconSize)
+                        .rotate(if (expanded) 180f else 0f),
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) },
+                modifier = Modifier.width(widthDp),
+            ) {
+                menuItems()
+            }
+        }
     }
 
 }

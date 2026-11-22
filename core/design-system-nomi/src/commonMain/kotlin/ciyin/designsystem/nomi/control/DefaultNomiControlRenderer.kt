@@ -29,11 +29,13 @@ import androidx.compose.ui.unit.Dp
 import ciyin.designsystem.component.NomiControlSize
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.control.NomiCheckboxSpec
+import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
 import ciyin.designsystem.icon.ChevronDown
 import ciyin.designsystem.icon.IconPack
+import ciyin.designsystem.nomi.menu.NomiMenuPopup
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiColorScheme
 import ciyin.designsystem.theme.NomiTheme
@@ -158,6 +160,84 @@ internal object DefaultNomiControlRenderer : NomiControlRenderer {
                 disabledUnselectedColor = scheme.textDisabled,
             ),
         )
+    }
+
+    /**
+     * 渲染 Nomi 组合框：收起态是描边容器，展开态复用菜单浮层并按容器宽度对齐。
+     *
+     * @param expanded 当前是否展开。
+     * @param onExpandedChange 展开状态变化回调。
+     * @param menuItems 展开时显示的菜单项槽，放进 Nomi 菜单浮层。
+     * @param modifier 应用于组合框根节点的修饰符；尺寸变化用于同步浮层宽度。
+     * @param enabled 是否接受用户操作。
+     * @param nativeSpec 组合框专属参数；Nomi 外观由 [NomiTheme] 令牌决定，本实现忽略它。
+     * @param content 收起态内容槽，读取 Nomi 正文内容色与排版。
+     */
+    @Composable
+    override fun ComboBox(
+        expanded: Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        menuItems: @Composable () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        nativeSpec: NomiComboBoxSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        val scheme = NomiTheme.colorScheme
+        val shape = NomiTheme.shapes.small
+        val minTouchTarget = NomiButtonDefaults.metrics(NomiControlSize.Medium).minTouchTarget
+        var anchorWidth by remember { mutableStateOf(0) }
+        val anchorWidthDp: Dp = with(LocalDensity.current) { anchorWidth.toDp() }
+        Box(modifier = modifier.onSizeChanged { anchorWidth = it.width }) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = minTouchTarget)
+                    .clip(shape)
+                    .background(scheme.surface)
+                    .border(NomiTheme.sizes.strokes.thin, scheme.outline, shape)
+                    .clickable(
+                        interactionSource = null,
+                        indication = null,
+                        enabled = enabled,
+                        role = Role.Button,
+                        onClick = { onExpandedChange(true) },
+                    )
+                    .padding(
+                        horizontal = NomiTheme.spacings.medium,
+                        vertical = NomiTheme.spacings.small,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small),
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ProvideNomiContentStyle(
+                        color = if (enabled) scheme.textPrimary else scheme.textDisabled,
+                        textStyle = NomiTheme.typography.bodyMedium,
+                    ) {
+                        content()
+                    }
+                }
+                NativeIcon(
+                    imageVector = IconPack.ChevronDown,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(NomiTheme.sizes.icon.extraSmall)
+                        .rotate(if (expanded) 180f else 0f),
+                    tint = if (enabled) scheme.textSecondary else scheme.textDisabled,
+                )
+            }
+            NomiMenuPopup(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) },
+                width = anchorWidthDp,
+            ) {
+                menuItems()
+            }
+        }
     }
 
 }

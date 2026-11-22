@@ -30,6 +30,7 @@ import ciyin.designsystem.component.divider.NomiDividerRenderer
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
 import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -321,6 +322,12 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
          */
         override val feedback: NomiFeedbackRenderer =
             NomiDesignSystem.Default.components.feedback
+
+        /**
+         * 菜单族委托 Nomi 默认实现，本夹具不验证菜单视觉。
+         */
+        override val menus: NomiMenuRenderer =
+            NomiDesignSystem.Default.components.menus
     }
 
     /**

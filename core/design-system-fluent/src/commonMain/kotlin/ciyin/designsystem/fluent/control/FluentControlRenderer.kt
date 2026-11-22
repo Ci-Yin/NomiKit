@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import ciyin.designsystem.component.control.NomiCheckboxSpec
+import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
@@ -112,6 +113,53 @@ internal object FluentControlRenderer : NomiControlRenderer {
             label = null,
             enabled = enabled,
         )
+    }
+
+    /**
+     * 使用原生 DropDownButton 作收起态容器，展开浮层使用原生 DropdownMenu 并按容器宽度对齐。
+     *
+     * @param expanded 当前是否展开。
+     * @param onExpandedChange 展开状态变化回调。
+     * @param menuItems 展开时显示的菜单项槽，放进原生下拉菜单。
+     * @param modifier 应用于组合框根节点的修饰符；尺寸变化用于同步浮层宽度。
+     * @param enabled 是否接受用户操作。
+     * @param nativeSpec 组合框专属参数；当前没有实现，原样接受并忽略。
+     * @param content 收起态内容槽。
+     */
+    @Composable
+    override fun ComboBox(
+        expanded: Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        menuItems: @Composable () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        nativeSpec: NomiComboBoxSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        var anchorSize by remember { mutableStateOf(IntSize.Zero) }
+        val density = LocalDensity.current
+        val anchorWidth = with(density) { anchorSize.width.toDp() }
+        Box(modifier = modifier.onSizeChanged { anchorSize = it }) {
+            NativeDropDownButton(
+                onClick = { onExpandedChange(true) },
+                modifier = Modifier.fillMaxWidth(),
+                disabled = !enabled,
+                contentArrangement = Arrangement.SpaceBetween,
+                content = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        content()
+                    }
+                },
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) },
+                modifier = Modifier.width(anchorWidth),
+                content = {
+                    menuItems()
+                },
+            )
+        }
     }
 
 }

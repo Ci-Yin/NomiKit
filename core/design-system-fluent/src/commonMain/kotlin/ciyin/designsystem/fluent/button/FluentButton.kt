@@ -14,6 +14,9 @@ import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiToggleButtonColors
+import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.runtime.findSpec
@@ -116,6 +119,84 @@ internal object FluentButton : NomiActionRenderer {
         }
     }
 
+    /**
+     * 使用原生 ToggleButton；选中状态由原生控件持有并据此切换强调外观。
+     *
+     * @param checked 当前选中状态，由调用方持有。
+     * @param onCheckedChange 状态切换回调，收到请求后的目标状态。
+     * @param modifier 原生按钮修饰符。
+     * @param enabled 是否启用，映射为原生 disabled 的反值。
+     * @param iconOnly 直接交给原生 iconOnly，容器收敛为原生方形尺寸。
+     * @param size 仅在文字形态下无原生入口；忽略并记录一次警告。
+     * @param colors 选中与未选中两套四字段覆盖；选中态以强调色板为基线。
+     * @param nativeSpec 开关按钮专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生 RowScope 内容；图标形态下为图标槽。
+     */
+    @Composable
+    override fun ToggleButton(
+        checked: Boolean,
+        onCheckedChange: (Boolean) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        iconOnly: Boolean,
+        size: NomiControlSize?,
+        colors: NomiToggleButtonColors,
+        nativeSpec: NomiToggleButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        rememberFluentWarning(!iconOnly && size != null, size) {
+            "NomiToggleButton 的 size 覆盖无原生入口，已保留原生默认"
+        }
+        rememberFluentWarning(iconOnly && size != null, size) {
+            "NomiToggleButton 在 iconOnly 模式下不接收 size，已保留原生默认"
+        }
+        val stateColors = if (checked) colors.checked else colors.unchecked
+        val variant = if (checked) NomiButtonVariant.Primary else NomiButtonVariant.Default
+        NativeToggleButton(
+            checked = checked,
+            onCheckedChanged = onCheckedChange,
+            modifier = modifier,
+            disabled = !enabled,
+            colors = stateColors.toFluentButtonColors(variant),
+            iconOnly = iconOnly,
+            content = fluentButtonContent(enabled, stateColors, textStyle = null, content = content),
+        )
+    }
+
+    /**
+     * 使用原生 DropDownButton，由原生实现在内容之后追加动画下拉箭头。
+     *
+     * @param onClick 原生按钮启用且被激活时调用。
+     * @param modifier 原生按钮修饰符。
+     * @param enabled 是否启用，映射为原生 disabled 的反值。
+     * @param variant null/Default 使用普通按钮色板，Primary 使用强调色板，其余沿用普通按钮色板。
+     * @param size 无原生入口；忽略覆盖并保留原生尺寸。
+     * @param colors 逐字段覆盖启用与禁用颜色。
+     * @param nativeSpec 下拉按钮专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生 RowScope 内容，不含下拉箭头。
+     */
+    @Composable
+    override fun DropDownButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        variant: NomiButtonVariant?,
+        size: NomiControlSize?,
+        colors: NomiButtonColors,
+        nativeSpec: NomiDropDownButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        rememberFluentWarning(size != null, size) {
+            "NomiDropDownButton 的 size 覆盖无原生入口，已保留原生默认"
+        }
+        NativeDropDownButton(
+            onClick = onClick,
+            modifier = modifier,
+            disabled = !enabled,
+            buttonColors = colors.toFluentButtonColors(variant),
+            content = fluentButtonContent(enabled, colors, textStyle = null, content = content),
+        )
+    }
 }
 
 /**

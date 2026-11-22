@@ -7,6 +7,7 @@ import ciyin.designsystem.component.divider.NomiDividerRenderer
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
 import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.component.navigation.NomiNavigationRenderer
 import ciyin.designsystem.component.scaffold.NomiScaffoldRenderer
 import ciyin.designsystem.component.surface.NomiSurfaceRenderer
@@ -67,4 +68,8 @@ interface NomiDesignSystemComponents {
      */
     val feedback: NomiFeedbackRenderer
 
+    /**
+     * 浮层菜单；菜单浮层与可复用菜单项行分别由本族的两个入口承载。
+     */
+    val menus: NomiMenuRenderer
 }

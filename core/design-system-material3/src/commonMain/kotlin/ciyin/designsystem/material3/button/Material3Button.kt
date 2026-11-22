@@ -35,6 +35,9 @@ import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiToggleButtonColors
+import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.icon.ChevronDown
 import ciyin.designsystem.icon.IconPack
@@ -95,6 +98,129 @@ object Material3ActionRenderer : NomiActionRenderer {
         )
     }
 
+    /**
+     * 开关按钮用原生填充按钮承载选中态：选中使用 Button，未选中使用 FilledTonalButton，两者几何一致不跳版。
+     *
+     * 图标形态改用 FilledIconButton / IconButton，此时忽略 size（原生图标按钮固定方形尺寸）。
+     *
+     * @param checked 当前选中状态，由调用方持有。
+     * @param onCheckedChange 状态切换回调，收到请求后的目标状态。
+     * @param modifier 按钮外层修饰符。
+     * @param enabled 是否允许原生按钮交互。
+     * @param iconOnly 是否只包含图标；true 时改用原生图标按钮并忽略 size。
+     * @param size 显式中立尺寸预设；null 不添加中立度量。
+     * @param colors 选中与未选中两套四字段覆盖；Unspecified 保留对应原生值。
+     * @param nativeSpec 开关按钮专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生按钮内容，图标形态下为图标槽。
+     */
+    @Composable
+    override fun ToggleButton(
+        checked: Boolean,
+        onCheckedChange: (Boolean) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        iconOnly: Boolean,
+        size: NomiControlSize?,
+        colors: NomiToggleButtonColors,
+        nativeSpec: NomiToggleButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        val toggle = { onCheckedChange(!checked) }
+        if (iconOnly) {
+            val stateColors = if (checked) colors.checked else colors.unchecked
+            val toggleSemantics = Modifier.semantics {
+                toggleableState = ToggleableState(checked)
+            }
+            if (checked) {
+                FilledIconButton(
+                    onClick = toggle,
+                    modifier = modifier.then(toggleSemantics),
+                    enabled = enabled,
+                    colors = stateColors.toIconButtonColors(checked = true),
+                    content = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            content()
+                        }
+                    },
+                )
+            } else {
+                NativeIconButton(
+                    onClick = toggle,
+                    modifier = modifier.then(toggleSemantics),
+                    enabled = enabled,
+                    colors = stateColors.toIconButtonColors(checked = false),
+                    content = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            content()
+                        }
+                    },
+                )
+            }
+            return
+        }
+        Material3ActionButton(
+            onClick = toggle,
+            modifier = modifier,
+            enabled = enabled,
+            variant = if (checked) NomiButtonVariant.Primary else NomiButtonVariant.Default,
+            size = size,
+            colors = if (checked) colors.checked else colors.unchecked,
+            shape = null,
+            contentPadding = null,
+            textStyle = null,
+            nativeSpec = nativeSpec,
+            trailing = null,
+            toggleableState = checked,
+            content = content,
+        )
+    }
+
+    /**
+     * 下拉按钮复用普通按钮的原生绘制，并在内容之后追加原生图标作为展开指示。
+     *
+     * @param onClick 原生按钮启用且被激活时调用。
+     * @param modifier 按钮外层修饰符。
+     * @param enabled 是否允许原生按钮交互。
+     * @param variant null 与 Primary 使用 Button，Default 使用 FilledTonalButton，Subtle/Text 使用 TextButton，Destructive 使用错误色 Button。
+     * @param size 显式中立尺寸预设。
+     * @param colors 逐字段覆盖原生启用/禁用颜色。
+     * @param nativeSpec 下拉按钮专属参数；只识别 Material 3 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生 RowScope 内容，不含下拉箭头。
+     */
+    @Composable
+    override fun DropDownButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        variant: NomiButtonVariant?,
+        size: NomiControlSize?,
+        colors: NomiButtonColors,
+        nativeSpec: NomiDropDownButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        Material3ActionButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            variant = variant,
+            size = size,
+            colors = colors,
+            shape = null,
+            contentPadding = null,
+            textStyle = null,
+            nativeSpec = nativeSpec,
+            trailing = {
+                NativeIcon(
+                    imageVector = IconPack.ChevronDown,
+                    contentDescription = null,
+                    modifier = Modifier.width(Material3ButtonIconSize),
+                    tint = LocalContentColor.current,
+                )
+            },
+            toggleableState = null,
+            content = content,
+        )
+    }
 }
 
 /**

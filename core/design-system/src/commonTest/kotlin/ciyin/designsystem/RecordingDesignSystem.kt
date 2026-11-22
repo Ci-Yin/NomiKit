@@ -35,11 +35,18 @@ import ciyin.designsystem.component.button.NomiActionRenderer
 import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiToggleButtonColors
+import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.component.card.NomiCardSpec
 import ciyin.designsystem.component.control.NomiCheckboxSpec
+import ciyin.designsystem.component.control.NomiComboBoxSpec
 import ciyin.designsystem.component.control.NomiControlRenderer
 import ciyin.designsystem.component.control.NomiRadioButtonSpec
 import ciyin.designsystem.component.control.NomiSwitchSpec
+import ciyin.designsystem.component.menu.NomiMenuItemSpec
+import ciyin.designsystem.component.menu.NomiMenuRenderer
+import ciyin.designsystem.component.menu.NomiMenuSpec
 import ciyin.designsystem.component.text.NomiTextFieldSpec
 import ciyin.designsystem.component.text.NomiTextFieldVariant
 import ciyin.designsystem.component.divider.NomiDividerOrientation
@@ -136,6 +143,98 @@ internal data class RecordedButton(
     val contentPadding: PaddingValues?,
     val textStyle: TextStyle?,
     val nativeSpec: NomiButtonSpec? = null,
+)
+
+/**
+ * 记录开关按钮派发参数。
+ *
+ * @property checked 原样记录的选中状态。
+ * @property enabled 原样记录的启用状态。
+ * @property iconOnly 原样记录的图标形态。
+ * @property size 显式尺寸预设，null 表示未指定。
+ * @property colors 两态颜色覆盖，保留 Unspecified。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的开关按钮专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedToggleButton(
+    val checked: Boolean,
+    val enabled: Boolean,
+    val iconOnly: Boolean,
+    val size: NomiControlSize?,
+    val colors: NomiToggleButtonColors,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiToggleButtonSpec? = null,
+)
+
+/**
+ * 记录下拉按钮派发参数。
+ *
+ * @property enabled 原样记录的启用状态。
+ * @property variant 显式按钮变体，null 表示未指定。
+ * @property size 显式尺寸预设，null 表示未指定。
+ * @property colors 逐字段颜色覆盖，保留 Unspecified。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的下拉按钮专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedDropDownButton(
+    val enabled: Boolean,
+    val variant: NomiButtonVariant?,
+    val size: NomiControlSize?,
+    val colors: NomiButtonColors,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiDropDownButtonSpec? = null,
+)
+
+/**
+ * 记录组合框派发参数；菜单项槽只在展开时组合。
+ *
+ * @property expanded 原样记录的展开状态。
+ * @property enabled 原样记录的启用状态。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的组合框专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedComboBox(
+    val expanded: Boolean,
+    val enabled: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiComboBoxSpec? = null,
+)
+
+/**
+ * 记录菜单浮层派发参数。
+ *
+ * @property expanded 原样记录的展开状态。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的菜单浮层专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedMenu(
+    val expanded: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiMenuSpec? = null,
+)
+
+/**
+ * 记录菜单项派发参数；槽位只记录是否提供，不执行槽内容。
+ *
+ * @property enabled 原样记录的启用状态。
+ * @property selected 原样记录的选中状态。
+ * @property hasLeading 是否提供前导槽。
+ * @property hasTrailing 是否提供尾部槽。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的菜单项专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedMenuItem(
+    val enabled: Boolean,
+    val selected: Boolean,
+    val hasLeading: Boolean,
+    val hasTrailing: Boolean,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiMenuItemSpec? = null,
 )
 
 /**
@@ -380,6 +479,31 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录按钮派发。
      */
     val buttons: MutableList<RecordedButton> = mutableListOf()
+
+    /**
+     * 按组合顺序记录开关按钮派发。
+     */
+    val toggleButtons: MutableList<RecordedToggleButton> = mutableListOf()
+
+    /**
+     * 按组合顺序记录下拉按钮派发。
+     */
+    val dropDownButtons: MutableList<RecordedDropDownButton> = mutableListOf()
+
+    /**
+     * 按组合顺序记录组合框派发。
+     */
+    val comboBoxes: MutableList<RecordedComboBox> = mutableListOf()
+
+    /**
+     * 按组合顺序记录菜单浮层派发。
+     */
+    val menus: MutableList<RecordedMenu> = mutableListOf()
+
+    /**
+     * 按组合顺序记录菜单项派发。
+     */
+    val menuItems: MutableList<RecordedMenuItem> = mutableListOf()
 
     /**
      * 仅记录 Surface 派发，Card 不得混入。
@@ -684,6 +808,78 @@ internal class RecordingDesignSystem(
                 Row(content = content)
             }
 
+            /**
+             * 记录开关按钮参数并组合 Row 内容，不绘制按钮或建立单选交互。
+             *
+             * @param checked 原样记录的选中状态。
+             * @param onCheckedChange 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param iconOnly 原样记录的图标形态。
+             * @param size 原样记录的可空尺寸，不补默认值。
+             * @param colors 原样记录的两态颜色，不解析 Unspecified。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 在真实 RowScope 中组合的内容。
+             */
+            @Composable
+            override fun ToggleButton(
+                checked: Boolean,
+                onCheckedChange: (Boolean) -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                iconOnly: Boolean,
+                size: NomiControlSize?,
+                colors: NomiToggleButtonColors,
+                nativeSpec: NomiToggleButtonSpec?,
+                content: @Composable RowScope.() -> Unit,
+            ) {
+                val call = RecordedToggleButton(
+                    checked = checked,
+                    enabled = enabled,
+                    iconOnly = iconOnly,
+                    size = size,
+                    colors = colors,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { toggleButtons += call }
+                Row(content = content)
+            }
+
+            /**
+             * 记录下拉按钮参数并组合 Row 内容，不追加箭头也不绘制按钮。
+             *
+             * @param onClick 接口要求的点击回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param variant 原样记录的可空变体，不补默认值。
+             * @param size 原样记录的可空尺寸，不补默认值。
+             * @param colors 原样记录的四态颜色，不解析 Unspecified。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 在真实 RowScope 中组合的内容。
+             */
+            @Composable
+            override fun DropDownButton(
+                onClick: () -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                variant: NomiButtonVariant?,
+                size: NomiControlSize?,
+                colors: NomiButtonColors,
+                nativeSpec: NomiDropDownButtonSpec?,
+                content: @Composable RowScope.() -> Unit,
+            ) {
+                val call = RecordedDropDownButton(
+                    enabled = enabled,
+                    variant = variant,
+                    size = size,
+                    colors = colors,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { dropDownButtons += call }
+                Row(content = content)
+            }
         }
 
         /**
@@ -1020,6 +1216,40 @@ internal class RecordingDesignSystem(
                 SideEffect { this@RecordingDesignSystem.toggles += call }
             }
 
+            /**
+             * 组合提交后追加组合框记录，并组合收起态内容；菜单项只在展开时组合。
+             *
+             * @param expanded 原样记录的展开状态。
+             * @param onExpandedChange 接口要求的回调；录制夹具不会调用。
+             * @param menuItems 菜单项槽；仅在展开时组合，用于验证嵌套派发。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 收起态内容槽，直接组合。
+             */
+            @Composable
+            override fun ComboBox(
+                expanded: Boolean,
+                onExpandedChange: (Boolean) -> Unit,
+                menuItems: @Composable () -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                nativeSpec: NomiComboBoxSpec?,
+                content: @Composable RowScope.() -> Unit,
+            ) {
+                val call = RecordedComboBox(
+                    expanded = expanded,
+                    enabled = enabled,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.comboBoxes += call }
+                Row(content = content)
+                if (expanded) {
+                    menuItems()
+                }
+            }
+
         }
 
         /**
@@ -1053,6 +1283,73 @@ internal class RecordingDesignSystem(
 
         }
 
+        /**
+         * 记录菜单浮层与菜单项参数；未展开时不组合内容，与原生浮层一致。
+         */
+        override val menus: NomiMenuRenderer = object : NomiMenuRenderer {
+            /**
+             * 组合提交后追加菜单浮层记录，展开时按声明顺序组合菜单项。
+             *
+             * @param expanded 原样记录的展开状态。
+             * @param onDismissRequest 接口要求的回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 菜单项内容，仅在展开时组合。
+             */
+            @Composable
+            override fun Menu(
+                expanded: Boolean,
+                onDismissRequest: () -> Unit,
+                modifier: Modifier,
+                nativeSpec: NomiMenuSpec?,
+                content: @Composable ColumnScope.() -> Unit,
+            ) {
+                val call = RecordedMenu(
+                    expanded = expanded,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.menus += call }
+                if (expanded) {
+                    Column(content = content)
+                }
+            }
+
+            /**
+             * 组合提交后追加菜单项记录，并组合主体内容以验证嵌套派发。
+             *
+             * @param onClick 接口要求的点击回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param selected 原样记录的选中状态。
+             * @param leading 前导槽；只记录是否提供。
+             * @param trailing 尾部槽；只记录是否提供。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 菜单项主体内容，直接组合。
+             */
+            @Composable
+            override fun MenuItem(
+                onClick: () -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                selected: Boolean,
+                leading: (@Composable () -> Unit)?,
+                trailing: (@Composable () -> Unit)?,
+                nativeSpec: NomiMenuItemSpec?,
+                content: @Composable () -> Unit,
+            ) {
+                val call = RecordedMenuItem(
+                    enabled = enabled,
+                    selected = selected,
+                    hasLeading = leading != null,
+                    hasTrailing = trailing != null,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { this@RecordingDesignSystem.menuItems += call }
+                content()
+            }
+        }
     }
 
     /**

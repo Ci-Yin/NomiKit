@@ -40,6 +40,9 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiToggleButtonColors
+import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.icon.ChevronDown
 import ciyin.designsystem.icon.IconPack
 import ciyin.designsystem.nomi.LocalNomiNativeContentColor
@@ -100,6 +103,89 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
         )
     }
 
+    /**
+     * 使用 Foundation 绘制开关按钮，选中时切换为强调配色并发布开关状态语义。
+     *
+     * @param checked 当前选中状态，由调用方持有。
+     * @param onCheckedChange 状态切换回调，收到请求后的目标状态。
+     * @param modifier 按钮根节点修饰符。
+     * @param enabled 是否接受操作，并选择启用或禁用颜色。
+     * @param iconOnly 是否只包含图标；true 时使用方形内边距并忽略 size，仅记录一次警告不做其它降级。
+     * @param size 显式尺寸预设；iconOnly 为 true 时忽略。
+     * @param colors 选中与未选中两套四字段覆盖；Unspecified 回落对应状态的 Nomi 预设。
+     * @param nativeSpec 开关按钮专属参数；Nomi 外观由令牌决定，本实现忽略它。
+     * @param content 在居中的 RowScope 中组合的内容，不负责维护选中状态。
+     */
+    @Composable
+    override fun ToggleButton(
+        checked: Boolean,
+        onCheckedChange: (Boolean) -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        iconOnly: Boolean,
+        size: NomiControlSize?,
+        colors: NomiToggleButtonColors,
+        nativeSpec: NomiToggleButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        NomiActionSurface(
+            onClick = { onCheckedChange(!checked) },
+            modifier = modifier,
+            enabled = enabled,
+            variant = if (checked) NomiButtonVariant.Primary else NomiButtonVariant.Default,
+            size = if (iconOnly) null else size,
+            colors = if (checked) colors.checked else colors.unchecked,
+            shape = null,
+            contentPadding = if (iconOnly) PaddingValues(all = NomiTheme.spacings.small) else null,
+            textStyle = null,
+            role = Role.Checkbox,
+            selected = checked,
+            dropDown = false,
+            content = content,
+        )
+    }
+
+    /**
+     * 使用 Foundation 绘制下拉按钮，并在尾部追加主题尺寸的下拉箭头。
+     *
+     * 箭头着色跟随当前按钮内容色；浮层与展开状态不属于本实现，由调用方组合菜单入口。
+     *
+     * @param onClick 按钮启用且被激活时触发，业务状态由调用方更新。
+     * @param modifier 按钮根节点修饰符。
+     * @param enabled 是否接受操作，并选择启用或禁用颜色。
+     * @param variant Nomi 颜色预设类型；null 使用 Primary。
+     * @param size 显式尺寸预设；null 使用 Medium。
+     * @param colors 四种状态颜色的逐字段覆盖。
+     * @param nativeSpec 下拉按钮专属参数；Nomi 外观由令牌决定，本实现忽略它。
+     * @param content 在居中的 RowScope 中组合的内容，不含下拉箭头。
+     */
+    @Composable
+    override fun DropDownButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        variant: NomiButtonVariant?,
+        size: NomiControlSize?,
+        colors: NomiButtonColors,
+        nativeSpec: NomiDropDownButtonSpec?,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        NomiActionSurface(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            variant = variant,
+            size = size,
+            colors = colors,
+            shape = null,
+            contentPadding = null,
+            textStyle = null,
+            role = Role.Button,
+            selected = null,
+            dropDown = true,
+            content = content,
+        )
+    }
 }
 
 /**

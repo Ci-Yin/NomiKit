@@ -69,4 +69,29 @@ interface NomiControlRenderer {
         nativeSpec: NomiRadioButtonSpec?,
     )
 
+    /**
+     * 渲染一个原生组合框。
+     *
+     * 实现负责收起态的容器、下拉指示、展开浮层的定位与宽度对齐；核心只传状态、两个内容槽
+     * 与展开回调，不替调用方维护展开状态。
+     *
+     * @param expanded 当前是否展开，由调用方持有。
+     * @param onExpandedChange 展开状态变化回调，收到请求后的目标状态。
+     * @param menuItems 展开时显示的菜单项槽；由实现放进自己的浮层，调用方只能放菜单项。
+     * @param modifier 应用于组合框根节点的修饰符。
+     * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
+     * @param nativeSpec 组合框专属参数；null，或未携带本系统定义的类型时，全部沿用原生默认。
+     * @param content 收起态内容槽，显示当前值或占位内容。
+     */
+    @Composable
+    fun ComboBox(
+        expanded: Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        menuItems: @Composable () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        nativeSpec: NomiComboBoxSpec?,
+        content: @Composable RowScope.() -> Unit,
+    )
+
 }

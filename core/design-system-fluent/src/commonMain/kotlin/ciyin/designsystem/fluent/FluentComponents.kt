@@ -6,12 +6,14 @@ import ciyin.designsystem.component.divider.NomiDividerRenderer
 import ciyin.designsystem.component.feedback.NomiFeedbackRenderer
 import ciyin.designsystem.component.icon.NomiIconRenderer
 import ciyin.designsystem.component.list.NomiListItemRenderer
+import ciyin.designsystem.component.menu.NomiMenuRenderer
 import ciyin.designsystem.fluent.button.FluentButton
 import ciyin.designsystem.fluent.control.FluentControlRenderer
 import ciyin.designsystem.fluent.divider.FluentDividerRenderer
 import ciyin.designsystem.fluent.feedback.FluentFeedbackRenderer
 import ciyin.designsystem.fluent.icon.FluentIcon
 import ciyin.designsystem.fluent.list.FluentListItemRenderer
+import ciyin.designsystem.fluent.menu.FluentMenuRenderer
 import ciyin.designsystem.fluent.navigation.FluentNavigationRenderer
 import ciyin.designsystem.fluent.scaffold.FluentScaffoldRenderer
 import ciyin.designsystem.fluent.surface.FluentSurface
@@ -71,4 +73,8 @@ internal object FluentComponents : NomiDesignSystemComponents {
      */
     override val feedback: NomiFeedbackRenderer = FluentFeedbackRenderer
 
+    /**
+     * 菜单；浮层与菜单项分别映射到原生 DropdownMenu 与弱强调按钮行。
+     */
+    override val menus: NomiMenuRenderer = FluentMenuRenderer
 }
