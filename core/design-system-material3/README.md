@@ -116,6 +116,8 @@ val designSystem = NomiDesignSystem.Material3(branded)
   TextButton，`Destructive` 在原生 Button 上选用 error/onError。四色均为可缺省覆盖，不填充中立默认；
   只有显式 `size` 才应用中立 metrics，显式 shape、contentPadding 优先，textStyle 按字段覆盖 size 排版。
   当前状态显式 contentColor/disabledContentColor 优先于 textStyle.color，后者再优先原生实际内容色。
+- `NomiIconButton` 使用原生 `IconButton`，四色经 `IconButtonDefaults.iconButtonColors` 稀疏映射；
+  未指定通道由原生 `takeOrElse` 回退，不覆盖形状、尺寸或交互层。
 - `NomiSurface` 默认矩形表面并保留原生内容色推导；`NomiCard` 调用原生 Card，默认无额外内边距；
   `NomiBorder` 区分默认、无描边与显式描边；组件级 shape 可为任意 Shape。
 - Button/Surface/Card 保持原生实际内容环境，中立桥只传播显式 colors/textStyle/size 增量；
@@ -147,7 +149,7 @@ val designSystem = NomiDesignSystem.Material3(branded)
 | 脚手架   | `Material3ScaffoldSpec`   | `snackbarHost`、`floatingActionButton`、`contentWindowInsets`            |
 | 列表项   | `Material3ListItemSpec`   | `overlineContent`、`colors`、`tonalElevation`、`shadowElevation`         |
 
-文本、导航项、图标、分割线、开关、复选框、单选按钮、输入框与提示浮层的族契约是核心预留插孔，
+文本、导航项、图标按钮、图标、分割线、开关、复选框、单选按钮、输入框与提示浮层的族契约是核心预留插孔，
 Material 3 侧暂未定义 spec；这些入口当前没有"中立 API 表达不了"的原生参数。颜色已由中立的
 `NomiButtonColors` / `NomiSurfaceColors` 覆盖，因此不重复进入 spec。
 

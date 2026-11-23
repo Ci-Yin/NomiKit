@@ -36,6 +36,7 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiIconButtonSpec
 import ciyin.designsystem.component.button.NomiToggleButtonColors
 import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.component.button.NomiButtonSpec
@@ -218,6 +219,34 @@ object Material3ActionRenderer : NomiActionRenderer {
                 )
             },
             toggleableState = null,
+            content = content,
+        )
+    }
+
+    /**
+     * 使用原生标准图标按钮；未指定的颜色通道沿用原生图标按钮色板。
+     *
+     * @param onClick 原生图标按钮启用且被激活时调用。
+     * @param modifier 原生图标按钮修饰符，不追加尺寸或点击层。
+     * @param enabled 是否允许原生按钮交互。
+     * @param colors 逐字段覆盖启用/禁用颜色；Unspecified 保留原生图标按钮对应值。
+     * @param nativeSpec 图标按钮专属参数；当前没有实现，原样接受并忽略。
+     * @param content 原生图标按钮内容，通常是一个图标。
+     */
+    @Composable
+    override fun IconButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        colors: NomiButtonColors,
+        nativeSpec: NomiIconButtonSpec?,
+        content: @Composable () -> Unit,
+    ) {
+        NativeIconButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors.toIconButtonColors(checked = false),
             content = content,
         )
     }

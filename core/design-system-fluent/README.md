@@ -3,7 +3,8 @@
 ## 用途与边界
 
 为中立设计系统提供 Compose Fluent **v0.1.0** 的原生默认优先适配。 统一调用入口，不统一外观；当前覆盖
-Text（含文本输入框）、Button、Surface、独立原生非点击 Card、导航套件与列表项。 不负责 Mica、窗口生命周期或其它二期组件。
+Text（含文本输入框）、Button（含图标按钮）、Surface、独立原生非点击 Card、导航套件与列表项。 不负责
+Mica、窗口生命周期或其它二期组件。
 
 - 使用仓库 `multiplatform-lib-targets`，Android 与按项目开关注册的 Desktop/iOS/JS/Wasm 共用
   commonMain。
@@ -167,6 +168,7 @@ NomiListItem(
 | 默认 / Default Button         | component.Button                                                                                                                                                                                                                                  |
 | Primary Button                | AccentButton                                                                                                                                                                                                                                      |
 | Subtle Button                 | SubtleButton                                                                                                                                                                                                                                      |
+| NomiIconButton                | 原生 SubtleButton + `iconOnly = true`（Fluent 没有独立图标按钮组件）                                                                                                                                                                              |
 | Text Button                   | HyperlinkButton                                                                                                                                                                                                                                   |
 | Destructive Button            | Button + 显式 critical 配方                                                                                                                                                                                                                       |
 | NomiSurface                   | background.Layer；任意 shape、显式颜色与三态 border                                                                                                                                                                                               |

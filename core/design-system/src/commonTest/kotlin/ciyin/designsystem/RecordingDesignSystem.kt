@@ -36,6 +36,7 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiIconButtonSpec
 import ciyin.designsystem.component.button.NomiToggleButtonColors
 import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.component.card.NomiCardSpec
@@ -148,6 +149,22 @@ internal data class RecordedButton(
     val contentPadding: PaddingValues?,
     val textStyle: TextStyle?,
     val nativeSpec: NomiButtonSpec? = null,
+)
+
+/**
+ * 记录图标按钮派发参数。
+ *
+ * @property enabled 原样记录的启用状态。
+ * @property colors 逐字段颜色覆盖，保留 Unspecified 与 Transparent 的区别。
+ * @property hasModifier 是否传入非默认修饰符。
+ * @property nativeSpec 原样记录的图标按钮专属参数；null 表示未指定。
+ */
+@Immutable
+internal data class RecordedIconButton(
+    val enabled: Boolean,
+    val colors: NomiButtonColors,
+    val hasModifier: Boolean,
+    val nativeSpec: NomiIconButtonSpec? = null,
 )
 
 /**
@@ -536,6 +553,11 @@ internal class RecordingDesignSystem(
      * 按组合顺序记录按钮派发。
      */
     val buttons: MutableList<RecordedButton> = mutableListOf()
+
+    /**
+     * 按组合顺序记录图标按钮派发。
+     */
+    val iconButtons: MutableList<RecordedIconButton> = mutableListOf()
 
     /**
      * 按组合顺序记录开关按钮派发。
@@ -951,6 +973,35 @@ internal class RecordingDesignSystem(
                 )
                 SideEffect { dropDownButtons += call }
                 Row(content = content)
+            }
+
+            /**
+             * 记录图标按钮参数并组合内容，不绘制按钮或建立点击交互。
+             *
+             * @param onClick 接口要求的点击回调；录制夹具不会调用。
+             * @param modifier 接口要求的修饰符；录制夹具只记录是否非默认。
+             * @param enabled 原样记录的启用状态。
+             * @param colors 原样记录的四态颜色，不解析 Unspecified。
+             * @param nativeSpec 专属参数；录制夹具原样记录，不解析也不应用。
+             * @param content 组合的内容，供嵌套派发测试使用。
+             */
+            @Composable
+            override fun IconButton(
+                onClick: () -> Unit,
+                modifier: Modifier,
+                enabled: Boolean,
+                colors: NomiButtonColors,
+                nativeSpec: NomiIconButtonSpec?,
+                content: @Composable () -> Unit,
+            ) {
+                val call = RecordedIconButton(
+                    enabled = enabled,
+                    colors = colors,
+                    hasModifier = modifier != Modifier,
+                    nativeSpec = nativeSpec,
+                )
+                SideEffect { iconButtons += call }
+                Row { content() }
             }
         }
 

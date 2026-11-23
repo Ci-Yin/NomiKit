@@ -15,6 +15,7 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiIconButtonSpec
 import ciyin.designsystem.component.button.NomiToggleButtonColors
 import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.fluent.rememberFluentWarning
@@ -32,7 +33,7 @@ import io.github.composefluent.component.ToggleButton as NativeToggleButton
 /**
  * 直接复用 Fluent v0.1.0 原生按钮族，不以 Layer 重绘按钮或伪造交互语义。
  *
- * 普通、开关与下拉按钮都走原生入口；三者只在原生组件选择、状态色与尺寸覆盖告警上分叉。
+ * 普通、图标、开关与下拉按钮都走原生入口；四者只在原生组件选择、状态色与尺寸覆盖告警上分叉。
  */
 internal object FluentButton : NomiActionRenderer {
     /**
@@ -195,6 +196,41 @@ internal object FluentButton : NomiActionRenderer {
             disabled = !enabled,
             buttonColors = colors.toFluentButtonColors(variant),
             content = fluentButtonContent(enabled, colors, textStyle = null, content = content),
+        )
+    }
+
+    /**
+     * 使用原生 SubtleButton 的图标形态；Fluent 没有独立图标按钮组件。
+     *
+     * @param onClick 原生按钮启用且被激活时调用；业务状态由调用方持有。
+     * @param modifier 原生按钮修饰符。
+     * @param enabled 是否启用，映射为原生 disabled 的反值。
+     * @param colors 四字段稀疏覆盖；未指定通道沿用原生 SubtleButton 色板。
+     * @param nativeSpec 图标按钮专属参数；只识别 Fluent 定义的类型，其它系统的参数静默忽略。
+     * @param content 原生 RowScope 内容，图标形态下为图标槽。
+     */
+    @Composable
+    override fun IconButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        colors: NomiButtonColors,
+        nativeSpec: NomiIconButtonSpec?,
+        content: @Composable () -> Unit,
+    ) {
+        NativeSubtleButton(
+            onClick = onClick,
+            modifier = modifier,
+            disabled = !enabled,
+            buttonColors = colors.toFluentButtonColors(NomiButtonVariant.Subtle),
+            iconOnly = true,
+            content = fluentButtonContent(
+                enabled = enabled,
+                colors = colors,
+                textStyle = null,
+            ) {
+                content()
+            },
         )
     }
 }

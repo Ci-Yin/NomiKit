@@ -10,6 +10,8 @@ import ciyin.designsystem.component.button.NomiButtonColors
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.button.NomiDropDownButton
 import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiIconButton
+import ciyin.designsystem.component.button.NomiIconButtonSpec
 import ciyin.designsystem.component.button.NomiToggleButton
 import ciyin.designsystem.component.button.NomiToggleButtonColors
 import ciyin.designsystem.component.button.NomiToggleButtonSpec
@@ -23,10 +25,73 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * 开关按钮、下拉按钮与组合框入口只派发明确参数，不预填统一尺寸或颜色。
+ * 图标按钮、开关按钮、下拉按钮与组合框入口只派发明确参数，不预填统一尺寸或颜色。
  */
 @OptIn(ExperimentalTestApi::class)
 class ActionEntryDispatchContractTest {
+    /**
+     * 图标按钮默认参数保持稀疏：启用、无颜色覆盖、无专属参数。
+     */
+    @Test
+    fun iconButtonDefaultsRemainSparse() = runComposeUiTest {
+        val designSystem = RecordingDesignSystem()
+        setContent {
+            NomiTheme(designSystem = designSystem) {
+                NomiIconButton(onClick = {}) { NomiText("图标") }
+            }
+        }
+        runOnIdle {
+            assertEquals(
+                listOf(
+                    RecordedIconButton(
+                        enabled = true,
+                        colors = NomiButtonColors(),
+                        hasModifier = false,
+                    )
+                ),
+                designSystem.iconButtons,
+            )
+            assertEquals(setOf("图标"), designSystem.texts.keys)
+        }
+    }
+
+    /**
+     * 图标按钮的禁用状态、修饰符、颜色与专属参数原样透传。
+     */
+    @Test
+    fun iconButtonExplicitParametersAreDispatchedUnchanged() = runComposeUiTest {
+        val designSystem = RecordingDesignSystem()
+        val spec = RecordingIconButtonSpec(marker = "icon")
+        val colors = NomiButtonColors(
+            containerColor = Color.Red,
+            disabledContentColor = Color.Blue,
+        )
+        setContent {
+            NomiTheme(designSystem = designSystem) {
+                NomiIconButton(
+                    onClick = {},
+                    modifier = Modifier.testTag("icon"),
+                    enabled = false,
+                    colors = colors,
+                    nativeSpec = spec,
+                ) {}
+            }
+        }
+        runOnIdle {
+            assertEquals(
+                listOf(
+                    RecordedIconButton(
+                        enabled = false,
+                        colors = colors,
+                        hasModifier = true,
+                        nativeSpec = spec,
+                    )
+                ),
+                designSystem.iconButtons,
+            )
+        }
+    }
+
     /**
      * 开关按钮默认参数保持稀疏：启用、未选中、文字形态、无尺寸与颜色覆盖。
      */
@@ -230,6 +295,13 @@ class ActionEntryDispatchContractTest {
         }
     }
 }
+
+/**
+ * 测试用图标按钮专属参数，模拟 adapter 模块定义的具体 spec。
+ *
+ * @property marker 用于区分实例来源的标记，不参与渲染。
+ */
+private data class RecordingIconButtonSpec(val marker: String) : NomiIconButtonSpec
 
 /**
  * 测试用开关按钮专属参数，模拟 adapter 模块定义的具体 spec。

@@ -593,7 +593,7 @@ Material3 应用根
 | 族       | 公共入口                                                                                                                                                                                               |
 |----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 文本     | `NomiText` / `NomiTextField`（显示与编辑共用同一 renderer）                                                                                                                                            |
-| 操作     | `NomiButton`（Primary / Default / Subtle / Text / Destructive）/ `NomiToggleButton` / `NomiDropDownButton`                                                                                             |
+| 操作     | `NomiButton`（Primary / Default / Subtle / Text / Destructive）/ `NomiIconButton` / `NomiToggleButton` / `NomiDropDownButton`                                                                          |
 | 表面     | `NomiSurface` / `NomiCard`                                                                                                                                                                             |
 | 导航     | `NomiNavigationSuite`（Bar / Rail / Drawer）                                                                                                                                                           |
 | 页面外壳 | `NomiScaffold` / `NomiTopAppBar`                                                                                                                                                                       |
@@ -620,25 +620,25 @@ SPI 族内多个入口不共享 spec 类型。
 计数口径：`import androidx.compose.material3.<符号>` 的源码文件数，含 `app/sample` 演示页，不含
 `build/`、 测试文件与文档；同一文件多处使用只计一次。未标注计数的行表示当前无外部调用方。
 
-| 优先级 | 组件                                              | 现有调用方                      | 依据                                                                                                                                 |
-|--------|---------------------------------------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| P0     | `NomiIconButton`                                  | 14（sample 13、video-player 1） | 纯图标操作无法复用 `NomiButton` 的 variant 与尺寸                                                                                    |
-| P1     | `NomiBadge`                                       | 适配器内部 2（无外部调用方）    | 导航项已有 `badge` 槽，调用方缺中立徽标可组合                                                                                        |
-| P1     | `NomiTabs` / `NomiChip`                           | 仅 `core/ui-foundation` 旧实现  | 旧 `ScrollableTabRow`、`FilterChip` 属 Material 门面，不进中立核心                                                                   |
-| P1     | 列表分组容器（`NomiListHeader` / 分组标题）       | 无                              | 列表项族只有单行；分组标题与容器未提供                                                                                               |
-| P2     | `NomiDialog` / `NomiBottomSheet` / `NomiSnackbar` | 旧实现与 sample 各 1            | 旧 `AlertDialog2`、`BottomSheetDialog`、`ExposedMenu`、`Toast` 均属 Material 门面，且涉及窗口或宿主状态；`NomiMenu` 已随按钮轮次落地 |
+| 优先级 | 组件                                              | 现有调用方                     | 依据                                                                                                                                 |
+|--------|---------------------------------------------------|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| P1     | `NomiBadge`                                       | 适配器内部 2（无外部调用方）   | 导航项已有 `badge` 槽，调用方缺中立徽标可组合                                                                                        |
+| P1     | `NomiTabs` / `NomiChip`                           | 仅 `core/ui-foundation` 旧实现 | 旧 `ScrollableTabRow`、`FilterChip` 属 Material 门面，不进中立核心                                                                   |
+| P1     | 列表分组容器（`NomiListHeader` / 分组标题）       | 无                             | 列表项族只有单行；分组标题与容器未提供                                                                                               |
+| P2     | `NomiDialog` / `NomiBottomSheet` / `NomiSnackbar` | 旧实现与 sample 各 1           | 旧 `AlertDialog2`、`BottomSheetDialog`、`ExposedMenu`、`Toast` 均属 Material 门面，且涉及窗口或宿主状态；`NomiMenu` 已随按钮轮次落地 |
 
 ### 待迁移调用点（记录）
 
 以下调用点仍直连原生 Material 3 组件；中立入口已经就位，迁移留给后续轮次，避免本轮混入页面行为变更：
 
-| 入口            | 数量与位置                                      |
-|-----------------|-------------------------------------------------|
-| `NomiIcon`      | 18（sample 15、shared 1、video-player 2）       |
-| `NomiDivider`   | 横向 10（sample 9、shared 1）+ 纵向 1（shared） |
-| `NomiSwitch`    | 2（sample）                                     |
-| `NomiTextField` | 4（sample，均为 `OutlinedTextField`）           |
-| `NomiTooltip`   | 1（sample）                                     |
+| 入口             | 数量与位置                                                            |
+|------------------|-----------------------------------------------------------------------|
+| `NomiIcon`       | 18（sample 15、shared 1、video-player 2）                             |
+| `NomiIconButton` | sample 13 文件（17 处标准 + 1 处描边）+ `feature/video-player` 3 文件 |
+| `NomiDivider`    | 横向 10（sample 9、shared 1）+ 纵向 1（shared）                       |
+| `NomiSwitch`     | 2（sample）                                                           |
+| `NomiTextField`  | 4（sample，均为 `OutlinedTextField`）                                 |
+| `NomiTooltip`    | 1（sample）                                                           |
 
 迁移时删除为「统一外观」补入的参数，只保留调用方真正需要的显式覆盖；分割线的显式 `thickness` / `color`
 与输入框的 `variant` / `isError` 在不支持的系统上会降级并记录警告。
@@ -657,7 +657,7 @@ SPI 族内多个入口不共享 spec 类型。
 ### 依赖顺序与建议轮次
 
 ```text
-第 1 轮  原子层      NomiIcon（已落地） -> NomiIconButton -> NomiDivider（已落地，含纵向）
+第 1 轮  原子层      NomiIcon（已落地） -> NomiIconButton（已落地） -> NomiDivider（已落地，含纵向）
 第 2 轮  控件族      Switch / Checkbox / RadioButton / TextField / Slider（已落地）
 第 3 轮  反馈与结构  ProgressIndicator（已落地） -> TopAppBar（已落地） -> Badge -> Tabs / Chip（Tooltip 已落地）
 第 4 轮  浮层        Dialog -> BottomSheet -> Menu -> Snackbar
@@ -670,6 +670,20 @@ SPI 族内多个入口不共享 spec 类型。
   是任何页面的前置能力，因此不因计数低而下调。
 
 ## 验证记录与验收缺口
+
+### 本轮：新增图标按钮 NomiIconButton，2026-11-23
+
+范围：`actions` 族新增 `NomiIconButton`（标准形态、四种颜色稀疏覆盖、`NomiIconButtonSpec` 预留）， 不新增
+`NomiButtonVariant.Outlined`；Nomi 用 48dp 方形与 `spacings.medium` 组装，Material 3 使用原生
+`IconButton`，Fluent 使用原生 `SubtleButton(iconOnly = true)`。
+
+- 验证：核心 75、Nomi 45、Material 3 47、Fluent 65，共 232 项 Desktop 回归零失败；sample 70 项 Desktop
+  测试零失败；四模块 `compileCommonMainKotlinMetadata` 与四模块
+  `compileTestKotlinDesktop` 通过。
+- 覆盖：核心派发（默认稀疏、显式颜色与 spec 透传）、Nomi 48dp 方形与槽位内容色继承、Material 3
+  原生点击/禁用与稀疏颜色、Fluent 原生图标形态与显式内容色。
+- 未执行：Android / iOS / Web 与真机运行；sample 与 `feature/video-player` 的图标按钮调用点未迁移， 其中
+  sample 的 1 处 `OutlinedIconButton` 需等 `Outlined` 变体。
 
 ### 本轮：新增顶栏 NomiTopAppBar，2026-11-22
 

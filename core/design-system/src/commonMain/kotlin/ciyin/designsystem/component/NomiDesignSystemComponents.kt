@@ -24,7 +24,7 @@ interface NomiDesignSystemComponents {
     val text: NomiTextRenderer
 
     /**
-     * 操作组件。
+     * 操作组件：普通按钮、图标按钮、开关按钮与下拉按钮。
      */
     val actions: NomiActionRenderer
 

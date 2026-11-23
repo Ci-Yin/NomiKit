@@ -100,4 +100,27 @@ interface NomiActionRenderer {
         nativeSpec: NomiDropDownButtonSpec?,
         content: @Composable RowScope.() -> Unit,
     )
+
+    /**
+     * 渲染一个原生图标按钮。
+     *
+     * 实现负责容器、触摸目标、状态层与内容色，不追加文本排版；内容按实现的原生方式居中，
+     * 图标尺寸由调用方在内容中约束。
+     *
+     * @param onClick 启用状态下用户激活按钮时调用；业务状态由调用方更新。
+     * @param modifier 应用于按钮根节点的修饰符。
+     * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
+     * @param colors 按启用/禁用状态逐字段覆盖颜色；Unspecified 保留对应原生值，Transparent 是有效覆盖。
+     * @param nativeSpec 图标按钮专属参数；null，或未携带本系统定义的类型时，全部沿用原生默认。
+     * @param content 在按钮内居中的内容，通常是一个图标，不负责维护点击状态。
+     */
+    @Composable
+    fun IconButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        colors: NomiButtonColors,
+        nativeSpec: NomiIconButtonSpec?,
+        content: @Composable () -> Unit,
+    )
 }

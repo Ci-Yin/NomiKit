@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon as NativeIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -41,6 +40,7 @@ import ciyin.designsystem.component.button.NomiButtonDefaults
 import ciyin.designsystem.component.button.NomiButtonSpec
 import ciyin.designsystem.component.button.NomiButtonVariant
 import ciyin.designsystem.component.button.NomiDropDownButtonSpec
+import ciyin.designsystem.component.button.NomiIconButtonSpec
 import ciyin.designsystem.component.button.NomiToggleButtonColors
 import ciyin.designsystem.component.button.NomiToggleButtonSpec
 import ciyin.designsystem.icon.ChevronDown
@@ -49,12 +49,13 @@ import ciyin.designsystem.nomi.LocalNomiNativeContentColor
 import ciyin.designsystem.nomi.LocalNomiNativeTextStyle
 import ciyin.designsystem.runtime.ProvideNomiContentStyle
 import ciyin.designsystem.theme.NomiTheme
+import androidx.compose.material3.Icon as NativeIcon
 
 /**
  * Nomi 默认按钮渲染器。
  *
- * 三个入口共用同一套 Foundation 绘制：普通按钮、开关按钮与下拉按钮的差异只体现在状态色、
- * 交互语义与是否追加下拉箭头，容器、描边和内边距仍由同一份令牌驱动。
+ * 四个入口共用同一套 Foundation 绘制：普通按钮、图标按钮、开关按钮与下拉按钮的差异只体现在
+ * 状态色、交互语义、是否追加下拉箭头与是否使用方形图标度量，容器、描边和内边距仍由同一份令牌驱动。
  */
 internal object DefaultNomiActionRenderer : NomiActionRenderer {
     /**
@@ -185,6 +186,113 @@ internal object DefaultNomiActionRenderer : NomiActionRenderer {
             dropDown = true,
             content = content,
         )
+    }
+
+    /**
+     * 使用 Foundation 绘制标准图标按钮，容器默认透明并继承当前槽位内容色。
+     *
+     * @param onClick 按钮启用且被激活时触发，业务状态由调用方更新。
+     * @param modifier 按钮根节点修饰符，在其后追加方形最小触摸目标、绘制、交互和内边距。
+     * @param enabled 是否接受操作，并选择启用或禁用颜色。
+     * @param colors 四字段稀疏颜色覆盖；未指定的容器透明，未指定的内容色继承当前槽位，再回落 textPrimary。
+     * @param nativeSpec 图标按钮专属参数；Nomi 外观由令牌决定，本实现忽略它。
+     * @param content 在居中容器中组合的内容，通常是一个图标；图标尺寸由调用方约束。
+     */
+    @Composable
+    override fun IconButton(
+        onClick: () -> Unit,
+        modifier: Modifier,
+        enabled: Boolean,
+        colors: NomiButtonColors,
+        nativeSpec: NomiIconButtonSpec?,
+        content: @Composable () -> Unit,
+    ) {
+        NomiIconActionSurface(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors,
+            content = content,
+        )
+    }
+}
+
+/**
+ * 图标按钮的 Nomi 绘制外壳：方形最小触摸目标、透明容器与槽位继承内容色。
+ *
+ * @param onClick 按钮启用且被激活时触发。
+ * @param modifier 按钮根节点修饰符。
+ * @param enabled 是否接受操作。
+ * @param colors 四字段稀疏颜色覆盖。
+ * @param content 在居中容器中组合的内容。
+ */
+@Composable
+private fun NomiIconActionSurface(
+    onClick: () -> Unit,
+    modifier: Modifier,
+    enabled: Boolean,
+    colors: NomiButtonColors,
+    content: @Composable () -> Unit,
+) {
+    val scheme = NomiTheme.colorScheme
+    val explicitContentColor = if (enabled) colors.contentColor else colors.disabledContentColor
+    val contentColor = explicitContentColor.takeOrElse {
+        if (enabled) {
+            LocalNomiNativeContentColor.current.takeOrElse { scheme.textPrimary }
+        } else {
+            scheme.textDisabled
+        }
+    }
+    val explicitContainerColor =
+        if (enabled) colors.containerColor else colors.disabledContainerColor
+    val containerColor = explicitContainerColor.takeOrElse { Color.Transparent }
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hovered by interactionSource.collectIsHoveredAsState()
+    var focused by remember { mutableStateOf(false) }
+    val stateColor = when {
+        !enabled -> containerColor
+        pressed -> contentColor.copy(alpha = NomiPressedOpacity).compositeOver(containerColor)
+        hovered -> contentColor.copy(alpha = NomiHoveredOpacity).compositeOver(containerColor)
+        else -> containerColor
+    }
+    val shape = NomiTheme.shapes.small
+    val minTouchTarget = NomiButtonDefaults.metrics(NomiControlSize.Medium).minTouchTarget
+    Box(
+        modifier = modifier
+            .defaultMinSize(minWidth = minTouchTarget, minHeight = minTouchTarget)
+            .clip(shape)
+            .background(stateColor, shape)
+            .then(
+                if (focused) {
+                    Modifier.border(
+                        width = NomiTheme.sizes.strokes.medium,
+                        color = contentColor,
+                        shape = shape,
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .onFocusChanged { focused = it.isFocused }
+            .clickable(
+                enabled = enabled,
+                role = Role.Button,
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(NomiTheme.spacings.medium),
+        contentAlignment = Alignment.Center,
+    ) {
+        CompositionLocalProvider(LocalNomiNativeContentColor provides contentColor) {
+            ProvideNomiContentStyle(
+                color = explicitContentColor,
+                textStyle = TextStyle.Default,
+            ) {
+                content()
+            }
+        }
     }
 }
 

@@ -46,6 +46,7 @@ Typography 文件已移除。
 
 公共组件： [NomiText](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/text/NomiText.kt>)、
 [NomiButton](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/button/NomiButton.kt>)、
+[NomiIconButton](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/button/NomiIconButton.kt>)、
 [NomiToggleButton](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/button/NomiToggleButton.kt>)、
 [NomiDropDownButton](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/button/NomiDropDownButton.kt>)、
 [NomiSurface](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/surface/NomiSurface.kt>)、
@@ -59,6 +60,9 @@ Typography 文件已移除。
 [NomiMenu](<../../../core/design-system/src/commonMain/kotlin/ciyin/designsystem/component/menu/NomiMenu.kt>)
 。每个文件维护真实 API/SPI，不重建组件大文件。
 
+- `NomiIconButton` 只有标准形态：Nomi 48dp 方形并继承槽位内容色，Material 3 用原生 `IconButton`，Fluent
+  用 `SubtleButton(iconOnly = true)`。
+
 - 原生适配：读[M3 README](<../../../core/design-system-material3/README.md>)
   或[Fluent README](<../../../core/design-system-fluent/README.md>)； adapter
   组件独立实现，聚合文件只组装。旧包问题转[core-material](<../core-material/SKILL.md>)。
@@ -69,25 +73,26 @@ Typography 文件已移除。
 text/button/surface/card/navigation/scaffold/list 组织；nomi 是独立 Gradle 模块（:core:
 design-system-nomi）但包名 ciyin.designsystem.nomi 不变。 公共入口、SPI 和专属参数类型留在核心
 component，只有 renderer 接口独立成 `NomiXxxRenderer.kt`；其余公共声明随组件文件（入口与文件同名，
-颜色/枚举/默认值 object 与导航项作用域同在该文件内，族标记与 `XxxSpec` 紧随入口）。FluentButtonColors 属于
-fluent/button。NomiBorder/NomiControlSize/NomiDesignSystemComponents 留在核心 component 根。
+颜色/枚举/默认值 object 与导航项作用域同在该文件内，族标记与 `XxxSpec` 紧随入口）。FluentButtonColors
+属于 fluent/button。NomiBorder/NomiControlSize/NomiDesignSystemComponents 留在核心 component 根。
 DefaultNomiSystem（internal，经 `NomiDesignSystem.Default` 暴露）与 NomiNativeContentStyle 位于 nomi
 模块；默认 renderer 位于其组件子包。公共主题值与 getter 在 theme，映射契约与显式 slot 在 runtime。 核心不引用
 nomi：LocalNomiDesignSystem 可空且无隐式默认，应用根、测试与 Preview 必须显式提供（CompositionLocalProvider
 或 NomiTheme (designSystem=...)
-）；未提供时读取组件明确失败。text/actions/surfaces/navigation/scaffold/listItems/icons/decorations/controls/feedback/menus 十一族 SPI，
-Card 仍归 surfaces，导航套件归 navigation，页面外壳归 scaffold，列表项归 listItems，菜单浮层与菜单项归 menus。 导航套件入口
-NomiNavigationSuite (layoutType, modifier, containerColor, items, footerItems, content)
+）；未提供时读取组件明确失败。text/actions/surfaces/navigation/scaffold/listItems/icons/decorations/controls/feedback/menus
+十一族 SPI， Card 仍归 surfaces，导航套件归 navigation，页面外壳归 scaffold，列表项归
+listItems，菜单浮层与菜单项归 menus。 导航套件入口 NomiNavigationSuite (layoutType, modifier,
+containerColor, items, footerItems, content)
 ：布局类型由调用方按窗口形态选择，核心与实现都不读取窗口/平台；items 与 footerItems 按声明顺序渲染组内项目，
 底部组是否参与布局由实现决定（Nomi Bar 只渲染主导航项，底部组只在 Rail/Drawer 展示）。 页面外壳入口
 NomiScaffold (modifier, colors, topBar, bottomBar, content)：content 必须位于顶栏与底栏之间， 空槽不占位；M3
 委托原生 Scaffold（innerPadding 让位），Fluent/Nomi 用 Column 权重排布，标题/最大宽度/滚动仍归调用方。
 顶栏入口 NomiTopAppBar (title, modifier, navigationIcon, actions, colors, nativeSpec)：只做固定单行栏，
 导航图标为 null 时不占位，颜色四通道稀疏覆盖；Nomi 取 appBar 令牌（56dp），Material 3 用原生 TopAppBar，
-Fluent 用原生色板组装 48dp 行，不暴露居中/折叠/滚动行为。
-列表项入口 NomiListItem (title, modifier, onClick, leading, subtitle, trailing)：槽位为 null
-时不占位，onClick=null 表示静态行； 行高、容器、圆角、悬停/按下/点击外观与文本样式全部由原生实现决定。
-本版不提供 enabled、selected、展开、 overline、分组标题、分隔线与颜色/形状/内边距覆盖；尾部只有一个原生槽位，值文本与箭头由调用方组合；
+Fluent 用原生色板组装 48dp 行，不暴露居中/折叠/滚动行为。 列表项入口 NomiListItem (title, modifier,
+onClick, leading, subtitle, trailing)：槽位为 null 时不占位，onClick=null 表示静态行；
+行高、容器、圆角、悬停/按下/点击外观与文本样式全部由原生实现决定。 本版不提供 enabled、selected、展开、
+overline、分组标题、分隔线与颜色/形状/内边距覆盖；尾部只有一个原生槽位，值文本与箭头由调用方组合；
 副标题建议使用 NomiText 继承原生 supporting/caption 样式，图标尺寸与无障碍名称由槽内容负责（IconPack
 固有 256dp，必须显式 size）。 导航项是槽位式 NavigationItem (selected, onClick, modifier, icon, badge,
 label, colors, interactionSource)：icon/badge/label 由调用方组合，没有
@@ -157,7 +162,8 @@ friend tests。
   padding 硬撑位置。
 - 滑块默认外观对齐应用滑块（16dp 胶囊轨道、15dp 描边拇指、轨道两端 coerce、透明刻度、禁用 38% 透明度）；
   画刷、描边与刻度的绘制路径保留在 Nomi 实现内部，公共入口不暴露尺寸、颜色、拇指槽位与标签变体。
-- 线性进度使用与滑块一致的 16dp 胶囊轨道与 `primary` / `surfaceHigher` 配色；环形保持 32dp / 3dp，仅统一配色。
+- 线性进度使用与滑块一致的 16dp 胶囊轨道与 `primary` / `surfaceHigher` 配色；环形保持 32dp /
+  3dp，仅统一配色。
 - 应用侧只做窗口→布局映射与数据分组；不要恢复 AppTheme/旧 iconpack/M3 导航直连。
 - 文本 SPI 为 String/AnnotatedString 双重载，逐字段覆盖、onTextLayout、autoSize、inlineContent
   原样透传；未指定沿用 style 与原生环境。
