@@ -4,15 +4,11 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -24,16 +20,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ciyin.designsystem.component.button.NomiButton
-import ciyin.designsystem.component.surface.NomiSurface
-import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.component.scaffold.NomiTopAppBarColors
 import ciyin.designsystem.runtime.NomiDesignSystem
-import ciyin.designsystem.theme.NomiTheme
 import ciyin.designsystem.theme.DarkMode
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.WindowSize
 import ciyin.ui.foundation.classifyWindowWidth
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.presentation.screen.designsystem.component.DesignSystemShowcase
 import com.ciyin.app.presentation.screen.designsystem.component.SamplePreviewTheme
 import com.ciyin.app.presentation.screen.sample.LocalSampleDesignSystems
@@ -88,25 +83,24 @@ internal fun DesignSystemDemoContent(
 ) {
     val system = systems.single { it.id == state.designSystemId }
     val alternate = systems.firstOrNull { it.id != system.id }
-    val density = LocalDensity.current
+    val chromeScheme = NomiTheme.colorScheme
     NomiTheme(
         darkMode = state.darkMode,
         designSystem = system,
     ) {
-        CompositionLocalProvider(
-            LocalDensity provides Density(
-                density = density.density,
-                fontScale = state.fontScale
+        DesignSystemDemoLayout(
+            state = state,
+            systems = systems,
+            alternateDesignSystem = alternate,
+            onAction = onAction,
+            contentScrollState = contentScrollState,
+            topBarColors = NomiTopAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = chromeScheme.textPrimary,
+                navigationIconContentColor = chromeScheme.textPrimary,
+                actionIconContentColor = chromeScheme.textSecondary,
             ),
-        ) {
-            DesignSystemDemoLayout(
-                state = state,
-                systems = systems,
-                alternateDesignSystem = alternate,
-                onAction = onAction,
-                contentScrollState = contentScrollState,
-            )
-        }
+        )
     }
 }
 
@@ -118,6 +112,7 @@ internal fun DesignSystemDemoContent(
  * @param alternateDesignSystem 局部覆盖示例的另一实现；null 时保留当前系统。
  * @param onAction 用户操作的分发入口，状态仍由调用方持有。
  * @param contentScrollState 控制整页纵向滚动的状态。
+ * @param topBarColors 顶栏颜色；使用外层窗口主题，避免内容主题与窗口材质明暗不一致。
  */
 @Composable
 private fun DesignSystemDemoLayout(
@@ -126,85 +121,70 @@ private fun DesignSystemDemoLayout(
     alternateDesignSystem: NomiDesignSystem?,
     onAction: (DesignSystemDemoAction) -> Unit,
     contentScrollState: ScrollState,
+    topBarColors: NomiTopAppBarColors,
 ) {
-    AppThemeSurfaceRoot {
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing),
+    SamplePageScaffold(
+        title = stringResource(Res.string.design_system_demo_title),
+        onBack = { onAction(DesignSystemDemoAction.BackClick) },
+        backContentDescription = stringResource(Res.string.design_system_demo_back),
+        backModifier = Modifier.testTag(DesignSystemDemoTags.Back),
+        modifier = Modifier.testTag(DesignSystemDemoTags.Root),
+        topBarColors = topBarColors,
+    ) {
+        val baseDensity = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(
+                density = baseDensity.density,
+                fontScale = state.fontScale,
+            ),
         ) {
-            val controlWidth =
-                NomiTheme.sizes.layoutConstraints.cardMinWidth + NomiTheme.spacings.huge
-            val fontScale = LocalDensity.current.fontScale
-            val expanded = classifyWindowWidth(maxWidth) == WindowSize.Expanded &&
-                    maxWidth >= controlWidth + NomiTheme.sizes.layoutConstraints.cardMinWidth * fontScale + NomiTheme.spacings.colossal
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag(DesignSystemDemoTags.Scroll)
-                    .verticalScroll(contentScrollState)
-                    .padding(NomiTheme.spacings.large),
-                verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.large),
-            ) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.medium),
-                    verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.small),
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val controlWidth =
+                    NomiTheme.sizes.layoutConstraints.cardMinWidth + NomiTheme.spacings.huge
+                val fontScale = LocalDensity.current.fontScale
+                val expanded = classifyWindowWidth(maxWidth) == WindowSize.Expanded &&
+                        maxWidth >= controlWidth + NomiTheme.sizes.layoutConstraints.cardMinWidth * fontScale + NomiTheme.spacings.colossal
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(DesignSystemDemoTags.Scroll)
+                        .verticalScroll(contentScrollState)
+                        .padding(NomiTheme.spacings.large),
+                    verticalArrangement = Arrangement.spacedBy(NomiTheme.spacings.large),
                 ) {
-                    NomiButton(
-                        onClick = { onAction(DesignSystemDemoAction.BackClick) },
-                        modifier = Modifier.testTag(DesignSystemDemoTags.Back),
-                    ) { NomiText(stringResource(Res.string.design_system_demo_back)) }
-                    NomiText(
-                        text = stringResource(Res.string.design_system_demo_title),
-                        style = NomiTheme.typography.headlineMedium,
-                    )
-                }
-                if (expanded) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.large),
-                    ) {
+                    if (expanded) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(NomiTheme.spacings.large),
+                        ) {
+                            DesignSystemDemoControls(
+                                state = state,
+                                systems = systems,
+                                onAction = onAction,
+                                modifier = Modifier.width(controlWidth),
+                            )
+                            DesignSystemDemoShowcase(
+                                state = state,
+                                alternateDesignSystem = alternateDesignSystem,
+                                onAction = onAction,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    } else {
                         DesignSystemDemoControls(
                             state = state,
                             systems = systems,
                             onAction = onAction,
-                            modifier = Modifier.width(controlWidth),
                         )
                         DesignSystemDemoShowcase(
                             state = state,
                             alternateDesignSystem = alternateDesignSystem,
                             onAction = onAction,
-                            modifier = Modifier.weight(1f),
                         )
                     }
-                } else {
-                    DesignSystemDemoControls(
-                        state = state,
-                        systems = systems,
-                        onAction = onAction,
-                    )
-                    DesignSystemDemoShowcase(
-                        state = state,
-                        alternateDesignSystem = alternateDesignSystem,
-                        onAction = onAction,
-                    )
                 }
             }
         }
-    }
-}
-
-/**
- * 根表面只承载页面背景，不主动覆盖原生表面参数。
- *
- * @param content 在原生表面内容环境中组合的页面，无接收者作用域。
- */
-@Composable
-private fun AppThemeSurfaceRoot(content: @Composable () -> Unit) {
-    NomiSurface(
-        modifier = Modifier.fillMaxSize().testTag(DesignSystemDemoTags.Root),
-    ) {
-        content()
     }
 }
 

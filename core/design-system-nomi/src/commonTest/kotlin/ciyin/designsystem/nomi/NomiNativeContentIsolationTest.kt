@@ -16,6 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -221,6 +222,8 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
              * @param enabled 是否接受用户操作。
              * @param readOnly 是否只读。
              * @param singleLine 是否限制为单行。
+             * @param maxLines 最大显示行数。
+             * @param visualTransformation 文本可视化转换。
              * @param variant 显式视觉变体；null 使用原生默认。
              * @param label 标签槽；null 表示没有标签。
              * @param placeholder 占位符槽；null 表示没有占位符。
@@ -239,6 +242,8 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
                 enabled: Boolean,
                 readOnly: Boolean,
                 singleLine: Boolean,
+                maxLines: Int,
+                visualTransformation: VisualTransformation,
                 variant: NomiTextFieldVariant?,
                 label: (@Composable () -> Unit)?,
                 placeholder: (@Composable () -> Unit)?,
@@ -256,6 +261,8 @@ private class SlotRecordingDesignSystem : NomiDesignSystem {
                     enabled = enabled,
                     readOnly = readOnly,
                     singleLine = singleLine,
+                    maxLines = maxLines,
+                    visualTransformation = visualTransformation,
                     variant = variant,
                     label = label,
                     placeholder = placeholder,

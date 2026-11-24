@@ -2,7 +2,6 @@ package com.ciyin.app.presentation.screen.medialibrary
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,33 +16,17 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.ImageAdd
+import io.github.composefluent.icons.regular.Prohibited
+import io.github.composefluent.icons.regular.CheckmarkCircle
+import io.github.composefluent.icons.regular.Delete
+import io.github.composefluent.icons.regular.ArrowDownload
+import io.github.composefluent.icons.regular.ErrorCircle
+import io.github.composefluent.icons.regular.MusicNote1
+import io.github.composefluent.icons.regular.Play
+import io.github.composefluent.icons.regular.Clock
+import io.github.composefluent.icons.regular.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,12 +35,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.feedback.NomiProgressIndicator
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.surface.NomiSurface
+import ciyin.designsystem.component.surface.NomiSurfaceColors
+import ciyin.designsystem.component.text.NomiText
 import ciyin.io.formatFileSize
 import ciyin.material.theme.AppTheme
 import ciyin.media.library.MediaCollection
 import ciyin.platform.LocalContext
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.media_library_demo_back
 import com.ciyin.app.sample.media_library_demo_batch_check
@@ -170,7 +165,6 @@ internal fun MediaLibraryDemoScreen(
  * @param onAction 页面操作回调。
  * @param contentScrollState 页面内容滚动状态。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MediaLibraryDemoContent(
     state: MediaLibraryDemoUiState,
@@ -178,41 +172,21 @@ internal fun MediaLibraryDemoContent(
     contentScrollState: ScrollState = rememberScrollState(),
 ) {
     val context = LocalContext.current
-    Scaffold(
+    SamplePageScaffold(
+        title = stringResource(Res.string.media_library_demo_title),
+        onBack = { onAction(MediaLibraryDemoAction.BackClick) },
+        backContentDescription = stringResource(Res.string.media_library_demo_back),
         modifier = Modifier.testTag(MediaLibraryDemoRootTag),
-        containerColor = AppTheme.colorScheme.surfaceLower,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(Res.string.media_library_demo_title),
-                        color = AppTheme.colorScheme.textPrimary,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(MediaLibraryDemoAction.BackClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.media_library_demo_back),
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppTheme.colorScheme.surfaceLower,
-                ),
-            )
-        },
-    ) { paddingValues ->
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(contentScrollState),
             contentAlignment = Alignment.TopCenter,
         ) {
             val pageMaxWidth = AppTheme.sizes.layoutConstraints.dialogMaxWidth +
-                AppTheme.sizes.layoutConstraints.dialogMaxWidth +
-                AppTheme.spacings.huge
+                    AppTheme.sizes.layoutConstraints.dialogMaxWidth +
+                    AppTheme.spacings.huge
             Column(
                 modifier = Modifier
                     .widthIn(max = pageMaxWidth)
@@ -263,13 +237,15 @@ private fun MediaLibraryBatchPanel(
     onCheckAll: () -> Unit,
     onDeleteAll: () -> Unit,
 ) {
-    Surface(
+    NomiSurface(
         modifier = Modifier.fillMaxWidth(),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surface),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -302,10 +278,12 @@ private fun MediaLibraryBatchStatus(batch: MediaLibraryDemoBatchState) {
             batch.summary.processed,
             batch.summary.total,
         )
+
         is MediaLibraryDemoBatchState.Completed -> stringResource(
             Res.string.media_library_demo_batch_completed,
             stringResource(batch.operation.resource()),
         )
+
         is MediaLibraryDemoBatchState.Stopped -> stringResource(
             Res.string.media_library_demo_batch_stopped,
             stringResource(batch.operation.resource()),
@@ -319,12 +297,14 @@ private fun MediaLibraryBatchStatus(batch: MediaLibraryDemoBatchState) {
             horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
+            NomiIcon(
                 imageVector = when (batch) {
-                    MediaLibraryDemoBatchState.Idle -> Icons.Filled.Schedule
-                    is MediaLibraryDemoBatchState.Running -> operation?.icon() ?: Icons.Filled.Schedule
-                    is MediaLibraryDemoBatchState.Completed -> Icons.Filled.CheckCircle
-                    is MediaLibraryDemoBatchState.Stopped -> Icons.Filled.Error
+                    MediaLibraryDemoBatchState.Idle -> Icons.Regular.Clock
+                    is MediaLibraryDemoBatchState.Running -> operation?.icon()
+                        ?: Icons.Regular.Clock
+
+                    is MediaLibraryDemoBatchState.Completed -> Icons.Regular.CheckmarkCircle
+                    is MediaLibraryDemoBatchState.Stopped -> Icons.Regular.ErrorCircle
                 },
                 contentDescription = null,
                 modifier = Modifier.size(AppTheme.sizes.icon.large),
@@ -334,7 +314,7 @@ private fun MediaLibraryBatchStatus(batch: MediaLibraryDemoBatchState) {
                     else -> AppTheme.colorScheme.primary
                 },
             )
-            Text(
+            NomiText(
                 text = title,
                 style = AppTheme.typography.titleMedium,
                 color = AppTheme.colorScheme.textPrimary,
@@ -346,13 +326,14 @@ private fun MediaLibraryBatchStatus(batch: MediaLibraryDemoBatchState) {
             } else {
                 batch.summary.processed.toFloat() / batch.summary.total.toFloat()
             }
-            LinearProgressIndicator(
-                progress = { progress },
+            NomiProgressIndicator(
+                progress = progress,
+                type = NomiProgressIndicatorType.Linear,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
         summary?.let { current ->
-            Text(
+            NomiText(
                 text = stringResource(
                     Res.string.media_library_demo_batch_summary,
                     current.succeeded,
@@ -390,21 +371,21 @@ private fun MediaLibraryBatchActions(
             ) {
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_publish),
-                    icon = Icons.Filled.AddPhotoAlternate,
+                    icon = Icons.Regular.ImageAdd,
                     enabled = publishEnabled,
                     onClick = onPublishAll,
                     modifier = Modifier.weight(1f),
                 )
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_check),
-                    icon = Icons.Filled.Search,
+                    icon = Icons.Regular.Search,
                     enabled = checkEnabled,
                     onClick = onCheckAll,
                     modifier = Modifier.weight(1f),
                 )
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_delete),
-                    icon = Icons.Filled.Delete,
+                    icon = Icons.Regular.Delete,
                     enabled = deleteEnabled,
                     onClick = onDeleteAll,
                     modifier = Modifier.weight(1f),
@@ -417,19 +398,19 @@ private fun MediaLibraryBatchActions(
             ) {
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_publish),
-                    icon = Icons.Filled.AddPhotoAlternate,
+                    icon = Icons.Regular.ImageAdd,
                     enabled = publishEnabled,
                     onClick = onPublishAll,
                 )
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_check),
-                    icon = Icons.Filled.Search,
+                    icon = Icons.Regular.Search,
                     enabled = checkEnabled,
                     onClick = onCheckAll,
                 )
                 MediaLibraryBatchButton(
                     label = stringResource(Res.string.media_library_demo_batch_delete),
-                    icon = Icons.Filled.Delete,
+                    icon = Icons.Regular.Delete,
                     enabled = deleteEnabled,
                     onClick = onDeleteAll,
                 )
@@ -447,13 +428,14 @@ private fun MediaLibraryBatchButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedButton(
+    NomiButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.fillMaxWidth(),
+        variant = NomiButtonVariant.Default,
     ) {
-        Icon(imageVector = icon, contentDescription = null)
-        Text(
+        NomiIcon(imageVector = icon, contentDescription = null)
+        NomiText(
             text = label,
             modifier = Modifier.padding(start = AppTheme.spacings.small),
         )
@@ -471,8 +453,8 @@ private fun MediaLibraryWorkspace(
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val wideLayoutMinWidth = AppTheme.sizes.layoutConstraints.dialogMaxWidth +
-            AppTheme.sizes.layoutConstraints.cardMinWidth +
-            AppTheme.spacings.huge
+                AppTheme.sizes.layoutConstraints.cardMinWidth +
+                AppTheme.spacings.huge
         if (maxWidth >= wideLayoutMinWidth) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -519,15 +501,17 @@ private fun MediaLibraryMatrixPanel(
     onSampleSelect: (MediaLibraryDemoSampleId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    NomiSurface(
         modifier = modifier
             .fillMaxWidth()
             .testTag(MediaLibraryDemoMatrixTag),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surface),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -538,12 +522,12 @@ private fun MediaLibraryMatrixPanel(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
+                NomiText(
                     text = stringResource(Res.string.media_library_demo_matrix_title),
                     style = AppTheme.typography.titleLarge,
                     color = AppTheme.colorScheme.textPrimary,
                 )
-                Text(
+                NomiText(
                     text = stringResource(
                         Res.string.media_library_demo_matrix_count,
                         state.items.size,
@@ -552,7 +536,7 @@ private fun MediaLibraryMatrixPanel(
                     color = AppTheme.colorScheme.textSecondary,
                 )
             }
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             state.items.forEachIndexed { index, item ->
                 MediaLibraryMatrixItem(
                     item = item,
@@ -560,7 +544,7 @@ private fun MediaLibraryMatrixPanel(
                     onClick = { onSampleSelect(item.sampleId) },
                 )
                 if (index < state.items.lastIndex) {
-                    HorizontalDivider(color = AppTheme.colorScheme.divider)
+                    NomiDivider(color = AppTheme.colorScheme.divider)
                 }
             }
         }
@@ -575,57 +559,59 @@ private fun MediaLibraryMatrixItem(
     onClick: () -> Unit,
 ) {
     val sample = item.sampleId.sample()
-    ListItem(
-        headlineContent = {
-            Text(
-                text = stringResource(item.sampleId.titleResource()),
-                style = AppTheme.typography.titleMedium,
-            )
-        },
-        supportingContent = {
-            Text(
-                text = "${sample.mimeType} · ${item.sourceSize.sizeText()}",
-                style = AppTheme.typography.bodySmall,
-                color = AppTheme.colorScheme.textSecondary,
-            )
-        },
-        leadingContent = {
-            Icon(
-                imageVector = item.sampleId.icon(),
-                contentDescription = null,
-                modifier = Modifier.size(AppTheme.sizes.icon.large),
-                tint = if (selected) AppTheme.colorScheme.primary else AppTheme.colorScheme.textSecondary,
-            )
-        },
-        trailingContent = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = item.phase.icon(),
-                    contentDescription = null,
-                    modifier = Modifier.size(AppTheme.sizes.icon.small),
-                    tint = item.phase.color(),
-                )
-                Text(
-                    text = stringResource(item.phase.resource()),
-                    style = AppTheme.typography.labelMedium,
-                    color = item.phase.color(),
-                )
-            }
-        },
-        colors = ListItemDefaults.colors(
+    NomiSurface(
+        colors = NomiSurfaceColors(
             containerColor = if (selected) {
                 AppTheme.colorScheme.surfaceHigh
             } else {
                 AppTheme.colorScheme.surface
             },
         ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    )
+    ) {
+        NomiListItem(
+            title = {
+                NomiText(
+                    text = stringResource(item.sampleId.titleResource()),
+                    style = AppTheme.typography.titleMedium,
+                )
+            },
+            subtitle = {
+                NomiText(
+                    text = "${sample.mimeType} · ${item.sourceSize.sizeText()}",
+                    style = AppTheme.typography.bodySmall,
+                    color = AppTheme.colorScheme.textSecondary,
+                )
+            },
+            leading = {
+                NomiIcon(
+                    imageVector = item.sampleId.icon(),
+                    contentDescription = null,
+                    modifier = Modifier.size(AppTheme.sizes.icon.large),
+                    tint = if (selected) AppTheme.colorScheme.primary else AppTheme.colorScheme.textSecondary,
+                )
+            },
+            trailing = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    NomiIcon(
+                        imageVector = item.phase.icon(),
+                        contentDescription = null,
+                        modifier = Modifier.size(AppTheme.sizes.icon.small),
+                        tint = item.phase.color(),
+                    )
+                    NomiText(
+                        text = stringResource(item.phase.resource()),
+                        style = AppTheme.typography.labelMedium,
+                        color = item.phase.color(),
+                    )
+                }
+            },
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 /** 显示当前选中测试的请求、结果、错误和单项操作。 */
@@ -639,15 +625,17 @@ private fun MediaLibraryDetailPanel(
 ) {
     val item = state.selectedItem
     val sample = item.sampleId.sample()
-    Surface(
+    NomiSurface(
         modifier = modifier
             .fillMaxWidth()
             .testTag(MediaLibraryDemoDetailTag),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surface),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -655,18 +643,18 @@ private fun MediaLibraryDetailPanel(
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.large),
         ) {
             MediaLibraryDetailHeader(item)
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             MediaLibraryRequestSection(
                 item = item,
                 sample = sample,
             )
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             MediaLibraryResultSection(item)
             item.error?.let { error ->
-                HorizontalDivider(color = AppTheme.colorScheme.divider)
+                NomiDivider(color = AppTheme.colorScheme.divider)
                 MediaLibraryErrorSection(error)
             }
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             MediaLibraryItemActions(
                 item = item,
                 pageBusy = state.isBusy,
@@ -686,7 +674,7 @@ private fun MediaLibraryDetailHeader(item: MediaLibraryDemoItemState) {
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
+        NomiIcon(
             imageVector = item.sampleId.icon(),
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.extraLarge),
@@ -696,12 +684,12 @@ private fun MediaLibraryDetailHeader(item: MediaLibraryDemoItemState) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny),
         ) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_library_demo_detail_title),
                 style = AppTheme.typography.labelLarge,
                 color = AppTheme.colorScheme.textSecondary,
             )
-            Text(
+            NomiText(
                 text = stringResource(item.sampleId.titleResource()),
                 style = AppTheme.typography.titleLarge,
                 color = AppTheme.colorScheme.textPrimary,
@@ -711,13 +699,13 @@ private fun MediaLibraryDetailHeader(item: MediaLibraryDemoItemState) {
             horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
+            NomiIcon(
                 imageVector = item.phase.icon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppTheme.sizes.icon.small),
                 tint = item.phase.color(),
             )
-            Text(
+            NomiText(
                 text = stringResource(item.phase.resource()),
                 style = AppTheme.typography.labelLarge,
                 color = item.phase.color(),
@@ -770,7 +758,7 @@ private fun MediaLibraryResultSection(item: MediaLibraryDemoItemState) {
         SectionTitle(stringResource(Res.string.media_library_demo_result_section))
         val media = item.published
         if (media == null) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_library_demo_result_empty),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
@@ -820,11 +808,11 @@ private fun MediaLibraryErrorSection(error: MediaLibraryDemoErrorModel) {
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
         verticalAlignment = Alignment.Top,
     ) {
-        Icon(
+        NomiIcon(
             imageVector = if (error.type == MediaLibraryDemoErrorType.Unsupported) {
-                Icons.Filled.Block
+                Icons.Regular.Prohibited
             } else {
-                Icons.Filled.Error
+                Icons.Regular.ErrorCircle
             },
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.large),
@@ -838,12 +826,12 @@ private fun MediaLibraryErrorSection(error: MediaLibraryDemoErrorModel) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny),
         ) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_library_demo_error_title),
                 style = AppTheme.typography.titleMedium,
                 color = AppTheme.colorScheme.textPrimary,
             )
-            Text(
+            NomiText(
                 text = stringResource(error.type.resource()),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
@@ -872,7 +860,7 @@ private fun MediaLibraryItemActions(
                         Res.string.media_library_demo_publish
                     },
                 ),
-                icon = Icons.Filled.AddPhotoAlternate,
+                icon = Icons.Regular.ImageAdd,
                 loading = item.phase == MediaLibraryDemoPhase.Publishing,
                 enabled = !pageBusy && !item.hasActiveReference,
                 onClick = onPublish,
@@ -889,7 +877,7 @@ private fun MediaLibraryItemActions(
                         Res.string.media_library_demo_check
                     },
                 ),
-                icon = Icons.Filled.Search,
+                icon = Icons.Regular.Search,
                 loading = item.phase == MediaLibraryDemoPhase.Checking,
                 enabled = !pageBusy && item.hasActiveReference,
                 onClick = onCheck,
@@ -905,7 +893,7 @@ private fun MediaLibraryItemActions(
                         Res.string.media_library_demo_delete
                     },
                 ),
-                icon = Icons.Filled.Delete,
+                icon = Icons.Regular.Delete,
                 loading = item.phase == MediaLibraryDemoPhase.Deleting,
                 enabled = !pageBusy && item.hasActiveReference,
                 onClick = onDelete,
@@ -946,31 +934,27 @@ private fun MediaLibraryOperationButton(
     primary: Boolean = false,
 ) {
     val content: @Composable RowScope.() -> Unit = {
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(AppTheme.sizes.icon.medium),
-                strokeWidth = AppTheme.sizes.strokes.medium,
-            )
-        } else {
-            Icon(imageVector = icon, contentDescription = null)
+        if (!loading) {
+            NomiIcon(imageVector = icon, contentDescription = null)
         }
-        Text(
+        NomiText(
             text = label,
             modifier = Modifier.padding(start = AppTheme.spacings.small),
         )
     }
     if (primary) {
-        Button(
+        NomiButton(
             onClick = onClick,
             enabled = enabled,
             modifier = modifier.fillMaxWidth(),
             content = content,
         )
     } else {
-        OutlinedButton(
+        NomiButton(
             onClick = onClick,
             enabled = enabled,
             modifier = modifier.fillMaxWidth(),
+            variant = NomiButtonVariant.Default,
             content = content,
         )
     }
@@ -979,7 +963,7 @@ private fun MediaLibraryOperationButton(
 /** 显示详情区块标题。 */
 @Composable
 private fun SectionTitle(text: String) {
-    Text(
+    NomiText(
         text = text,
         style = AppTheme.typography.titleMedium,
         color = AppTheme.colorScheme.primary,
@@ -990,12 +974,12 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun InfoRow(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny)) {
-        Text(
+        NomiText(
             text = label,
             style = AppTheme.typography.labelMedium,
             color = AppTheme.colorScheme.textSecondary,
         )
-        Text(
+        NomiText(
             text = value,
             style = AppTheme.typography.bodyMedium,
             color = AppTheme.colorScheme.textPrimary,
@@ -1004,20 +988,22 @@ private fun InfoRow(label: String, value: String) {
 }
 
 /** 返回批量状态中的可选操作类型。 */
-private fun MediaLibraryDemoBatchState.operationOrNull(): MediaLibraryDemoBatchOperation? = when (this) {
-    MediaLibraryDemoBatchState.Idle -> null
-    is MediaLibraryDemoBatchState.Running -> operation
-    is MediaLibraryDemoBatchState.Completed -> operation
-    is MediaLibraryDemoBatchState.Stopped -> operation
-}
+private fun MediaLibraryDemoBatchState.operationOrNull(): MediaLibraryDemoBatchOperation? =
+    when (this) {
+        MediaLibraryDemoBatchState.Idle -> null
+        is MediaLibraryDemoBatchState.Running -> operation
+        is MediaLibraryDemoBatchState.Completed -> operation
+        is MediaLibraryDemoBatchState.Stopped -> operation
+    }
 
 /** 返回批量状态中的可选累计结果。 */
-private fun MediaLibraryDemoBatchState.summaryOrNull(): MediaLibraryDemoBatchSummary? = when (this) {
-    MediaLibraryDemoBatchState.Idle -> null
-    is MediaLibraryDemoBatchState.Running -> summary
-    is MediaLibraryDemoBatchState.Completed -> summary
-    is MediaLibraryDemoBatchState.Stopped -> summary
-}
+private fun MediaLibraryDemoBatchState.summaryOrNull(): MediaLibraryDemoBatchSummary? =
+    when (this) {
+        MediaLibraryDemoBatchState.Idle -> null
+        is MediaLibraryDemoBatchState.Running -> summary
+        is MediaLibraryDemoBatchState.Completed -> summary
+        is MediaLibraryDemoBatchState.Stopped -> summary
+    }
 
 /** 返回测试标识对应的标题资源。 */
 private fun MediaLibraryDemoSampleId.titleResource(): StringResource = when (this) {
@@ -1029,10 +1015,10 @@ private fun MediaLibraryDemoSampleId.titleResource(): StringResource = when (thi
 
 /** 返回测试标识对应的媒体图标。 */
 private fun MediaLibraryDemoSampleId.icon(): ImageVector = when (this) {
-    MediaLibraryDemoSampleId.Image -> Icons.Filled.AddPhotoAlternate
-    MediaLibraryDemoSampleId.Video -> Icons.Filled.PlayArrow
-    MediaLibraryDemoSampleId.Audio -> Icons.Filled.MusicNote
-    MediaLibraryDemoSampleId.Download -> Icons.Filled.Download
+    MediaLibraryDemoSampleId.Image -> Icons.Regular.ImageAdd
+    MediaLibraryDemoSampleId.Video -> Icons.Regular.Play
+    MediaLibraryDemoSampleId.Audio -> Icons.Regular.MusicNote1
+    MediaLibraryDemoSampleId.Download -> Icons.Regular.ArrowDownload
 }
 
 /** 返回媒体分类对应的标题资源。 */
@@ -1058,15 +1044,15 @@ private fun MediaLibraryDemoPhase.resource(): StringResource = when (this) {
 
 /** 返回页面阶段对应的状态图标。 */
 private fun MediaLibraryDemoPhase.icon(): ImageVector = when (this) {
-    MediaLibraryDemoPhase.Ready -> Icons.Filled.Schedule
-    MediaLibraryDemoPhase.Publishing -> Icons.Filled.AddPhotoAlternate
-    MediaLibraryDemoPhase.Published -> Icons.Filled.CheckCircle
-    MediaLibraryDemoPhase.Checking -> Icons.Filled.Search
-    MediaLibraryDemoPhase.Missing -> Icons.Filled.Error
-    MediaLibraryDemoPhase.Deleting -> Icons.Filled.Delete
-    MediaLibraryDemoPhase.Deleted -> Icons.Filled.CheckCircle
-    MediaLibraryDemoPhase.Unsupported -> Icons.Filled.Block
-    MediaLibraryDemoPhase.Failed -> Icons.Filled.Error
+    MediaLibraryDemoPhase.Ready -> Icons.Regular.Clock
+    MediaLibraryDemoPhase.Publishing -> Icons.Regular.ImageAdd
+    MediaLibraryDemoPhase.Published -> Icons.Regular.CheckmarkCircle
+    MediaLibraryDemoPhase.Checking -> Icons.Regular.Search
+    MediaLibraryDemoPhase.Missing -> Icons.Regular.ErrorCircle
+    MediaLibraryDemoPhase.Deleting -> Icons.Regular.Delete
+    MediaLibraryDemoPhase.Deleted -> Icons.Regular.CheckmarkCircle
+    MediaLibraryDemoPhase.Unsupported -> Icons.Regular.Prohibited
+    MediaLibraryDemoPhase.Failed -> Icons.Regular.ErrorCircle
 }
 
 /** 返回页面阶段对应的语义颜色。 */
@@ -1074,11 +1060,13 @@ private fun MediaLibraryDemoPhase.icon(): ImageVector = when (this) {
 private fun MediaLibraryDemoPhase.color(): Color = when (this) {
     MediaLibraryDemoPhase.Ready,
     MediaLibraryDemoPhase.Deleted,
-    -> AppTheme.colorScheme.textSecondary
+        -> AppTheme.colorScheme.textSecondary
+
     MediaLibraryDemoPhase.Publishing,
     MediaLibraryDemoPhase.Checking,
     MediaLibraryDemoPhase.Deleting,
-    -> AppTheme.colorScheme.primary
+        -> AppTheme.colorScheme.primary
+
     MediaLibraryDemoPhase.Published -> AppTheme.colorScheme.success
     MediaLibraryDemoPhase.Missing -> AppTheme.colorScheme.warning
     MediaLibraryDemoPhase.Unsupported -> AppTheme.colorScheme.info
@@ -1094,9 +1082,9 @@ private fun MediaLibraryDemoBatchOperation.resource(): StringResource = when (th
 
 /** 返回批量操作对应的图标。 */
 private fun MediaLibraryDemoBatchOperation.icon(): ImageVector = when (this) {
-    MediaLibraryDemoBatchOperation.Publish -> Icons.Filled.AddPhotoAlternate
-    MediaLibraryDemoBatchOperation.Check -> Icons.Filled.Search
-    MediaLibraryDemoBatchOperation.Delete -> Icons.Filled.Delete
+    MediaLibraryDemoBatchOperation.Publish -> Icons.Regular.ImageAdd
+    MediaLibraryDemoBatchOperation.Check -> Icons.Regular.Search
+    MediaLibraryDemoBatchOperation.Delete -> Icons.Regular.Delete
 }
 
 /** 返回存在状态对应的字符串资源。 */
@@ -1171,16 +1159,19 @@ private fun previewMixedState(): MediaLibraryDemoUiState {
                     published = image,
                     exists = true,
                 )
+
                 MediaLibraryDemoSampleId.Video -> item.copy(
                     phase = MediaLibraryDemoPhase.Deleted,
                     sourceSize = 48_000L,
                     exists = false,
                 )
+
                 MediaLibraryDemoSampleId.Audio -> item.copy(
                     phase = MediaLibraryDemoPhase.Unsupported,
                     sourceSize = 176_444L,
                     error = MediaLibraryDemoErrorModel(MediaLibraryDemoErrorType.Unsupported),
                 )
+
                 MediaLibraryDemoSampleId.Download -> item.copy(
                     phase = MediaLibraryDemoPhase.Failed,
                     sourceSize = 128L,

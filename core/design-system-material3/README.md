@@ -131,7 +131,7 @@ val designSystem = NomiDesignSystem.Material3(branded)
   `DividerDefaults.Thickness`，`Color.Unspecified` 回落 `DividerDefaults.color`。
 - 控件族三个选择入口使用原生 `Switch` / `Checkbox` / `RadioButton`；文本输入框属于文本族，由
   `NomiTextRenderer` 实现：`variant = Outlined` 时使用 `OutlinedTextField`，否则使用 `TextField`，
-  标签、占位符、前后置图标与 `isError` 原样交给原生参数。
+  标签、占位符、前后置图标、`isError`、`maxLines` 与 `visualTransformation` 原样交给原生参数。
 - 提示浮层使用原生 `TooltipBox` 与 `PlainTooltip`，状态与位置取 `rememberTooltipState()` 与
   `TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above)`；调用方不感知浮层状态。
 

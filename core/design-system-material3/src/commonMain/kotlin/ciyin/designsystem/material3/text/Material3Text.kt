@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -176,6 +177,8 @@ object Material3TextRenderer : NomiTextRenderer {
      * @param enabled 是否接受用户操作。
      * @param readOnly 是否只读。
      * @param singleLine 是否限制为单行。
+     * @param maxLines 最大显示行数；单行时按 1 处理。
+     * @param visualTransformation 文本可视化转换，例如密码遮罩。
      * @param variant 显式视觉变体；null 使用原生默认变体。
      * @param label 标签槽；null 表示没有标签。
      * @param placeholder 占位符槽；null 表示没有占位符。
@@ -194,6 +197,8 @@ object Material3TextRenderer : NomiTextRenderer {
         enabled: Boolean,
         readOnly: Boolean,
         singleLine: Boolean,
+        maxLines: Int,
+        visualTransformation: VisualTransformation,
         variant: NomiTextFieldVariant?,
         label: (@Composable () -> Unit)?,
         placeholder: (@Composable () -> Unit)?,
@@ -212,6 +217,8 @@ object Material3TextRenderer : NomiTextRenderer {
                 enabled = enabled,
                 readOnly = readOnly,
                 singleLine = singleLine,
+                maxLines = if (singleLine) 1 else maxLines,
+                visualTransformation = visualTransformation,
                 label = label,
                 placeholder = placeholder,
                 leadingIcon = leadingIcon,
@@ -228,6 +235,8 @@ object Material3TextRenderer : NomiTextRenderer {
                 enabled = enabled,
                 readOnly = readOnly,
                 singleLine = singleLine,
+                maxLines = if (singleLine) 1 else maxLines,
+                visualTransformation = visualTransformation,
                 label = label,
                 placeholder = placeholder,
                 leadingIcon = leadingIcon,

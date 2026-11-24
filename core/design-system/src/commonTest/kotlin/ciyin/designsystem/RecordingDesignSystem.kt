@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -484,6 +485,8 @@ internal data class RecordedToggle(
  * @property enabled 原样记录的启用状态。
  * @property readOnly 原样记录的只读状态。
  * @property singleLine 原样记录的单行设置。
+ * @property maxLines 原样记录的最大行数。
+ * @property visualTransformation 原样记录的可视化转换。
  * @property variant 原样记录的显式变体；null 表示使用原生默认变体。
  * @property hasLabel 是否提供标签槽。
  * @property hasPlaceholder 是否提供占位符槽。
@@ -501,6 +504,8 @@ internal data class RecordedTextField(
     val enabled: Boolean,
     val readOnly: Boolean,
     val singleLine: Boolean,
+    val maxLines: Int,
+    val visualTransformation: VisualTransformation,
     val variant: NomiTextFieldVariant?,
     val hasLabel: Boolean,
     val hasPlaceholder: Boolean,
@@ -808,6 +813,8 @@ internal class RecordingDesignSystem(
              * @param enabled 原样记录的启用状态。
              * @param readOnly 原样记录的只读状态。
              * @param singleLine 原样记录的单行设置。
+             * @param maxLines 原样记录的最大行数。
+             * @param visualTransformation 原样记录的可视化转换。
              * @param variant 原样记录的显式变体。
              * @param label 标签槽；只记录是否提供。
              * @param placeholder 占位符槽；只记录是否提供。
@@ -826,6 +833,8 @@ internal class RecordingDesignSystem(
                 enabled: Boolean,
                 readOnly: Boolean,
                 singleLine: Boolean,
+                maxLines: Int,
+                visualTransformation: VisualTransformation,
                 variant: NomiTextFieldVariant?,
                 label: (@Composable () -> Unit)?,
                 placeholder: (@Composable () -> Unit)?,
@@ -841,6 +850,8 @@ internal class RecordingDesignSystem(
                     enabled = enabled,
                     readOnly = readOnly,
                     singleLine = singleLine,
+                    maxLines = maxLines,
+                    visualTransformation = visualTransformation,
                     variant = variant,
                     hasLabel = label != null,
                     hasPlaceholder = placeholder != null,

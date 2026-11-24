@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import ciyin.designsystem.component.control.NomiCheckbox
 import ciyin.designsystem.component.control.NomiCheckboxSpec
 import ciyin.designsystem.component.control.NomiRadioButton
@@ -142,6 +143,8 @@ class ControlsDispatchContractTest {
                     enabled = false,
                     readOnly = true,
                     singleLine = true,
+                    maxLines = 3,
+                    visualTransformation = PasswordVisualTransformation(),
                     variant = NomiTextFieldVariant.Outlined,
                     label = { NomiText("标签") },
                     placeholder = { NomiText("占位") },
@@ -159,6 +162,8 @@ class ControlsDispatchContractTest {
             assertEquals(false, recorded.enabled)
             assertEquals(true, recorded.readOnly)
             assertEquals(true, recorded.singleLine)
+            assertEquals(3, recorded.maxLines)
+            assertEquals(PasswordVisualTransformation(), recorded.visualTransformation)
             assertEquals(NomiTextFieldVariant.Outlined, recorded.variant)
             assertEquals(true, recorded.hasLabel)
             assertEquals(true, recorded.hasPlaceholder)

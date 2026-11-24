@@ -9,18 +9,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.LockOpen
-import androidx.compose.material.icons.rounded.PictureInPictureAlt
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Dismiss
+import io.github.composefluent.icons.regular.LockClosed
+import io.github.composefluent.icons.regular.LockOpen
+import io.github.composefluent.icons.regular.PictureInPicture
+import io.github.composefluent.icons.regular.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +45,13 @@ import com.ciyin.app.sample.video_player_demo_screenshot_saved
 import com.ciyin.app.sample.video_player_demo_settings
 import com.ciyin.app.sample.video_player_demo_title
 import com.ciyin.app.sample.video_player_demo_unlock
+import ciyin.designsystem.component.button.NomiIconButton
+import ciyin.designsystem.component.control.NomiSwitch
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.surface.NomiSurface
+import ciyin.designsystem.component.surface.NomiSurfaceColors
+import ciyin.designsystem.component.text.NomiText
 import ciyin.io.File
 import ciyin.material.theme.AppTheme
 import ciyin.platform.LocalContext
@@ -167,18 +168,18 @@ internal fun VideoPlayerDemoPlayerView(
         topBar = {
             if (expanded) {
                 PlayerTopBar(
-                    title = { Text(stringResource(Res.string.video_player_demo_title)) },
+                    title = { NomiText(stringResource(Res.string.video_player_demo_title)) },
                     onBackPressed = onBack,
                     actions = {
                         if (pipController.isPipSupported) {
-                            IconButton(
+                            NomiIconButton(
                                 onClick = {
                                     if (isInPipMode) pipController.exitPip()
                                     else pipController.enterPip(videoBounds)
                                 },
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.PictureInPictureAlt,
+                                NomiIcon(
+                                    imageVector = Icons.Regular.PictureInPicture,
                                     contentDescription = stringResource(
                                         if (isInPipMode) {
                                             Res.string.video_player_demo_exit_pip
@@ -189,13 +190,13 @@ internal fun VideoPlayerDemoPlayerView(
                                 )
                             }
                         }
-                        IconButton(
+                        NomiIconButton(
                             onClick = {
                                 sheetsController.navigateTo(VideoPlayerDemoSheet.Settings)
                             },
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
+                            NomiIcon(
+                                imageVector = Icons.Regular.Settings,
                                 contentDescription = stringResource(
                                     Res.string.video_player_demo_settings,
                                 ),
@@ -314,12 +315,12 @@ internal fun VideoPlayerDemoPlayerView(
         gestureLock = {
             if (expanded) {
                 PlayerFloatingButtonBox {
-                    IconButton(onClick = { gestureLocked = !gestureLocked }) {
-                        Icon(
+                    NomiIconButton(onClick = { gestureLocked = !gestureLocked }) {
+                        NomiIcon(
                             imageVector = if (gestureLocked) {
-                                Icons.Rounded.LockOpen
+                                Icons.Regular.LockOpen
                             } else {
-                                Icons.Rounded.Lock
+                                Icons.Regular.LockClosed
                             },
                             contentDescription = stringResource(
                                 if (gestureLocked) {
@@ -365,13 +366,13 @@ private fun VideoPlayerDemoStatus(
     } ?: return
     val showProgress = state.hasMedia && state.errorMessage == null
 
-    Surface(
-        color = AppTheme.colorScheme.surfaceHigh,
+    NomiSurface(
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surfaceHigh),
         shape = AppTheme.shapes.medium,
     ) {
         VideoLoadingIndicator(
             showProgress = showProgress,
-            text = { Text(message) },
+            text = { NomiText(message) },
             modifier = Modifier.padding(AppTheme.spacings.medium),
         )
     }
@@ -459,12 +460,12 @@ private fun VideoPlayerDemoSettingsSheets(
         when (page) {
             VideoPlayerDemoSheet.Settings -> {
                 SideSheetLayout(
-                    title = { Text(stringResource(Res.string.video_player_demo_settings)) },
+                    title = { NomiText(stringResource(Res.string.video_player_demo_settings)) },
                     onDismissRequest = ::closeSideSheet,
                     closeButton = {
-                        IconButton(onClick = ::closeSideSheet) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
+                        NomiIconButton(onClick = ::closeSideSheet) {
+                            NomiIcon(
+                                imageVector = Icons.Regular.Dismiss,
                                 contentDescription = stringResource(
                                     Res.string.video_player_demo_close_settings,
                                 ),
@@ -478,7 +479,7 @@ private fun VideoPlayerDemoSettingsSheets(
                         onCheckedChange = onGestureLockedChange,
                     )
                     if (pipSupported) {
-                        HorizontalDivider(color = AppTheme.colorScheme.divider)
+                        NomiDivider(color = AppTheme.colorScheme.divider)
                         VideoPlayerDemoSettingToggle(
                             label = stringResource(Res.string.video_player_demo_auto_pip),
                             checked = autoPipEnabled,
@@ -509,13 +510,13 @@ private fun VideoPlayerDemoSettingToggle(
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
+        NomiText(
             text = label,
             modifier = Modifier.weight(1f),
             style = AppTheme.typography.bodyLarge,
             color = AppTheme.colorScheme.textPrimary,
         )
-        Switch(
+        NomiSwitch(
             checked = checked,
             onCheckedChange = onCheckedChange,
         )

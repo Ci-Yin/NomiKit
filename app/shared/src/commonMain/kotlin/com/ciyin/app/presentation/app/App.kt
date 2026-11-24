@@ -8,8 +8,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import ciyin.designsystem.fluent.Fluent
 import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
-import ciyin.designsystem.nomi.Default
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.NomiTheme
 import ciyin.ui.foundation.viewmodel.viewModel
@@ -41,7 +41,7 @@ fun App(windowBackdropActive: Boolean = false) {
     val viewModel = viewModel(::AppViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
     CompositionLocalProvider(LocalFluentSystemBackdropActive provides windowBackdropActive) {
-        NomiTheme(NomiDesignSystem.Default) {
+        NomiTheme(NomiDesignSystem.Fluent) {
             AppContent(state, viewModel.dispatchAction)
         }
     }

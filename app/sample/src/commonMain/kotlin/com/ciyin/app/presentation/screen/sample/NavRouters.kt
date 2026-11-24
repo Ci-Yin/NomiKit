@@ -86,12 +86,6 @@ internal object MediaDirectoryDemoRouter : NavRouter
 internal object DesignSystemDemoRouter : NavRouter
 
 /**
- * 占位样例子页 A。
- */
-@Serializable
-internal object SampleExamplePlaceholderARouter : NavRouter
-
-/**
  * 样例子栈的多态路由保存配置，包含设计系统展示页。
  */
 internal val NavSavedStateConfig = SavedStateConfiguration {
@@ -109,10 +103,6 @@ internal val NavSavedStateConfig = SavedStateConfiguration {
             subclass(FilePickerDemoRouter::class, FilePickerDemoRouter.serializer())
             subclass(MediaDirectoryDemoRouter::class, MediaDirectoryDemoRouter.serializer())
             subclass(DesignSystemDemoRouter::class, DesignSystemDemoRouter.serializer())
-            subclass(
-                SampleExamplePlaceholderARouter::class,
-                SampleExamplePlaceholderARouter.serializer()
-            )
         }
     }
 }

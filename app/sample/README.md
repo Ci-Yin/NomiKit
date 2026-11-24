@@ -54,8 +54,9 @@ provider 保留为可选覆盖入口；需要覆盖时，在样例导航栈上�
 公开 provider 的签名依赖设计系统接口，因此 [构建配置](<build.gradle.kts>) 使用
 `api(projects.core.designSystem)`；Material 3 / Fluent adapter 都是 commonMain 的 implementation 依赖。
 Fluent 原生类型仍留在 adapter 内，sample 只选择其公开扩展属性 `NomiDesignSystem.Fluent`（导入
-`ciyin.designsystem.fluent.Fluent`）；实现对象 internal，不使用旧顶层 object 名称。 既有样例仍保留旧
-Material 组件，不把本页试点扩展为全部样例重写。
+`ciyin.designsystem.fluent.Fluent`）；实现对象 internal，不使用旧顶层 object 名称。 样例页面已统一使用
+Nomi 组件；AI 聊天配置弹窗暂时保留 `AlertDialog` 外壳，内部字段与按钮使用 Nomi 组件，设计系统展示页的
+原生组件区继续按演示目的使用原生组件。样例页面矢量图标统一使用 Fluent 图标。
 
 每个新增 UI 文件有同文件 `@AppPreview`，预览直接使用新 NomiTheme 与纯 Content， 不引用 shared
 AppPreview/ScreenScaffold，不启动真实导航或 ViewModel。
@@ -66,8 +67,9 @@ AppPreview/ScreenScaffold，不启动真实导航或 ViewModel。
 原生默认优先改造及后续布局优化已完成。26 项设计系统 Desktop
 回归通过，新增列表项分区后覆盖角色切换、限制说明折叠、按钮横排、列表项行原语及宽窄屏/大字体；sample
 Android 编译通过。2026-11-19 新增图标、分割线、控件与提示浮层分区后，sample Desktop 回归 67 项通过
-（含布局与截图用例）；共享页面与 feature 模块的调用点迁移仍待办。截图默认写入系统临时目录，需要保留时
-按下方说明设置 `NOMIKIT_DESIGN_SYSTEM_ARTIFACTS`；前轮 Android APK 仅构建，设备执行仍未进行。
+（含布局与截图用例）；2026-11-23 sample 页面组件迁移到 Nomi 后 Desktop 回归 70 项通过，核心四模块 232
+项通过（合计 302 项），Android 主源码编译通过。截图默认写入系统临时目录，需要保留时按下方说明设置
+`NOMIKIT_DESIGN_SYSTEM_ARTIFACTS`；Android 设备执行仍未进行。
 
 跨平台目录扩展阶段曾通过 sample metadata、18 项 Desktop 回归、Desktop 宿主编译与 Android 应用/仪器 APK
 构建；Android Fluent 仪器测试仅编译，未运行设备。该记录不覆盖之后的原生默认优先改造。

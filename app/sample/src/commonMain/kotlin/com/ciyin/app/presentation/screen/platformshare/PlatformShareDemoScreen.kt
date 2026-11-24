@@ -7,26 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Document
+import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,12 +22,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.feedback.NomiProgressIndicator
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.material.theme.AppTheme
 import ciyin.platform.LocalContext
 import ciyin.platform.share.PlatformShareFailureReason
 import ciyin.platform.share.PlatformShareResult
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.platform_share_demo_back
 import com.ciyin.app.sample.platform_share_demo_description
@@ -110,7 +105,6 @@ internal fun PlatformShareDemoScreen(
  * @param state 页面状态。
  * @param onAction 页面动作回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlatformShareDemoContent(
     state: PlatformShareDemoUiState,
@@ -122,42 +116,32 @@ private fun PlatformShareDemoContent(
     val multipleFilesTitle = stringResource(Res.string.platform_share_demo_files_title)
     val textContent = stringResource(Res.string.platform_share_demo_text_content)
     val singleFileContent = stringResource(Res.string.platform_share_demo_single_file_content)
-    val firstFileContent = stringResource(Res.string.platform_share_demo_multiple_file_first_content)
-    val secondFileContent = stringResource(Res.string.platform_share_demo_multiple_file_second_content)
+    val firstFileContent =
+        stringResource(Res.string.platform_share_demo_multiple_file_first_content)
+    val secondFileContent =
+        stringResource(Res.string.platform_share_demo_multiple_file_second_content)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.platform_share_demo_title)) },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(PlatformShareDemoAction.BackClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.platform_share_demo_back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
+    SamplePageScaffold(
+        title = stringResource(Res.string.platform_share_demo_title),
+        onBack = { onAction(PlatformShareDemoAction.BackClick) },
+        backContentDescription = stringResource(Res.string.platform_share_demo_back),
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(AppTheme.spacings.large),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.large),
         ) {
             item {
-                Text(
+                NomiText(
                     text = stringResource(Res.string.platform_share_demo_description),
                     color = AppTheme.colorScheme.textSecondary,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = NomiTheme.typography.bodyMedium,
                 )
             }
 
             item {
                 ShareOperationSection(
-                    icon = Icons.Filled.Share,
+                    icon = Icons.Regular.Share,
                     title = textTitle,
                     description = stringResource(Res.string.platform_share_demo_text_description),
                     actionLabel = stringResource(Res.string.platform_share_demo_text_action),
@@ -177,7 +161,7 @@ private fun PlatformShareDemoContent(
 
             item {
                 ShareOperationSection(
-                    icon = Icons.Filled.Description,
+                    icon = Icons.Regular.Document,
                     title = singleFileTitle,
                     description = stringResource(Res.string.platform_share_demo_file_description),
                     actionLabel = stringResource(Res.string.platform_share_demo_file_action),
@@ -197,7 +181,7 @@ private fun PlatformShareDemoContent(
 
             item {
                 ShareOperationSection(
-                    icon = Icons.Filled.Folder,
+                    icon = Icons.Regular.Folder,
                     title = multipleFilesTitle,
                     description = stringResource(Res.string.platform_share_demo_files_description),
                     actionLabel = stringResource(Res.string.platform_share_demo_files_action),
@@ -222,18 +206,22 @@ private fun PlatformShareDemoContent(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
                     ) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                        Text(
+                        NomiProgressIndicator(
+                            progress = null,
+                            type = NomiProgressIndicatorType.Linear,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        NomiText(
                             text = stringResource(Res.string.platform_share_demo_progress),
                             color = AppTheme.colorScheme.textSecondary,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = NomiTheme.typography.bodySmall,
                         )
                     }
                 }
             }
 
             item {
-                HorizontalDivider()
+                NomiDivider()
             }
 
             item {
@@ -271,7 +259,7 @@ private fun ShareOperationSection(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
+            NomiIcon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(AppTheme.sizes.icon.medium),
@@ -282,38 +270,32 @@ private fun ShareOperationSection(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
             ) {
-                Text(
+                NomiText(
                     text = title,
                     fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = NomiTheme.typography.titleMedium,
                 )
-                Text(
+                NomiText(
                     text = description,
                     color = AppTheme.colorScheme.textSecondary,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = NomiTheme.typography.bodyMedium,
                 )
             }
         }
-        Button(
+        NomiButton(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
         ) {
-            if (isActive) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(AppTheme.sizes.icon.small),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = AppTheme.sizes.strokes.medium,
-                )
-            } else {
-                Icon(
+            if (!isActive) {
+                NomiIcon(
                     imageVector = icon,
                     contentDescription = null,
                     modifier = Modifier.size(AppTheme.sizes.icon.small),
                 )
+                Spacer(modifier = Modifier.width(AppTheme.spacings.small))
             }
-            Spacer(modifier = Modifier.width(AppTheme.spacings.small))
-            Text(actionLabel)
+            NomiText(actionLabel)
         }
     }
 }
@@ -329,15 +311,15 @@ private fun ShareResultSection(state: PlatformShareDemoUiState) {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
     ) {
-        Text(
+        NomiText(
             text = stringResource(Res.string.platform_share_demo_result_title),
             fontWeight = FontWeight.SemiBold,
-            style = MaterialTheme.typography.titleMedium,
+            style = NomiTheme.typography.titleMedium,
         )
-        Text(
+        NomiText(
             text = state.resultText(),
             color = state.resultColor(),
-            style = MaterialTheme.typography.bodyMedium,
+            style = NomiTheme.typography.bodyMedium,
         )
     }
 }

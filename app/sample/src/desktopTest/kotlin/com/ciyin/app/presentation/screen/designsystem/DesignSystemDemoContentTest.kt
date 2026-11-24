@@ -241,12 +241,13 @@ class DesignSystemDemoContentTest {
             DesignSystemDemoTags.Enabled to DesignSystemDemoAction.ToggleEnabled,
             DesignSystemDemoTags.Override to DesignSystemDemoAction.ToggleOverride,
             DesignSystemDemoTags.Reset to DesignSystemDemoAction.Reset,
-            DesignSystemDemoTags.Back to DesignSystemDemoAction.BackClick,
         )
         choices.forEach { (tag, action) ->
             onNodeWithTag(tag).performScrollTo().performClick()
             runOnIdle { assertEquals(action, actions.last()) }
         }
+        onNodeWithTag(DesignSystemDemoTags.Back).performClick()
+        runOnIdle { assertEquals(DesignSystemDemoAction.BackClick, actions.last()) }
     }
 
     /**

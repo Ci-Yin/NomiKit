@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.VisualTransformation
 import ciyin.designsystem.runtime.NomiNativeSpec
 import ciyin.designsystem.runtime.NomiSpecFamily
 import ciyin.designsystem.runtime.requireNomiDesignSystem
@@ -11,8 +12,8 @@ import ciyin.designsystem.runtime.requireNomiDesignSystem
 /**
  * 统一文本输入框入口；容器、边框、标签排版与交互反馈沿用当前设计系统的原生默认。
  *
- * 只接收字符串值，不提供密码遮罩、最大行数、辅助说明或前后缀；这些能力在两侧原生实现中
- * 形态差异较大，留待后续轮次。
+ * 只接收字符串值，不提供辅助说明或前后缀；这些能力在两侧原生实现中形态差异较大，
+ * 留待后续轮次。
  * 未提供设计系统时由 [requireNomiDesignSystem] 抛出带指引的异常。
  *
  * @param value 当前文本值，由调用方持有。
@@ -21,6 +22,8 @@ import ciyin.designsystem.runtime.requireNomiDesignSystem
  * @param enabled 是否接受用户操作。
  * @param readOnly 是否只读。
  * @param singleLine 是否限制为单行。
+ * @param maxLines 最大显示行数；[singleLine] 为 true 时实现按单行处理。
+ * @param visualTransformation 文本可视化转换，例如密码遮罩；默认原样显示。
  * @param variant 显式视觉变体；null 使用原生默认变体。
  * @param label 标签槽；null 表示没有标签。
  * @param placeholder 占位符槽；null 表示没有占位符。
@@ -39,6 +42,8 @@ fun NomiTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     singleLine: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     variant: NomiTextFieldVariant? = null,
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
@@ -55,6 +60,8 @@ fun NomiTextField(
     enabled = enabled,
     readOnly = readOnly,
     singleLine = singleLine,
+    maxLines = maxLines,
+    visualTransformation = visualTransformation,
     variant = variant,
     label = label,
     placeholder = placeholder,

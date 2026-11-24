@@ -8,17 +8,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -33,8 +22,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.feedback.NomiProgressIndicator
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.component.text.NomiTextField
+import ciyin.designsystem.component.text.NomiTextFieldVariant
+import ciyin.material.theme.AppTheme
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 private val AiImageDemoBodySmallStyle = TextStyle(
@@ -85,7 +82,6 @@ internal fun AiImageDemoScreen(
  *
  * 仅依赖 [AiImageUiState] 与 [onAction]；交互统一通过 [onAction] 回传，不持有 ViewModel。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AiImageDemoContent(
     state: AiImageUiState,
@@ -97,51 +93,44 @@ private fun AiImageDemoContent(
         if (bytes != null && mime != null) decodeGeneratedImageBytes(bytes, mime) else null
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("文生图演示") },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(AiImageAction.BackClick) }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-            )
-        },
-    ) { paddingValues ->
+    SamplePageScaffold(
+        title = "文生图演示",
+        onBack = { onAction(AiImageAction.BackClick) },
+    ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
+            NomiText(
                 text = "依赖本地 SD WebUI（--api）。未启动服务或地址不可达时会显示错误信息。",
                 style = AiImageDemoBodySmallStyle,
             )
-            OutlinedTextField(
+            NomiTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.serverHost,
+                variant = NomiTextFieldVariant.Outlined,
                 onValueChange = { onAction(AiImageAction.ServerHostChange(it)) },
                 enabled = !state.isLoading,
-                label = { Text("WebUI 主机 / IP") },
-                placeholder = { Text("127.0.0.1") },
+                label = { NomiText("WebUI 主机 / IP") },
+                placeholder = { NomiText("127.0.0.1") },
                 singleLine = true,
             )
-            OutlinedTextField(
+            NomiTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.prompt,
                 maxLines = 2,
+                variant = NomiTextFieldVariant.Outlined,
                 onValueChange = { onAction(AiImageAction.PromptChange(it)) },
-                label = { Text("提示词") },
+                label = { NomiText("提示词") },
             )
-            Button(
+            NomiButton(
                 onClick = { onAction(AiImageAction.GenerateClick) },
                 enabled = !state.isLoading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("生成")
+                NomiText("生成")
             }
             if (state.isLoading) {
                 Column(
@@ -150,15 +139,20 @@ private fun AiImageDemoContent(
                 ) {
                     val p = state.progress
                     if (p != null) {
-                        LinearProgressIndicator(
-                            progress = { p },
+                        NomiProgressIndicator(
+                            progress = p,
+                            type = NomiProgressIndicatorType.Linear,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        NomiProgressIndicator(
+                            progress = null,
+                            type = NomiProgressIndicatorType.Linear,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                     state.progressMessage?.let { msg ->
-                        Text(
+                        NomiText(
                             text = msg,
                             style = AiImageDemoBodySmallStyle,
                         )
@@ -166,7 +160,7 @@ private fun AiImageDemoContent(
                 }
             }
             state.errorMessage?.let { err ->
-                Text(
+                NomiText(
                     text = err,
                     color = AiImageDemoErrorColor,
                     style = AiImageDemoBodyMediumStyle,
@@ -190,8 +184,10 @@ private fun AiImageDemoContent(
 @AppPreview
 @Composable
 private fun AiImageDemoContentPreview() {
-    AiImageDemoContent(
-        state = AiImageUiState(),
-        onAction = {},
-    )
+    AppTheme {
+        AiImageDemoContent(
+            state = AiImageUiState(),
+            onAction = {},
+        )
+    }
 }

@@ -10,22 +10,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import ciyin.designsystem.component.icon.NomiIcon
 import ciyin.designsystem.component.list.NomiListItem
 import ciyin.designsystem.component.scaffold.NomiScaffold
 import ciyin.designsystem.component.scaffold.NomiScaffoldColors
 import ciyin.designsystem.component.text.NomiText
-import ciyin.designsystem.fluent.navigation.LocalFluentSystemBackdropActive
 import ciyin.designsystem.material3.Material3
 import ciyin.designsystem.runtime.NomiDesignSystem
 import ciyin.designsystem.theme.DarkMode
 import ciyin.designsystem.theme.NomiTheme
+import com.ciyin.app.presentation.component.samplePageBackgroundColor
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.design_system_demo_hub_description
 import com.ciyin.app.sample.design_system_demo_title
@@ -54,7 +54,6 @@ import io.github.composefluent.icons.regular.LockClosed
 import io.github.composefluent.icons.regular.PaintBrush
 import io.github.composefluent.icons.regular.Share
 import io.github.composefluent.icons.regular.Video
-import io.github.composefluent.icons.regular.Wrench
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
@@ -74,13 +73,7 @@ internal fun SampleHubScreen(
 
     NomiScaffold(
         modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-        colors = NomiScaffoldColors(
-            containerColor = if (LocalFluentSystemBackdropActive.current) {
-                NomiTheme.colorScheme.background.copy(alpha = 0f)
-            } else {
-                NomiTheme.colorScheme.background
-            }
-        ),
+        colors = NomiScaffoldColors(containerColor = samplePageBackgroundColor()),
         topBar = {
             NomiText(
                 text = "示例",
@@ -109,7 +102,7 @@ internal fun SampleHubScreen(
                     title = { NomiText(item.title) },
                     subtitle = { NomiText(item.description) },
                     leading = {
-                        Icon(
+                        NomiIcon(
                             imageVector = item.icon,
                             contentDescription = null,
                             modifier = Modifier.size(NomiTheme.sizes.icon.large),
@@ -117,7 +110,7 @@ internal fun SampleHubScreen(
                         )
                     },
                     trailing = {
-                        Icon(
+                        NomiIcon(
                             imageVector = Icons.Regular.ChevronRight,
                             contentDescription = null,
                             modifier = Modifier.size(NomiTheme.sizes.icon.small),
@@ -257,12 +250,6 @@ private fun rememberSampleHubEntries(): List<SampleHubEntry> {
                 description = "展示当前平台、构建配置、应用目录与时间参数。",
                 icon = Icons.Regular.Info,
                 navRouter = RuntimeInfoRouter,
-            ),
-            SampleHubEntry(
-                title = "占位示例 A",
-                description = "第二个占位入口。",
-                icon = Icons.Regular.Wrench,
-                navRouter = SampleExamplePlaceholderARouter,
             ),
         )
     }

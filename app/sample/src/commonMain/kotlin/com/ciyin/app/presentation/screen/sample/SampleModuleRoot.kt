@@ -97,12 +97,6 @@ fun SampleModuleRoot() {
                     onBack = { sampleBackStack.back() },
                 )
             }
-            entry<SampleExamplePlaceholderARouter> {
-                SamplePlaceholderScreen(
-                    title = "占位示例 A",
-                    onBack = { sampleBackStack.back() },
-                )
-            }
         },
     )
 }

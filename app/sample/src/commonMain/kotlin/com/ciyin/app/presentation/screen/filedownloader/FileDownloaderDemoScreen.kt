@@ -1,6 +1,7 @@
 package com.ciyin.app.presentation.screen.filedownloader
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -12,40 +13,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTooltipState
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.CheckmarkCircle
+import io.github.composefluent.icons.regular.Dismiss
+import io.github.composefluent.icons.regular.ArrowDownload
+import io.github.composefluent.icons.regular.ErrorCircle
+import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.Link
+import io.github.composefluent.icons.regular.Pause
+import io.github.composefluent.icons.regular.Play
+import io.github.composefluent.icons.regular.ArrowSync
+import io.github.composefluent.icons.regular.Clock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,14 +34,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.button.NomiIconButton
+import ciyin.designsystem.component.control.NomiSwitch
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.feedback.NomiProgressIndicator
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
+import ciyin.designsystem.component.feedback.NomiTooltip
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.surface.NomiSurface
+import ciyin.designsystem.component.surface.NomiSurfaceColors
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.component.text.NomiTextField
+import ciyin.designsystem.component.text.NomiTextFieldVariant
 import ciyin.io.resolve
 import ciyin.material.theme.AppTheme
 import ciyin.platform.LocalContext
 import ciyin.platform.files
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import org.jetbrains.compose.ui.tooling.preview.AppPreview
 
 /**
@@ -103,40 +97,18 @@ internal fun FileDownloaderDemoScreen(
  * @param state 页面状态。
  * @param onAction 页面动作回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FileDownloaderDemoContent(
     state: FileDownloaderDemoUiState,
     onAction: (FileDownloaderDemoAction) -> Unit,
 ) {
-    Scaffold(
-        containerColor = AppTheme.colorScheme.surfaceLower,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "文件下载",
-                        color = AppTheme.colorScheme.textPrimary,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(FileDownloaderDemoAction.BackClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppTheme.colorScheme.surfaceLower,
-                ),
-            )
-        },
-    ) { paddingValues ->
+    SamplePageScaffold(
+        title = "文件下载",
+        onBack = { onAction(FileDownloaderDemoAction.BackClick) },
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.TopCenter,
         ) {
@@ -205,14 +177,18 @@ private fun FileDownloaderConfigurationPanel(
     onAction: (FileDownloaderDemoAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    NomiSurface(
         modifier = modifier.fillMaxWidth(),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        contentColor = AppTheme.colorScheme.onSurface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(
+            containerColor = AppTheme.colorScheme.surface,
+            contentColor = AppTheme.colorScheme.onSurface,
+        ),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -221,42 +197,42 @@ private fun FileDownloaderConfigurationPanel(
         ) {
             FileDownloaderPanelHeader(
                 title = "任务配置",
-                icon = Icons.Filled.Download,
+                icon = Icons.Regular.ArrowDownload,
             )
-            OutlinedTextField(
+            NomiTextField(
                 value = state.url,
                 onValueChange = { onAction(FileDownloaderDemoAction.UrlChange(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.canEditConfig,
-                label = { Text("下载地址") },
+                variant = NomiTextFieldVariant.Outlined,
+                label = { NomiText("下载地址") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Link,
+                    NomiIcon(
+                        imageVector = Icons.Regular.Link,
                         contentDescription = null,
                     )
                 },
-                minLines = 2,
                 maxLines = 3,
             )
-            OutlinedTextField(
+            NomiTextField(
                 value = state.savePath,
                 onValueChange = { onAction(FileDownloaderDemoAction.SavePathChange(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.canEditConfig,
-                label = { Text("保存路径") },
+                variant = NomiTextFieldVariant.Outlined,
+                label = { NomiText("保存路径") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Folder,
+                    NomiIcon(
+                        imageVector = Icons.Regular.Folder,
                         contentDescription = null,
                     )
                 },
-                minLines = 2,
                 maxLines = 3,
             )
 
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
 
-            Text(
+            NomiText(
                 text = "传输策略",
                 style = AppTheme.typography.titleMedium,
                 color = AppTheme.colorScheme.textPrimary,
@@ -302,14 +278,18 @@ private fun FileDownloaderStatusPanel(
     onAction: (FileDownloaderDemoAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    NomiSurface(
         modifier = modifier.fillMaxWidth(),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        contentColor = AppTheme.colorScheme.onSurface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(
+            containerColor = AppTheme.colorScheme.surface,
+            contentColor = AppTheme.colorScheme.onSurface,
+        ),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -321,7 +301,7 @@ private fun FileDownloaderStatusPanel(
             FileDownloaderMetrics(state)
             FileDownloaderOutcome(state)
 
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
 
             FileDownloaderPrimaryAction(
                 enabled = state.canStart,
@@ -334,25 +314,25 @@ private fun FileDownloaderStatusPanel(
             ) {
                 FileDownloaderControlButton(
                     label = "暂停",
-                    icon = Icons.Filled.Pause,
+                    icon = Icons.Regular.Pause,
                     enabled = state.canPause,
                     onClick = { onAction(FileDownloaderDemoAction.PauseClick) },
                 )
                 FileDownloaderControlButton(
                     label = "恢复",
-                    icon = Icons.Filled.PlayArrow,
+                    icon = Icons.Regular.Play,
                     enabled = state.canResume,
                     onClick = { onAction(FileDownloaderDemoAction.ResumeClick) },
                 )
                 FileDownloaderControlButton(
                     label = "取消",
-                    icon = Icons.Filled.Close,
+                    icon = Icons.Regular.Dismiss,
                     enabled = state.canCancel,
                     onClick = { onAction(FileDownloaderDemoAction.CancelClick) },
                 )
                 FileDownloaderControlButton(
                     label = "重新开始",
-                    icon = Icons.Filled.Refresh,
+                    icon = Icons.Regular.ArrowSync,
                     enabled = state.canRestart,
                     onClick = { onAction(FileDownloaderDemoAction.RestartClick) },
                 )
@@ -376,13 +356,13 @@ private fun FileDownloaderPanelHeader(
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
+        NomiIcon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.large),
             tint = AppTheme.colorScheme.primary,
         )
-        Text(
+        NomiText(
             text = title,
             style = AppTheme.typography.titleLarge,
             color = AppTheme.colorScheme.textPrimary,
@@ -408,17 +388,12 @@ private fun FileDownloaderOptionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .toggleable(
-                value = checked,
-                enabled = enabled,
-                role = Role.Switch,
-                onValueChange = onCheckedChange,
-            )
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .padding(vertical = AppTheme.spacings.small),
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.large),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
+        NomiText(
             text = label,
             modifier = Modifier.weight(1f),
             style = AppTheme.typography.bodyLarge,
@@ -428,9 +403,9 @@ private fun FileDownloaderOptionRow(
                 AppTheme.colorScheme.textDisabled
             },
         )
-        Switch(
+        NomiSwitch(
             checked = checked,
-            onCheckedChange = null,
+            onCheckedChange = onCheckedChange,
             enabled = enabled,
         )
     }
@@ -448,19 +423,19 @@ private fun FileDownloaderStatusHeader(phase: FileDownloaderDemoPhase) {
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
+        NomiIcon(
             imageVector = fileDownloaderStatusIcon(phase),
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.large),
             tint = statusColor,
         )
         Column(verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny)) {
-            Text(
+            NomiText(
                 text = "实时状态",
                 style = AppTheme.typography.labelLarge,
                 color = AppTheme.colorScheme.textSecondary,
             )
-            Text(
+            NomiText(
                 text = phase.displayName,
                 style = AppTheme.typography.titleLarge,
                 color = statusColor,
@@ -486,29 +461,33 @@ private fun FileDownloaderProgress(state: FileDownloaderDemoUiState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            Text(
+            NomiText(
                 text = "进度",
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
             )
-            Text(
+            NomiText(
                 text = progress?.let { "${(it * 100f).toInt()}%" } ?: "--",
                 style = AppTheme.typography.headlineSmall,
                 color = AppTheme.colorScheme.textPrimary,
             )
         }
         when {
-            progress != null -> LinearProgressIndicator(
-                progress = { progress },
+            progress != null -> NomiProgressIndicator(
+                progress = progress,
+                type = NomiProgressIndicatorType.Linear,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            state.phase == FileDownloaderDemoPhase.Starting -> LinearProgressIndicator(
+            state.phase == FileDownloaderDemoPhase.Starting -> NomiProgressIndicator(
+                progress = null,
+                type = NomiProgressIndicatorType.Linear,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            else -> LinearProgressIndicator(
-                progress = { 0f },
+            else -> NomiProgressIndicator(
+                progress = 0f,
+                type = NomiProgressIndicatorType.Linear,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -561,12 +540,12 @@ private fun FileDownloaderMetric(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
     ) {
-        Text(
+        NomiText(
             text = label,
             style = AppTheme.typography.labelMedium,
             color = AppTheme.colorScheme.textSecondary,
         )
-        Text(
+        NomiText(
             text = value,
             style = AppTheme.typography.titleMedium,
             color = AppTheme.colorScheme.textPrimary,
@@ -585,7 +564,7 @@ private fun FileDownloaderOutcome(state: FileDownloaderDemoUiState) {
         FileDownloaderOutcomeMessage(
             title = "结果路径",
             message = path,
-            icon = Icons.Filled.CheckCircle,
+            icon = Icons.Regular.CheckmarkCircle,
             color = AppTheme.colorScheme.success,
         )
     }
@@ -593,7 +572,7 @@ private fun FileDownloaderOutcome(state: FileDownloaderDemoUiState) {
         FileDownloaderOutcomeMessage(
             title = "错误信息",
             message = message,
-            icon = Icons.Filled.Error,
+            icon = Icons.Regular.ErrorCircle,
             color = AppTheme.colorScheme.error,
         )
     }
@@ -619,7 +598,7 @@ private fun FileDownloaderOutcomeMessage(
         horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
         verticalAlignment = Alignment.Top,
     ) {
-        Icon(
+        NomiIcon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.medium),
@@ -629,13 +608,13 @@ private fun FileDownloaderOutcomeMessage(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.extraSmall),
         ) {
-            Text(
+            NomiText(
                 text = title,
                 style = AppTheme.typography.labelLarge,
                 color = color,
             )
             SelectionContainer {
-                Text(
+                NomiText(
                     text = message,
                     style = AppTheme.typography.bodyMedium,
                     color = AppTheme.colorScheme.textPrimary,
@@ -656,17 +635,17 @@ private fun FileDownloaderPrimaryAction(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Button(
+    NomiButton(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,
     ) {
-        Icon(
-            imageVector = Icons.Filled.Download,
+        NomiIcon(
+            imageVector = Icons.Regular.ArrowDownload,
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.medium),
         )
-        Text(
+        NomiText(
             text = "开始下载",
             modifier = Modifier.padding(start = AppTheme.spacings.small),
         )
@@ -681,7 +660,6 @@ private fun FileDownloaderPrimaryAction(
  * @param enabled 是否允许操作。
  * @param onClick 点击回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FileDownloaderControlButton(
     label: String,
@@ -689,22 +667,12 @@ private fun FileDownloaderControlButton(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-            TooltipAnchorPosition.Above,
-        ),
-        tooltip = {
-            PlainTooltip {
-                Text(label)
-            }
-        },
-        state = rememberTooltipState(),
-    ) {
-        OutlinedIconButton(
+    NomiTooltip(tooltip = { NomiText(label) }) {
+        NomiIconButton(
             onClick = onClick,
             enabled = enabled,
         ) {
-            Icon(
+            NomiIcon(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(AppTheme.sizes.icon.medium),
@@ -720,14 +688,14 @@ private fun FileDownloaderControlButton(
  * @return 对应状态图标。
  */
 private fun fileDownloaderStatusIcon(phase: FileDownloaderDemoPhase): ImageVector = when (phase) {
-    FileDownloaderDemoPhase.Idle -> Icons.Filled.Schedule
-    FileDownloaderDemoPhase.Starting -> Icons.Filled.Download
-    FileDownloaderDemoPhase.Downloading -> Icons.Filled.Download
-    FileDownloaderDemoPhase.Paused -> Icons.Filled.Pause
-    FileDownloaderDemoPhase.Resumed -> Icons.Filled.PlayArrow
-    FileDownloaderDemoPhase.Cancelled -> Icons.Filled.Close
-    FileDownloaderDemoPhase.Complete -> Icons.Filled.CheckCircle
-    FileDownloaderDemoPhase.Error -> Icons.Filled.Error
+    FileDownloaderDemoPhase.Idle -> Icons.Regular.Clock
+    FileDownloaderDemoPhase.Starting -> Icons.Regular.ArrowDownload
+    FileDownloaderDemoPhase.Downloading -> Icons.Regular.ArrowDownload
+    FileDownloaderDemoPhase.Paused -> Icons.Regular.Pause
+    FileDownloaderDemoPhase.Resumed -> Icons.Regular.Play
+    FileDownloaderDemoPhase.Cancelled -> Icons.Regular.Dismiss
+    FileDownloaderDemoPhase.Complete -> Icons.Regular.CheckmarkCircle
+    FileDownloaderDemoPhase.Error -> Icons.Regular.ErrorCircle
 }
 
 /**

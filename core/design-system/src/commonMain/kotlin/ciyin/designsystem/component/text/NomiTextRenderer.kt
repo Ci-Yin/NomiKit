@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
@@ -129,6 +130,8 @@ interface NomiTextRenderer {
      * @param enabled 是否接受用户操作，并据此选择启用或禁用外观。
      * @param readOnly 是否只读；只读时仍可聚焦与复制，但不可修改。
      * @param singleLine 是否限制为单行并抑制换行。
+     * @param maxLines 最大显示行数；[singleLine] 为 true 时实现按单行处理。
+     * @param visualTransformation 文本可视化转换，例如密码遮罩。
      * @param variant 显式输入框变体；null 使用当前设计系统的原生默认变体。
      * @param label 标签槽；null 表示没有标签。
      * @param placeholder 占位符槽；null 表示没有占位符。
@@ -147,6 +150,8 @@ interface NomiTextRenderer {
         enabled: Boolean,
         readOnly: Boolean,
         singleLine: Boolean,
+        maxLines: Int,
+        visualTransformation: VisualTransformation,
         variant: NomiTextFieldVariant?,
         label: (@Composable () -> Unit)?,
         placeholder: (@Composable () -> Unit)?,

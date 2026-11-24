@@ -3,19 +3,8 @@ package com.ciyin.app.presentation.screen.runtimeinfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
@@ -23,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ciyin.application.config.AppBuildConfig
 import ciyin.application.config.LocalAppBuildConfig
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.text.NomiText
 import ciyin.io.File
 import ciyin.platform.Context
 import ciyin.platform.LocalContext
@@ -38,6 +30,7 @@ import ciyin.platform.time.currentTimeMillis
 import ciyin.platform.time.currentTimeSecond
 import ciyin.platform.time.format
 import ciyin.platform.time.nowLocal
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -73,50 +66,36 @@ internal fun RuntimeInfoScreen(
  * @param sections 参数展示分组。
  * @param onBack 返回上一页的回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RuntimeInfoContent(
     sections: List<RuntimeInfoSection>,
     onBack: () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("运行环境信息") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                        )
-                    }
-                },
-            )
-        },
-    ) { padding ->
+    SamplePageScaffold(
+        title = "运行环境信息",
+        onBack = onBack,
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             sections.forEach { section ->
                 item(key = section.title) {
-                    ListItem(
-                        headlineContent = { Text(section.title) },
+                    NomiListItem(
+                        title = { NomiText(section.title) },
                     )
-                    HorizontalDivider()
+                    NomiDivider()
                 }
                 items(
                     items = section.items,
                     key = { "${section.title}-${it.label}" },
                 ) { item ->
-                    ListItem(
-                        headlineContent = { Text(item.label) },
-                        trailingContent = { Text(item.value) },
+                    NomiListItem(
+                        title = { NomiText(item.label) },
+                        trailing = { NomiText(item.value) },
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    HorizontalDivider()
+                    NomiDivider()
                 }
             }
         }

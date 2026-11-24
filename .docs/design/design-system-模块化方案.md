@@ -365,22 +365,25 @@ renderer；文本输入框归入 [文本族](<../../core/design-system/src/commo
 
 ### 三端映射与降级
 
-| 入口              | Nomi                                | Material 3                                        | Fluent v0.1.0                                                                     |
-|-------------------|-------------------------------------|---------------------------------------------------|-----------------------------------------------------------------------------------|
-| `NomiIcon`        | `Icon` + Nomi 内容色令牌            | 原生 `Icon`，Unspecified 回落 `LocalContentColor` | 原生 `Icon`，回落内容色与内容透明度                                               |
-| `NomiDivider`     | 原生水平/垂直分割线 + Nomi 线条令牌 | 原生 `HorizontalDivider` / `VerticalDivider`      | 仅横向：原生 `ListItemSeparator`；纵向、粗细、颜色忽略并告警                      |
-| `NomiSwitch`      | 原生 `Switch` + Nomi 令牌配色       | 原生 `Switch`                                     | 原生 `Switcher`；上游无 modifier 参数，修饰符作用在包装节点                       |
-| `NomiCheckbox`    | 原生 `Checkbox` + Nomi 令牌配色     | 原生 `Checkbox`                                   | 原生 `CheckBox`，label 为 null                                                    |
-| `NomiRadioButton` | 原生 `RadioButton` + Nomi 令牌配色  | 原生 `RadioButton`                                | 原生 `RadioButton`，label 为 null                                                 |
-| `NomiTextField`   | 填充/描边入口 + Nomi 令牌配色       | `Outlined` → `OutlinedTextField`，否则填充入口    | 原生 `TextField`：label→header、trailingIcon→trailing；variant/isError 忽略并告警 |
-| `NomiTooltip`     | 原生 `TooltipBox` + Nomi 容器色     | 原生 `TooltipBox` + `PlainTooltip`                | 原生 `TooltipBox`（实验 API），触发与时长沿用原生默认                             |
+| 入口              | Nomi                                | Material 3                                        | Fluent v0.1.0                                                                                                         |
+|-------------------|-------------------------------------|---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `NomiIcon`        | `Icon` + Nomi 内容色令牌            | 原生 `Icon`，Unspecified 回落 `LocalContentColor` | 原生 `Icon`，回落内容色与内容透明度                                                                                   |
+| `NomiDivider`     | 原生水平/垂直分割线 + Nomi 线条令牌 | 原生 `HorizontalDivider` / `VerticalDivider`      | 仅横向：原生 `ListItemSeparator`；纵向、粗细、颜色忽略并告警                                                          |
+| `NomiSwitch`      | 原生 `Switch` + Nomi 令牌配色       | 原生 `Switch`                                     | 原生 `Switcher`；上游无 modifier 参数，修饰符作用在包装节点                                                           |
+| `NomiCheckbox`    | 原生 `Checkbox` + Nomi 令牌配色     | 原生 `Checkbox`                                   | 原生 `CheckBox`，label 为 null                                                                                        |
+| `NomiRadioButton` | 原生 `RadioButton` + Nomi 令牌配色  | 原生 `RadioButton`                                | 原生 `RadioButton`，label 为 null                                                                                     |
+| `NomiTextField`   | 填充/描边入口 + Nomi 令牌配色       | `Outlined` → `OutlinedTextField`，否则填充入口    | 原生 `TextField`：label→header、trailingIcon→trailing；variant/isError 忽略并告警，visualTransformation/maxLines 透传 |
+| `NomiTooltip`     | 原生 `TooltipBox` + Nomi 容器色     | 原生 `TooltipBox` + `PlainTooltip`                | 原生 `TooltipBox`（实验 API），触发与时长沿用原生默认                                                                 |
 
 - Nomi 不安装外层原生主题，因此控件、输入框与提示浮层的配色全部显式取自 `NomiTheme.colorScheme`，
   不读取宿主主题；这与导航外壳复用原生工具箱组件的既有做法一致。
 - 内置 `IconPack` 的 8 个矢量固有尺寸统一为 24dp：调用方不再需要为了尺寸显式约束每个槽位，需要其它
   尺寸时仍用 `Modifier.size`。
-- 本版不提供图标按钮、顶栏、徽标、页签、浮层对话框、列表分组容器；不提供 `NomiTextField`
-  的密码遮罩、最大行数、辅助说明与前后缀；选择控件不提供只读态。上述能力列入「后续组件缺口清单」。
+- 本版不提供图标按钮、顶栏、徽标、页签、浮层对话框、列表分组容器；`NomiTextField` 不提供
+  辅助说明与前后缀；选择控件不提供只读态。上述能力列入「后续组件缺口清单」。
+- 2026-11-23 更新：`NomiTextField` 已补 `maxLines` 与 `visualTransformation`，三端原样透传；
+  `app/sample` 页面组件迁移到 Nomi（AI 配置弹窗保留 `AlertDialog` 外壳，设计系统展示页保留原生组件区），
+  sample Desktop 70 项与核心四模块 232 项回归通过，Android 主源码编译通过。
 
 ## 开关按钮、下拉按钮、组合框与菜单族
 

@@ -166,7 +166,8 @@ friend tests。
   3dp，仅统一配色。
 - 应用侧只做窗口→布局映射与数据分组；不要恢复 AppTheme/旧 iconpack/M3 导航直连。
 - 文本 SPI 为 String/AnnotatedString 双重载，逐字段覆盖、onTextLayout、autoSize、inlineContent
-  原样透传；未指定沿用 style 与原生环境。
+  原样透传；未指定沿用 style 与原生环境。输入框的 maxLines 与 visualTransformation 同样原样透传，
+  由各适配器落到原生输入参数。
 - 文本颜色优先级为显式 color > 本次 style.color > 显式 slot 色 > 继承样式色；仍未指定交原生环境。
   不能将投影默认值变成显式 slot，压过原生禁用/交互内容色。Nomi 自身解析环境使用独立 LocalNomi*
   ，M3/Fluent 留在原生 locals；中立 slot 仅携带显式增量。

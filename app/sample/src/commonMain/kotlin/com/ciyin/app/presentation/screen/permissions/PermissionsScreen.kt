@@ -1,7 +1,6 @@
 package com.ciyin.app.presentation.screen.permissions
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,33 +8,45 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Alert
+import io.github.composefluent.icons.regular.ArrowSync
+import io.github.composefluent.icons.regular.Bluetooth
+import io.github.composefluent.icons.regular.CalendarLtr
+import io.github.composefluent.icons.regular.Call
+import io.github.composefluent.icons.regular.Camera
+import io.github.composefluent.icons.regular.Chat
+import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.Globe
+import io.github.composefluent.icons.regular.ImageMultiple
+import io.github.composefluent.icons.regular.Location
+import io.github.composefluent.icons.regular.Mic
+import io.github.composefluent.icons.regular.People
+import io.github.composefluent.icons.regular.Pulse
+import io.github.composefluent.icons.regular.Wifi4
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.button.NomiIconButton
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.feedback.NomiProgressIndicator
+import ciyin.designsystem.component.feedback.NomiProgressIndicatorType
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.list.NomiListItem
+import ciyin.designsystem.component.text.NomiText
 import ciyin.material.theme.AppTheme
 import ciyin.permissions.Permission
 import ciyin.permissions.PermissionStatus
 import ciyin.platform.LocalContext
 import ciyin.ui.foundation.viewmodel.collectSideEffects
 import ciyin.ui.foundation.viewmodel.viewModel
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.permissions_back
 import com.ciyin.app.sample.permissions_group_bluetooth
@@ -121,63 +132,52 @@ internal fun PermissionsScreen(
 }
 
 /** 权限管理示例的纯 UI。 */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PermissionsContent(
     state: PermissionsUiState,
     onAction: (PermissionsAction) -> Unit,
 ) {
     val context = LocalContext.current
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.permissions_title)) },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(PermissionsAction.BackClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.permissions_back),
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { onAction(PermissionsAction.Refresh(context)) },
-                        enabled = !state.isBusy,
-                    ) {
-                        if (state.isRefreshing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(AppTheme.sizes.icon.large),
-                                strokeWidth = AppTheme.sizes.strokes.medium,
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.Refresh,
-                                contentDescription = stringResource(Res.string.permissions_refresh),
-                            )
-                        }
-                    }
-                },
-            )
+    SamplePageScaffold(
+        title = stringResource(Res.string.permissions_title),
+        onBack = { onAction(PermissionsAction.BackClick) },
+        backContentDescription = stringResource(Res.string.permissions_back),
+        actions = {
+            NomiIconButton(
+                onClick = { onAction(PermissionsAction.Refresh(context)) },
+                enabled = !state.isBusy,
+            ) {
+                if (state.isRefreshing) {
+                    NomiProgressIndicator(
+                        progress = null,
+                        type = NomiProgressIndicatorType.Circular,
+                        modifier = Modifier.size(AppTheme.sizes.icon.large),
+                    )
+                } else {
+                    NomiIcon(
+                        imageVector = Icons.Regular.ArrowSync,
+                        contentDescription = stringResource(Res.string.permissions_refresh),
+                    )
+                }
+            }
         },
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-        ) {
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             state.errorMessage?.let { message ->
                 item(key = "error") {
                     val errorMessage = message.ifBlank {
                         stringResource(Res.string.permissions_unknown_error)
                     }
-                    Text(
-                        text = stringResource(Res.string.permissions_operation_failed, errorMessage),
+                    NomiText(
+                        text = stringResource(
+                            Res.string.permissions_operation_failed,
+                            errorMessage
+                        ),
                         color = AppTheme.colorScheme.error,
                         style = AppTheme.typography.bodyMedium,
                         modifier = Modifier.padding(AppTheme.spacings.large),
                     )
-                    HorizontalDivider()
+                    NomiDivider()
                 }
             }
             items(
@@ -194,13 +194,17 @@ private fun PermissionsContent(
                         onAction(PermissionsAction.OpenSettings(context, model.id))
                     },
                 )
-                HorizontalDivider()
+                NomiDivider()
             }
         }
     }
 }
 
-/** 渲染一个权限组及其逐权限状态和操作。 */
+/**
+ * 渲染一个权限组及其逐权限状态和操作。
+ *
+ * 标题左侧展示权限盾牌图标，状态摘要与行尾操作由 [NomiListItem] 统一承载，与样例其他列表页保持一致。
+ */
 @Composable
 private fun PermissionGroupRow(
     model: PermissionsGroupModel,
@@ -208,7 +212,6 @@ private fun PermissionGroupRow(
     onRequest: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val isRequesting = state.activeGroupId == model.id
     val statusLabels = mutableListOf<String>()
     for (permission in model.group.permissions) {
         statusLabels += stringResource(
@@ -219,54 +222,69 @@ private fun PermissionGroupRow(
     }
     val statusText = statusLabels.joinToString(separator = " · ")
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(AppTheme.spacings.large),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
-    ) {
-        Text(
-            text = stringResource(model.id.titleResource()),
-            style = AppTheme.typography.titleMedium,
-        )
-        Text(
-            text = statusText,
-            color = AppTheme.colorScheme.onSurface,
-            style = AppTheme.typography.bodyMedium,
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Button(
-                onClick = onRequest,
-                enabled = !state.isBusy,
+    NomiListItem(
+        leading = {
+            NomiIcon(
+                imageVector = model.id.icon(),
+                contentDescription = null,
+                modifier = Modifier.size(AppTheme.sizes.icon.large),
+                tint = AppTheme.colorScheme.primary,
+            )
+        },
+        title = {
+            NomiText(
+                text = stringResource(model.id.titleResource()),
+                style = AppTheme.typography.titleMedium,
+            )
+        },
+        subtitle = {
+            NomiText(
+                text = statusText,
+                color = AppTheme.colorScheme.textSecondary,
+                style = AppTheme.typography.bodyMedium,
+            )
+        },
+        trailing = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (isRequesting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(AppTheme.sizes.icon.medium),
-                        strokeWidth = AppTheme.sizes.strokes.medium,
-                    )
-                } else {
-                    Icon(Icons.Filled.Security, contentDescription = null)
+                NomiButton(
+                    onClick = onRequest,
+                    enabled = !state.isBusy,
+                    variant = NomiButtonVariant.Default,
+                ) {
+                    NomiText(stringResource(Res.string.permissions_request))
                 }
-                Text(
-                    text = stringResource(Res.string.permissions_request),
-                    modifier = Modifier.padding(start = AppTheme.spacings.small),
-                )
+                NomiButton(
+                    onClick = onOpenSettings,
+                    variant = NomiButtonVariant.Text,
+                    enabled = !state.isBusy,
+                ) {
+                    NomiText(stringResource(Res.string.permissions_settings))
+                }
             }
-            OutlinedButton(
-                onClick = onOpenSettings,
-                enabled = !state.isBusy,
-            ) {
-                Icon(Icons.Filled.Settings, contentDescription = null)
-                Text(
-                    text = stringResource(Res.string.permissions_settings),
-                    modifier = Modifier.padding(start = AppTheme.spacings.small),
-                )
-            }
-        }
-    }
+        },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+/** 返回权限组标题左侧使用的 Fluent 图标。 */
+private fun PermissionsGroupId.icon(): ImageVector = when (this) {
+    PermissionsGroupId.Camera -> Icons.Regular.Camera
+    PermissionsGroupId.Phone -> Icons.Regular.Call
+    PermissionsGroupId.Microphone -> Icons.Regular.Mic
+    PermissionsGroupId.Sms -> Icons.Regular.Chat
+    PermissionsGroupId.Location -> Icons.Regular.Location
+    PermissionsGroupId.Media -> Icons.Regular.ImageMultiple
+    PermissionsGroupId.Sensors -> Icons.Regular.Pulse
+    PermissionsGroupId.Storage -> Icons.Regular.Folder
+    PermissionsGroupId.Contacts -> Icons.Regular.People
+    PermissionsGroupId.Calendar -> Icons.Regular.CalendarLtr
+    PermissionsGroupId.Notifications -> Icons.Regular.Alert
+    PermissionsGroupId.Bluetooth -> Icons.Regular.Bluetooth
+    PermissionsGroupId.Wifi -> Icons.Regular.Wifi4
+    PermissionsGroupId.Internet -> Icons.Regular.Globe
 }
 
 /** 返回权限组标题资源。 */

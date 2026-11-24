@@ -5,19 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.text.NomiText
+import ciyin.designsystem.theme.NomiTheme
 import ciyin.file.picker.FileMode
 import ciyin.file.picker.FileType
 import ciyin.file.picker.isCameraPickerSupported
@@ -34,6 +26,7 @@ import ciyin.file.picker.rememberFilePicker
 import ciyin.file.picker.rememberFileSaver
 import ciyin.io.File
 import ciyin.material.theme.AppTheme
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.file_picker_demo_back
 import com.ciyin.app.sample.file_picker_demo_camera_action
@@ -61,7 +54,6 @@ import org.jetbrains.compose.resources.stringResource
  *
  * @param onBack 返回上一页回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun FilePickerDemoScreen(onBack: () -> Unit) {
     var pickedFiles by remember { mutableStateOf<List<File?>>(emptyList()) }
@@ -98,77 +90,65 @@ internal fun FilePickerDemoScreen(onBack: () -> Unit) {
         onResult = { file -> capturedFile = file },
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.file_picker_demo_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.file_picker_demo_back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { padding ->
+    SamplePageScaffold(
+        title = stringResource(Res.string.file_picker_demo_title),
+        onBack = onBack,
+        backContentDescription = stringResource(Res.string.file_picker_demo_back),
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(AppTheme.spacings.large),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.large),
         ) {
             item {
-                Text(
+                NomiText(
                     text = stringResource(Res.string.file_picker_demo_description),
                     color = AppTheme.colorScheme.textSecondary,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = NomiTheme.typography.bodyMedium,
                 )
             }
             item {
-                Button(
+                NomiButton(
                     onClick = singlePicker::launch,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_single_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_single_action))
                 }
             }
             item {
-                Button(
+                NomiButton(
                     onClick = multiplePicker::launch,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_multiple_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_multiple_action))
                 }
             }
             item {
-                Button(
+                NomiButton(
                     onClick = videoPicker::launch,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_gallery_video_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_gallery_video_action))
                 }
             }
             item {
-                Button(
+                NomiButton(
                     onClick = imageVideoPicker::launch,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_gallery_image_video_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_gallery_image_video_action))
                 }
             }
             item {
-                Button(
+                NomiButton(
                     onClick = directoryPicker::launch,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_directory_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_directory_action))
                 }
             }
             item {
-                Button(
+                NomiButton(
                     onClick = {
                         fileSaver.launch(
                             bytes = "NomiKit 文件保存示例".encodeToByteArray(),
@@ -178,37 +158,37 @@ internal fun FilePickerDemoScreen(onBack: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(Res.string.file_picker_demo_save_action))
+                    NomiText(stringResource(Res.string.file_picker_demo_save_action))
                 }
             }
             if (isCameraPickerSupported) {
                 item {
-                    Button(
+                    NomiButton(
                         onClick = cameraPicker::launch,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(stringResource(Res.string.file_picker_demo_camera_action))
+                        NomiText(stringResource(Res.string.file_picker_demo_camera_action))
                     }
                 }
             }
 
-            item { HorizontalDivider() }
+            item { NomiDivider() }
 
             item {
                 ResultSection(
                     title = stringResource(Res.string.file_picker_demo_result_title),
                 ) {
                     if (pickedFiles.isEmpty()) {
-                        Text(
+                        NomiText(
                             text = stringResource(Res.string.file_picker_demo_result_empty),
                             color = AppTheme.colorScheme.textSecondary,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = NomiTheme.typography.bodyMedium,
                         )
                     } else {
                         pickedFiles.forEach { file ->
-                            Text(
+                            NomiText(
                                 text = file?.path ?: "-",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = NomiTheme.typography.bodyMedium,
                             )
                         }
                     }
@@ -219,15 +199,15 @@ internal fun FilePickerDemoScreen(onBack: () -> Unit) {
                 ResultSection(
                     title = stringResource(Res.string.file_picker_demo_directory_result_title),
                 ) {
-                    Text(
+                    NomiText(
                         text = pickedDirectory?.path
                             ?: stringResource(Res.string.file_picker_demo_result_none),
                         color = if (pickedDirectory == null) {
                             AppTheme.colorScheme.textSecondary
                         } else {
-                            MaterialTheme.colorScheme.onSurface
+                            NomiTheme.colorScheme.onSurface
                         },
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = NomiTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -236,15 +216,15 @@ internal fun FilePickerDemoScreen(onBack: () -> Unit) {
                 ResultSection(
                     title = stringResource(Res.string.file_picker_demo_save_result_title),
                 ) {
-                    Text(
+                    NomiText(
                         text = savedFile?.path
                             ?: stringResource(Res.string.file_picker_demo_result_none),
                         color = if (savedFile == null) {
                             AppTheme.colorScheme.textSecondary
                         } else {
-                            MaterialTheme.colorScheme.onSurface
+                            NomiTheme.colorScheme.onSurface
                         },
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = NomiTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -254,15 +234,15 @@ internal fun FilePickerDemoScreen(onBack: () -> Unit) {
                     ResultSection(
                         title = stringResource(Res.string.file_picker_demo_camera_result_title),
                     ) {
-                        Text(
+                        NomiText(
                             text = capturedFile?.path
                                 ?: stringResource(Res.string.file_picker_demo_result_none),
                             color = if (capturedFile == null) {
                                 AppTheme.colorScheme.textSecondary
                             } else {
-                                MaterialTheme.colorScheme.onSurface
+                                NomiTheme.colorScheme.onSurface
                             },
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = NomiTheme.typography.bodyMedium,
                         )
                     }
                 }
@@ -286,10 +266,10 @@ private fun ResultSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
     ) {
-        Text(
+        NomiText(
             text = title,
             fontWeight = FontWeight.SemiBold,
-            style = MaterialTheme.typography.titleMedium,
+            style = NomiTheme.typography.titleMedium,
         )
         content()
     }

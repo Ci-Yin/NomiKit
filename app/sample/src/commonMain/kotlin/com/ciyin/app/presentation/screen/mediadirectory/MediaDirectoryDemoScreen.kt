@@ -12,29 +12,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.CreateNewFolder
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Prohibited
+import io.github.composefluent.icons.regular.CheckmarkCircle
+import io.github.composefluent.icons.regular.FolderAdd
+import io.github.composefluent.icons.regular.Delete
+import io.github.composefluent.icons.regular.ErrorCircle
+import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.Search
+import io.github.composefluent.icons.regular.ArrowUpload
+import io.github.composefluent.icons.regular.ShieldCheckmark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,10 +31,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ciyin.designsystem.component.NomiBorder
+import ciyin.designsystem.component.button.NomiButton
+import ciyin.designsystem.component.button.NomiButtonVariant
+import ciyin.designsystem.component.divider.NomiDivider
+import ciyin.designsystem.component.icon.NomiIcon
+import ciyin.designsystem.component.surface.NomiSurface
+import ciyin.designsystem.component.surface.NomiSurfaceColors
+import ciyin.designsystem.component.text.NomiText
 import ciyin.io.formatFileSize
 import ciyin.material.theme.AppTheme
 import ciyin.media.directory.MediaDirectoryAccessToken
 import ciyin.ui.foundation.viewmodel.collectSideEffects
+import com.ciyin.app.presentation.component.SamplePageScaffold
 import com.ciyin.app.sample.Res
 import com.ciyin.app.sample.media_directory_demo_back
 import com.ciyin.app.sample.media_directory_demo_canonical_path
@@ -206,41 +202,20 @@ internal fun MediaDirectoryDemoScreen(
  * @param state 当前测试台状态。
  * @param onAction 页面操作回调。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MediaDirectoryDemoContent(
     state: MediaDirectoryDemoUiState,
     onAction: (MediaDirectoryDemoAction) -> Unit,
 ) {
-    Scaffold(
+    SamplePageScaffold(
+        title = stringResource(Res.string.media_directory_demo_title),
+        onBack = { onAction(MediaDirectoryDemoAction.BackClick) },
+        backContentDescription = stringResource(Res.string.media_directory_demo_back),
         modifier = Modifier.testTag(MediaDirectoryDemoRootTag),
-        containerColor = AppTheme.colorScheme.surfaceLower,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(Res.string.media_directory_demo_title),
-                        color = AppTheme.colorScheme.textPrimary,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onAction(MediaDirectoryDemoAction.BackClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.media_directory_demo_back),
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppTheme.colorScheme.surfaceLower,
-                ),
-            )
-        },
-    ) { padding ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -270,15 +245,17 @@ private fun MediaDirectoryStatusCard(
     state: MediaDirectoryDemoUiState,
     onAction: (MediaDirectoryDemoAction) -> Unit,
 ) {
-    Surface(
+    NomiSurface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag(MediaDirectoryDemoStatusTag),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surface),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -289,13 +266,13 @@ private fun MediaDirectoryStatusCard(
                 horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
+                NomiIcon(
                     imageVector = state.accessState.icon(),
                     contentDescription = null,
                     modifier = Modifier.size(AppTheme.sizes.icon.large),
                     tint = state.accessState.color(),
                 )
-                Text(
+                NomiText(
                     text = stringResource(state.accessState.resource()),
                     style = AppTheme.typography.titleMedium,
                     color = AppTheme.colorScheme.textPrimary,
@@ -306,7 +283,7 @@ private fun MediaDirectoryStatusCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 MediaDirectoryDemoCommandButton(
-                    icon = Icons.Filled.CreateNewFolder,
+                    icon = Icons.Regular.FolderAdd,
                     loading = state.phase == MediaDirectoryDemoPhase.Picking,
                     enabled = state.isIdle,
                     loadingLabel = Res.string.media_directory_demo_picking,
@@ -315,7 +292,7 @@ private fun MediaDirectoryStatusCard(
                     modifier = Modifier.weight(1f),
                 )
                 MediaDirectoryDemoCommandButton(
-                    icon = Icons.Filled.VerifiedUser,
+                    icon = Icons.Regular.ShieldCheckmark,
                     loading = state.phase == MediaDirectoryDemoPhase.Validating,
                     enabled = state.accessState == MediaDirectoryDemoAccessState.Granted && state.isIdle,
                     loadingLabel = Res.string.media_directory_demo_validating,
@@ -334,15 +311,17 @@ private fun MediaDirectoryDetailCard(
     state: MediaDirectoryDemoUiState,
     onAction: (MediaDirectoryDemoAction) -> Unit,
 ) {
-    Surface(
+    NomiSurface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag(MediaDirectoryDemoDetailTag),
         shape = AppTheme.shapes.small,
-        color = AppTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = AppTheme.sizes.strokes.thin,
-            color = AppTheme.colorScheme.outline,
+        colors = NomiSurfaceColors(containerColor = AppTheme.colorScheme.surface),
+        border = NomiBorder.Stroke(
+            BorderStroke(
+                width = AppTheme.sizes.strokes.thin,
+                color = AppTheme.colorScheme.outline,
+            ),
         ),
     ) {
         Column(
@@ -353,21 +332,21 @@ private fun MediaDirectoryDetailCard(
                 horizontalArrangement = Arrangement.spacedBy(AppTheme.spacings.small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Folder,
+                NomiIcon(
+                    imageVector = Icons.Regular.Folder,
                     contentDescription = null,
                     modifier = Modifier.size(AppTheme.sizes.icon.large),
                     tint = AppTheme.colorScheme.primary,
                 )
-                Text(
+                NomiText(
                     text = stringResource(Res.string.media_directory_demo_detail_title),
                     style = AppTheme.typography.titleMedium,
                     color = AppTheme.colorScheme.textPrimary,
                 )
             }
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             MediaDirectoryAccessSection(state = state)
-            HorizontalDivider(color = AppTheme.colorScheme.divider)
+            NomiDivider(color = AppTheme.colorScheme.divider)
             MediaDirectoryEntrySection(
                 state = state,
                 onCommit = { onAction(MediaDirectoryDemoAction.CommitSampleClick) },
@@ -375,7 +354,7 @@ private fun MediaDirectoryDetailCard(
                 onDelete = { onAction(MediaDirectoryDemoAction.DeleteClick) },
             )
             state.error?.let { error ->
-                HorizontalDivider(color = AppTheme.colorScheme.divider)
+                NomiDivider(color = AppTheme.colorScheme.divider)
                 MediaDirectoryErrorSection(error)
             }
         }
@@ -389,14 +368,14 @@ private fun MediaDirectoryAccessSection(state: MediaDirectoryDemoUiState) {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
     ) {
-        Text(
+        NomiText(
             text = stringResource(Res.string.media_directory_demo_request_section),
             style = AppTheme.typography.titleMedium,
             color = AppTheme.colorScheme.primary,
         )
         val access = state.access
         if (access == null) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_directory_demo_not_granted_status),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
@@ -438,14 +417,14 @@ private fun MediaDirectoryEntrySection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.medium),
     ) {
-        Text(
+        NomiText(
             text = stringResource(Res.string.media_directory_demo_result_section),
             style = AppTheme.typography.titleMedium,
             color = AppTheme.colorScheme.primary,
         )
         val entry = state.lastEntry
         if (entry == null) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_directory_demo_result_empty),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
@@ -494,7 +473,7 @@ private fun MediaDirectoryEntrySection(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 MediaDirectoryDemoPrimaryButton(
-                    icon = Icons.Filled.UploadFile,
+                    icon = Icons.Regular.ArrowUpload,
                     loading = state.phase == MediaDirectoryDemoPhase.Committing,
                     enabled = state.accessState == MediaDirectoryDemoAccessState.Granted && state.isIdle,
                     loadingLabel = Res.string.media_directory_demo_committing,
@@ -503,7 +482,7 @@ private fun MediaDirectoryEntrySection(
                     modifier = Modifier.weight(1f),
                 )
                 MediaDirectoryDemoCommandButton(
-                    icon = Icons.Filled.Search,
+                    icon = Icons.Regular.Search,
                     loading = false,
                     enabled = state.hasEntry && state.isIdle,
                     loadingLabel = Res.string.media_directory_demo_exists,
@@ -517,7 +496,7 @@ private fun MediaDirectoryEntrySection(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 MediaDirectoryDemoCommandButton(
-                    icon = Icons.Filled.Delete,
+                    icon = Icons.Regular.Delete,
                     loading = state.phase == MediaDirectoryDemoPhase.Deleting,
                     enabled = state.hasEntry && state.isIdle,
                     loadingLabel = Res.string.media_directory_demo_deleting,
@@ -537,11 +516,11 @@ private fun MediaDirectoryErrorSection(error: MediaDirectoryDemoErrorModel) {
         verticalAlignment = Alignment.Top,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Icon(
+        NomiIcon(
             imageVector = if (error.type == MediaDirectoryDemoErrorType.Unsupported) {
-                Icons.Filled.Block
+                Icons.Regular.Prohibited
             } else {
-                Icons.Filled.Error
+                Icons.Regular.ErrorCircle
             },
             contentDescription = null,
             modifier = Modifier.size(AppTheme.sizes.icon.large),
@@ -555,12 +534,12 @@ private fun MediaDirectoryErrorSection(error: MediaDirectoryDemoErrorModel) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny),
         ) {
-            Text(
+            NomiText(
                 text = stringResource(Res.string.media_directory_demo_error_title),
                 style = AppTheme.typography.titleMedium,
                 color = AppTheme.colorScheme.textPrimary,
             )
-            Text(
+            NomiText(
                 text = stringResource(error.type.resource()),
                 style = AppTheme.typography.bodyMedium,
                 color = AppTheme.colorScheme.textSecondary,
@@ -580,20 +559,16 @@ private fun MediaDirectoryDemoCommandButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedButton(
+    NomiButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
+        variant = NomiButtonVariant.Default,
     ) {
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(AppTheme.sizes.icon.medium),
-                strokeWidth = AppTheme.sizes.strokes.medium,
-            )
-        } else {
-            Icon(imageVector = icon, contentDescription = null)
+        if (!loading) {
+            NomiIcon(imageVector = icon, contentDescription = null)
         }
-        Text(
+        NomiText(
             text = stringResource(if (loading) loadingLabel else defaultLabel),
             maxLines = 1,
             softWrap = false,
@@ -602,7 +577,7 @@ private fun MediaDirectoryDemoCommandButton(
     }
 }
 
-/** 主操作按钮：commit 时使用 Button 而不是 OutlinedButton。 */
+/** 主操作按钮：commit 使用主要按钮，其余命令使用次级按钮。 */
 @Composable
 private fun MediaDirectoryDemoPrimaryButton(
     icon: ImageVector,
@@ -613,20 +588,15 @@ private fun MediaDirectoryDemoPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Button(
+    NomiButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
     ) {
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(AppTheme.sizes.icon.medium),
-                strokeWidth = AppTheme.sizes.strokes.medium,
-            )
-        } else {
-            Icon(imageVector = icon, contentDescription = null)
+        if (!loading) {
+            NomiIcon(imageVector = icon, contentDescription = null)
         }
-        Text(
+        NomiText(
             text = stringResource(if (loading) loadingLabel else defaultLabel),
             maxLines = 1,
             softWrap = false,
@@ -639,12 +609,12 @@ private fun MediaDirectoryDemoPrimaryButton(
 @Composable
 private fun InfoRow(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.spacings.tiny)) {
-        Text(
+        NomiText(
             text = label,
             style = AppTheme.typography.labelMedium,
             color = AppTheme.colorScheme.textSecondary,
         )
-        Text(
+        NomiText(
             text = value,
             style = AppTheme.typography.bodyMedium,
             color = AppTheme.colorScheme.textPrimary,
@@ -654,9 +624,9 @@ private fun InfoRow(label: String, value: String) {
 
 /** 返回授权状态对应的图标。 */
 private fun MediaDirectoryDemoAccessState.icon() = when (this) {
-    MediaDirectoryDemoAccessState.NotGranted -> Icons.Filled.Folder
-    MediaDirectoryDemoAccessState.Granted -> Icons.Filled.CheckCircle
-    MediaDirectoryDemoAccessState.Revoked -> Icons.Filled.Error
+    MediaDirectoryDemoAccessState.NotGranted -> Icons.Regular.Folder
+    MediaDirectoryDemoAccessState.Granted -> Icons.Regular.CheckmarkCircle
+    MediaDirectoryDemoAccessState.Revoked -> Icons.Regular.ErrorCircle
 }
 
 /** 返回授权状态对应的语义颜色。 */
