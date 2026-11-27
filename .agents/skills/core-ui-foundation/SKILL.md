@@ -138,8 +138,9 @@ UI 前，按以下顺序执行：
 常用入口：
 
 - 文本：`Title`、`ContentBody`、`SingleText`。
-- 按钮：`Button`、`SmallButton`、`OutLineButton`、`OutLineTextButton`、`FlexButton`、`ButtonStyle`、
-  `FlexButtonStyles.Default`。
+- 按钮：`Button`、`SmallButton`、`OutLineButton`、`OutLineTextButton`、`FlexButton`、
+  `FlexButtonStyles.Default`；`ButtonStyle` 是启用/选中/禁用四态集合，`ButtonStateStyle` 是单状态视觉，
+  改几何用 `mapStates`、改基准色用 `withContent`，两者为 `inline`，可在 lambda 内读取主题令牌。
 - 设置选择项：`SettingScrollChoose`（列表行请使用 `:core:design-system` 的 `NomiListItem`）。
 - 容器/其它：`BoxSurface`、`ColumnSurface`、`RowSurface`、`MenuChip`、`ExposedMenu`、`MenuText`、`Toast`、
   `ProgressData`、`LinearProgressBar`、`ArcProgressBar`。
